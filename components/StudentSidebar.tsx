@@ -19,7 +19,9 @@ export function StudentSidebar() {
   return (
     <div className="w-64 border-r border-black h-screen flex flex-col bg-white">
       <div className="p-6 border-b border-black">
-        <h2 className="font-bold text-xl text-black">EuropeBridge</h2>
+        <Link href="/" className="font-bold text-xl text-black hover:underline block">
+          EuropeBridge
+        </Link>
         <p className="text-sm text-gray-500">Student Portal</p>
       </div>
 

@@ -1,59 +1,169 @@
-import { Button } from '@/components/Button';
+"use client";
+
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, ArrowRight, ShieldCheck, UserCheck } from 'lucide-react';
 
 export default function Login() {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [selectedRole, setSelectedRole] = useState('student');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    router.push(`/dashboard/${selectedRole}`);
+  };
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4 py-12">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-sm border border-black p-8 space-y-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-black">Login</h1>
-          <p className="text-black mt-2">Welcome back to EuropeBridge</p>
+    <div className="min-h-screen flex flex-col items-center justify-center neu-bg px-4 py-12 relative overflow-hidden">
+      {/* Background Glows */}
+      <div className="absolute top-10 left-10 w-72 h-72 bg-germany-red/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-10 right-10 w-72 h-72 bg-germany-gold/20 rounded-full blur-3xl pointer-events-none"></div>
+
+      {/* Back to Home Link */}
+      <div className="max-w-md w-full mb-6 flex items-center justify-between z-10">
+        <Link 
+          href="/" 
+          className="inline-flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-germany-red transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Home</span>
+        </Link>
+        <Link href="/" className="inline-flex items-center gap-2 font-display text-xl text-germany-black">
+          <img src="/doodles/happy.png" alt="Logo" className="w-8 h-8 object-contain" />
+          <span>Europe<span className="text-germany-red">Bridge</span></span>
+        </Link>
+      </div>
+
+      {/* Main Login Card */}
+      <div className="max-w-md w-full bg-white neu-card p-8 relative z-10 overflow-hidden shadow-[12px_12px_30px_rgba(210,205,195,0.6)]">
+        {/* Tricolor Header Strip */}
+        <div className="absolute top-0 left-0 w-full h-2 flex">
+          <div className="flex-1 bg-germany-black"></div>
+          <div className="flex-1 bg-germany-red"></div>
+          <div className="flex-1 bg-germany-gold"></div>
         </div>
-        
-        <form className="space-y-4">
+
+        <div className="text-center mt-2 mb-6">
+          <h1 className="text-3xl font-display text-germany-black">Welcome Back</h1>
+          <p className="text-gray-500 font-bold text-xs mt-1">Sign in to continue your German journey</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-black mb-1">Email</label>
-            <input type="email" placeholder="Email" className="w-full border border-black p-2 rounded focus:ring-black focus:border-black bg-white text-black" />
+            <label className="block text-xs font-extrabold text-germany-black mb-1 ml-1">Email Address</label>
+            <input 
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com" 
+              className="w-full px-4 py-2.5 neu-input font-bold text-germany-black text-sm placeholder-gray-400" 
+              required
+            />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-black mb-1">Password</label>
-            <input type="password" placeholder="Password" className="w-full border border-black p-2 rounded focus:ring-black focus:border-black bg-white text-black" />
+            <label className="block text-xs font-extrabold text-germany-black mb-1 ml-1">Password</label>
+            <input 
+              type="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••" 
+              className="w-full px-4 py-2.5 neu-input font-bold text-germany-black text-sm placeholder-gray-400" 
+              required
+            />
           </div>
-          <div className="flex justify-between items-center text-sm">
-            <label className="flex items-center text-black">
-              <input type="checkbox" className="mr-2 border-black" /> Remember me
+
+          <div>
+            <label className="block text-xs font-extrabold text-germany-black mb-1 ml-1">Login As</label>
+            <select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              className="w-full px-4 py-2.5 neu-input font-bold text-germany-black text-sm bg-[#EBE7E0]"
+            >
+              <option value="student">Student</option>
+              <option value="counsellor">Counsellor</option>
+              <option value="admin">Admin</option>
+              <option value="super-admin">Super Admin</option>
+              <option value="marketing">Marketing</option>
+              <option value="financial">Finance</option>
+              <option value="content">Content</option>
+            </select>
+          </div>
+
+          <div className="flex justify-between items-center text-xs font-bold pt-1">
+            <label className="flex items-center text-gray-600 cursor-pointer">
+              <input type="checkbox" className="mr-2 accent-germany-red rounded" /> Remember me
             </label>
-            <a href="#" className="text-black hover:underline font-bold">Forgot Password?</a>
+            <a href="#" className="text-germany-red hover:underline">Forgot Password?</a>
           </div>
-          <Button className="w-full">Login</Button>
+
+          <button 
+            type="submit" 
+            className="w-full neu-btn-primary py-3 px-4 font-bold text-base cursor-pointer flex items-center justify-center gap-2 mt-4"
+          >
+            <span>Sign In</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
         </form>
 
         <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-black"></div></div>
-          <div className="relative flex justify-center text-sm"><span className="px-2 bg-white text-black">Or continue with</span></div>
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200"></div></div>
+          <div className="relative flex justify-center text-xs font-bold"><span className="px-3 bg-white text-gray-400">Or continue with</span></div>
         </div>
 
-        <div className="space-y-3">
-          <button className="w-full border border-black p-2 rounded text-black hover:bg-gray-100">[ Google Login Placeholder ]</button>
-          <button className="w-full border border-black p-2 rounded text-black hover:bg-gray-100">[ Phone Login Placeholder ]</button>
+        <div className="grid grid-cols-2 gap-3">
+          <button 
+            type="button" 
+            onClick={() => router.push('/dashboard/student')}
+            className="neu-btn py-2.5 px-3 text-xs font-extrabold text-germany-black hover:text-germany-red flex items-center justify-center gap-1.5"
+          >
+            <UserCheck className="w-3.5 h-3.5" />
+            <span>Google</span>
+          </button>
+          <button 
+            type="button" 
+            onClick={() => router.push('/dashboard/student')}
+            className="neu-btn py-2.5 px-3 text-xs font-extrabold text-germany-black hover:text-germany-red flex items-center justify-center gap-1.5"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Passkey</span>
+          </button>
         </div>
 
-        <p className="text-center text-sm text-black mt-6">
-          Don't have an account? <Link href="#" className="text-black font-bold hover:underline">Register</Link>
+        <p className="text-center text-xs font-bold text-gray-500 mt-6">
+          Don't have an account?{' '}
+          <Link href="/" className="text-germany-red font-extrabold hover:underline">
+            Explore Free Tools
+          </Link>
         </p>
       </div>
 
-      {/* Temporary Dashboard Access Panel */}
-      <div className="max-w-md w-full mt-8 bg-white rounded-lg shadow-sm border border-black p-6">
-        <h2 className="text-lg font-bold text-center mb-4 text-black">Temporary Dashboard Access</h2>
+      {/* Quick Dashboard Access Panel for development and testing */}
+      <div className="max-w-md w-full mt-6 bg-white/80 backdrop-blur neu-card p-5 z-10">
+        <h2 className="text-xs font-extrabold text-center uppercase tracking-wider text-gray-400 mb-3">
+          Direct Dashboard Previews
+        </h2>
         <div className="flex flex-wrap gap-2 justify-center">
-          <Link href="/dashboard/student" className="px-3 py-1 text-sm border border-black rounded text-black hover:bg-gray-100">Student</Link>
-          <Link href="/dashboard/admin" className="px-3 py-1 text-sm border border-black rounded text-black hover:bg-gray-100">Admin</Link>
-          <Link href="/dashboard/super-admin" className="px-3 py-1 text-sm border border-black rounded text-black hover:bg-gray-100">Super Admin</Link>
-          <Link href="/dashboard/marketing" className="px-3 py-1 text-sm border border-black rounded text-black hover:bg-gray-100">Marketing</Link>
-          <Link href="/dashboard/financial" className="px-3 py-1 text-sm border border-black rounded text-black hover:bg-gray-100">Finance</Link>
-          <Link href="/dashboard/content" className="px-3 py-1 text-sm border border-black rounded text-black hover:bg-gray-100">Content</Link>
-          <Link href="/dashboard/counsellor" className="px-3 py-1 text-sm border border-black rounded text-black hover:bg-gray-100">Counsellor</Link>
+          {[
+            { label: "Student", href: "/dashboard/student" },
+            { label: "Counsellor", href: "/dashboard/counsellor" },
+            { label: "Admin", href: "/dashboard/admin" },
+            { label: "Super Admin", href: "/dashboard/super-admin" },
+            { label: "Marketing", href: "/dashboard/marketing" },
+            { label: "Finance", href: "/dashboard/financial" },
+            { label: "Content", href: "/dashboard/content" },
+          ].map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              className="px-3 py-1.5 text-xs font-extrabold bg-[#EBE7E0] hover:bg-germany-red hover:text-white rounded-xl transition-colors text-germany-black"
+            >
+              {item.label}
+            </Link>
+          ))}
         </div>
       </div>
     </div>

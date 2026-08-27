@@ -1,31 +1,152 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --font-sans: var(--font-nunito), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-display: var(--font-super-three), serif;
+  
+  --color-germany-black: #1a1a1a;
+  --color-germany-red: #E63946;
+  --color-germany-gold: #F4A261;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-blue-50: #f3f4f6;
-  --color-blue-500: #6b7280;
-  --color-blue-600: #262626;
-  --color-red-600: #262626;
-}
+@layer utilities {
+  /* Claymorphism Background */
+  .neu-bg {
+    background-color: #F4F1EA; /* Warm cream background */
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Claymorphism Card */
+  .neu-card {
+    background-color: #FDFBF7;
+    border-radius: 36px;
+    box-shadow: 
+      12px 12px 30px rgba(210, 205, 195, 0.6), /* Soft outer drop shadow */
+      inset -8px -8px 16px rgba(210, 205, 195, 0.4), /* Dark inner bottom shadow (clay thickness) */
+      inset 8px 8px 16px rgba(255, 255, 255, 1); /* Light inner top highlight (clay curve) */
+    border: none;
+  }
+
+  /* Claymorphism Inputs (carved into the clay) */
+  .neu-input {
+    background-color: #EBE7E0; /* Carved into cream clay */
+    border-radius: 18px;
+    box-shadow: 
+      inset 5px 5px 12px rgba(210, 205, 195, 0.6),
+      inset -5px -5px 12px rgba(255, 255, 255, 1);
+    border: 2px solid transparent;
+    transition: all 0.2s ease-in-out;
+    color: var(--color-germany-black);
+  }
+  
+  .neu-input:focus {
+    outline: none;
+    background-color: #FDFBF7;
+    border-color: rgba(230, 57, 70, 0.3);
+    box-shadow: 
+      0 0 0 4px rgba(230, 57, 70, 0.1),
+      inset 4px 4px 10px rgba(210, 205, 195, 0.4),
+      inset -4px -4px 10px rgba(255, 255, 255, 1);
+  }
+
+  /* Claymorphism Buttons */
+  .neu-btn {
+    background-color: #FDFBF7;
+    border-radius: 50px;
+    box-shadow: 
+      8px 8px 20px rgba(210, 205, 195, 0.6), 
+      inset -4px -4px 10px rgba(210, 205, 195, 0.4), 
+      inset 4px 4px 10px rgba(255, 255, 255, 1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .neu-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      10px 10px 24px rgba(210, 205, 195, 0.7), 
+      inset -4px -4px 10px rgba(210, 205, 195, 0.4), 
+      inset 4px 4px 10px rgba(255, 255, 255, 1);
+  }
+
+  .neu-btn:active {
+    transform: translateY(2px);
+    box-shadow: 
+      4px 4px 10px rgba(210, 205, 195, 0.5), 
+      inset -3px -3px 6px rgba(210, 205, 195, 0.6), 
+      inset 3px 3px 6px rgba(255, 255, 255, 1);
+  }
+
+  /* Primary Claymorphism Button (Red) */
+  .neu-btn-primary {
+    background-color: var(--color-germany-red);
+    color: white;
+    border-radius: 50px;
+    box-shadow: 
+      8px 8px 20px rgba(230, 57, 70, 0.3), 
+      inset -4px -4px 10px rgba(180, 20, 30, 0.5), 
+      inset 4px 4px 10px rgba(255, 150, 150, 0.9);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+  }
+
+  .neu-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      10px 10px 24px rgba(230, 57, 70, 0.4), 
+      inset -4px -4px 10px rgba(180, 20, 30, 0.5), 
+      inset 4px 4px 10px rgba(255, 150, 150, 0.9);
+  }
+
+  .neu-btn-primary:active {
+    transform: translateY(2px);
+    box-shadow: 
+      4px 4px 10px rgba(230, 57, 70, 0.2), 
+      inset -3px -3px 6px rgba(180, 20, 30, 0.5), 
+      inset 3px 3px 6px rgba(255, 150, 150, 0.9);
+  }
+
+  /* Gold Claymorphism Button */
+  .neu-btn-gold {
+    background-color: var(--color-germany-gold);
+    color: var(--color-germany-black);
+    border-radius: 50px;
+    box-shadow: 
+      8px 8px 20px rgba(244, 162, 97, 0.4), 
+      inset -4px -4px 10px rgba(200, 110, 40, 0.5), 
+      inset 4px 4px 10px rgba(255, 230, 180, 1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+  }
+
+  .neu-btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      10px 10px 24px rgba(244, 162, 97, 0.5), 
+      inset -4px -4px 10px rgba(200, 110, 40, 0.5), 
+      inset 4px 4px 10px rgba(255, 230, 180, 1);
+  }
+
+  .neu-btn-gold:active {
+    transform: translateY(2px);
+    box-shadow: 
+      4px 4px 10px rgba(244, 162, 97, 0.3), 
+      inset -3px -3px 6px rgba(200, 110, 40, 0.5), 
+      inset 3px 3px 6px rgba(255, 230, 180, 1);
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-  filter: grayscale(100%);
+  background-color: #F4F1EA;
+  color: var(--color-germany-black);
 }
