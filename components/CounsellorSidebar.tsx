@@ -1,6 +1,7 @@
 "use client";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { logout } from '@/lib/auth';
 
 const navItems = [
   { name: 'Dashboard', path: '/dashboard/counsellor' },
@@ -47,9 +48,9 @@ export function CounsellorSidebar() {
         <Link href="/dashboard/counsellor/account" className="block text-center text-sm border border-black rounded py-1 hover:bg-gray-100 text-black mb-2">
           Account
         </Link>
-        <Link href="/login" className="block text-center text-sm bg-black text-white rounded py-1 hover:bg-gray-800">
+        <button onClick={() => logout()} className="block w-full text-center text-sm bg-black text-white rounded py-1 hover:bg-gray-800">
           Logout
-        </Link>
+        </button>
       </div>
     </div>
   );
