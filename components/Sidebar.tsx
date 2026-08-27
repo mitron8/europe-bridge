@@ -1,4 +1,6 @@
+"use client";
 import Link from 'next/link';
+import { logout } from '@/lib/auth';
 
 export function Sidebar({ role }: { role: string }) {
   return (
@@ -10,9 +12,9 @@ export function Sidebar({ role }: { role: string }) {
         <Link href={`/dashboard/${role}`} className="block p-2 bg-black text-white font-bold rounded">Overview</Link>
         <div className="p-2 text-gray-500">Settings</div>
       </div>
-      <Link href="/login" className="block text-center text-sm bg-black text-white rounded py-2 hover:bg-gray-800 mt-auto">
+      <button onClick={() => logout()} className="block w-full text-center text-sm bg-black text-white rounded py-2 hover:bg-gray-800 mt-auto">
         Logout
-      </Link>
+      </button>
     </div>
   );
 }

@@ -4,16 +4,38 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, ShieldCheck, UserCheck } from 'lucide-react';
+import { login } from '@/lib/auth';
 
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [selectedRole, setSelectedRole] = useState('student');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    router.push(`/dashboard/${selectedRole}`);
+    setError('');
+    setLoading(true);
+
+    try {
+      const data = await login(email, password);
+      // Redirect based on backend user role or fallback to selected role
+      if (data?.user?.role) {
+        if (data.user.role === 'student') {
+          router.push('/dashboard/student');
+        } else {
+          router.push(`/dashboard/${data.user.role}`);
+        }
+      } else {
+        router.push(`/dashboard/${selectedRole}`);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -51,6 +73,12 @@ export default function Login() {
           <p className="text-gray-500 font-bold text-xs mt-1">Sign in to continue your German journey</p>
         </div>
 
+        {error && (
+          <div className="mb-4 bg-red-50 border-2 border-germany-red text-red-700 px-4 py-2.5 rounded-xl font-bold text-xs">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-extrabold text-germany-black mb-1 ml-1">Email Address</label>
@@ -77,7 +105,7 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="block text-xs font-extrabold text-germany-black mb-1 ml-1">Login As</label>
+            <label className="block text-xs font-extrabold text-germany-black mb-1 ml-1">Login As (Role)</label>
             <select
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
@@ -102,9 +130,10 @@ export default function Login() {
 
           <button 
             type="submit" 
-            className="w-full neu-btn-primary py-3 px-4 font-bold text-base cursor-pointer flex items-center justify-center gap-2 mt-4"
+            disabled={loading}
+            className="w-full neu-btn-primary py-3 px-4 font-bold text-base cursor-pointer flex items-center justify-center gap-2 mt-4 disabled:opacity-50"
           >
-            <span>Sign In</span>
+            <span>{loading ? 'Signing In...' : 'Sign In'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
@@ -135,8 +164,8 @@ export default function Login() {
 
         <p className="text-center text-xs font-bold text-gray-500 mt-6">
           Don't have an account?{' '}
-          <Link href="/" className="text-germany-red font-extrabold hover:underline">
-            Explore Free Tools
+          <Link href="/signup" className="text-germany-red font-extrabold hover:underline">
+            Register
           </Link>
         </p>
       </div>
