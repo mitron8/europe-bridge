@@ -27,9 +27,13 @@ export default function Signup() {
 
     setLoading(true);
     try {
+      // fire off the signup request
       await signup(firstName, lastName, email, password);
+      
+      // we could log them straight in, but sending them to the login page is safer and simpler for now
       router.push('/login');
     } catch (err: any) {
+      // just echo whatever the backend complained about
       setError(err.message || 'Signup failed. Please try again.');
     } finally {
       setLoading(false);

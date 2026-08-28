@@ -16,6 +16,8 @@ export default async function DashboardLayout({
 
   const apiUrl = process.env.API_URL || 'http://localhost:3001';
 
+  let authFailed = false;
+
   try {
     // ask the backend if this token is still good
     const res = await fetch(`${apiUrl}/auth/me`, {
@@ -26,10 +28,14 @@ export default async function DashboardLayout({
     });
 
     if (!res.ok) {
-      redirect('/login');
+      authFailed = true;
     }
   } catch (err) {
     // backend down or something, just kick them to login
+    authFailed = true;
+  }
+
+  if (authFailed) {
     redirect('/login');
   }
 

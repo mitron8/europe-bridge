@@ -1,4 +1,4 @@
-import { NEXT_PUBLIC_API_URL } from './api';
+const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function login(email: string, password: string) {
   const response = await fetch(`${NEXT_PUBLIC_API_URL}/auth/login`, {

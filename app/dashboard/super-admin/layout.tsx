@@ -3,7 +3,7 @@ import { AuthGuard } from '@/components/AuthGuard';
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AuthGuard allowedRoles={['super-admin']}>
+    <AuthGuard allowedRoles={['superadmin']}>
       <div className="flex h-screen w-full neu-bg overflow-hidden relative">
         <div className="absolute top-10 left-80 w-96 h-96 bg-germany-red/5 rounded-full blur-3xl pointer-events-none z-0"></div>
         <div className="absolute bottom-10 right-10 w-96 h-96 bg-germany-gold/10 rounded-full blur-3xl pointer-events-none z-0"></div>

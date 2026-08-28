@@ -21,17 +21,16 @@ export default function Login() {
 
     try {
       const data = await login(email, password);
-      // Redirect based on backend user role or fallback to selected role
-      if (data?.user?.role) {
-        if (data.user.role === 'student') {
-          router.push('/dashboard/student');
-        } else {
-          router.push(`/dashboard/${data.user.role}`);
-        }
+      // route them to their specific dashboard based on what the db says
+      if (data.user.role === 'student') {
+        router.push('/dashboard/student');
       } else {
-        router.push(`/dashboard/${selectedRole}`);
+        // the db role is 'superadmin' but the url is 'super-admin'
+        const targetDashboard = data.user.role === 'superadmin' ? 'super-admin' : data.user.role;
+        router.push(`/dashboard/${targetDashboard}`);
       }
     } catch (err: any) {
+      // just bubble up whatever the backend threw
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
