@@ -1,8 +1,10 @@
-'use client';
+"use client";
+
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { useState } from 'react';
-import { signup } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
+import { signup } from '@/lib/auth';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 export default function Signup() {
   const [firstName, setFirstName] = useState('');
@@ -25,64 +27,133 @@ export default function Signup() {
 
     setLoading(true);
     try {
-      // First register the user
       await signup(firstName, lastName, email, password);
-      
-      // Auto-redirect to login with a success message, or directly login. 
-      // We will redirect to login for simplicity.
       router.push('/login');
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Signup failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4 py-12">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-sm border border-black p-8 space-y-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-black">Sign Up</h1>
-          <p className="text-black mt-2">Create an account for EuropeBridge</p>
+    <div className="min-h-screen flex flex-col items-center justify-center neu-bg px-4 py-12 relative overflow-hidden">
+      {/* Background Glows */}
+      <div className="absolute top-10 left-10 w-72 h-72 bg-germany-red/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-10 right-10 w-72 h-72 bg-germany-gold/20 rounded-full blur-3xl pointer-events-none"></div>
+
+      {/* Back to Home Link */}
+      <div className="max-w-md w-full mb-6 flex items-center justify-between z-10">
+        <Link 
+          href="/" 
+          className="inline-flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-germany-red transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Home</span>
+        </Link>
+        <Link href="/" className="inline-flex items-center gap-2 font-display text-xl text-germany-black">
+          <img src="/doodles/happy.png" alt="Logo" className="w-8 h-8 object-contain" />
+          <span>Europe<span className="text-germany-red">Bridge</span></span>
+        </Link>
+      </div>
+
+      {/* Main Signup Card */}
+      <div className="max-w-md w-full bg-white neu-card p-8 relative z-10 overflow-hidden shadow-[12px_12px_30px_rgba(210,205,195,0.6)]">
+        {/* Tricolor Header Strip */}
+        <div className="absolute top-0 left-0 w-full h-2 flex">
+          <div className="flex-1 bg-germany-black"></div>
+          <div className="flex-1 bg-germany-red"></div>
+          <div className="flex-1 bg-germany-gold"></div>
         </div>
-        
+
+        <div className="text-center mt-2 mb-6">
+          <h1 className="text-3xl font-display text-germany-black">Create Account</h1>
+          <p className="text-gray-500 font-bold text-xs mt-1">Start your German education journey today</p>
+        </div>
+
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-            <span className="block sm:inline">{error}</span>
+          <div className="mb-4 bg-red-50 border-2 border-germany-red text-red-700 px-4 py-2.5 rounded-xl font-bold text-xs">
+            {error}
           </div>
         )}
 
-        <form className="space-y-4" onSubmit={handleSignup}>
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSignup} className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-black mb-1">First Name</label>
-              <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required placeholder="First Name" className="w-full border border-black p-2 rounded focus:ring-black focus:border-black bg-white text-black" />
+              <label className="block text-xs font-extrabold text-germany-black mb-1 ml-1">First Name</label>
+              <input 
+                type="text" 
+                value={firstName} 
+                onChange={(e) => setFirstName(e.target.value)} 
+                required 
+                placeholder="First Name" 
+                className="w-full px-4 py-2.5 neu-input font-bold text-germany-black text-sm placeholder-gray-400" 
+              />
             </div>
             <div>
-              <label className="block text-sm font-medium text-black mb-1">Last Name</label>
-              <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} required placeholder="Last Name" className="w-full border border-black p-2 rounded focus:ring-black focus:border-black bg-white text-black" />
+              <label className="block text-xs font-extrabold text-germany-black mb-1 ml-1">Last Name</label>
+              <input 
+                type="text" 
+                value={lastName} 
+                onChange={(e) => setLastName(e.target.value)} 
+                required 
+                placeholder="Last Name" 
+                className="w-full px-4 py-2.5 neu-input font-bold text-germany-black text-sm placeholder-gray-400" 
+              />
             </div>
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-black mb-1">Email</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="Email" className="w-full border border-black p-2 rounded focus:ring-black focus:border-black bg-white text-black" />
+            <label className="block text-xs font-extrabold text-germany-black mb-1 ml-1">Email Address</label>
+            <input 
+              type="email" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              required 
+              placeholder="you@example.com" 
+              className="w-full px-4 py-2.5 neu-input font-bold text-germany-black text-sm placeholder-gray-400" 
+            />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-black mb-1">Password</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="Password" className="w-full border border-black p-2 rounded focus:ring-black focus:border-black bg-white text-black" />
+            <label className="block text-xs font-extrabold text-germany-black mb-1 ml-1">Password</label>
+            <input 
+              type="password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              required 
+              placeholder="••••••••" 
+              className="w-full px-4 py-2.5 neu-input font-bold text-germany-black text-sm placeholder-gray-400" 
+            />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-black mb-1">Confirm Password</label>
-            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required placeholder="Confirm Password" className="w-full border border-black p-2 rounded focus:ring-black focus:border-black bg-white text-black" />
+            <label className="block text-xs font-extrabold text-germany-black mb-1 ml-1">Confirm Password</label>
+            <input 
+              type="password" 
+              value={confirmPassword} 
+              onChange={(e) => setConfirmPassword(e.target.value)} 
+              required 
+              placeholder="••••••••" 
+              className="w-full px-4 py-2.5 neu-input font-bold text-germany-black text-sm placeholder-gray-400" 
+            />
           </div>
-          
-          <button className="px-4 py-2 rounded bg-black text-white font-medium w-full"  disabled={loading}>
-            {loading ? 'Registering...' : 'Register'}
+
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full neu-btn-primary py-3 px-4 font-bold text-base cursor-pointer flex items-center justify-center gap-2 mt-4 disabled:opacity-50"
+          >
+            <span>{loading ? 'Creating Account...' : 'Register'}</span>
+            <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
-        <p className="text-center text-sm text-black mt-6">
-          Already have an account? <Link href="/login" className="text-black font-bold hover:underline">Login</Link>
+        <p className="text-center text-xs font-bold text-gray-500 mt-6">
+          Already have an account?{' '}
+          <Link href="/login" className="text-germany-red font-extrabold hover:underline">
+            Login
+          </Link>
         </p>
       </div>
     </div>

@@ -1,26 +1,21 @@
 "use client";
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, ArrowRight } from 'lucide-react';
+import { CheckCircle2, ArrowRight, Sparkles, GraduationCap, Check } from 'lucide-react';
+import Link from 'next/link';
 
 const Hero = () => {
   const [isFormHovered, setIsFormHovered] = useState(false);
-  const [maxScore, setMaxScore] = useState("");
-  const [minScore, setMinScore] = useState("");
-  const [yourScore, setYourScore] = useState("");
-  const [calculatedGpa, setCalculatedGpa] = useState<string | null>(null);
+  const [degree, setDegree] = useState("masters");
+  const [field, setField] = useState("");
+  const [grade, setGrade] = useState("");
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
 
-  const calculateGpa = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const max = parseFloat(maxScore);
-    const min = parseFloat(minScore);
-    const yours = parseFloat(yourScore);
-
-    if (!isNaN(max) && !isNaN(min) && !isNaN(yours) && max !== min) {
-      // Modified Bavarian Formula
-      const germanGpa = 1 + 3 * (max - yours) / (max - min);
-      // Ensure GPA is bounded logically
-      setCalculatedGpa(Math.max(1.0, Math.min(6.0, germanGpa)).toFixed(1));
+    if (grade && email) {
+      setSubmitted(true);
     }
   };
 
@@ -97,7 +92,7 @@ const Hero = () => {
             <img src="/doodles/university.png" alt="Peer the Penguin" className="w-20 h-20 object-contain drop-shadow-md shrink-0" />
             <div className="text-[11px] md:text-xs text-gray-500 font-bold mt-1 sm:mt-0 leading-snug">
               <span className="block text-germany-black font-extrabold text-sm mb-0.5">Meet Peer, the Guide Penguin!</span>
-              "I'll be guiding you through every step of your German dream. Let's calculate your German GPA below!"
+              "I'll be guiding you through every step of your German dream. Check your free eligibility on the right!"
             </div>
           </div>
         </motion.div>
@@ -121,81 +116,141 @@ const Hero = () => {
           </motion.div>
 
           <motion.div 
-            className="w-full bg-white neu-card p-6 lg:p-7 relative z-10 overflow-hidden"
+            className="w-full bg-white neu-card p-6 lg:p-7 relative z-10 overflow-hidden shadow-[12px_12px_30px_rgba(210,205,195,0.6)]"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
           >
-            {/* German Flag Tricolor Top Bar inside the card */}
+            {/* German Flag Tricolor Top Bar */}
             <div className="absolute top-0 left-0 w-full h-2 flex">
               <div className="flex-1 bg-germany-black"></div>
               <div className="flex-1 bg-germany-red"></div>
               <div className="flex-1 bg-germany-gold"></div>
             </div>
 
-            <h3 className="font-display text-xl mb-1 text-center text-germany-black tracking-wide drop-shadow-sm mt-1">German GPA Calculator</h3>
-            <p className="text-[11px] md:text-xs font-bold text-gray-500 text-center mb-4">Convert your local grades to the German scale.</p>
-            
-            <form onSubmit={calculateGpa} className="grid grid-cols-1 gap-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-germany-black ml-1">Max Score</label>
-                  <input 
-                    type="number" 
-                    step="any"
-                    value={maxScore}
-                    onChange={(e) => setMaxScore(e.target.value)}
-                    placeholder="e.g. 100" 
-                    className="w-full px-4 py-2.5 neu-input font-bold text-germany-black text-sm placeholder-gray-400" 
-                    required 
-                  />
+            {!submitted ? (
+              <>
+                <h3 className="font-display text-xl mb-1 text-center text-germany-black tracking-wide drop-shadow-sm mt-1">
+                  Check Germany Eligibility
+                </h3>
+                <p className="text-[11px] md:text-xs font-bold text-gray-500 text-center mb-4">
+                  Instant assessment for tuition-free public universities.
+                </p>
+                
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-3.5">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs font-extrabold text-germany-black ml-1">Target Degree</label>
+                      <select 
+                        value={degree}
+                        onChange={(e) => setDegree(e.target.value)}
+                        className="w-full px-3 py-2.5 neu-input font-bold text-germany-black text-xs bg-[#EBE7E0]"
+                      >
+                        <option value="masters">Master's Degree</option>
+                        <option value="bachelors">Bachelor's Degree</option>
+                        <option value="mba">MBA / Management</option>
+                        <option value="phd">PhD / Research</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-extrabold text-germany-black ml-1">Target Field</label>
+                      <input 
+                        type="text" 
+                        value={field}
+                        onChange={(e) => setField(e.target.value)}
+                        placeholder="e.g. CS / Mech" 
+                        className="w-full px-3.5 py-2.5 neu-input font-bold text-germany-black text-xs placeholder-gray-400" 
+                        required 
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-extrabold text-germany-black ml-1">Current GPA / Percentage</label>
+                    <input 
+                      type="text" 
+                      value={grade}
+                      onChange={(e) => setGrade(e.target.value)}
+                      placeholder="e.g. 8.2 CGPA or 78%" 
+                      className="w-full px-4 py-2.5 neu-input font-bold text-germany-black text-xs placeholder-gray-400" 
+                      required 
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-extrabold text-germany-black ml-1">Email / WhatsApp</label>
+                    <input 
+                      type="email" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com" 
+                      className="w-full px-4 py-2.5 neu-input font-bold text-germany-black text-xs placeholder-gray-400" 
+                      required 
+                    />
+                  </div>
+
+                  <div className="mt-1">
+                    <button type="submit" className="w-full neu-btn-primary px-5 py-3 font-bold text-sm cursor-pointer gap-2 flex items-center justify-center">
+                      <span>Check My Chances Free</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <p className="text-[10px] text-center font-bold text-gray-400">
+                    🔒 No spam. 100% Free profile evaluation report.
+                  </p>
+                </form>
+              </>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center space-y-3.5 py-2"
+              >
+                <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                  <Check className="w-6 h-6 stroke-[3]" />
+                </div>
+                
+                <div>
+                  <h4 className="font-display text-xl text-germany-black">High Admission Match!</h4>
+                  <p className="text-xs font-bold text-gray-500 mt-1">
+                    Based on your profile, you qualify for top German public universities with <strong className="text-germany-red">€0 tuition fee</strong>.
+                  </p>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-germany-black ml-1">Min Passing</label>
-                  <input 
-                    type="number" 
-                    step="any"
-                    value={minScore}
-                    onChange={(e) => setMinScore(e.target.value)}
-                    placeholder="e.g. 40" 
-                    className="w-full px-4 py-2.5 neu-input font-bold text-germany-black text-sm placeholder-gray-400" 
-                    required 
-                  />
+                <div className="p-3 bg-[#EBE7E0]/60 rounded-2xl border border-[#E2DDD3] text-left space-y-1.5 text-xs font-bold text-gray-700">
+                  <div className="flex justify-between">
+                    <span>German GPA Est.:</span>
+                    <strong className="text-germany-black">1.6 - 1.8 (Sehr Gut)</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Public Universities:</span>
+                    <strong className="text-emerald-700">12+ Matches (TU9)</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>APS Eligibility:</span>
+                    <strong className="text-emerald-700">Eligible</strong>
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-germany-black ml-1">Your Score</label>
-                <input 
-                  type="number" 
-                  step="any"
-                  value={yourScore}
-                  onChange={(e) => setYourScore(e.target.value)}
-                  placeholder="e.g. 8.5 or 75" 
-                  className="w-full px-4 py-2.5 neu-input font-bold text-germany-black text-sm placeholder-gray-400" 
-                  required 
-                />
-              </div>
-
-              {calculatedGpa && (
-                <motion.div 
-                  initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                  animate={{ opacity: 1, height: 'auto', marginTop: '0.5rem' }}
-                  className="p-3 bg-germany-gold/10 border border-germany-gold/30 rounded-xl text-center overflow-hidden"
+                <Link
+                  href="/signup"
+                  className="w-full neu-btn-primary py-3 px-4 font-bold text-sm flex items-center justify-center gap-2"
                 >
-                  <span className="text-xs font-bold text-gray-500">Your German GPA:</span>
-                  <div className="text-2xl font-display text-germany-black">{calculatedGpa}</div>
-                </motion.div>
-              )}
-
-              <div className="mt-1">
-                <button type="submit" className="w-full neu-btn-primary px-5 py-3 font-bold text-base cursor-pointer gap-2">
-                  <span>Calculate GPA</span>
+                  <span>Create Account to View Shortlist</span>
                   <ArrowRight className="w-4 h-4" />
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => setSubmitted(false)}
+                  className="text-[11px] font-extrabold text-gray-400 hover:text-germany-red underline"
+                >
+                  Calculate for another score
                 </button>
-              </div>
-            </form>
+              </motion.div>
+            )}
           </motion.div>
         </div>
       </div>

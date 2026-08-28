@@ -3,6 +3,7 @@ import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import OurProcess from './components/OurProcess'
 import FreeTools from './components/FreeTools'
+import LanguagePartner from './components/LanguagePartner'
 import About from './components/About'
 import Testimonials from './components/Testimonials'
 import CTA from './components/CTA'
@@ -16,6 +17,7 @@ const page = () => {
       <Hero />
       <OurProcess />
       <FreeTools />
+      <LanguagePartner />
       <About />
       <Testimonials />
       <CTA />
@@ -26,4 +28,3 @@ const page = () => {
 }
 
 export default page
-
