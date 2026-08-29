@@ -10,7 +10,7 @@ export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [selectedRole, setSelectedRole] = useState('student');
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -103,22 +103,7 @@ export default function Login() {
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-extrabold text-germany-black mb-1 ml-1">Login As (Role)</label>
-            <select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              className="w-full px-4 py-2.5 neu-input font-bold text-germany-black text-sm bg-[#EBE7E0]"
-            >
-              <option value="student">Student</option>
-              <option value="counsellor">Counsellor</option>
-              <option value="admin">Admin</option>
-              <option value="super-admin">Super Admin</option>
-              <option value="marketing">Marketing</option>
-              <option value="financial">Finance</option>
-              <option value="content">Content</option>
-            </select>
-          </div>
+
 
           <div className="flex justify-between items-center text-xs font-bold pt-1">
             <label className="flex items-center text-gray-600 cursor-pointer">
