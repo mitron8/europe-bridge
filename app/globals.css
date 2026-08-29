@@ -1,12 +1,24 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Celinda';
+  src: url('/fonts/CelindaRegular-DY8ZD.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --font-sans: var(--font-nunito), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-display: var(--font-super-three), serif;
+  --font-display: 'Celinda', var(--font-celinda), serif;
   
   --color-germany-black: #1a1a1a;
   --color-germany-red: #E63946;
   --color-germany-gold: #F4A261;
+}
+
+.font-display {
+  font-family: 'Celinda', var(--font-celinda), serif !important;
 }
 
 @layer utilities {

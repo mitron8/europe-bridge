@@ -8,9 +8,9 @@ const nunito = Nunito({
   variable: "--font-nunito",
 });
 
-const superThree = localFont({
-  src: "../public/fonts/SuperThree-LVx44.ttf",
-  variable: "--font-super-three",
+const celinda = localFont({
+  src: "../public/fonts/CelindaRegular-DY8ZD.otf",
+  variable: "--font-celinda",
 });
 
 export const metadata: Metadata = {
@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${nunito.variable} ${superThree.variable}`}>
+    <html lang="en" className={`${nunito.variable} ${celinda.variable}`}>
       <body className="min-h-full flex flex-col font-sans text-gray-800 antialiased overflow-x-hidden">
         {children}
       </body>

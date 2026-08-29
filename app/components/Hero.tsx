@@ -1,28 +1,40 @@
 "use client";
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, ArrowRight, Sparkles, GraduationCap, Check } from 'lucide-react';
-import Link from 'next/link';
+import { 
+  CheckCircle2, 
+  Send, 
+  Phone, 
+  Mail, 
+  User, 
+  MessageSquare, 
+  Check, 
+  Sparkles 
+} from 'lucide-react';
 
 const Hero = () => {
   const [isFormHovered, setIsFormHovered] = useState(false);
-  const [degree, setDegree] = useState("masters");
-  const [field, setField] = useState("");
-  const [grade, setGrade] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [service, setService] = useState('Admissions & Shortlisting');
+  const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (grade && email) {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
       setSubmitted(true);
-    }
+    }, 600);
   };
 
   return (
-    <section id="hero" className="relative min-h-screen lg:h-screen lg:max-h-screen w-full flex flex-col justify-center pt-[120px] lg:pt-[80px] pb-[60px] lg:pb-[20px] px-4 md:px-[5%] overflow-hidden neu-bg">
+    <section id="hero" className="relative min-h-screen w-full flex flex-col justify-center pt-[140px] sm:pt-[150px] lg:pt-[130px] pb-[80px] lg:pb-[60px] px-4 md:px-[5%] overflow-hidden neu-bg">
       
-      {/* Animated Background Elements */}
+      {/* Animated Background Glow Elements */}
       <motion.div 
         className="absolute top-[10%] left-[5%] w-64 h-64 bg-germany-red/5 rounded-full blur-3xl z-0 pointer-events-none"
         animate={{ y: [0, 20, 0], scale: [1, 1.1, 1] }}
@@ -39,7 +51,7 @@ const Hero = () => {
         transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
       />
 
-      <div className="flex flex-col lg:flex-row items-center justify-between w-full max-w-7xl mx-auto z-10 gap-12 lg:gap-16 mt-4 lg:mt-0">
+      <div className="flex flex-col lg:flex-row items-center justify-between w-full max-w-7xl mx-auto z-10 gap-12 lg:gap-14 mt-4 sm:mt-6 lg:mt-8">
         
         {/* Left Content Area */}
         <motion.div 
@@ -54,7 +66,7 @@ const Hero = () => {
             Built by Alumni from Top German Universities
           </div>
           
-          <h1 className="font-display text-4xl md:text-5xl lg:text-[3.8rem] leading-tight md:leading-[0.4] text-germany-black relative drop-shadow-sm flex flex-wrap items-center justify-center lg:justify-start gap-x-3 gap-y-2">
+          <h1 className="font-display text-4xl md:text-5xl lg:text-[3.8rem] leading-tight md:leading-[1.1] text-germany-black relative drop-shadow-sm flex flex-wrap items-center justify-center lg:justify-start gap-x-3 gap-y-2">
             <span>Germany Awaits.</span>
             <motion.img 
               src="/doodles/german cutie.png" 
@@ -66,7 +78,7 @@ const Hero = () => {
             <span className="text-germany-red">We'll Take You There.</span>
           </h1>
           
-          <p className="text-sm md:text-base pt-4 leading-snug font-bold text-gray-500 max-w-xl mx-auto lg:mx-0">
+          <p className="text-sm md:text-base pt-2 leading-relaxed font-bold text-gray-500 max-w-xl mx-auto lg:mx-0">
             Skip the confusion and let our experts guide your journey. From university admissions and APS certification to job matching and seamless visa approval, we handle the heavy lifting so you can focus on your future.
           </p>
 
@@ -92,31 +104,31 @@ const Hero = () => {
             <img src="/doodles/university.png" alt="Peer the Penguin" className="w-20 h-20 object-contain drop-shadow-md shrink-0" />
             <div className="text-[11px] md:text-xs text-gray-500 font-bold mt-1 sm:mt-0 leading-snug">
               <span className="block text-germany-black font-extrabold text-sm mb-0.5">Meet Peer, the Guide Penguin!</span>
-              "I'll be guiding you through every step of your German dream. Check your free eligibility on the right!"
+              "Have questions about studying in Germany? Send us a message and our alumni counsellors will guide you!"
             </div>
           </div>
         </motion.div>
 
-        {/* Right Form Area */}
+        {/* Right Contact Form Area */}
         <div 
-          className="flex-1 w-full max-w-md lg:max-w-[420px] relative z-10 mx-auto"
+          className="flex-1 w-full max-w-md lg:max-w-[430px] relative z-10 mx-auto mt-6 lg:mt-0 pt-6"
           onMouseEnter={() => setIsFormHovered(true)}
           onMouseLeave={() => setIsFormHovered(false)}
         >
-          {/* Peeking Doodle (Sibling to the card, lower z-index to hide behind it) */}
+          {/* Peeking Mascot Doodle */}
           <motion.div
             initial={{ opacity: 0, scale: 0.3, y: 50, rotate: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
             transition={{ duration: 0.7, type: "spring", bounce: 0.5, delay: 0.5 }}
-            className="absolute -top-[85px] -right-2 z-0 pointer-events-none"
+            className="absolute -top-[55px] -right-2 z-0 pointer-events-none"
           >
             <div className={`transition-all duration-500 ease-in-out ${isFormHovered ? 'translate-y-16 opacity-0' : 'translate-y-0 opacity-100'}`}>
-              <img src="/doodles/university.png" alt="Peeking Penguin" className="w-[150px] h-[150px] object-contain drop-shadow-lg transform rotate-6" />
+              <img src="/doodles/university.png" alt="Peeking Penguin" className="w-[145px] h-[145px] object-contain drop-shadow-lg transform rotate-6" />
             </div>
           </motion.div>
 
           <motion.div 
-            className="w-full bg-white neu-card p-6 lg:p-7 relative z-10 overflow-hidden shadow-[12px_12px_30px_rgba(210,205,195,0.6)]"
+            className="w-full bg-white neu-card p-6 sm:p-7 relative z-10 overflow-hidden shadow-[12px_12px_30px_rgba(210,205,195,0.6)]"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
@@ -130,75 +142,107 @@ const Hero = () => {
 
             {!submitted ? (
               <>
-                <h3 className="font-display text-xl mb-1 text-center text-germany-black tracking-wide drop-shadow-sm mt-1">
-                  Check Germany Eligibility
-                </h3>
-                <p className="text-[11px] md:text-xs font-bold text-gray-500 text-center mb-4">
-                  Instant assessment for tuition-free public universities.
-                </p>
+                <div className="text-center mt-1 mb-4">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-0.5 bg-germany-red/10 text-germany-red rounded-full font-extrabold text-[10px] uppercase tracking-wider mb-1">
+                    <Sparkles className="w-3 h-3" />
+                    <span>Free 1-on-1 Consultation</span>
+                  </div>
+                  <h3 className="font-display text-2xl text-germany-black tracking-wide leading-tight">
+                    Get in Touch
+                  </h3>
+                  <p className="text-[11px] md:text-xs font-bold text-gray-500 mt-0.5">
+                    Speak directly with an alumnus from a top German university.
+                  </p>
+                </div>
                 
-                <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-3.5">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-xs font-extrabold text-germany-black ml-1">Target Degree</label>
-                      <select 
-                        value={degree}
-                        onChange={(e) => setDegree(e.target.value)}
-                        className="w-full px-3 py-2.5 neu-input font-bold text-germany-black text-xs bg-[#EBE7E0]"
-                      >
-                        <option value="masters">Master's Degree</option>
-                        <option value="bachelors">Bachelor's Degree</option>
-                        <option value="mba">MBA / Management</option>
-                        <option value="phd">PhD / Research</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-xs font-extrabold text-germany-black ml-1">Target Field</label>
+                <form onSubmit={handleSubmit} className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-extrabold text-germany-black mb-1 ml-1">Your Name</label>
+                    <div className="relative">
+                      <User className="w-4 h-4 absolute left-3.5 top-3 text-gray-400" />
                       <input 
                         type="text" 
-                        value={field}
-                        onChange={(e) => setField(e.target.value)}
-                        placeholder="e.g. CS / Mech" 
-                        className="w-full px-3.5 py-2.5 neu-input font-bold text-germany-black text-xs placeholder-gray-400" 
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="e.g. Rahul Sharma" 
+                        className="w-full pl-10 pr-4 py-2 neu-input font-bold text-germany-black text-xs placeholder-gray-400" 
                         required 
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-extrabold text-germany-black ml-1">Current GPA / Percentage</label>
-                    <input 
-                      type="text" 
-                      value={grade}
-                      onChange={(e) => setGrade(e.target.value)}
-                      placeholder="e.g. 8.2 CGPA or 78%" 
-                      className="w-full px-4 py-2.5 neu-input font-bold text-germany-black text-xs placeholder-gray-400" 
-                      required 
-                    />
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="block text-xs font-extrabold text-germany-black mb-1 ml-1">Email</label>
+                      <div className="relative">
+                        <Mail className="w-3.5 h-3.5 absolute left-3 top-3 text-gray-400" />
+                        <input 
+                          type="email" 
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="you@email.com" 
+                          className="w-full pl-8 pr-3 py-2 neu-input font-bold text-germany-black text-xs placeholder-gray-400" 
+                          required 
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-extrabold text-germany-black mb-1 ml-1">WhatsApp No.</label>
+                      <div className="relative">
+                        <Phone className="w-3.5 h-3.5 absolute left-3 top-3 text-gray-400" />
+                        <input 
+                          type="tel" 
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="+91 98765..." 
+                          className="w-full pl-8 pr-3 py-2 neu-input font-bold text-germany-black text-xs placeholder-gray-400" 
+                          required 
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-extrabold text-germany-black ml-1">Email / WhatsApp</label>
-                    <input 
-                      type="email" 
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@example.com" 
-                      className="w-full px-4 py-2.5 neu-input font-bold text-germany-black text-xs placeholder-gray-400" 
-                      required 
-                    />
+                  <div>
+                    <label className="block text-xs font-extrabold text-germany-black mb-1 ml-1">I Need Help With</label>
+                    <select 
+                      value={service}
+                      onChange={(e) => setService(e.target.value)}
+                      className="w-full px-3 py-2 neu-input font-bold text-germany-black text-xs bg-[#EBE7E0]"
+                    >
+                      <option value="Admissions & Shortlisting">University Admissions & Shortlisting</option>
+                      <option value="APS Verification">APS Certification Assistance</option>
+                      <option value="Visa & Blocked Account">Student Visa & Blocked Account</option>
+                      <option value="German Language Course">German Language (A1 - C1)</option>
+                      <option value="General Guidance">General Profile Evaluation</option>
+                    </select>
                   </div>
 
-                  <div className="mt-1">
-                    <button type="submit" className="w-full neu-btn-primary px-5 py-3 font-bold text-sm cursor-pointer gap-2 flex items-center justify-center">
-                      <span>Check My Chances Free</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
+                  <div>
+                    <label className="block text-xs font-extrabold text-germany-black mb-1 ml-1">Your Message / Target Program (Optional)</label>
+                    <div className="relative">
+                      <MessageSquare className="w-3.5 h-3.5 absolute left-3 top-2.5 text-gray-400" />
+                      <textarea 
+                        rows={2}
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder="e.g. M.Sc. Computer Science for Winter 2026..." 
+                        className="w-full pl-8 pr-3 py-1.5 neu-input font-bold text-germany-black text-xs placeholder-gray-400 resize-none" 
+                      />
+                    </div>
                   </div>
 
-                  <p className="text-[10px] text-center font-bold text-gray-400">
-                    🔒 No spam. 100% Free profile evaluation report.
+                  <button 
+                    type="submit" 
+                    disabled={loading}
+                    className="w-full neu-btn-primary py-2.5 px-4 font-bold text-xs sm:text-sm cursor-pointer gap-2 flex items-center justify-center mt-1 disabled:opacity-50"
+                  >
+                    <span>{loading ? 'Submitting Request...' : 'Request Free Consultation'}</span>
+                    <Send className="w-3.5 h-3.5" />
+                  </button>
+
+                  <p className="text-[10px] text-center font-bold text-gray-400 pt-0.5">
+                    🔒 We respect your privacy. Fast WhatsApp/Email response within 24h.
                   </p>
                 </form>
               </>
@@ -206,48 +250,42 @@ const Hero = () => {
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-center space-y-3.5 py-2"
+                className="text-center space-y-4 py-4"
               >
-                <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
-                  <Check className="w-6 h-6 stroke-[3]" />
+                <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                  <Check className="w-7 h-7 stroke-[3]" />
                 </div>
                 
                 <div>
-                  <h4 className="font-display text-xl text-germany-black">High Admission Match!</h4>
-                  <p className="text-xs font-bold text-gray-500 mt-1">
-                    Based on your profile, you qualify for top German public universities with <strong className="text-germany-red">€0 tuition fee</strong>.
+                  <h4 className="font-display text-2xl text-germany-black">Vielen Dank!</h4>
+                  <p className="text-xs font-bold text-gray-500 mt-1 max-w-xs mx-auto leading-relaxed">
+                    Thanks for reaching out, <strong className="text-germany-black">{name || 'there'}</strong>. One of our Germany education advisors will connect with you via WhatsApp/Email shortly.
                   </p>
                 </div>
 
-                <div className="p-3 bg-[#EBE7E0]/60 rounded-2xl border border-[#E2DDD3] text-left space-y-1.5 text-xs font-bold text-gray-700">
+                <div className="p-3.5 bg-[#EBE7E0]/60 rounded-2xl border border-[#E2DDD3] text-left space-y-1 text-xs font-bold text-gray-700">
                   <div className="flex justify-between">
-                    <span>German GPA Est.:</span>
-                    <strong className="text-germany-black">1.6 - 1.8 (Sehr Gut)</strong>
+                    <span>Topic:</span>
+                    <strong className="text-germany-black">{service}</strong>
                   </div>
                   <div className="flex justify-between">
-                    <span>Public Universities:</span>
-                    <strong className="text-emerald-700">12+ Matches (TU9)</strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>APS Eligibility:</span>
-                    <strong className="text-emerald-700">Eligible</strong>
+                    <span>Response Time:</span>
+                    <strong className="text-emerald-700">Within 24 Hours</strong>
                   </div>
                 </div>
 
-                <Link
-                  href="/signup"
-                  className="w-full neu-btn-primary py-3 px-4 font-bold text-sm flex items-center justify-center gap-2"
-                >
-                  <span>Create Account to View Shortlist</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-
                 <button
                   type="button"
-                  onClick={() => setSubmitted(false)}
-                  className="text-[11px] font-extrabold text-gray-400 hover:text-germany-red underline"
+                  onClick={() => {
+                    setSubmitted(false);
+                    setName('');
+                    setEmail('');
+                    setPhone('');
+                    setMessage('');
+                  }}
+                  className="neu-btn w-full py-2.5 text-xs font-extrabold text-gray-700 hover:text-germany-red"
                 >
-                  Calculate for another score
+                  Send Another Message
                 </button>
               </motion.div>
             )}

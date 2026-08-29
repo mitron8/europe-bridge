@@ -13,10 +13,11 @@ const Navbar = () => {
     dropdown?: string[];
     groups?: { 
       title: string; 
-      items: { title: string; desc?: string }[];
+      items: { title: string; desc?: string; badge?: string; href?: string }[];
       action?: { label: string; href: string };
     }[];
     footerLink?: { label: string; href: string };
+    customWidth?: string;
   };
 
   const navItems: NavItem[] = [
@@ -145,6 +146,38 @@ const Navbar = () => {
         }
       ]
     },
+    { 
+      label: "Our Brands", 
+      href: "/#language-school",
+      customWidth: "w-[620px]",
+      groups: [
+        {
+          title: "Eurolingo Academy",
+          items: [
+            { title: "German Language Batches", desc: "Live A1 to C1 training with native German instructors.", badge: "25% Off", href: "/#language-school" },
+            { title: "Goethe & TestDaF Prep", desc: "Specialized exam crash courses & mock evaluations.", href: "/#language-school" }
+          ],
+          action: { label: "Explore classes", href: "/#language-school" }
+        },
+        {
+          title: "Student Housing",
+          items: [
+            { title: "Verified Apartments & WGs", desc: "Furnished student rooms in Berlin, Munich, Aachen & Hamburg.", href: "/#our-process" },
+            { title: "Anmeldung Assistance", desc: "City address registration & lease agreement support.", href: "/#our-process" }
+          ],
+          action: { label: "Find housing", href: "/#our-process" }
+        },
+        {
+          title: "Health Insurance",
+          items: [
+            { title: "Statutory Health Cover", desc: "Official TK & Barmer public health insurance for student visas.", href: "/#our-process" },
+            { title: "Travel & Incoming Cover", desc: "Initial coverage before official university semester start.", href: "/#our-process" }
+          ],
+          action: { label: "Get insurance", href: "/#our-process" }
+        }
+      ],
+      footerLink: { label: "Explore exclusive partner benefits & discounts", href: "/#language-school" }
+    },
     { label: "Pricing", href: "/#cta" }
   ];
 
@@ -173,17 +206,24 @@ const Navbar = () => {
                 {item.label}
               </Link>
               <ChevronDown size={14} className="text-gray-400 group-hover:text-germany-red transition-colors" />
-              <div className={`absolute top-full left-1/2 -translate-x-1/2 neu-card opacity-0 invisible translate-y-4 transition-all duration-300 mt-4 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 z-50 ${item.groups ? 'w-[800px] p-6' : 'min-w-[200px] py-3'}`}>
+              <div className={`absolute top-full left-1/2 -translate-x-1/2 neu-card opacity-0 invisible translate-y-4 transition-all duration-300 mt-4 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 z-50 ${item.groups ? (item.customWidth || 'w-[800px]') + ' p-6' : 'min-w-[200px] py-3'}`}>
                 {item.groups ? (
                   <div>
-                    <div className="grid grid-cols-4 gap-6">
+                    <div className={`grid ${item.groups.length === 3 ? 'grid-cols-3' : 'grid-cols-4'} gap-6`}>
                       {item.groups.map((group, gIndex) => (
                         <div key={gIndex}>
                           <h4 className="text-sm font-extrabold text-germany-black mb-3 border-b border-gray-100 pb-2">{group.title}</h4>
                           <div className="flex flex-col gap-4">
                             {group.items.map((gItem, gItemIndex) => (
-                              <Link key={gItemIndex} href={item.href || "/#free-tools"} className="block group/link">
-                                <div className="text-sm font-bold text-gray-700 transition-colors group-hover/link:text-germany-red">{gItem.title}</div>
+                              <Link key={gItemIndex} href={gItem.href || item.href || "/#free-tools"} className="block group/link">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-sm font-bold text-gray-700 transition-colors group-hover/link:text-germany-red">{gItem.title}</span>
+                                  {gItem.badge && (
+                                    <span className="text-[9px] font-extrabold text-germany-red bg-red-50 border border-red-200 px-1.5 py-0.5 rounded">
+                                      {gItem.badge}
+                                    </span>
+                                  )}
+                                </div>
                                 {gItem.desc && <div className="text-[11px] text-gray-500 font-semibold leading-snug mt-0.5">{gItem.desc}</div>}
                               </Link>
                             ))}
@@ -226,10 +266,10 @@ const Navbar = () => {
         <Link href="/login" className="text-gray-600 font-bold text-[0.95rem] hover:text-germany-red transition-colors whitespace-nowrap">
           Login
         </Link>
-        <Link href="/login" className="neu-btn px-5 py-2.5 font-bold text-germany-black text-[0.95rem] hover:text-germany-red transition-colors whitespace-nowrap">
+        <Link href="/signup" className="neu-btn px-5 py-2.5 font-bold text-germany-black text-[0.95rem] hover:text-germany-red transition-colors whitespace-nowrap">
           Sign Up
         </Link>
-        <Link href="/#cta" className="neu-btn-primary px-6 py-2.5 text-[0.95rem] tracking-wide cursor-pointer hidden xl:inline-flex items-center justify-center whitespace-nowrap">
+        <Link href="/#hero" className="neu-btn-primary px-6 py-2.5 text-[0.95rem] tracking-wide cursor-pointer hidden xl:inline-flex items-center justify-center whitespace-nowrap">
           Consult Now
         </Link>
       </div>
@@ -269,7 +309,7 @@ const Navbar = () => {
                         <h4 className="text-sm font-extrabold text-germany-black mb-2">{group.title}</h4>
                         <div className="flex flex-col gap-3 pl-3 border-l-2 border-gray-100">
                           {group.items.map((gItem, gItemIndex) => (
-                            <Link key={gItemIndex} href={item.href || "/#free-tools"} onClick={() => setIsMobileOpen(false)} className="block group/link">
+                            <Link key={gItemIndex} href={gItem.href || item.href || "/#free-tools"} onClick={() => setIsMobileOpen(false)} className="block group/link">
                               <div className="text-sm font-bold text-gray-700 hover:text-germany-red">{gItem.title}</div>
                               {gItem.desc && <div className="text-[11px] text-gray-500 mt-0.5">{gItem.desc}</div>}
                             </Link>
@@ -298,10 +338,10 @@ const Navbar = () => {
               <Link href="/login" onClick={() => setIsMobileOpen(false)} className="block text-lg font-bold text-gray-700 hover:text-germany-red text-center">
                 Login
               </Link>
-              <Link href="/login" onClick={() => setIsMobileOpen(false)} className="neu-btn px-5 py-3 font-bold text-germany-black hover:text-germany-red text-center">
+              <Link href="/signup" onClick={() => setIsMobileOpen(false)} className="neu-btn px-5 py-3 font-bold text-germany-black hover:text-germany-red text-center">
                 Sign Up
               </Link>
-              <Link href="/#cta" onClick={() => setIsMobileOpen(false)} className="neu-btn-primary px-5 py-3 w-full mt-2 cursor-pointer text-center">
+              <Link href="/#hero" onClick={() => setIsMobileOpen(false)} className="neu-btn-primary px-5 py-3 w-full mt-2 cursor-pointer text-center">
                 Consult Now
               </Link>
             </div>
