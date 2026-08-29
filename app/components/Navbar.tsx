@@ -11,8 +11,8 @@ const Navbar = () => {
     label: string;
     href: string;
     dropdown?: string[];
-    groups?: { 
-      title: string; 
+    groups?: {
+      title: string;
       items: { title: string; desc?: string; badge?: string; href?: string }[];
       action?: { label: string; href: string };
     }[];
@@ -22,16 +22,16 @@ const Navbar = () => {
 
   const navItems: NavItem[] = [
     { label: "Home", href: "/" },
-    { 
-      label: "Study", 
+    {
+      label: "Study",
       href: "/#our-process",
       groups: [
         {
           title: "Am I eligible?",
           items: [
-            { title: "Admission requirements", desc: "Grades, tests and documents" },
-            { title: "APS verification", desc: "Required for India and China" },
-            { title: "Admission chance", desc: "See where you stand" }
+            { title: "Admission requirements", desc: "Grades, tests and documents", href: "/study/requirements" },
+            { title: "APS verification", desc: "Required for India and China", href: "/study/aps" },
+            { title: "Admission chance", desc: "See where you stand", href: "/tools/admission-chance" }
           ]
         },
         {
@@ -61,13 +61,13 @@ const Navbar = () => {
         }
       ]
     },
-    { 
-      label: "Courses", 
+    {
+      label: "Courses",
       href: "/#free-tools",
       dropdown: ["MS in CS", "MS in Data Science", "MBA", "Engineering"]
     },
-    { 
-      label: "Free tools", 
+    {
+      label: "Free tools",
       href: "/#free-tools",
       groups: [
         {
@@ -104,8 +104,8 @@ const Navbar = () => {
       ],
       footerLink: { label: "All free tools", href: "/#free-tools" }
     },
-    { 
-      label: "Services", 
+    {
+      label: "Services",
       href: "/#our-process",
       groups: [
         {
@@ -146,8 +146,8 @@ const Navbar = () => {
         }
       ]
     },
-    { 
-      label: "Our Brands", 
+    {
+      label: "Our Brands",
       href: "/#language-school",
       customWidth: "w-[620px]",
       groups: [
@@ -182,14 +182,14 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 px-6 lg:px-8 py-4 flex justify-between items-center neu-bg transition-all duration-300">
+    <nav className="fixed top-0 left-0 right-0 z-50 px-6 lg:px-8 py-3 flex justify-between items-center neu-bg transition-all duration-300">
       {/* Left: Logo */}
       <div className="flex-1">
-        <Link href="/" className="font-display text-2xl lg:text-3xl text-germany-black no-underline inline-flex items-center drop-shadow-sm tracking-wide">
-          <motion.img 
-            src="/doodles/happy.png" 
-            alt="Europe Bridge Logo" 
-            className="w-14 h-14 lg:w-16 lg:h-16 object-contain drop-shadow-md"
+        <Link href="/" className="font-display text-lg lg:text-xl text-germany-black no-underline inline-flex items-center gap-2 drop-shadow-sm tracking-wide">
+          <motion.img
+            src="/doodles/happy.png"
+            alt="Europe Bridge Logo"
+            className="w-9 h-9 lg:w-10 lg:h-10 object-contain drop-shadow-md"
             whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.1 }}
             transition={{ duration: 0.5 }}
           />
@@ -198,11 +198,11 @@ const Navbar = () => {
       </div>
 
       {/* Center: Navigation Links */}
-      <div className="hidden lg:flex gap-4 lg:gap-6 items-center justify-center">
+      <div className="hidden lg:flex gap-5 lg:gap-7 items-center justify-center">
         {navItems.map((item, index) => (
           (item.dropdown || item.groups) ? (
             <div key={index} className="relative flex items-center gap-1 group cursor-pointer h-full">
-              <Link href={item.href} className="text-gray-600 font-bold text-sm lg:text-base transition-colors group-hover:text-germany-red">
+              <Link href={item.href} className="text-gray-700 font-semibold text-sm lg:text-[15px] transition-colors group-hover:text-germany-red">
                 {item.label}
               </Link>
               <ChevronDown size={14} className="text-gray-400 group-hover:text-germany-red transition-colors" />
@@ -254,22 +254,19 @@ const Navbar = () => {
               </div>
             </div>
           ) : (
-            <Link key={index} href={item.href} className="text-gray-600 font-bold text-sm lg:text-base transition-colors hover:text-germany-red">
+            <Link key={index} href={item.href} className="text-gray-700 font-semibold text-sm lg:text-[15px] transition-colors hover:text-germany-red">
               {item.label}
             </Link>
           )
         ))}
       </div>
-      
-      {/* Right: Auth Links */}
-      <div className="hidden lg:flex flex-1 justify-end items-center gap-4">
-        <Link href="/login" className="text-gray-600 font-bold text-[0.95rem] hover:text-germany-red transition-colors whitespace-nowrap">
+
+      {/* Right: Auth & Primary Action */}
+      <div className="hidden lg:flex flex-1 justify-end items-center gap-5">
+        <Link href="/login" className="text-gray-700 font-semibold text-sm hover:text-germany-red transition-colors whitespace-nowrap">
           Login
         </Link>
-        <Link href="/signup" className="neu-btn px-5 py-2.5 font-bold text-germany-black text-[0.95rem] hover:text-germany-red transition-colors whitespace-nowrap">
-          Sign Up
-        </Link>
-        <Link href="/#hero" className="neu-btn-primary px-6 py-2.5 text-[0.95rem] tracking-wide cursor-pointer hidden xl:inline-flex items-center justify-center whitespace-nowrap">
+        <Link href="/#hero" className="neu-btn-primary px-5 py-2 text-sm tracking-wide cursor-pointer inline-flex items-center justify-center whitespace-nowrap font-semibold">
           Consult Now
         </Link>
       </div>
@@ -282,7 +279,7 @@ const Navbar = () => {
 
       <AnimatePresence>
         {isMobileOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
@@ -333,15 +330,12 @@ const Navbar = () => {
                 )}
               </div>
             ))}
-            
+
             <div className="mt-6 flex flex-col gap-3 border-t border-gray-300/50 pt-4">
-              <Link href="/login" onClick={() => setIsMobileOpen(false)} className="block text-lg font-bold text-gray-700 hover:text-germany-red text-center">
+              <Link href="/login" onClick={() => setIsMobileOpen(false)} className="block text-base font-semibold text-gray-700 hover:text-germany-red text-center py-1">
                 Login
               </Link>
-              <Link href="/signup" onClick={() => setIsMobileOpen(false)} className="neu-btn px-5 py-3 font-bold text-germany-black hover:text-germany-red text-center">
-                Sign Up
-              </Link>
-              <Link href="/#hero" onClick={() => setIsMobileOpen(false)} className="neu-btn-primary px-5 py-3 w-full mt-2 cursor-pointer text-center">
+              <Link href="/#hero" onClick={() => setIsMobileOpen(false)} className="neu-btn-primary px-5 py-2.5 w-full cursor-pointer text-center font-semibold text-sm">
                 Consult Now
               </Link>
             </div>
