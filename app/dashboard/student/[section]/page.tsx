@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 
 const VALID_SECTIONS = [
-  'profile', 'matching', 'shortlist', 'documents', 
+  'matching', 'shortlist', 'documents', 
   'aps', 'applications', 'visa', 'account'
 ];
 
@@ -71,12 +71,6 @@ const SECTION_CONFIGS: Record<string, SectionConfig> = {
     subtitle: 'Blocked account setup, health insurance, and embassy appointment assistance.',
     doodle: '/doodles/visa approved.png',
     icon: Plane,
-  },
-  profile: {
-    title: 'Complete My Profile',
-    subtitle: 'Your academic scores, English & German proficiencies, and preferences.',
-    doodle: '/doodles/thinking.png',
-    icon: UserCheck,
   },
   account: {
     title: 'Account Settings',

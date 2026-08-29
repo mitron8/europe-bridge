@@ -22,7 +22,7 @@ import { useState, useEffect } from 'react';
 
 const mainNavItems = [
   { name: 'Dashboard', path: '/dashboard/student', icon: LayoutDashboard, step: 'Overview' },
-  { name: 'Complete Profile', path: '/dashboard/student/profile', icon: UserCheck, step: 'Step 1' },
+  { name: 'Complete Profile', path: '/dashboard/student/complete-profile', icon: UserCheck, step: 'Step 1' },
   { name: 'Matching Engine', path: '/dashboard/student/matching', icon: Sparkles, step: 'Step 2' },
   { name: 'My Shortlist', path: '/dashboard/student/shortlist', icon: Bookmark, step: 'Step 3' },
 ];
