@@ -166,7 +166,7 @@ export default function Login() {
             { label: "Admin", href: "/dashboard/admin" },
             { label: "Super Admin", href: "/dashboard/super-admin" },
             { label: "Marketing", href: "/dashboard/marketing" },
-            { label: "Finance", href: "/dashboard/financial" },
+            { label: "Finance", href: "/dashboard/finance" },
             { label: "Content", href: "/dashboard/content" },
           ].map((item) => (
             <Link

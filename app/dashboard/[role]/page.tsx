@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { Briefcase, ArrowRight, Sparkles, TrendingUp } from 'lucide-react';
 
 const VALID_ROLES = [
+  'finance',
   'financial',
   'marketing',
   'application-specialist',
@@ -12,7 +13,7 @@ const VALID_ROLES = [
   'content'
 ];
 
-export default async function DashboardPage({ params }: { params: Promise<{ role: string }> }) {
+export default async function RoleDashboardPage({ params }: { params: Promise<{ role: string }> }) {
   const { role } = await params;
   
   if (!VALID_ROLES.includes(role)) {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
+import { PerformanceGuard } from "@/components/PerformanceGuard";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -26,6 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${nunito.variable} ${celinda.variable}`}>
       <body className="min-h-full flex flex-col font-sans text-gray-800 antialiased overflow-x-hidden">
+        <PerformanceGuard />
         {children}
       </body>
     </html>

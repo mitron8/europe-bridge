@@ -37,10 +37,10 @@ const Navbar = () => {
         {
           title: "What will it cost?",
           items: [
-            { title: "Cost of living", desc: "What a month really costs" },
-            { title: "Blocked account", desc: "Your proof of funds" },
+            { title: "Cost of living", desc: "What a month really costs", href: "/study/cost-of-living" },
+            { title: "Blocked account", desc: "Your proof of funds", href: "/services/blocked-account" },
             { title: "Scholarships", desc: "Funding you can actually get" },
-            { title: "Education loan", desc: "Financing the degree" }
+            { title: "Education loan", desc: "Financing the degree", href: "/services/education-loan" }
           ]
         },
         {
@@ -88,8 +88,8 @@ const Navbar = () => {
         {
           title: "Money",
           items: [
-            { title: "Blocked account calculator" },
-            { title: "Cost of living estimator" },
+            { title: "Blocked account calculator", href: "/services/blocked-account" },
+            { title: "Cost of living estimator", href: "/study/cost-of-living" },
             { title: "Loan EMI calculator" }
           ]
         },
@@ -130,9 +130,9 @@ const Navbar = () => {
         {
           title: "After admission",
           items: [
-            { title: "Blocked account" },
+            { title: "Blocked account", href: "/services/blocked-account" },
             { title: "Health insurance" },
-            { title: "Education loan" },
+            { title: "Education loan", href: "/services/education-loan" },
             { title: "Money transfer" },
             { title: "DHL Express" }
           ]
