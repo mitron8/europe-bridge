@@ -3,6 +3,7 @@
 import React, { use } from 'react';
 import { notFound } from 'next/navigation';
 import { Headphones, Search } from 'lucide-react';
+import { CounsellorLeads } from '@/components/CounsellorLeads';
 
 const VALID_SECTIONS = [
   'leads', 'students', 'deadlines', 'notices', 'account'
@@ -55,9 +56,13 @@ export default function CounsellorSectionPage({ params }: { params: Promise<{ se
           </div>
         </div>
 
-        <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-gray-400 text-xs font-bold">
-          Counsellor {title} management workspace loaded here.
-        </div>
+        {section === 'leads' ? (
+          <CounsellorLeads />
+        ) : (
+          <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-gray-400 text-xs font-bold">
+            Counsellor {title} management workspace loaded here.
+          </div>
+        )}
       </div>
     </div>
   );

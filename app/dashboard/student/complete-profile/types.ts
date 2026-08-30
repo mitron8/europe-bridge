@@ -58,6 +58,9 @@ export interface ExperienceRecord {
 }
 
 export interface ProfileData {
+  // Calculated on backend
+  completionPercentage: number;
+
   // From users table — read-only, populated from GET /student/profile
   firstName: string;
   lastName: string;
@@ -111,6 +114,7 @@ export interface ProfileData {
 // Used only as loading placeholder while GET /student/profile is in flight.
 // Never used as fallback for persistence.
 export const emptyProfile: ProfileData = {
+  completionPercentage: 0,
   firstName: '',
   lastName: '',
   email: '',

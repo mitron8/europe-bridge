@@ -18,6 +18,7 @@ export default function CompleteProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
+  const [justCompleted, setJustCompleted] = useState(false);
 
   // Fetch profile — replaces state directly from DB, never merges with emptyProfile
   const fetchProfile = useCallback(async () => {
@@ -58,8 +59,11 @@ export default function CompleteProfilePage() {
 
       if (res.ok) {
         // Update form from the confirmed DB response — the API returns the saved state
-        const saved: ProfileData = await res.json();
+        const saved: ProfileData & { journeyStatus?: string } = await res.json();
         setProfileData(saved);
+        if (saved.journeyStatus === 'profile_completed') {
+          setJustCompleted(true);
+        }
         setSaveMessage('Saved');
         setTimeout(() => setSaveMessage(''), 3000);
         if (nextSection) {
@@ -81,29 +85,7 @@ export default function CompleteProfilePage() {
     }
   };
 
-  const calculateCompletion = () => {
-    // Based entirely on actual loaded profileData — no hardcoded values
-    const checks = [
-      !!profileData.firstName,
-      !!profileData.lastName,
-      !!profileData.dateOfBirth,
-      !!profileData.gender,
-      !!profileData.nationality,
-      !!profileData.email,
-      !!profileData.phone,
-      !!profileData.addressLine,
-      !!profileData.city,
-      !!profileData.country,
-      !!profileData.postalCode,
-      profileData.educationRecords.length > 0,
-      !!profileData.intendedDegreeLevel,
-      !!profileData.preferredFieldOfStudy,
-      !!profileData.intakeSeason,
-      !!profileData.intakeYear,
-      !!profileData.fundingPreference,
-    ];
-    return Math.round((checks.filter(Boolean).length / checks.length) * 100);
-  };
+
 
   const renderSection = () => {
     switch (activeSection) {
@@ -136,11 +118,26 @@ export default function CompleteProfilePage() {
     <div className="max-w-5xl mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-6">Complete My Profile</h1>
 
+      {justCompleted && (
+        <div className="mb-6 flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-5 py-4 text-green-800">
+          <span className="text-2xl">🎉</span>
+          <div>
+            <p className="font-semibold">Profile complete!</p>
+            <p className="text-sm">Your application journey has started. We&apos;ll be in touch soon.</p>
+          </div>
+          <button
+            onClick={() => setJustCompleted(false)}
+            className="ml-auto text-green-600 hover:text-green-800 text-lg leading-none"
+            aria-label="Dismiss"
+          >✕</button>
+        </div>
+      )}
+
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <ProfileNavigation
           activeSection={activeSection}
           setActiveSection={setActiveSection}
-          completionPercentage={calculateCompletion()}
+          completionPercentage={profileData.completionPercentage || 0}
           data={profileData}
         />
 
