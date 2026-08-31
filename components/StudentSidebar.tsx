@@ -62,6 +62,10 @@ export function StudentSidebar() {
     ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Student'
     : 'Loading...';
 
+  const displayRole = user?.role === 'superadmin' 
+    ? 'Super Admin' 
+    : (user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Loading...');
+
   return (
     <aside className="w-72 h-[calc(100vh-1.5rem)] m-3 mr-0 flex flex-col bg-[#FDFBF7] neu-card relative z-20 shrink-0 overflow-hidden shadow-[12px_12px_30px_rgba(210,205,195,0.6)]">
       {/* German Flag Tricolor Header Accent */}
@@ -200,7 +204,8 @@ export function StudentSidebar() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-extrabold text-xs text-germany-black truncate">{fullName}</p>
-            <Link href="/dashboard/student/account" className="text-[10px] font-bold text-germany-red hover:underline block truncate">
+            <p className="text-[10px] font-bold text-gray-500 truncate">{displayRole}</p>
+            <Link href="/dashboard/student/account" className="text-[10px] font-bold text-germany-red hover:underline block truncate mt-0.5">
               Manage Profile →
             </Link>
           </div>

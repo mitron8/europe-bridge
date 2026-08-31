@@ -12,8 +12,10 @@ import {
   Bell,
   LogOut,
   ChevronRight,
-  Headphones
+  Headphones,
+  GraduationCap
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const navItems = [
   { name: 'Dashboard', path: '/dashboard/counsellor', icon: LayoutDashboard },
@@ -25,6 +27,35 @@ const navItems = [
 
 export function CounsellorSidebar() {
   const pathname = usePathname();
+  const [user, setUser] = useState<{ firstName?: string; lastName?: string; role?: string } | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+        const res = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user);
+        }
+      } catch (err) {
+        console.error('Failed to load user', err);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const initials = user 
+    ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() 
+    : '';
+    
+  const fullName = user 
+    ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Counsellor'
+    : 'Loading...';
+
+  const displayRole = user?.role === 'superadmin' 
+    ? 'Super Admin' 
+    : (user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Loading...');
 
   return (
     <aside className="w-72 h-[calc(100vh-1.5rem)] m-3 mr-0 flex flex-col bg-[#FDFBF7] neu-card relative z-20 shrink-0 overflow-hidden shadow-[12px_12px_30px_rgba(210,205,195,0.6)]">
@@ -95,11 +126,12 @@ export function CounsellorSidebar() {
       <div className="p-3 border-t border-[#EBE7E0] bg-[#FDFBF7]">
         <div className="flex items-center gap-2.5 p-2 rounded-2xl bg-[#EBE7E0]/50 border border-[#E2DDD3]/40 mb-2">
           <div className="w-8 h-8 rounded-full bg-germany-gold/20 border border-germany-gold/50 flex items-center justify-center text-germany-black font-extrabold text-xs shrink-0 shadow-sm">
-            <Headphones className="w-4 h-4 text-germany-black" />
+            {initials ? <span>{initials}</span> : <Headphones className="w-4 h-4 text-germany-black" />}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-extrabold text-xs text-germany-black truncate">Counsellor Profile</p>
-            <Link href="/dashboard/counsellor/account" className="text-[10px] font-bold text-germany-red hover:underline block truncate">
+            <p className="font-extrabold text-xs text-germany-black truncate">{fullName}</p>
+            <p className="text-[10px] font-bold text-gray-500 truncate">{displayRole}</p>
+            <Link href="/dashboard/counsellor/account" className="text-[10px] font-bold text-germany-red hover:underline block truncate mt-0.5">
               Account Settings →
             </Link>
           </div>
