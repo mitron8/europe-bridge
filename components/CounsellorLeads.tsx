@@ -12,7 +12,11 @@ export interface StudentLead {
   updatedAt: string;
 }
 
-export function CounsellorLeads() {
+interface CounsellorLeadsProps {
+  searchQuery?: string;
+}
+
+export function CounsellorLeads({ searchQuery = '' }: CounsellorLeadsProps) {
   const [leads, setLeads] = useState<StudentLead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +51,14 @@ export function CounsellorLeads() {
     return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
+  const filteredLeads = leads.filter((lead) => {
+    const fullName = `${lead.firstName} ${lead.lastName}`.toLowerCase();
+    const email = lead.email.toLowerCase();
+    const status = formatStatus(lead.status).toLowerCase();
+    const query = searchQuery.toLowerCase();
+    return fullName.includes(query) || email.includes(query) || status.includes(query);
+  });
+
   if (loading) {
     return (
       <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-gray-400 text-xs font-bold">
@@ -71,6 +83,14 @@ export function CounsellorLeads() {
     );
   }
 
+  if (filteredLeads.length === 0) {
+    return (
+      <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-gray-400 text-xs font-bold">
+        No leads match your search query.
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left border-collapse">
@@ -82,7 +102,7 @@ export function CounsellorLeads() {
           </tr>
         </thead>
         <tbody>
-          {leads.map((lead) => (
+          {filteredLeads.map((lead) => (
             <tr key={lead.userId} className="border-b border-[#EBE7E0] hover:bg-[#FDFBF7] transition-colors">
               <td className="px-4 py-3 text-sm font-bold text-germany-black">
                 {lead.firstName} {lead.lastName}

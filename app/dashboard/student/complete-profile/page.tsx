@@ -108,32 +108,44 @@ export default function CompleteProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-5xl mx-auto py-8 px-4">
-        <div className="text-gray-500">Loading your profile...</div>
+      <div className="max-w-5xl mx-auto py-8 px-4 flex items-center justify-center min-h-[300px]">
+        <div className="text-gray-500 font-bold flex items-center gap-2">
+          <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-germany-red"></span>
+          Loading your profile...
+        </div>
       </div>
     );
   }
 
   return (
     <div className="max-w-5xl mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold mb-6">Complete My Profile</h1>
+      <h1 className="text-3xl md:text-4xl font-display font-extrabold text-germany-black mb-6">
+        Complete My Profile
+      </h1>
 
       {justCompleted && (
-        <div className="mb-6 flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-5 py-4 text-green-800">
+        <div className="mb-6 flex items-center gap-3 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-green-800 shadow-sm">
           <span className="text-2xl">🎉</span>
           <div>
-            <p className="font-semibold">Profile complete!</p>
+            <p className="font-bold">Profile complete!</p>
             <p className="text-sm">Your application journey has started. We&apos;ll be in touch soon.</p>
           </div>
           <button
             onClick={() => setJustCompleted(false)}
-            className="ml-auto text-green-600 hover:text-green-800 text-lg leading-none"
+            className="ml-auto text-green-600 hover:text-green-800 text-lg font-bold leading-none cursor-pointer"
             aria-label="Dismiss"
           >✕</button>
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-sm border p-6">
+      <div className="neu-card p-6 sm:p-10 relative overflow-hidden bg-white">
+        {/* Tricolor Header Strip */}
+        <div className="absolute top-0 left-0 w-full h-2 flex">
+          <div className="flex-1 bg-germany-black"></div>
+          <div className="flex-1 bg-germany-red"></div>
+          <div className="flex-1 bg-germany-gold"></div>
+        </div>
+
         <ProfileNavigation
           activeSection={activeSection}
           setActiveSection={setActiveSection}
@@ -143,14 +155,14 @@ export default function CompleteProfilePage() {
 
         <div className="mt-8">{renderSection()}</div>
 
-        <div className="mt-8 pt-4 border-t flex justify-between items-center">
-          <span className={`text-sm ${saveMessage.toLowerCase().includes('fail') ? 'text-red-600' : 'text-green-600'}`}>
+        <div className="mt-8 pt-6 border-t border-gray-100 flex justify-between items-center">
+          <span className={`text-sm font-bold ${saveMessage.toLowerCase().includes('fail') ? 'text-red-600' : 'text-green-600'}`}>
             {saveMessage}
           </span>
           <button
             onClick={() => saveProfile()}
             disabled={isSaving}
-            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50"
+            className="neu-btn-primary px-6 py-2.5 text-sm font-bold disabled:opacity-50 cursor-pointer"
           >
             {isSaving ? 'Saving...' : 'Save Profile'}
           </button>

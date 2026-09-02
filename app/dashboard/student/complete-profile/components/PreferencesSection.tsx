@@ -21,13 +21,13 @@ export default function PreferencesSection({ data, onChange, onNext, onPrev }: P
 
   return (
     <div>
-      <h3 className="text-2xl font-bold mb-6">Study Preferences</h3>
-      <p className="text-gray-500 mb-6">This information helps our matching engine find the best universities for you.</p>
+      <h3 className="text-xl font-extrabold text-germany-black font-display mb-6">Study Preferences</h3>
+      <p className="text-gray-500 mb-6 font-medium text-xs">This information helps our matching engine find the best universities for you.</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Intended Degree Level *</label>
-          <select name="intendedDegreeLevel" value={data.intendedDegreeLevel} onChange={handleChange} className="w-full p-2 border rounded-md bg-white">
+          <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Intended Degree Level *</label>
+          <select name="intendedDegreeLevel" value={data.intendedDegreeLevel} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]">
             <option value="">Select Level</option>
             <option value="Bachelor's">Bachelor's</option>
             <option value="Master's">Master's</option>
@@ -37,53 +37,53 @@ export default function PreferencesSection({ data, onChange, onNext, onPrev }: P
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Field of Study *</label>
-          <input type="text" name="preferredFieldOfStudy" value={data.preferredFieldOfStudy} onChange={handleChange} className="w-full p-2 border rounded-md" placeholder="e.g. Computer Science" />
+          <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Preferred Field of Study *</label>
+          <input type="text" name="preferredFieldOfStudy" value={data.preferredFieldOfStudy} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" placeholder="e.g. Computer Science" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Specialization</label>
-          <input type="text" name="preferredSpecialization" value={data.preferredSpecialization} onChange={handleChange} className="w-full p-2 border rounded-md" placeholder="e.g. Artificial Intelligence" />
+          <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Preferred Specialization</label>
+          <input type="text" name="preferredSpecialization" value={data.preferredSpecialization} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" placeholder="e.g. Artificial Intelligence" />
         </div>
       </div>
 
-      <h4 className="text-xl font-bold mb-4">Intake & Timeline</h4>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 p-4 border rounded-md bg-gray-50">
+      <h4 className="text-md font-extrabold text-germany-black font-display mb-4">Intake & Timeline</h4>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 p-6 rounded-2xl bg-gray-50 border border-gray-100 shadow-sm">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Target Intake Season *</label>
-          <select name="intakeSeason" value={data.intakeSeason} onChange={handleChange} className="w-full p-2 border rounded-md bg-white">
+          <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Target Intake Season *</label>
+          <select name="intakeSeason" value={data.intakeSeason} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]">
             <option value="">Select Season</option>
             <option value="WINTER">WINTER (Oct/Nov)</option>
             <option value="SUMMER">SUMMER (Mar/Apr)</option>
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Target Year *</label>
+          <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Target Year *</label>
           <input 
             type="number" 
             name="intakeYear" 
             value={data.intakeYear} 
             onChange={(e) => onChange({ intakeYear: e.target.value ? parseInt(e.target.value) : '' })} 
-            className="w-full p-2 border rounded-md" 
+            className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]/30 bg-white" 
             placeholder="e.g. 2025" 
           />
         </div>
       </div>
 
-      <h4 className="text-xl font-bold mb-4">Institution Preferences</h4>
+      <h4 className="text-md font-extrabold text-germany-black font-display mb-4">Institution Preferences</h4>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Universities (Comma separated)</label>
+          <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Preferred Universities (Comma separated)</label>
           <input 
             type="text" 
             value={data.preferredUniversities.join(', ')} 
             onChange={handleUniversitiesChange} 
-            className="w-full p-2 border rounded-md" 
+            className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" 
             placeholder="e.g. Technical University of Munich, RWTH Aachen" 
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">University Type</label>
-          <select name="universityType" value={data.universityType} onChange={handleChange} className="w-full p-2 border rounded-md bg-white">
+          <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">University Type</label>
+          <select name="universityType" value={data.universityType} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]">
             <option value="">No Preference</option>
             <option value="Public">Public (State-funded)</option>
             <option value="Private">Private</option>
@@ -91,8 +91,8 @@ export default function PreferencesSection({ data, onChange, onNext, onPrev }: P
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Study Mode</label>
-          <select name="studyMode" value={data.studyMode} onChange={handleChange} className="w-full p-2 border rounded-md bg-white">
+          <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Study Mode</label>
+          <select name="studyMode" value={data.studyMode} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]">
             <option value="">No Preference</option>
             <option value="On-Campus">On-Campus</option>
             <option value="Hybrid">Hybrid</option>
@@ -102,8 +102,8 @@ export default function PreferencesSection({ data, onChange, onNext, onPrev }: P
       </div>
 
       <div className="flex justify-between mt-8">
-        <button onClick={onPrev} className="px-6 py-2 rounded-md border border-gray-300 hover:bg-gray-50 transition">Back</button>
-        <button onClick={onNext} className="bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800 transition">Save & Continue</button>
+        <button onClick={onPrev} className="px-5 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-100 transition-all font-bold text-xs cursor-pointer text-gray-700 bg-white">Back</button>
+        <button onClick={onNext} className="neu-btn-primary px-6 py-2.5 text-xs font-bold cursor-pointer">Save & Continue</button>
       </div>
     </div>
   );

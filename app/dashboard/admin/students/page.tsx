@@ -25,6 +25,7 @@ type Counsellor = {
 
 export default function AdminStudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -39,6 +40,7 @@ export default function AdminStudentsPage() {
   const [selectedCounsellorId, setSelectedCounsellorId] = useState('');
   const [isAssigning, setIsAssigning] = useState(false);
   const [assignError, setAssignError] = useState('');
+  const [isSelectOpen, setIsSelectOpen] = useState(false);
 
   const fetchStudents = async () => {
     setIsLoading(true);
@@ -88,6 +90,7 @@ export default function AdminStudentsPage() {
     setAssignModal({ student });
     setSelectedCounsellorId(student.counsellorId || '');
     setAssignError('');
+    setIsSelectOpen(false);
 
     // fetch counsellors when opening the modal — reusing the existing admin endpoint
     try {
@@ -168,6 +171,8 @@ export default function AdminStudentsPage() {
             <input
               type="text"
               placeholder="Search students..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 neu-input text-xs font-bold"
             />
           </div>
@@ -189,83 +194,103 @@ export default function AdminStudentsPage() {
             <Users className="w-8 h-8 text-gray-300" />
             <span>No students found.</span>
           </div>
-        ) : (
-          <div className="overflow-x-auto" ref={menuRef}>
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-[#EBE7E0] text-gray-400 font-extrabold uppercase text-[10px]">
-                  <th className="pb-3">Name</th>
-                  <th className="pb-3">Email</th>
-                  <th className="pb-3">Counsellor</th>
-                  <th className="pb-3">Status</th>
-                  <th className="pb-3"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#EBE7E0] font-bold text-germany-black">
-                {students.map((student) => {
-                  const counsellorName = student.counsellorFirstName
-                    ? `${student.counsellorFirstName} ${student.counsellorLastName}`
-                    : null;
+        ) : (() => {
+          const filteredStudents = students.filter((student) => {
+            const fullName = `${student.firstName} ${student.lastName}`.toLowerCase();
+            const email = student.email.toLowerCase();
+            const status = formatStatus(student.status).toLowerCase();
+            const counsellor = (student.counsellorFirstName ? `${student.counsellorFirstName} ${student.counsellorLastName}` : 'unassigned').toLowerCase();
+            const query = searchQuery.toLowerCase();
+            return fullName.includes(query) || email.includes(query) || status.includes(query) || counsellor.includes(query);
+          });
 
-                  return (
-                    <tr key={student.userId} className="hover:bg-[#FDFBF7] relative">
-                      <td className="py-3.5">{student.firstName} {student.lastName}</td>
-                      <td className="py-3.5 text-gray-500">{student.email}</td>
-                      <td className="py-3.5">
-                        {counsellorName ? (
-                          <span className="font-bold text-germany-black">{counsellorName}</span>
-                        ) : (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] bg-gray-100 text-gray-500 font-bold">
-                            Unassigned
+          if (filteredStudents.length === 0) {
+            return (
+              <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-gray-400 text-xs font-bold flex flex-col items-center gap-2">
+                <Users className="w-8 h-8 text-gray-300" />
+                <span>No students match your search.</span>
+              </div>
+            );
+          }
+
+          return (
+            <div className="overflow-x-auto" ref={menuRef}>
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-[#EBE7E0] text-gray-400 font-extrabold uppercase text-[10px]">
+                    <th className="pb-3">Name</th>
+                    <th className="pb-3">Email</th>
+                    <th className="pb-3">Counsellor</th>
+                    <th className="pb-3">Status</th>
+                    <th className="pb-3"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#EBE7E0] font-bold text-germany-black">
+                  {filteredStudents.map((student) => {
+                    const counsellorName = student.counsellorFirstName
+                      ? `${student.counsellorFirstName} ${student.counsellorLastName}`
+                      : null;
+
+                    return (
+                      <tr key={student.userId} className="hover:bg-[#FDFBF7] relative">
+                        <td className="py-3.5">{student.firstName} {student.lastName}</td>
+                        <td className="py-3.5 text-gray-500">{student.email}</td>
+                        <td className="py-3.5">
+                          {counsellorName ? (
+                            <span className="font-bold text-germany-black">{counsellorName}</span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] bg-gray-100 text-gray-500 font-bold">
+                              Unassigned
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3.5">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-germany-gold/10 text-germany-gold font-extrabold capitalize">
+                            {formatStatus(student.status)}
                           </span>
-                        )}
-                      </td>
-                      <td className="py-3.5">
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-germany-gold/10 text-germany-gold font-extrabold capitalize">
-                          {formatStatus(student.status)}
-                        </span>
-                      </td>
-                      <td className="py-3.5 text-right relative">
-                        {/* three-dot menu */}
-                        <button
-                          onClick={() => setActiveMenu(activeMenu === student.userId ? null : student.userId)}
-                          className="p-1.5 rounded-lg hover:bg-[#EBE7E0] transition-colors text-gray-400 hover:text-germany-black"
-                        >
-                          <MoreHorizontal className="w-4 h-4" />
-                        </button>
+                        </td>
+                        <td className="py-3.5 text-right relative">
+                          {/* three-dot menu */}
+                          <button
+                            onClick={() => setActiveMenu(activeMenu === student.userId ? null : student.userId)}
+                            className="p-1.5 rounded-lg hover:bg-[#EBE7E0] transition-colors text-gray-400 hover:text-germany-black"
+                          >
+                            <MoreHorizontal className="w-4 h-4" />
+                          </button>
 
-                        {activeMenu === student.userId && (
-                          <div className="absolute right-0 top-full mt-1 w-48 bg-white neu-card shadow-lg z-30 py-1 rounded-xl border border-[#EBE7E0]">
-                            <button
-                              onClick={() => openAssignModal(student)}
-                              className="w-full text-left px-4 py-2.5 text-xs font-bold text-germany-black hover:bg-[#FDFBF7] transition-colors"
-                            >
-                              Assign Counsellor
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                          {activeMenu === student.userId && (
+                            <div className="absolute right-0 top-full mt-1 w-48 bg-[#FDFBF7] rounded-2xl shadow-[6px_6px_20px_rgba(210,205,195,0.4)] z-30 py-1 border-none overflow-hidden">
+                              <button
+                                onClick={() => openAssignModal(student)}
+                                className="w-full text-left px-4 py-2.5 text-xs font-bold text-germany-black hover:bg-[#EBE7E0] transition-colors"
+                              >
+                                Assign Counsellor
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Assign Counsellor Modal */}
       {assignModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-sm">
+          <div className="bg-[#FDFBF7] neu-card w-full max-w-md p-6 relative border-none animate-in fade-in duration-200">
             <button
               onClick={() => setAssignModal(null)}
-              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-germany-black hover:bg-[#EBE7E0] rounded-full transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
 
-            <h2 className="text-xl font-display text-germany-black mb-5">Assign Counsellor</h2>
+            <h2 className="text-xl font-display font-extrabold text-germany-black mb-5">Assign Counsellor</h2>
 
             <div className="space-y-4">
               <div className="space-y-1">
@@ -289,19 +314,55 @@ export default function AdminStudentsPage() {
                   Select Counsellor
                 </label>
                 <div className="relative">
-                  <select
-                    value={selectedCounsellorId}
-                    onChange={(e) => setSelectedCounsellorId(e.target.value)}
-                    className="w-full px-4 py-2.5 neu-input text-xs font-bold appearance-none pr-10"
+                  {/* Custom select trigger button */}
+                  <button
+                    type="button"
+                    onClick={() => setIsSelectOpen(!isSelectOpen)}
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0] text-germany-black text-left flex items-center justify-between cursor-pointer focus:outline-none focus:ring-2 focus:ring-germany-red/30"
                   >
-                    <option value="">— Choose a counsellor —</option>
-                    {counsellors.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.firstName} {c.lastName}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="w-4 h-4 absolute right-3 top-3 text-gray-400 pointer-events-none" />
+                    <span>
+                      {selectedCounsellorId
+                        ? (() => {
+                            const c = counsellors.find((x) => x.id === selectedCounsellorId);
+                            return c ? `${c.firstName} ${c.lastName}` : '— Choose a counsellor —';
+                          })()
+                        : '— Choose a counsellor —'}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isSelectOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {/* Custom select options dropdown */}
+                  {isSelectOpen && (
+                    <div className="absolute left-0 right-0 mt-1 max-h-40 overflow-y-auto bg-[#FDFBF7] rounded-2xl shadow-[6px_6px_25px_rgba(210,205,195,0.45)] z-50 py-1 border border-[#EBE7E0]/40">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedCounsellorId('');
+                          setIsSelectOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2.5 text-xs font-bold text-gray-400 hover:bg-[#EBE7E0] transition-colors"
+                      >
+                        — Choose a counsellor —
+                      </button>
+                      {counsellors.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedCounsellorId(c.id);
+                            setIsSelectOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
+                            selectedCounsellorId === c.id
+                              ? 'bg-germany-red text-white'
+                              : 'text-germany-black hover:bg-[#EBE7E0]'
+                          }`}
+                        >
+                          {c.firstName} {c.lastName}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -40,17 +40,20 @@ export default function ProfileNavigation({ activeSection, setActiveSection, com
 
   return (
     <div className="mb-8">
-      <div className="flex justify-between items-center mb-6 border-b pb-4">
-        <h2 className="text-xl font-semibold">Profile Completion</h2>
-        <div className="text-lg font-bold">{completionPercentage}%</div>
+      <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-4">
+        <h2 className="text-lg font-extrabold text-germany-black font-display">Profile Completion</h2>
+        <div className="text-lg font-extrabold text-germany-red font-display">{completionPercentage}%</div>
       </div>
       
       {/* Progress Bar */}
-      <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
-        <div className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style={{ width: `${completionPercentage}%` }}></div>
+      <div className="w-full bg-gray-100 rounded-full h-2.5 mb-6 overflow-hidden">
+        <div 
+          className="bg-gradient-to-r from-germany-gold to-germany-red h-full rounded-full transition-all duration-500 ease-out" 
+          style={{ width: `${completionPercentage}%` }}
+        ></div>
       </div>
-
-      <nav className="flex flex-wrap gap-2 text-sm font-medium text-center text-gray-500">
+ 
+      <nav className="flex flex-wrap gap-2 items-center">
         {SECTIONS.map((section, idx) => {
           const isActive = activeSection === section.id;
           const isComplete = isSectionComplete(section.id);
@@ -59,19 +62,19 @@ export default function ProfileNavigation({ activeSection, setActiveSection, com
             <React.Fragment key={section.id}>
               <button
                 onClick={() => setActiveSection(section.id)}
-                className={`inline-flex p-2 items-center rounded-lg border-b-2 ${
+                className={`inline-flex px-4 py-2 items-center rounded-xl font-bold text-xs transition-all duration-200 cursor-pointer ${
                   isActive
-                    ? 'border-blue-600 text-blue-600 bg-blue-50'
-                    : 'border-transparent hover:text-gray-600 hover:bg-gray-50'
+                    ? 'bg-germany-black text-white shadow-md'
+                    : 'bg-[#EBE7E0] text-germany-black hover:bg-germany-red hover:text-white'
                 }`}
               >
                 {section.label}
                 {isComplete && (
-                  <span className="ml-2 text-green-500">✓</span>
+                  <span className={`ml-1.5 font-bold ${isActive ? 'text-germany-gold' : 'text-green-600'}`}>✓</span>
                 )}
               </button>
               {idx < SECTIONS.length - 1 && (
-                <span className="flex items-center text-gray-300 mx-1">→</span>
+                <span className="text-gray-400 font-extrabold mx-0.5 select-none">→</span>
               )}
             </React.Fragment>
           );

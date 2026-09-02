@@ -48,35 +48,35 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-2xl font-bold">Academic History</h3>
-        <button onClick={addEducation} className="bg-blue-50 text-blue-600 px-4 py-2 rounded-md font-medium border border-blue-200 hover:bg-blue-100">
+        <h3 className="text-xl font-extrabold text-germany-black font-display">Academic History</h3>
+        <button onClick={addEducation} className="px-4 py-2 rounded-xl bg-[#EBE7E0] hover:bg-germany-black hover:text-white font-extrabold text-xs transition-all text-germany-black cursor-pointer">
           + Add Education Record
         </button>
       </div>
 
       {data.educationRecords.length === 0 ? (
-        <div className="text-center p-8 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 mb-8">
+        <div className="text-center p-8 border-2 border-dashed border-gray-300 rounded-2xl text-gray-500 mb-8 font-bold bg-gray-50/50">
           No education records added yet. Click the button above to add your academic history.
         </div>
       ) : (
         <div className="space-y-8 mb-8">
           {data.educationRecords.map((record, index) => (
-            <div key={record.id} className="border rounded-lg p-6 bg-gray-50 relative">
+            <div key={record.id} className="border border-gray-150 rounded-2xl p-6 bg-gray-50/50 relative shadow-sm">
               <button 
                 onClick={() => removeEducation(record.id)}
-                className="absolute top-4 right-4 text-red-500 hover:text-red-700 text-sm font-medium"
+                className="absolute top-4 right-4 text-germany-red hover:underline text-xs font-bold cursor-pointer"
               >
                 Remove
               </button>
-              <h4 className="font-bold text-lg mb-4 border-b pb-2">Education Record {index + 1}</h4>
+              <h4 className="font-extrabold text-md text-germany-black font-display mb-4 border-b border-gray-200/60 pb-2">Education Record {index + 1}</h4>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Education Level *</label>
+                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Education Level *</label>
                   <select 
                     value={record.educationLevel} 
                     onChange={(e) => updateEducation(record.id, 'educationLevel', e.target.value)} 
-                    className="w-full p-2 border rounded-md bg-white"
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]"
                   >
                     <option value="">Select Level</option>
                     <option value="High School">High School</option>
@@ -88,11 +88,11 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Degree Type *</label>
+                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Degree Type *</label>
                   <select 
                     value={record.degreeType} 
                     onChange={(e) => updateEducation(record.id, 'degreeType', e.target.value)} 
-                    className="w-full p-2 border rounded-md bg-white"
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]"
                   >
                     <option value="">Select Type</option>
                     <option value="B.Tech">B.Tech</option>
@@ -109,11 +109,11 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Field of Study *</label>
+                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Field of Study *</label>
                   <select 
                     value={record.fieldOfStudy} 
                     onChange={(e) => updateEducation(record.id, 'fieldOfStudy', e.target.value)} 
-                    className="w-full p-2 border rounded-md bg-white"
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]"
                   >
                     <option value="">Select Field</option>
                     <option value="Computer Science">Computer Science</option>
@@ -130,63 +130,63 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Specialization</label>
+                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Specialization</label>
                   <input 
                     type="text" 
                     value={record.specialization} 
                     onChange={(e) => updateEducation(record.id, 'specialization', e.target.value)} 
-                    className="w-full p-2 border rounded-md" 
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" 
                     placeholder="e.g. Artificial Intelligence"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Institution Name *</label>
+                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Institution Name *</label>
                   <input 
                     type="text" 
                     value={record.institutionName} 
                     onChange={(e) => updateEducation(record.id, 'institutionName', e.target.value)} 
-                    className="w-full p-2 border rounded-md" 
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" 
                     placeholder="University/School Name"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Institution Country *</label>
+                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Institution Country *</label>
                   <input 
                     type="text" 
                     value={record.institutionCountry} 
                     onChange={(e) => updateEducation(record.id, 'institutionCountry', e.target.value)} 
-                    className="w-full p-2 border rounded-md" 
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" 
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Start Year *</label>
+                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Start Year *</label>
                   <input 
                     type="number" 
                     value={record.startYear} 
                     onChange={(e) => updateEducation(record.id, 'startYear', e.target.value ? parseInt(e.target.value) : '')} 
-                    className="w-full p-2 border rounded-md" 
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" 
                     placeholder="e.g. 2019"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">End Year</label>
+                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">End Year</label>
                   <input 
                     type="number" 
                     value={record.endYear} 
                     onChange={(e) => updateEducation(record.id, 'endYear', e.target.value ? parseInt(e.target.value) : '')} 
-                    className="w-full p-2 border rounded-md" 
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" 
                     placeholder="e.g. 2023"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Academic Status *</label>
+                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Academic Status *</label>
                   <select 
                     value={record.academicStatus} 
                     onChange={(e) => updateEducation(record.id, 'academicStatus', e.target.value)} 
-                    className="w-full p-2 border rounded-md bg-white"
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]"
                   >
                     <option value="">Select Status</option>
                     <option value="Currently Studying">Currently Studying</option>
@@ -196,12 +196,12 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Current Sem (If Studying)</label>
+                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Current Sem (If Studying)</label>
                   <input 
                     type="number" 
                     value={record.currentSemester} 
                     onChange={(e) => updateEducation(record.id, 'currentSemester', e.target.value ? parseInt(e.target.value) : '')} 
-                    className="w-full p-2 border rounded-md" 
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" 
                     placeholder="e.g. 6"
                   />
                 </div>
@@ -209,11 +209,11 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Grading System *</label>
+                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Grading System *</label>
                   <select 
                     value={record.gradingSystem} 
                     onChange={(e) => updateEducation(record.id, 'gradingSystem', e.target.value)} 
-                    className="w-full p-2 border rounded-md bg-white"
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]"
                   >
                     <option value="">Select System</option>
                     <option value="CGPA/10">CGPA / 10</option>
@@ -224,33 +224,33 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Score *</label>
+                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Score *</label>
                   <input 
                     type="number" 
                     step="0.01"
                     value={record.score} 
                     onChange={(e) => updateEducation(record.id, 'score', e.target.value ? parseFloat(e.target.value) : '')} 
-                    className="w-full p-2 border rounded-md" 
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" 
                     placeholder="e.g. 8.5"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Scale Max</label>
+                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Scale Max</label>
                   <input 
                     type="number" 
                     value={record.scale} 
                     onChange={(e) => updateEducation(record.id, 'scale', e.target.value ? parseFloat(e.target.value) : '')} 
-                    className="w-full p-2 border rounded-md" 
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" 
                     placeholder="e.g. 10"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Backlogs *</label>
+                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Backlogs *</label>
                   <input 
                     type="number" 
                     value={record.backlogs} 
                     onChange={(e) => updateEducation(record.id, 'backlogs', e.target.value ? parseInt(e.target.value) : '')} 
-                    className="w-full p-2 border rounded-md" 
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" 
                     placeholder="e.g. 0"
                   />
                 </div>
@@ -262,8 +262,8 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
       )}
 
       <div className="flex justify-between mt-8">
-        <button onClick={onPrev} className="px-6 py-2 rounded-md border border-gray-300 hover:bg-gray-50 transition">Back</button>
-        <button onClick={onNext} className="bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800 transition">Save & Continue</button>
+        <button onClick={onPrev} className="px-5 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-100 transition-all font-bold text-xs cursor-pointer text-gray-700 bg-white">Back</button>
+        <button onClick={onNext} className="neu-btn-primary px-6 py-2.5 text-xs font-bold cursor-pointer">Save & Continue</button>
       </div>
     </div>
   );

@@ -51,6 +51,7 @@ export default function AdminCounsellorPage() {
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [isAssigning, setIsAssigning] = useState(false);
   const [assignError, setAssignError] = useState('');
+  const [isSelectOpen, setIsSelectOpen] = useState(false);
 
   const fetchCounsellors = async () => {
     setIsLoading(true);
@@ -95,6 +96,7 @@ export default function AdminCounsellorPage() {
     setAssignModal({ counsellor });
     setSelectedStudentId('');
     setAssignError('');
+    setIsSelectOpen(false);
 
     // fetch students when opening the modal
     // kinda lazy loading this so we don't blast the backend on page load
@@ -291,16 +293,16 @@ export default function AdminCounsellorPage() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-sm">
+          <div className="bg-[#FDFBF7] neu-card w-full max-w-md p-6 relative border-none animate-in fade-in duration-200">
             <button 
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-germany-black hover:bg-[#EBE7E0] rounded-full transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
             
-            <h2 className="text-xl font-display text-germany-black mb-6">Create Counsellor</h2>
+            <h2 className="text-xl font-display font-extrabold text-germany-black mb-6">Create Counsellor</h2>
             
             {submitError && (
               <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-xs font-bold flex items-center gap-2">
@@ -376,16 +378,16 @@ export default function AdminCounsellorPage() {
 
       {/* Assign Student Modal */}
       {assignModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-sm">
+          <div className="bg-[#FDFBF7] neu-card w-full max-w-md p-6 relative border-none animate-in fade-in duration-200">
             <button
               onClick={() => setAssignModal(null)}
-              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-germany-black hover:bg-[#EBE7E0] rounded-full transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
 
-            <h2 className="text-xl font-display text-germany-black mb-5">Assign Student</h2>
+            <h2 className="text-xl font-display font-extrabold text-germany-black mb-5">Assign Student</h2>
 
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -408,24 +410,63 @@ export default function AdminCounsellorPage() {
                   Select Student
                 </label>
                 <div className="relative">
-                  <select
-                    value={selectedStudentId}
-                    onChange={(e) => setSelectedStudentId(e.target.value)}
-                    className="w-full px-4 py-2.5 neu-input text-xs font-bold appearance-none pr-10"
+                  {/* Custom select trigger button */}
+                  <button
+                    type="button"
+                    onClick={() => setIsSelectOpen(!isSelectOpen)}
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0] text-germany-black text-left flex items-center justify-between cursor-pointer focus:outline-none focus:ring-2 focus:ring-germany-red/30"
                   >
-                    <option value="">— Choose a student —</option>
-                    {students.map((s) => {
-                      const currentCounsellorName = s.counsellorFirstName
-                        ? `${s.counsellorFirstName} ${s.counsellorLastName}`
-                        : 'Unassigned';
-                      return (
-                        <option key={s.userId} value={s.userId}>
-                          {s.firstName} {s.lastName} — {currentCounsellorName}
-                        </option>
-                      );
-                    })}
-                  </select>
-                  <ChevronDown className="w-4 h-4 absolute right-3 top-3 text-gray-400 pointer-events-none" />
+                    <span>
+                      {selectedStudentId
+                        ? (() => {
+                            const s = students.find((x) => x.userId === selectedStudentId);
+                            const currentCounsellorName = s?.counsellorFirstName
+                              ? `${s.counsellorFirstName} ${s.counsellorLastName}`
+                              : 'Unassigned';
+                            return s ? `${s.firstName} ${s.lastName} — ${currentCounsellorName}` : '— Choose a student —';
+                          })()
+                        : '— Choose a student —'}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isSelectOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {/* Custom select options dropdown */}
+                  {isSelectOpen && (
+                    <div className="absolute left-0 right-0 mt-1 max-h-40 overflow-y-auto bg-[#FDFBF7] rounded-2xl shadow-[6px_6px_25px_rgba(210,205,195,0.45)] z-50 py-1 border border-[#EBE7E0]/40">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedStudentId('');
+                          setIsSelectOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2.5 text-xs font-bold text-gray-400 hover:bg-[#EBE7E0] transition-colors"
+                      >
+                        — Choose a student —
+                      </button>
+                      {students.map((s) => {
+                        const currentCounsellorName = s.counsellorFirstName
+                          ? `${s.counsellorFirstName} ${s.counsellorLastName}`
+                          : 'Unassigned';
+                        return (
+                          <button
+                            key={s.userId}
+                            type="button"
+                            onClick={() => {
+                              setSelectedStudentId(s.userId);
+                              setIsSelectOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
+                              selectedStudentId === s.userId
+                                ? 'bg-germany-red text-white'
+                                : 'text-germany-black hover:bg-[#EBE7E0]'
+                            }`}
+                          >
+                            {s.firstName} {s.lastName} — {currentCounsellorName}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
 

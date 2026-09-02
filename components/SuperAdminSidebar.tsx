@@ -16,7 +16,8 @@ import {
   GraduationCap,
   Bell,
   LogOut,
-  ChevronRight
+  ChevronRight,
+  X
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -33,7 +34,12 @@ const navItems = [
   { name: 'Notices', path: '/dashboard/super-admin/notices', icon: Bell },
 ];
 
-export function SuperAdminSidebar() {
+interface SuperAdminSidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function SuperAdminSidebar({ isOpen = false, onClose }: SuperAdminSidebarProps) {
   const pathname = usePathname();
   const [user, setUser] = useState<{ firstName?: string; lastName?: string; role?: string } | null>(null);
 
@@ -66,7 +72,13 @@ export function SuperAdminSidebar() {
     : (user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Loading...');
 
   return (
-    <aside className="w-72 h-[calc(100vh-1.5rem)] m-3 mr-0 flex flex-col bg-[#FDFBF7] neu-card relative z-20 shrink-0 overflow-hidden shadow-[12px_12px_30px_rgba(210,205,195,0.6)]">
+    <aside className={`
+      fixed inset-y-0 left-0 z-50 lg:relative lg:z-20
+      w-72 h-full lg:h-[calc(100vh-1.5rem)] m-0 lg:m-3 lg:mr-0 flex flex-col bg-[#FDFBF7] shrink-0 overflow-hidden
+      transition-transform duration-300 ease-in-out
+      ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      neu-card lg:shadow-[12px_12px_30px_rgba(210,205,195,0.6)] shadow-2xl border-r lg:border-none border-[#EBE7E0]/50
+    `}>
       {/* German Flag Tricolor Header Accent */}
       <div className="w-full h-2 flex shrink-0">
         <div className="flex-1 bg-germany-black"></div>
@@ -75,7 +87,7 @@ export function SuperAdminSidebar() {
       </div>
 
       {/* Brand Header */}
-      <div className="p-5 pb-3 border-b border-[#EBE7E0]/80">
+      <div className="p-5 pb-3 border-b border-[#EBE7E0]/80 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center shadow-[4px_4px_10px_rgba(71,85,105,0.2),inset_-2px_-2px_4px_rgba(71,85,105,0.1),inset_2px_2px_4px_rgba(255,255,255,1)] group-hover:scale-105 transition-transform shrink-0">
             <img 
@@ -94,6 +106,14 @@ export function SuperAdminSidebar() {
             </div>
           </div>
         </Link>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="lg:hidden p-1.5 rounded-lg hover:bg-[#EBE7E0] text-gray-400 hover:text-germany-black transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       {/* Navigation Links */}
