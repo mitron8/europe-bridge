@@ -52,6 +52,8 @@ export default function AdminCounsellorPage() {
   const [isAssigning, setIsAssigning] = useState(false);
   const [assignError, setAssignError] = useState('');
   const [isSelectOpen, setIsSelectOpen] = useState(false);
+  const [isAddingStudent, setIsAddingStudent] = useState(false);
+  const [isFetchingStudents, setIsFetchingStudents] = useState(false);
 
   const fetchCounsellors = async () => {
     setIsLoading(true);
@@ -67,10 +69,31 @@ export default function AdminCounsellorPage() {
       }
       const data = await response.json();
       setCounsellors(data);
+      
+      setAssignModal(prev => {
+        if (!prev) return null;
+        const updatedC = data.find((c: Counsellor) => c.id === prev.counsellor.id);
+        return updatedC ? { counsellor: updatedC } : prev;
+      });
     } catch (err: any) {
       setError(err.message || 'An error occurred');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchStudents = async () => {
+    setIsFetchingStudents(true);
+    try {
+      const res = await fetch(`${NEXT_PUBLIC_API_URL}/admin/students`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setStudents(data);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setIsFetchingStudents(false);
     }
   };
 
@@ -91,24 +114,15 @@ export default function AdminCounsellorPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const openAssignModal = async (counsellor: Counsellor) => {
+  const openAssignModal = (counsellor: Counsellor) => {
     setActiveMenu(null);
     setAssignModal({ counsellor });
     setSelectedStudentId('');
     setAssignError('');
     setIsSelectOpen(false);
-
-    // fetch students when opening the modal
-    // kinda lazy loading this so we don't blast the backend on page load
-    try {
-      const res = await fetch(`${NEXT_PUBLIC_API_URL}/admin/students`, { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
-        setStudents(data);
-      }
-    } catch {
-      // not fatal, dropdown will just be empty. probably should show a toast here tho
-    }
+    setIsAddingStudent(false);
+    
+    fetchStudents();
   };
 
   const handleAssignStudent = async () => {
@@ -134,8 +148,12 @@ export default function AdminCounsellorPage() {
         throw new Error(data.message || 'Failed to assign student');
       }
 
-      setAssignModal(null);
-      fetchCounsellors(); // refreshing counsellors will update the count natively from DB, way safer than guessing the math in React
+      setIsAddingStudent(false);
+      setSelectedStudentId('');
+      
+      // refresh both lists so modal is updated and background list is updated natively from DB
+      await fetchStudents();
+      await fetchCounsellors();
     } catch (err: any) {
       setAssignError(err.message || 'Failed to assign student');
     } finally {
@@ -405,87 +423,134 @@ export default function AdminCounsellorPage() {
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-wider text-gray-400">
-                  Select Student
-                </label>
-                <div className="relative">
-                  {/* Custom select trigger button */}
-                  <button
-                    type="button"
-                    onClick={() => setIsSelectOpen(!isSelectOpen)}
-                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0] text-germany-black text-left flex items-center justify-between cursor-pointer focus:outline-none focus:ring-2 focus:ring-germany-red/30"
-                  >
-                    <span>
-                      {selectedStudentId
-                        ? (() => {
-                            const s = students.find((x) => x.userId === selectedStudentId);
-                            const currentCounsellorName = s?.counsellorFirstName
-                              ? `${s.counsellorFirstName} ${s.counsellorLastName}`
-                              : 'Unassigned';
-                            return s ? `${s.firstName} ${s.lastName} — ${currentCounsellorName}` : '— Choose a student —';
-                          })()
-                        : '— Choose a student —'}
-                    </span>
-                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isSelectOpen ? 'rotate-180' : ''}`} />
-                  </button>
+              {!isAddingStudent ? (
+                <>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-wider text-gray-400">
+                      Assigned Students
+                    </label>
+                    <div className="max-h-48 overflow-y-auto border border-[#EBE7E0] rounded-xl bg-white">
+                      {isFetchingStudents ? (
+                        <div className="p-4 text-center text-xs text-gray-400 font-bold">Loading...</div>
+                      ) : (() => {
+                        const assignedStudents = students.filter(s => s.counsellorId === assignModal.counsellor.id);
+                        if (assignedStudents.length === 0) {
+                          return <div className="p-4 text-center text-xs text-gray-400 font-bold">No students assigned yet.</div>;
+                        }
+                        return (
+                          <div className="divide-y divide-[#EBE7E0]">
+                            {assignedStudents.map(s => (
+                              <div key={s.userId} className="p-3">
+                                <p className="text-xs font-bold text-germany-black">{s.firstName} {s.lastName}</p>
+                                <p className="text-[10px] font-bold text-gray-500">{s.email}</p>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
 
-                  {/* Custom select options dropdown */}
-                  {isSelectOpen && (
-                    <div className="absolute left-0 right-0 mt-1 max-h-40 overflow-y-auto bg-[#FDFBF7] rounded-2xl shadow-[6px_6px_25px_rgba(210,205,195,0.45)] z-50 py-1 border border-[#EBE7E0]/40">
+                  <div className="pt-2">
+                    <button
+                      onClick={() => setIsAddingStudent(true)}
+                      className="w-full neu-btn-primary py-3 text-sm font-extrabold"
+                    >
+                      + Add Student
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-wider text-gray-400">
+                      Select Student
+                    </label>
+                    <div className="relative">
+                      {/* Custom select trigger button */}
                       <button
                         type="button"
-                        onClick={() => {
-                          setSelectedStudentId('');
-                          setIsSelectOpen(false);
-                        }}
-                        className="w-full text-left px-4 py-2.5 text-xs font-bold text-gray-400 hover:bg-[#EBE7E0] transition-colors"
+                        onClick={() => setIsSelectOpen(!isSelectOpen)}
+                        className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0] text-germany-black text-left flex items-center justify-between cursor-pointer focus:outline-none focus:ring-2 focus:ring-germany-red/30"
                       >
-                        — Choose a student —
+                        <span>
+                          {selectedStudentId
+                            ? (() => {
+                                const s = students.find((x) => x.userId === selectedStudentId);
+                                const currentCounsellorName = s?.counsellorFirstName
+                                  ? `${s.counsellorFirstName} ${s.counsellorLastName}`
+                                  : 'Unassigned';
+                                return s ? `${s.firstName} ${s.lastName} — ${currentCounsellorName}` : '— Choose a student —';
+                              })()
+                            : '— Choose a student —'}
+                        </span>
+                        <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isSelectOpen ? 'rotate-180' : ''}`} />
                       </button>
-                      {students.map((s) => {
-                        const currentCounsellorName = s.counsellorFirstName
-                          ? `${s.counsellorFirstName} ${s.counsellorLastName}`
-                          : 'Unassigned';
-                        return (
+
+                      {/* Custom select options dropdown */}
+                      {isSelectOpen && (
+                        <div className="absolute left-0 right-0 mt-1 max-h-40 overflow-y-auto bg-[#FDFBF7] rounded-2xl shadow-[6px_6px_25px_rgba(210,205,195,0.45)] z-50 py-1 border border-[#EBE7E0]/40">
                           <button
-                            key={s.userId}
                             type="button"
                             onClick={() => {
-                              setSelectedStudentId(s.userId);
+                              setSelectedStudentId('');
                               setIsSelectOpen(false);
                             }}
-                            className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
-                              selectedStudentId === s.userId
-                                ? 'bg-germany-red text-white'
-                                : 'text-germany-black hover:bg-[#EBE7E0]'
-                            }`}
+                            className="w-full text-left px-4 py-2.5 text-xs font-bold text-gray-400 hover:bg-[#EBE7E0] transition-colors"
                           >
-                            {s.firstName} {s.lastName} — {currentCounsellorName}
+                            — Choose a student —
                           </button>
-                        );
-                      })}
+                          {students.filter(s => s.counsellorId !== assignModal.counsellor.id).map((s) => {
+                            const currentCounsellorName = s.counsellorFirstName
+                              ? `${s.counsellorFirstName} ${s.counsellorLastName}`
+                              : 'Unassigned';
+                            return (
+                              <button
+                                key={s.userId}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedStudentId(s.userId);
+                                  setIsSelectOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
+                                  selectedStudentId === s.userId
+                                    ? 'bg-germany-red text-white'
+                                    : 'text-germany-black hover:bg-[#EBE7E0]'
+                                }`}
+                              >
+                                {s.firstName} {s.lastName} — {currentCounsellorName}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {assignError && (
+                    <div className="p-3 bg-red-50 text-red-600 rounded-lg text-xs font-bold flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>{assignError}</span>
                     </div>
                   )}
-                </div>
-              </div>
 
-              {assignError && (
-                <div className="p-3 bg-red-50 text-red-600 rounded-lg text-xs font-bold flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{assignError}</span>
-                </div>
+                  <div className="pt-2 flex gap-2">
+                    <button
+                      onClick={() => setIsAddingStudent(false)}
+                      className="flex-1 px-4 py-3 bg-gray-100 text-gray-600 text-sm font-extrabold rounded-xl hover:bg-gray-200 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleAssignStudent}
+                      disabled={!selectedStudentId || isAssigning}
+                      className="flex-1 neu-btn-primary py-3 text-sm font-extrabold disabled:opacity-50"
+                    >
+                      {isAssigning ? 'Assigning...' : 'Confirm'}
+                    </button>
+                  </div>
+                </>
               )}
-
-              <div className="pt-2">
-                <button
-                  onClick={handleAssignStudent}
-                  disabled={!selectedStudentId || isAssigning}
-                  className="w-full neu-btn-primary py-3 text-sm font-extrabold disabled:opacity-50"
-                >
-                  {isAssigning ? 'Assigning...' : 'Assign'}
-                </button>
-              </div>
             </div>
           </div>
         </div>

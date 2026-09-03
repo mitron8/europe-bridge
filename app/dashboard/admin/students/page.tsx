@@ -21,6 +21,7 @@ type Counsellor = {
   id: string;
   firstName: string;
   lastName: string;
+  assignedStudentCount: number;
 };
 
 export default function AdminStudentsPage() {
@@ -324,7 +325,7 @@ export default function AdminStudentsPage() {
                       {selectedCounsellorId
                         ? (() => {
                             const c = counsellors.find((x) => x.id === selectedCounsellorId);
-                            return c ? `${c.firstName} ${c.lastName}` : '— Choose a counsellor —';
+                            return c ? `${c.firstName} ${c.lastName} — ${c.assignedStudentCount || 0} students` : '— Choose a counsellor —';
                           })()
                         : '— Choose a counsellor —'}
                     </span>
@@ -358,7 +359,7 @@ export default function AdminStudentsPage() {
                               : 'text-germany-black hover:bg-[#EBE7E0]'
                           }`}
                         >
-                          {c.firstName} {c.lastName}
+                          {c.firstName} {c.lastName} — {c.assignedStudentCount || 0} students
                         </button>
                       ))}
                     </div>
