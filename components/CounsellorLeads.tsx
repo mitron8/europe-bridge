@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { Search, Loader2 } from 'lucide-react';
+import { usePaginatedList } from '../hooks/usePaginatedList';
 
 export interface StudentLead {
   userId: string;
@@ -12,86 +14,50 @@ export interface StudentLead {
   updatedAt: string;
 }
 
-interface CounsellorLeadsProps {
-  searchQuery?: string;
-}
-
-export function CounsellorLeads({ searchQuery = '' }: CounsellorLeadsProps) {
-  const [leads, setLeads] = useState<StudentLead[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchLeads() {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-        const response = await fetch(`${apiUrl}/counsellor/leads`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include', // sends the HttpOnly accessToken cookie
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch leads');
-        }
-
-        const data = await response.json();
-        setLeads(data.leads || []);
-      } catch (err: any) {
-        setError('Unable to load student leads.');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchLeads();
-  }, []);
+export function CounsellorLeads() {
+  const {
+    data: leads,
+    isLoading,
+    isFetchingNextPage,
+    error,
+    searchQuery,
+    setSearchQuery,
+    bottomSentinelRef,
+    hasMore,
+  } = usePaginatedList<StudentLead>('/counsellor/leads', 20);
 
   const formatStatus = (status: string) => {
     return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
-  const filteredLeads = leads.filter((lead) => {
-    const fullName = `${lead.firstName} ${lead.lastName}`.toLowerCase();
-    const email = lead.email.toLowerCase();
-    const status = formatStatus(lead.status).toLowerCase();
-    const query = searchQuery.toLowerCase();
-    return fullName.includes(query) || email.includes(query) || status.includes(query);
-  });
-
-  if (loading) {
-    return (
-      <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-gray-400 text-xs font-bold">
-        Loading student leads...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-red-500 text-xs font-bold bg-red-50">
-        {error}
-      </div>
-    );
-  }
-
-  if (leads.length === 0) {
-    return (
-      <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-gray-400 text-xs font-bold">
-        No student leads available.
-      </div>
-    );
-  }
-
-  if (filteredLeads.length === 0) {
-    return (
-      <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-gray-400 text-xs font-bold">
-        No leads match your search query.
-      </div>
-    );
-  }
-
   return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-4">
+        <div className="w-full md:w-96 relative">
+          <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search leads..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 neu-input text-xs font-bold"
+          />
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-gray-400 text-xs font-bold">
+          Loading student leads...
+        </div>
+      ) : error ? (
+        <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-red-500 text-xs font-bold bg-red-50">
+          {error}
+        </div>
+      ) : leads.length === 0 ? (
+        <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-gray-400 text-xs font-bold">
+          No student leads available.
+        </div>
+      ) : (
     <div className="overflow-x-auto">
       <table className="w-full text-left border-collapse">
         <thead>
@@ -102,7 +68,7 @@ export function CounsellorLeads({ searchQuery = '' }: CounsellorLeadsProps) {
           </tr>
         </thead>
         <tbody>
-          {filteredLeads.map((lead) => (
+          {leads.map((lead) => (
             <tr key={lead.userId} className="border-b border-[#EBE7E0] hover:bg-[#FDFBF7] transition-colors">
               <td className="px-4 py-3 text-sm font-bold text-germany-black">
                 {lead.firstName} {lead.lastName}
@@ -119,6 +85,13 @@ export function CounsellorLeads({ searchQuery = '' }: CounsellorLeadsProps) {
           ))}
         </tbody>
       </table>
+      {hasMore && (
+        <div ref={bottomSentinelRef} className="py-6 flex justify-center">
+          <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+        </div>
+      )}
     </div>
+    )}
+  </div>
   );
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ShieldAlert, Search, Users, AlertCircle, MoreHorizontal, X, ChevronDown } from 'lucide-react';
+import { ShieldAlert, Search, Users, AlertCircle, MoreHorizontal, X, ChevronDown, Loader2 } from 'lucide-react';
+import { usePaginatedList } from '../../../../hooks/usePaginatedList';
 
 const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -24,48 +25,193 @@ type Counsellor = {
   assignedStudentCount: number;
 };
 
-export default function SuperAdminStudentsPage() {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+function AssignCounsellorModal({ student, onClose, onSuccess }: { student: Student, onClose: () => void, onSuccess: () => void }) {
+  const {
+    data: counsellors,
+    isLoading: isCounsellorsLoading,
+    isFetchingNextPage: isFetchingNextCounsellors,
+    searchQuery: counsellorSearch,
+    setSearchQuery: setCounsellorSearch,
+    bottomSentinelRef: counsellorSentinelRef,
+    hasMore: hasMoreCounsellors
+  } = usePaginatedList<Counsellor>('/admin/counsellors', 20);
 
-  // three-dot menu state: tracks which student row has the menu open
-  // gotta make sure we only have one open at a time so it doesn't look messy
-  const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  // assign modal state
-  const [assignModal, setAssignModal] = useState<{ student: Student } | null>(null);
-  const [counsellors, setCounsellors] = useState<Counsellor[]>([]);
-  const [selectedCounsellorId, setSelectedCounsellorId] = useState('');
+  const [selectedCounsellorId, setSelectedCounsellorId] = useState(student.counsellorId || '');
   const [isAssigning, setIsAssigning] = useState(false);
   const [assignError, setAssignError] = useState('');
   const [isSelectOpen, setIsSelectOpen] = useState(false);
 
-  const fetchStudents = async () => {
-    setIsLoading(true);
-    setError('');
+  const handleAssign = async () => {
+    if (!selectedCounsellorId) return;
+    setIsAssigning(true);
+    setAssignError('');
+
     try {
-      // now hitting the proper admin endpoint that also brings back the assigned counsellor
-      // so much better than stringing together 3 different api calls on the frontend
-      const response = await fetch(`${NEXT_PUBLIC_API_URL}/admin/students`, {
+      const res = await fetch(`${NEXT_PUBLIC_API_URL}/admin/assign-counsellor`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
+        body: JSON.stringify({
+          studentId: student.userId,
+          counsellorId: selectedCounsellorId,
+        }),
       });
-      if (!response.ok) throw new Error('Unable to load students.');
-      const data = await response.json();
-      setStudents(data);
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || 'Failed to assign counsellor');
+      }
+
+      onSuccess();
+      onClose();
     } catch (err: any) {
-      setError(err.message || 'Unable to load students.');
+      setAssignError(err.message || 'Failed to assign counsellor');
     } finally {
-      setIsLoading(false);
+      setIsAssigning(false);
     }
   };
 
-  useEffect(() => {
-    // load em up on mount
-    fetchStudents();
-  }, []);
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-sm">
+      <div className="bg-[#FDFBF7] neu-card w-full max-w-md p-6 relative border-none animate-in fade-in duration-200">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-germany-black hover:bg-[#EBE7E0] rounded-full transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+
+        <h2 className="text-xl font-display font-extrabold text-germany-black mb-5">Assign Counsellor</h2>
+
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <p className="text-[10px] font-black uppercase tracking-wider text-gray-400">Student</p>
+            <p className="text-sm font-extrabold text-germany-black">
+              {student.firstName} {student.lastName}
+            </p>
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-[10px] font-black uppercase tracking-wider text-gray-400">Current Counsellor</p>
+            <p className="text-sm font-bold text-gray-600">
+              {student.counsellorFirstName
+                ? `${student.counsellorFirstName} ${student.counsellorLastName}`
+                : 'Unassigned'}
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black uppercase tracking-wider text-gray-400">
+              Select Counsellor
+            </label>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsSelectOpen(!isSelectOpen)}
+                className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0] text-germany-black text-left flex items-center justify-between cursor-pointer focus:outline-none focus:ring-2 focus:ring-germany-red/30"
+              >
+                <span>
+                  {selectedCounsellorId
+                    ? (() => {
+                        const c = counsellors.find((x) => x.id === selectedCounsellorId);
+                        return c ? `${c.firstName} ${c.lastName} — ${c.assignedStudentCount || 0} students` : '— Counsellor Selected —';
+                      })()
+                    : '— Choose a counsellor —'}
+                </span>
+                <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isSelectOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isSelectOpen && (
+                <div className="absolute left-0 right-0 mt-1 max-h-60 flex flex-col bg-[#FDFBF7] rounded-2xl shadow-[6px_6px_25px_rgba(210,205,195,0.45)] z-50 py-1 border border-[#EBE7E0]/40 overflow-hidden">
+                  <div className="p-2 border-b border-[#EBE7E0]/50 sticky top-0 bg-[#FDFBF7] z-10">
+                    <input
+                      type="text"
+                      placeholder="Search counsellors..."
+                      value={counsellorSearch}
+                      onChange={(e) => setCounsellorSearch(e.target.value)}
+                      className="w-full px-3 py-1.5 text-xs font-bold bg-white border border-[#EBE7E0] rounded-lg focus:outline-none focus:border-germany-red/50"
+                    />
+                  </div>
+                  <div className="overflow-y-auto flex-1 p-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedCounsellorId('');
+                        setIsSelectOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 text-xs font-bold text-gray-400 hover:bg-[#EBE7E0] transition-colors rounded-lg"
+                    >
+                      — Choose a counsellor —
+                    </button>
+                    {isCounsellorsLoading && <div className="p-4 text-center text-xs text-gray-400 font-bold">Loading...</div>}
+                    {!isCounsellorsLoading && counsellors.length === 0 && <div className="p-4 text-center text-xs text-gray-400 font-bold">No counsellors found.</div>}
+                    {counsellors.map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedCounsellorId(c.id);
+                          setIsSelectOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 text-xs font-bold transition-colors rounded-lg mb-0.5 ${
+                          selectedCounsellorId === c.id
+                            ? 'bg-germany-red text-white'
+                            : 'text-germany-black hover:bg-[#EBE7E0]'
+                        }`}
+                      >
+                        {c.firstName} {c.lastName} — {c.assignedStudentCount || 0} students
+                      </button>
+                    ))}
+                    {hasMoreCounsellors && (
+                      <div ref={counsellorSentinelRef} className="py-3 flex justify-center">
+                        <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {assignError && (
+            <div className="p-3 bg-red-50 text-red-600 rounded-lg text-xs font-bold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{assignError}</span>
+            </div>
+          )}
+
+          <div className="pt-2">
+            <button
+              onClick={handleAssign}
+              disabled={!selectedCounsellorId || isAssigning}
+              className="w-full neu-btn-primary py-3 text-sm font-extrabold disabled:opacity-50 flex items-center justify-center"
+            >
+              {isAssigning ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              {isAssigning ? 'Assigning...' : 'Assign'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function SuperAdminStudentsPage() {
+  const {
+    data: students,
+    isLoading,
+    isFetchingNextPage,
+    error,
+    searchQuery,
+    setSearchQuery,
+    bottomSentinelRef,
+    hasMore,
+    refetch
+  } = usePaginatedList<Student>('/admin/students', 25);
+
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [assignModal, setAssignModal] = useState<{ student: Student } | null>(null);
 
   // close the three-dot menu if user clicks outside of it
   useEffect(() => {
@@ -86,56 +232,8 @@ export default function SuperAdminStudentsPage() {
   };
 
   const openAssignModal = async (student: Student) => {
-    // close the row menu so it doesn't overlap the modal
     setActiveMenu(null);
     setAssignModal({ student });
-    setSelectedCounsellorId(student.counsellorId || '');
-    setAssignError('');
-    setIsSelectOpen(false);
-
-    // fetch counsellors when opening the modal — reusing the existing admin endpoint
-    try {
-      const res = await fetch(`${NEXT_PUBLIC_API_URL}/admin/counsellors`, { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
-        setCounsellors(data);
-      }
-    } catch {
-      // not fatal, the dropdown will just be empty
-    }
-  };
-
-  const handleAssign = async () => {
-    if (!selectedCounsellorId || !assignModal) return;
-    setIsAssigning(true);
-    setAssignError('');
-
-    try {
-      // reusing the same endpoint as the other page.
-      // keeps everything dry and we know it handles upserts correctly
-      const res = await fetch(`${NEXT_PUBLIC_API_URL}/admin/assign-counsellor`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          studentId: assignModal.student.userId,
-          counsellorId: selectedCounsellorId,
-        }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || 'Failed to assign counsellor');
-      }
-
-      // success — close modal and refresh the list so the new assignment shows up
-      setAssignModal(null);
-      fetchStudents();
-    } catch (err: any) {
-      setAssignError(err.message || 'Failed to assign counsellor');
-    } finally {
-      setIsAssigning(false);
-    }
   };
 
   return (
@@ -196,16 +294,7 @@ export default function SuperAdminStudentsPage() {
             <span>No students found.</span>
           </div>
         ) : (() => {
-          const filteredStudents = students.filter((student) => {
-            const fullName = `${student.firstName} ${student.lastName}`.toLowerCase();
-            const email = student.email.toLowerCase();
-            const status = formatStatus(student.status).toLowerCase();
-            const counsellor = (student.counsellorFirstName ? `${student.counsellorFirstName} ${student.counsellorLastName}` : 'unassigned').toLowerCase();
-            const query = searchQuery.toLowerCase();
-            return fullName.includes(query) || email.includes(query) || status.includes(query) || counsellor.includes(query);
-          });
-
-          if (filteredStudents.length === 0) {
+          if (students.length === 0) {
             return (
               <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-gray-400 text-xs font-bold flex flex-col items-center gap-2">
                 <Users className="w-8 h-8 text-gray-300" />
@@ -227,7 +316,7 @@ export default function SuperAdminStudentsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#EBE7E0] font-bold text-germany-black">
-                  {filteredStudents.map((student) => {
+                  {students.map((student) => {
                     const counsellorName = student.counsellorFirstName
                       ? `${student.counsellorFirstName} ${student.counsellorLastName}`
                       : null;
@@ -251,7 +340,6 @@ export default function SuperAdminStudentsPage() {
                           </span>
                         </td>
                         <td className="py-3.5 text-right relative">
-                          {/* three-dot menu */}
                           <button
                             onClick={() => setActiveMenu(activeMenu === student.userId ? null : student.userId)}
                             className="p-1.5 rounded-lg hover:bg-[#EBE7E0] transition-colors text-gray-400 hover:text-germany-black"
@@ -275,117 +363,22 @@ export default function SuperAdminStudentsPage() {
                   })}
                 </tbody>
               </table>
+              {hasMore && (
+                <div ref={bottomSentinelRef} className="py-6 flex justify-center">
+                  <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                </div>
+              )}
             </div>
           );
         })()}
       </div>
 
-      {/* Assign Counsellor Modal */}
       {assignModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-sm">
-          <div className="bg-[#FDFBF7] neu-card w-full max-w-md p-6 relative border-none animate-in fade-in duration-200">
-            <button
-              onClick={() => setAssignModal(null)}
-              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-germany-black hover:bg-[#EBE7E0] rounded-full transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <h2 className="text-xl font-display font-extrabold text-germany-black mb-5">Assign Counsellor</h2>
-
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <p className="text-[10px] font-black uppercase tracking-wider text-gray-400">Student</p>
-                <p className="text-sm font-extrabold text-germany-black">
-                  {assignModal.student.firstName} {assignModal.student.lastName}
-                </p>
-              </div>
-
-              <div className="space-y-1">
-                <p className="text-[10px] font-black uppercase tracking-wider text-gray-400">Current Counsellor</p>
-                <p className="text-sm font-bold text-gray-600">
-                  {assignModal.student.counsellorFirstName
-                    ? `${assignModal.student.counsellorFirstName} ${assignModal.student.counsellorLastName}`
-                    : 'Unassigned'}
-                </p>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-wider text-gray-400">
-                  Select Counsellor
-                </label>
-                <div className="relative">
-                  {/* Custom select trigger button */}
-                  <button
-                    type="button"
-                    onClick={() => setIsSelectOpen(!isSelectOpen)}
-                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0] text-germany-black text-left flex items-center justify-between cursor-pointer focus:outline-none focus:ring-2 focus:ring-germany-red/30"
-                  >
-                    <span>
-                      {selectedCounsellorId
-                        ? (() => {
-                            const c = counsellors.find((x) => x.id === selectedCounsellorId);
-                            return c ? `${c.firstName} ${c.lastName} — ${c.assignedStudentCount || 0} students` : '— Choose a counsellor —';
-                          })()
-                        : '— Choose a counsellor —'}
-                    </span>
-                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isSelectOpen ? 'rotate-180' : ''}`} />
-                  </button>
-
-                  {/* Custom select options dropdown */}
-                  {isSelectOpen && (
-                    <div className="absolute left-0 right-0 mt-1 max-h-40 overflow-y-auto bg-[#FDFBF7] rounded-2xl shadow-[6px_6px_25px_rgba(210,205,195,0.45)] z-50 py-1 border border-[#EBE7E0]/40">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedCounsellorId('');
-                          setIsSelectOpen(false);
-                        }}
-                        className="w-full text-left px-4 py-2.5 text-xs font-bold text-gray-400 hover:bg-[#EBE7E0] transition-colors"
-                      >
-                        — Choose a counsellor —
-                      </button>
-                      {counsellors.map((c) => (
-                        <button
-                          key={c.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedCounsellorId(c.id);
-                            setIsSelectOpen(false);
-                          }}
-                          className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
-                            selectedCounsellorId === c.id
-                              ? 'bg-germany-red text-white'
-                              : 'text-germany-black hover:bg-[#EBE7E0]'
-                          }`}
-                        >
-                          {c.firstName} {c.lastName} — {c.assignedStudentCount || 0} students
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {assignError && (
-                <div className="p-3 bg-red-50 text-red-600 rounded-lg text-xs font-bold flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{assignError}</span>
-                </div>
-              )}
-
-              <div className="pt-2">
-                <button
-                  onClick={handleAssign}
-                  disabled={!selectedCounsellorId || isAssigning}
-                  className="w-full neu-btn-primary py-3 text-sm font-extrabold disabled:opacity-50"
-                >
-                  {isAssigning ? 'Assigning...' : 'Assign'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <AssignCounsellorModal
+          student={assignModal.student}
+          onClose={() => setAssignModal(null)}
+          onSuccess={() => refetch()}
+        />
       )}
     </div>
   );

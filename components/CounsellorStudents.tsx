@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { Search, Loader2 } from 'lucide-react';
+import { usePaginatedList } from '../hooks/usePaginatedList';
 
 export interface AssignedStudent {
   userId: string;
@@ -10,87 +12,51 @@ export interface AssignedStudent {
   status: string | null;
 }
 
-interface CounsellorStudentsProps {
-  searchQuery?: string;
-}
-
-export function CounsellorStudents({ searchQuery = '' }: CounsellorStudentsProps) {
-  const [students, setStudents] = useState<AssignedStudent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchStudents() {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-        const response = await fetch(`${apiUrl}/counsellor/students`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch assigned students');
-        }
-
-        const data = await response.json();
-        setStudents(data.students || []);
-      } catch (err: any) {
-        setError('Unable to load assigned students.');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchStudents();
-  }, []);
+export function CounsellorStudents() {
+  const {
+    data: students,
+    isLoading,
+    isFetchingNextPage,
+    error,
+    searchQuery,
+    setSearchQuery,
+    bottomSentinelRef,
+    hasMore,
+  } = usePaginatedList<AssignedStudent>('/counsellor/students', 20);
 
   const formatStatus = (status: string | null) => {
     if (!status) return 'Unknown';
     return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
-  const filteredStudents = students.filter((student) => {
-    const fullName = `${student.firstName} ${student.lastName}`.toLowerCase();
-    const email = student.email.toLowerCase();
-    const status = formatStatus(student.status).toLowerCase();
-    const query = searchQuery.toLowerCase();
-    return fullName.includes(query) || email.includes(query) || status.includes(query);
-  });
-
-  if (loading) {
-    return (
-      <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-gray-400 text-xs font-bold">
-        Loading assigned students...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-red-500 text-xs font-bold bg-red-50">
-        {error}
-      </div>
-    );
-  }
-
-  if (students.length === 0) {
-    return (
-      <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-gray-400 text-xs font-bold">
-        No students assigned yet.
-      </div>
-    );
-  }
-
-  if (filteredStudents.length === 0) {
-    return (
-      <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-gray-400 text-xs font-bold">
-        No students match your search query.
-      </div>
-    );
-  }
-
   return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-4">
+        <div className="w-full md:w-96 relative">
+          <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search students..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 neu-input text-xs font-bold"
+          />
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-gray-400 text-xs font-bold">
+          Loading assigned students...
+        </div>
+      ) : error ? (
+        <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-red-500 text-xs font-bold bg-red-50">
+          {error}
+        </div>
+      ) : students.length === 0 ? (
+        <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-gray-400 text-xs font-bold">
+          No students assigned yet.
+        </div>
+      ) : (
     <div className="overflow-x-auto">
       <table className="w-full text-left border-collapse">
         <thead>
@@ -101,7 +67,7 @@ export function CounsellorStudents({ searchQuery = '' }: CounsellorStudentsProps
           </tr>
         </thead>
         <tbody>
-          {filteredStudents.map((student) => (
+          {students.map((student) => (
             <tr key={student.userId} className="border-b border-[#EBE7E0] hover:bg-[#FDFBF7] transition-colors">
               <td className="px-4 py-3 text-sm font-bold text-germany-black">
                 {student.firstName} {student.lastName}
@@ -118,6 +84,13 @@ export function CounsellorStudents({ searchQuery = '' }: CounsellorStudentsProps
           ))}
         </tbody>
       </table>
+      {hasMore && (
+        <div ref={bottomSentinelRef} className="py-6 flex justify-center">
+          <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+        </div>
+      )}
     </div>
+    )}
+  </div>
   );
 }

@@ -14,8 +14,6 @@ export default function CounsellorSectionPage({ params }: { params: Promise<{ se
   const resolvedParams = use(params);
   const section = resolvedParams.section;
 
-  const [searchQuery, setSearchQuery] = useState('');
-
   if (!VALID_SECTIONS.includes(section)) {
     notFound();
   }
@@ -48,25 +46,10 @@ export default function CounsellorSectionPage({ params }: { params: Promise<{ se
       </div>
 
       <div className="neu-card p-6 bg-white space-y-4">
-        {section !== 'account' && (
-          <div className="flex items-center justify-between gap-4">
-            <div className="w-full md:w-96 relative">
-              <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-gray-400" />
-              <input
-                type="text"
-                placeholder={`Search ${section}...`}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 neu-input text-xs font-bold"
-              />
-            </div>
-          </div>
-        )}
-
         {section === 'leads' ? (
-          <CounsellorLeads searchQuery={searchQuery} />
+          <CounsellorLeads />
         ) : section === 'students' ? (
-          <CounsellorStudents searchQuery={searchQuery} />
+          <CounsellorStudents />
         ) : (
           <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-gray-400 text-xs font-bold">
             Counsellor {title} management workspace loaded here.
