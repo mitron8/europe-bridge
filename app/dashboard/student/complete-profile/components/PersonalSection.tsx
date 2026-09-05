@@ -1,5 +1,6 @@
 import React from 'react';
 import { ProfileData } from '../types';
+import { ClaySelect } from '@/components/ClaySelect';
 
 interface Props {
   data: ProfileData;
@@ -37,13 +38,13 @@ export default function PersonalSection({ data, onChange, onNext }: Props) {
         </div>
         <div>
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Gender *</label>
-          <select name="gender" value={data.gender} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]">
-            <option value="">Select Gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-            <option value="Prefer not to say">Prefer not to say</option>
-          </select>
+          <ClaySelect
+            name="gender"
+            value={data.gender}
+            onChange={(val) => onChange({ gender: val as any })}
+            placeholder="Select Gender"
+            options={['Male', 'Female', 'Other', 'Prefer not to say']}
+          />
         </div>
         <div>
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Nationality *</label>

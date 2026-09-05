@@ -1,5 +1,6 @@
 import React from 'react';
 import { ProfileData } from '../types';
+import { ClaySelect } from '@/components/ClaySelect';
 
 interface Props {
   data: ProfileData;
@@ -27,14 +28,13 @@ export default function PreferencesSection({ data, onChange, onNext, onPrev }: P
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div>
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Intended Degree Level *</label>
-          <select name="intendedDegreeLevel" value={data.intendedDegreeLevel} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]">
-            <option value="">Select Level</option>
-            <option value="Bachelor's">Bachelor's</option>
-            <option value="Master's">Master's</option>
-            <option value="PhD">PhD</option>
-            <option value="Diploma">Diploma</option>
-            <option value="Other">Other</option>
-          </select>
+          <ClaySelect
+            name="intendedDegreeLevel"
+            value={data.intendedDegreeLevel}
+            onChange={(val) => onChange({ intendedDegreeLevel: val as any })}
+            placeholder="Select Level"
+            options={["Bachelor's", "Master's", "PhD", "Diploma", "Other"]}
+          />
         </div>
         <div>
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Preferred Field of Study *</label>
@@ -50,11 +50,16 @@ export default function PreferencesSection({ data, onChange, onNext, onPrev }: P
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 p-6 rounded-2xl bg-gray-50 border border-gray-100 shadow-sm">
         <div>
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Target Intake Season *</label>
-          <select name="intakeSeason" value={data.intakeSeason} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]">
-            <option value="">Select Season</option>
-            <option value="WINTER">WINTER (Oct/Nov)</option>
-            <option value="SUMMER">SUMMER (Mar/Apr)</option>
-          </select>
+          <ClaySelect
+            name="intakeSeason"
+            value={data.intakeSeason}
+            onChange={(val) => onChange({ intakeSeason: val as any })}
+            placeholder="Select Season"
+            options={[
+              { value: 'WINTER', label: 'WINTER (Oct/Nov)' },
+              { value: 'SUMMER', label: 'SUMMER (Mar/Apr)' },
+            ]}
+          />
         </div>
         <div>
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Target Year *</label>
@@ -83,21 +88,33 @@ export default function PreferencesSection({ data, onChange, onNext, onPrev }: P
         </div>
         <div>
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">University Type</label>
-          <select name="universityType" value={data.universityType} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]">
-            <option value="">No Preference</option>
-            <option value="Public">Public (State-funded)</option>
-            <option value="Private">Private</option>
-            <option value="Both">Both</option>
-          </select>
+          <ClaySelect
+            name="universityType"
+            value={data.universityType}
+            onChange={(val) => onChange({ universityType: val as any })}
+            placeholder="No Preference"
+            options={[
+              { value: '', label: 'No Preference' },
+              { value: 'Public', label: 'Public (State-funded)' },
+              { value: 'Private', label: 'Private' },
+              { value: 'Both', label: 'Both' },
+            ]}
+          />
         </div>
         <div>
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Study Mode</label>
-          <select name="studyMode" value={data.studyMode} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]">
-            <option value="">No Preference</option>
-            <option value="On-Campus">On-Campus</option>
-            <option value="Hybrid">Hybrid</option>
-            <option value="Online">Online</option>
-          </select>
+          <ClaySelect
+            name="studyMode"
+            value={data.studyMode}
+            onChange={(val) => onChange({ studyMode: val as any })}
+            placeholder="No Preference"
+            options={[
+              { value: '', label: 'No Preference' },
+              { value: 'On-Campus', label: 'On-Campus' },
+              { value: 'Hybrid', label: 'Hybrid' },
+              { value: 'Online', label: 'Online' },
+            ]}
+          />
         </div>
       </div>
 

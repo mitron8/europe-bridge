@@ -42,7 +42,7 @@ const Navbar = () => {
           items: [
             { title: "Cost of living", desc: "What a month really costs", href: "/study/cost-of-living" },
             { title: "Blocked account", desc: "Your proof of funds", href: "/services/blocked-account" },
-            { title: "Scholarships", desc: "Funding you can actually get" },
+            { title: "Scholarships", desc: "Funding you can actually get", href: "/study/scholarships" },
             { title: "Education loan", desc: "Financing the degree", href: "/services/education-loan" }
           ]
         },

@@ -1,5 +1,6 @@
 import React from 'react';
 import { ProfileData, EnglishTest, StandardizedTest } from '../types';
+import { ClaySelect } from '@/components/ClaySelect';
 
 
 interface Props {
@@ -85,14 +86,12 @@ export default function TestsSection({ data, onChange, onNext, onPrev }: Props) 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Test Type *</label>
-                    <select value={test.testType} onChange={(e) => updateEnglishTest(test.id, 'testType', e.target.value)} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]">
-                      <option value="">Select Test</option>
-                      <option value="IELTS">IELTS</option>
-                      <option value="TOEFL">TOEFL</option>
-                      <option value="PTE">PTE</option>
-                      <option value="Duolingo">Duolingo</option>
-                      <option value="Other">Other</option>
-                    </select>
+                    <ClaySelect 
+                      value={test.testType} 
+                      onChange={(val) => updateEnglishTest(test.id, 'testType', val)} 
+                      placeholder="Select Test"
+                      options={["IELTS", "TOEFL", "PTE", "Duolingo", "Other"]}
+                    />
                   </div>
                   <div>
                     <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Test Date *</label>
@@ -133,28 +132,23 @@ export default function TestsSection({ data, onChange, onNext, onPrev }: Props) 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-2xl bg-gray-50 border border-gray-100 shadow-sm animate-fade-in">
           <div>
             <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Proficiency Level *</label>
-            <select name="germanLevel" value={data.germanLevel} onChange={handleGermanChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]">
-              <option value="">Select Level</option>
-              <option value="None">None</option>
-              <option value="A1">A1</option>
-              <option value="A2">A2</option>
-              <option value="B1">B1</option>
-              <option value="B2">B2</option>
-              <option value="C1">C1</option>
-              <option value="C2">C2</option>
-            </select>
+            <ClaySelect
+              name="germanLevel"
+              value={data.germanLevel}
+              onChange={(val) => onChange({ germanLevel: val as any })}
+              placeholder="Select Level"
+              options={["None", "A1", "A2", "B1", "B2", "C1", "C2"]}
+            />
           </div>
           <div>
             <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Certificate Type (If Any)</label>
-            <select name="germanCertificateType" value={data.germanCertificateType} onChange={handleGermanChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]">
-              <option value="">Select Certificate</option>
-              <option value="None">None</option>
-              <option value="Goethe">Goethe</option>
-              <option value="TELC">TELC</option>
-              <option value="TestDaF">TestDaF</option>
-              <option value="DSH">DSH</option>
-              <option value="Other">Other</option>
-            </select>
+            <ClaySelect
+              name="germanCertificateType"
+              value={data.germanCertificateType}
+              onChange={(val) => onChange({ germanCertificateType: val as any })}
+              placeholder="Select Certificate"
+              options={["None", "Goethe", "TELC", "TestDaF", "DSH", "Other"]}
+            />
           </div>
         </div>
       </div>
@@ -178,12 +172,12 @@ export default function TestsSection({ data, onChange, onNext, onPrev }: Props) 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Test Type *</label>
-                    <select value={test.testType} onChange={(e) => updateStandardizedTest(test.id, 'testType', e.target.value)} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]">
-                      <option value="">Select Test</option>
-                      <option value="GRE">GRE</option>
-                      <option value="GMAT">GMAT</option>
-                      <option value="Other">Other</option>
-                    </select>
+                    <ClaySelect 
+                      value={test.testType} 
+                      onChange={(val) => updateStandardizedTest(test.id, 'testType', val)} 
+                      placeholder="Select Test"
+                      options={["GRE", "GMAT", "Other"]}
+                    />
                   </div>
                   <div>
                     <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Test Date *</label>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { ProfileData, EducationRecord } from '../types';
+import { ClaySelect } from '@/components/ClaySelect';
 
 
 interface Props {
@@ -73,58 +74,39 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Education Level *</label>
-                  <select 
+                  <ClaySelect 
                     value={record.educationLevel} 
-                    onChange={(e) => updateEducation(record.id, 'educationLevel', e.target.value)} 
-                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]"
-                  >
-                    <option value="">Select Level</option>
-                    <option value="High School">High School</option>
-                    <option value="Diploma">Diploma</option>
-                    <option value="Bachelor's">Bachelor's</option>
-                    <option value="Master's">Master's</option>
-                    <option value="PhD">PhD</option>
-                    <option value="Other">Other</option>
-                  </select>
+                    onChange={(val) => updateEducation(record.id, 'educationLevel', val)} 
+                    placeholder="Select Level"
+                    options={["High School", "Diploma", "Bachelor's", "Master's", "PhD", "Other"]}
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Degree Type *</label>
-                  <select 
+                  <ClaySelect 
                     value={record.degreeType} 
-                    onChange={(e) => updateEducation(record.id, 'degreeType', e.target.value)} 
-                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]"
-                  >
-                    <option value="">Select Type</option>
-                    <option value="B.Tech">B.Tech</option>
-                    <option value="B.E.">B.E.</option>
-                    <option value="B.Sc.">B.Sc.</option>
-                    <option value="BBA">BBA</option>
-                    <option value="BCA">BCA</option>
-                    <option value="M.Tech">M.Tech</option>
-                    <option value="M.E.">M.E.</option>
-                    <option value="M.Sc.">M.Sc.</option>
-                    <option value="MBA">MBA</option>
-                    <option value="MCA">MCA</option>
-                    <option value="Other">Other</option>
-                  </select>
+                    onChange={(val) => updateEducation(record.id, 'degreeType', val)} 
+                    placeholder="Select Type"
+                    options={["B.Tech", "B.E.", "B.Sc.", "BBA", "BCA", "M.Tech", "M.E.", "M.Sc.", "MBA", "MCA", "Other"]}
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Field of Study *</label>
-                  <select 
+                  <ClaySelect 
                     value={record.fieldOfStudy} 
-                    onChange={(e) => updateEducation(record.id, 'fieldOfStudy', e.target.value)} 
-                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]"
-                  >
-                    <option value="">Select Field</option>
-                    <option value="Computer Science">Computer Science</option>
-                    <option value="Information Technology">Information Technology</option>
-                    <option value="Mechanical Engineering">Mechanical Engineering</option>
-                    <option value="Civil Engineering">Civil Engineering</option>
-                    <option value="Electrical Engineering">Electrical Engineering</option>
-                    <option value="Business Administration">Business Administration</option>
-                    <option value="Economics">Economics</option>
-                    <option value="Other">Other</option>
-                  </select>
+                    onChange={(val) => updateEducation(record.id, 'fieldOfStudy', val)} 
+                    placeholder="Select Field"
+                    options={[
+                      "Computer Science",
+                      "Information Technology",
+                      "Mechanical Engineering",
+                      "Civil Engineering",
+                      "Electrical Engineering",
+                      "Business Administration",
+                      "Economics",
+                      "Other"
+                    ]}
+                  />
                 </div>
               </div>
 
@@ -183,17 +165,12 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                 </div>
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Academic Status *</label>
-                  <select 
+                  <ClaySelect 
                     value={record.academicStatus} 
-                    onChange={(e) => updateEducation(record.id, 'academicStatus', e.target.value)} 
-                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]"
-                  >
-                    <option value="">Select Status</option>
-                    <option value="Currently Studying">Currently Studying</option>
-                    <option value="Graduated">Graduated</option>
-                    <option value="Discontinued">Discontinued</option>
-                    <option value="Other">Other</option>
-                  </select>
+                    onChange={(val) => updateEducation(record.id, 'academicStatus', val)} 
+                    placeholder="Select Status"
+                    options={["Currently Studying", "Graduated", "Discontinued", "Other"]}
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Current Sem (If Studying)</label>
@@ -210,18 +187,18 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Grading System *</label>
-                  <select 
+                  <ClaySelect 
                     value={record.gradingSystem} 
-                    onChange={(e) => updateEducation(record.id, 'gradingSystem', e.target.value)} 
-                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]"
-                  >
-                    <option value="">Select System</option>
-                    <option value="CGPA/10">CGPA / 10</option>
-                    <option value="CGPA/4">CGPA / 4</option>
-                    <option value="Percentage">Percentage</option>
-                    <option value="Grade">Grade</option>
-                    <option value="Other">Other</option>
-                  </select>
+                    onChange={(val) => updateEducation(record.id, 'gradingSystem', val)} 
+                    placeholder="Select System"
+                    options={[
+                      { value: "CGPA/10", label: "CGPA / 10" },
+                      { value: "CGPA/4", label: "CGPA / 4" },
+                      { value: "Percentage", label: "Percentage" },
+                      { value: "Grade", label: "Grade" },
+                      { value: "Other", label: "Other" },
+                    ]}
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Score *</label>

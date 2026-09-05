@@ -119,7 +119,7 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 overflow-y-auto p-3 space-y-4 custom-scrollbar">
+      <nav className="flex-1 overflow-y-auto p-3 space-y-4 no-scrollbar custom-scrollbar">
         {/* Discovery Section */}
         <div className="space-y-1">
           <div className="px-3 text-[10px] font-black uppercase tracking-wider text-gray-400 mb-1.5">

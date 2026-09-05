@@ -122,24 +122,25 @@ function AssignCounsellorModal({ student, onClose, onSuccess }: { student: Stude
               </button>
 
               {isSelectOpen && (
-                <div className="absolute left-0 right-0 mt-1 max-h-60 flex flex-col bg-[#FDFBF7] rounded-2xl shadow-[6px_6px_25px_rgba(210,205,195,0.45)] z-50 py-1 border border-[#EBE7E0]/40 overflow-hidden">
-                  <div className="p-2 border-b border-[#EBE7E0]/50 sticky top-0 bg-[#FDFBF7] z-10">
+                <div className="absolute left-0 right-0 mt-2 max-h-64 flex flex-col neu-dropdown z-50 p-2 overflow-hidden">
+                  <div className="p-1 mb-1 relative shrink-0">
+                    <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-gray-400" />
                     <input
                       type="text"
                       placeholder="Search counsellors..."
                       value={counsellorSearch}
                       onChange={(e) => setCounsellorSearch(e.target.value)}
-                      className="w-full px-3 py-1.5 text-xs font-bold bg-white border border-[#EBE7E0] rounded-lg focus:outline-none focus:border-germany-red/50"
+                      className="w-full pl-8 pr-3 py-1.5 text-xs font-bold neu-input bg-white focus:outline-none"
                     />
                   </div>
-                  <div className="overflow-y-auto flex-1 p-1">
+                  <div className="overflow-y-auto flex-1 space-y-1 custom-scrollbar max-h-48 pr-0.5">
                     <button
                       type="button"
                       onClick={() => {
                         setSelectedCounsellorId('');
                         setIsSelectOpen(false);
                       }}
-                      className="w-full text-left px-3 py-2 text-xs font-bold text-gray-400 hover:bg-[#EBE7E0] transition-colors rounded-lg"
+                      className="w-full text-left px-3 py-2 text-xs font-bold text-gray-400 neu-dropdown-item hover:bg-[#EBE7E0] transition-colors"
                     >
                       — Choose a counsellor —
                     </button>
@@ -153,9 +154,9 @@ function AssignCounsellorModal({ student, onClose, onSuccess }: { student: Stude
                           setSelectedCounsellorId(c.id);
                           setIsSelectOpen(false);
                         }}
-                        className={`w-full text-left px-3 py-2 text-xs font-bold transition-colors rounded-lg mb-0.5 ${
+                        className={`w-full text-left px-3 py-2 text-xs font-bold neu-dropdown-item transition-all ${
                           selectedCounsellorId === c.id
-                            ? 'bg-germany-red text-white'
+                            ? 'neu-dropdown-item-active'
                             : 'text-germany-black hover:bg-[#EBE7E0]'
                         }`}
                       >
@@ -348,10 +349,10 @@ export default function SuperAdminStudentsPage() {
                           </button>
 
                           {activeMenu === student.userId && (
-                            <div className="absolute right-0 top-full mt-1 w-48 bg-[#FDFBF7] rounded-2xl shadow-[6px_6px_20px_rgba(210,205,195,0.4)] z-30 py-1 border-none overflow-hidden">
+                            <div className="absolute right-0 top-full mt-2 w-48 neu-dropdown z-30 p-1.5 overflow-hidden">
                               <button
                                 onClick={() => openAssignModal(student)}
-                                className="w-full text-left px-4 py-2.5 text-xs font-bold text-germany-black hover:bg-[#EBE7E0] transition-colors"
+                                className="w-full text-left px-3.5 py-2 text-xs font-bold text-germany-black neu-dropdown-item hover:bg-[#EBE7E0] transition-colors"
                               >
                                 Assign Counsellor
                               </button>

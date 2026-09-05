@@ -1,5 +1,6 @@
 import React from 'react';
 import { ProfileData, ExperienceRecord } from '../types';
+import { ClaySelect } from '@/components/ClaySelect';
 
 
 interface Props {
@@ -82,15 +83,12 @@ export default function ExperienceSection({ data, onChange, onNext, onPrev }: Pr
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Employment Type *</label>
-                  <select value={record.employmentType} onChange={(e) => updateExperience(record.id, 'employmentType', e.target.value)} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]">
-                    <option value="">Select Type</option>
-                    <option value="Full-time">Full-time</option>
-                    <option value="Part-time">Part-time</option>
-                    <option value="Internship">Internship</option>
-                    <option value="Freelance">Freelance</option>
-                    <option value="Contract">Contract</option>
-                    <option value="Other">Other</option>
-                  </select>
+                  <ClaySelect 
+                    value={record.employmentType} 
+                    onChange={(val) => updateExperience(record.id, 'employmentType', val)} 
+                    placeholder="Select Type"
+                    options={["Full-time", "Part-time", "Internship", "Freelance", "Contract", "Other"]}
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Industry</label>

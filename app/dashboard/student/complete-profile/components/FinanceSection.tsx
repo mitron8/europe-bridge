@@ -1,5 +1,6 @@
 import React from 'react';
 import { ProfileData } from '../types';
+import { ClaySelect } from '@/components/ClaySelect';
 
 interface Props {
   data: ProfileData;
@@ -22,14 +23,19 @@ export default function FinanceSection({ data, onChange, onNext, onPrev }: Props
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div>
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Primary Funding Source *</label>
-          <select name="fundingPreference" value={data.fundingPreference} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0]">
-            <option value="">Select Funding Source</option>
-            <option value="Self-funded">Self-funded</option>
-            <option value="Family-funded">Family-funded</option>
-            <option value="Education Loan">Education Loan</option>
-            <option value="Scholarship">Scholarship</option>
-            <option value="Combination">Combination / Multiple Sources</option>
-          </select>
+          <ClaySelect
+            name="fundingPreference"
+            value={data.fundingPreference}
+            onChange={(val) => onChange({ fundingPreference: val as any })}
+            placeholder="Select Funding Source"
+            options={[
+              "Self-funded",
+              "Family-funded",
+              "Education Loan",
+              "Scholarship",
+              "Combination"
+            ]}
+          />
         </div>
         
         <div>
