@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Menu } from 'lucide-react';
+import { useAppStore } from '@/store/useAppStore';
 
 interface DashboardLayoutWrapperProps {
   children: React.ReactNode;
@@ -9,7 +10,8 @@ interface DashboardLayoutWrapperProps {
 }
 
 export default function DashboardLayoutWrapper({ children, Sidebar }: DashboardLayoutWrapperProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const sidebarOpen = useAppStore((state) => state.isSidebarOpen);
+  const setSidebarOpen = useAppStore((state) => state.setIsSidebarOpen);
 
   return (
     <div className="flex h-screen w-full neu-bg overflow-hidden relative">

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   CheckCircle2, 
   Send, 
@@ -9,8 +9,17 @@ import {
   User, 
   MessageSquare, 
   Check, 
-  Sparkles 
+  Sparkles,
+  ChevronDown
 } from 'lucide-react';
+
+const serviceOptions = [
+  { label: 'University Admissions & Shortlisting', value: 'Admissions & Shortlisting' },
+  { label: 'APS Certification Assistance', value: 'APS Verification' },
+  { label: 'Student Visa & Blocked Account', value: 'Visa & Blocked Account' },
+  { label: 'German Language (A1 - C1)', value: 'German Language Course' },
+  { label: 'General Profile Evaluation', value: 'General Guidance' }
+];
 
 const Hero = () => {
   const [isFormHovered, setIsFormHovered] = useState(false);
@@ -21,6 +30,7 @@ const Hero = () => {
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -203,19 +213,50 @@ const Hero = () => {
                     </div>
                   </div>
 
-                  <div>
+                  <div className="relative">
                     <label className="block text-xs font-extrabold text-germany-black mb-1 ml-1">I Need Help With</label>
-                    <select 
-                      value={service}
-                      onChange={(e) => setService(e.target.value)}
-                      className="w-full px-3 py-2 neu-input font-bold text-germany-black text-xs bg-[#EBE7E0]"
-                    >
-                      <option value="Admissions & Shortlisting">University Admissions & Shortlisting</option>
-                      <option value="APS Verification">APS Certification Assistance</option>
-                      <option value="Visa & Blocked Account">Student Visa & Blocked Account</option>
-                      <option value="German Language Course">German Language (A1 - C1)</option>
-                      <option value="General Guidance">General Profile Evaluation</option>
-                    </select>
+                    <div className="relative">
+                      <div 
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        className="w-full pl-3 pr-10 py-2 neu-input font-bold text-germany-black text-xs bg-white cursor-pointer flex items-center justify-between min-h-[38px]"
+                      >
+                        <span className="truncate">
+                          {serviceOptions.find(o => o.value === service)?.label || service}
+                        </span>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                          <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                        </div>
+                      </div>
+                      
+                      <AnimatePresence>
+                        {isDropdownOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute z-50 w-full mt-2 bg-[#EBE7E0] border border-[#E2DDD3] p-1.5 shadow-[6px_6px_16px_rgba(71,85,105,0.4),inset_-4px_-4px_10px_rgba(71,85,105,0.3),inset_4px_4px_10px_rgba(255,255,255,1)] rounded-[15px]"
+                          >
+                            {serviceOptions.map((option) => (
+                              <div
+                                key={option.value}
+                                onClick={() => {
+                                  setService(option.value);
+                                  setIsDropdownOpen(false);
+                                }}
+                                className={`px-3 py-2 text-xs font-bold cursor-pointer rounded-xl transition-colors ${
+                                  service === option.value 
+                                    ? 'bg-germany-red/10 text-germany-red' 
+                                    : 'text-germany-black hover:bg-white/50'
+                                }`}
+                              >
+                                {option.label}
+                              </div>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
 
                   <div>

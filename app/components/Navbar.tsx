@@ -1,11 +1,14 @@
 "use client";
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Menu, X } from 'lucide-react';
+import { useAppStore } from '@/store/useAppStore';
 
 const Navbar = () => {
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const isMobileOpen = useAppStore((state) => state.isMobileMenuOpen);
+  const setIsMobileOpen = useAppStore((state) => state.setIsMobileMenuOpen);
+  const toggleMobileOpen = useAppStore((state) => state.toggleMobileMenu);
 
   type NavItem = {
     label: string;
@@ -272,7 +275,7 @@ const Navbar = () => {
       </div>
 
       <div className="lg:hidden flex-1 flex justify-end">
-        <button className="neu-btn p-2.5 text-gray-600 border-none cursor-pointer" onClick={() => setIsMobileOpen(!isMobileOpen)}>
+        <button className="neu-btn p-2.5 text-gray-600 border-none cursor-pointer" onClick={toggleMobileOpen}>
           {isMobileOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
