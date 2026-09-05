@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signup } from '@/lib/auth';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
+import { signup, googleAuth } from '@/lib/auth';
 
 export default function Signup() {
   const [firstName, setFirstName] = useState('');
@@ -35,6 +36,27 @@ export default function Signup() {
     } catch (err: any) {
       // just echo whatever the backend complained about
       setError(err.message || 'Signup failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    if (!credentialResponse.credential) return;
+    
+    setError('');
+    setLoading(true);
+    
+    try {
+      const data = await googleAuth(credentialResponse.credential);
+      if (data.user.role === 'student') {
+        router.push('/dashboard/student');
+      } else {
+        const targetDashboard = data.user.role === 'superadmin' ? 'super-admin' : data.user.role;
+        router.push(`/dashboard/${targetDashboard}`);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Google signup failed.');
     } finally {
       setLoading(false);
     }
@@ -152,6 +174,24 @@ export default function Signup() {
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
+
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200"></div></div>
+          <div className="relative flex justify-center text-xs font-bold"><span className="px-3 bg-white text-gray-400">Or continue with</span></div>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <div className="flex justify-center w-full [&>div]:w-full [&>div]:flex [&>div]:justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => setError('Google Signup Failed')}
+              theme="outline"
+              size="large"
+              width="100%"
+              text="continue_with"
+            />
+          </div>
+        </div>
 
         <p className="text-center text-xs font-bold text-gray-500 mt-6">
           Already have an account?{' '}

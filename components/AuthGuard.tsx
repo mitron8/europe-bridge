@@ -30,7 +30,7 @@ export async function AuthGuard({ children, allowedRoles }: { children: React.Re
       const data = await res.json();
       userRole = data.user?.role;
     }
-  } catch (err) {
+  } catch {
     // backend probably died
     authFailed = true;
   }

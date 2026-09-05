@@ -15,6 +15,21 @@ export async function login(email: string, password: string) {
   return data; // { message, user } — token is in the cookie not here
 }
 
+export async function googleAuth(idToken: string) {
+  const response = await fetch(`${NEXT_PUBLIC_API_URL}/auth/google`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ idToken }),
+    credentials: 'include',
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Google authentication failed');
+  }
+  return data;
+}
+
 export async function signup(firstName: string, lastName: string, email: string, password: string) {
   const response = await fetch(`${NEXT_PUBLIC_API_URL}/auth/signup`, {
     method: 'POST',

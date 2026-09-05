@@ -16,7 +16,6 @@ export function CounsellorStudents() {
   const {
     data: students,
     isLoading,
-    isFetchingNextPage,
     error,
     searchQuery,
     setSearchQuery,

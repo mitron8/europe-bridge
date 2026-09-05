@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, ShieldCheck, UserCheck } from 'lucide-react';
-import { login } from '@/lib/auth';
+import { login, googleAuth } from '@/lib/auth';
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function Login() {
   const router = useRouter();
@@ -32,6 +33,27 @@ export default function Login() {
     } catch (err: any) {
       // just bubble up whatever the backend threw
       setError(err.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    if (!credentialResponse.credential) return;
+    
+    setError('');
+    setLoading(true);
+    
+    try {
+      const data = await googleAuth(credentialResponse.credential);
+      if (data.user.role === 'student') {
+        router.push('/dashboard/student');
+      } else {
+        const targetDashboard = data.user.role === 'superadmin' ? 'super-admin' : data.user.role;
+        router.push(`/dashboard/${targetDashboard}`);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Google authentication failed.');
     } finally {
       setLoading(false);
     }
@@ -127,23 +149,17 @@ export default function Login() {
           <div className="relative flex justify-center text-xs font-bold"><span className="px-3 bg-white text-gray-400">Or continue with</span></div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <button 
-            type="button" 
-            onClick={() => router.push('/dashboard/student')}
-            className="neu-btn py-2.5 px-3 text-xs font-extrabold text-germany-black hover:text-germany-red flex items-center justify-center gap-1.5"
-          >
-            <UserCheck className="w-3.5 h-3.5" />
-            <span>Google</span>
-          </button>
-          <button 
-            type="button" 
-            onClick={() => router.push('/dashboard/student')}
-            className="neu-btn py-2.5 px-3 text-xs font-extrabold text-germany-black hover:text-germany-red flex items-center justify-center gap-1.5"
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Passkey</span>
-          </button>
+        <div className="flex flex-col gap-3">
+          <div className="flex justify-center w-full [&>div]:w-full [&>div]:flex [&>div]:justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => setError('Google Login Failed')}
+              theme="outline"
+              size="large"
+              width="100%"
+              text="signin_with"
+            />
+          </div>
         </div>
 
         <p className="text-center text-xs font-bold text-gray-500 mt-6">

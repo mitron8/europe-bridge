@@ -13,7 +13,6 @@ import {
   LogOut,
   ChevronRight,
   Headphones,
-  GraduationCap,
   X
 } from 'lucide-react';
 import { useState, useEffect } from 'react';

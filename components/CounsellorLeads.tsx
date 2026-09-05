@@ -18,7 +18,6 @@ export function CounsellorLeads() {
   const {
     data: leads,
     isLoading,
-    isFetchingNextPage,
     error,
     searchQuery,
     setSearchQuery,

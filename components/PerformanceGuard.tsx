@@ -13,7 +13,7 @@ export function PerformanceGuard() {
       ): any {
         try {
           return _origMeasure.call(this, measureName, startOrMeasureOptions as any, endMark);
-        } catch (e) {
+        } catch {
           // Safeguard against Next.js Turbopack dev profiler negative timestamp calculation errors
         }
       } as any;

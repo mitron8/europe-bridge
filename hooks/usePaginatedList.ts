@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useDebounce } from './useDebounce';
+import { useState, useEffect, useRef, useCallback, useDeferredValue } from 'react';
 
 const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -16,7 +15,7 @@ interface PaginationResult<T> {
 export function usePaginatedList<T>(endpoint: string, limit: number = 25) {
   const [data, setData] = useState<T[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const debouncedSearch = useDebounce(searchQuery, 300);
+  const debouncedSearch = useDeferredValue(searchQuery);
   
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
