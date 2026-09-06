@@ -1,8 +1,9 @@
 "use client";
 
-import React, { use } from 'react';
+import React, { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import ProfileCompletionGate from '@/components/ProfileCompletionGate';
 import {
   Sparkles,
   Bookmark,
@@ -26,6 +27,11 @@ import {
 const VALID_SECTIONS = [
   'matching', 'shortlist', 'documents', 
   'aps', 'applications', 'visa', 'account'
+];
+
+const RESTRICTED_SECTIONS = [
+  'matching', 'shortlist', 'documents', 
+  'aps', 'applications', 'visa'
 ];
 
 interface SectionConfig {
@@ -96,6 +102,35 @@ export default function StudentSectionPage({ params }: { params: Promise<{ secti
   };
 
   const Icon = config.icon;
+  const isRestricted = RESTRICTED_SECTIONS.includes(section);
+  const [completionPercentage, setCompletionPercentage] = useState<number | null>(null);
+  const [userName, setUserName] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(isRestricted);
+
+  useEffect(() => {
+    if (!isRestricted) return;
+
+    const checkProfileStatus = async () => {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+        const res = await fetch(`${API_URL}/student/profile`, { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setCompletionPercentage(typeof data.completionPercentage === 'number' ? data.completionPercentage : 0);
+          if (data.firstName) setUserName(data.firstName);
+        } else {
+          setCompletionPercentage(0);
+        }
+      } catch (err) {
+        console.error('Failed to load profile for section check:', err);
+        setCompletionPercentage(0);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkProfileStatus();
+  }, [isRestricted]);
 
   return (
     <div className="space-y-6">
@@ -132,8 +167,27 @@ export default function StudentSectionPage({ params }: { params: Promise<{ secti
         </div>
       </div>
 
-      {/* Section-Specific Themed Content */}
-      {section === 'matching' && (
+      {/* Loading Skeleton */}
+      {isRestricted && isLoading && (
+        <div className="neu-card p-10 bg-white text-center space-y-3 animate-pulse">
+          <div className="w-10 h-10 bg-[#EBE7E0] rounded-full mx-auto" />
+          <p className="text-xs font-bold text-gray-400">Loading your profile status...</p>
+        </div>
+      )}
+
+      {/* Profile Incomplete Sweet Restriction Message */}
+      {isRestricted && !isLoading && completionPercentage !== null && completionPercentage < 100 && (
+        <ProfileCompletionGate
+          sectionTitle={config.title}
+          completionPercentage={completionPercentage}
+          userName={userName}
+        />
+      )}
+
+      {/* Section-Specific Themed Content (Only shown if unlocked) */}
+      {(!isRestricted || (!isLoading && completionPercentage !== null && completionPercentage >= 100)) && (
+        <>
+          {section === 'matching' && (
         <div className="space-y-6">
           {/* Filter Bar */}
           <div className="neu-card p-5 bg-white flex flex-col md:flex-row items-center justify-between gap-4">
@@ -344,6 +398,8 @@ export default function StudentSectionPage({ params }: { params: Promise<{ secti
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

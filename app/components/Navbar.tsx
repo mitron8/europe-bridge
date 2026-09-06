@@ -165,8 +165,8 @@ const Navbar = () => {
         {
           title: "Student Housing",
           items: [
-            { title: "Verified Apartments & WGs", desc: "Furnished student rooms in Berlin, Munich, Aachen & Hamburg.", href: "/#our-process" },
-            { title: "Anmeldung Assistance", desc: "City address registration & lease agreement support.", href: "/#our-process" }
+            { title: "Verified Apartments & Shared Flats", desc: "Furnished student rooms in Berlin, Munich, Aachen & Hamburg.", href: "/#our-process" },
+            { title: "Address Registration Assistance", desc: "City address registration & lease agreement support.", href: "/#our-process" }
           ],
           action: { label: "Find housing", href: "/#our-process" }
         },

@@ -20,7 +20,7 @@ export const BlockedAccountProcess = () => {
       stepNum: "Step 03",
       icon: Stamp,
       title: "Receive Blocking Confirmation",
-      desc: "Once your funds are transferred, your official Sperrbescheinigung (blocking confirmation document) is generated within 24 hours—ready for your visa interview!"
+      desc: "Once your funds are transferred, your official blocking confirmation document is generated within 24 hours—ready for your visa interview!"
     }
   ];
 

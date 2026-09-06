@@ -11,8 +11,8 @@ import { BlockedAccountCTA } from './components/BlockedAccountCTA';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Blocked Account for Germany (Sperrkonto) 2026 | EuropeBridge',
-  description: 'Open your official German Sperrkonto (blocked account) for student visa interviews. Get 24-hour blocking confirmation, 60-minute counselor response, and full visa compliance.',
+  title: 'Blocked Account for Germany 2026 | EuropeBridge',
+  description: 'Open your official German blocked account for student visa interviews. Get 24-hour blocking confirmation, 60-minute counselor response, and full visa compliance.',
 };
 
 export default function BlockedAccountPage() {

@@ -71,7 +71,7 @@ export const WhatIsAPS = () => {
             <span>March 15, 2026 Update: 70% Class XII Rule for Bachelor's</span>
           </div>
           <p className="text-xs text-gray-700 font-medium leading-relaxed">
-            APS India enforces a strict threshold for Bachelor's applicants: your Class XII aggregate must be at least <strong>70%</strong> to be evaluated for direct undergraduate entry. If your Class XII score is below 70%, your standard pathway is a 1-year <em className="italic font-bold">Studienkolleg</em> (preparatory foundation year) before enrolling in a degree program. Master's and PhD applicants are unaffected by this 70% rule.
+            APS India enforces a strict threshold for Bachelor's applicants: your Class XII aggregate must be at least <strong>70%</strong> to be evaluated for direct undergraduate entry. If your Class XII score is below 70%, your standard pathway is a 1-year preparatory foundation year before enrolling in a degree program. Master's and PhD applicants are unaffected by this 70% rule.
           </p>
         </div>
 

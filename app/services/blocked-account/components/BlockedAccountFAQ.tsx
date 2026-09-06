@@ -8,12 +8,12 @@ export const BlockedAccountFAQ = () => {
 
   const faqs = [
     {
-      question: "What is a German blocked account (Sperrkonto)?",
-      answer: "A blocked account (Sperrkonto) is a mandatory financial proof required by German immigration law for international student visas. It proves that you have sufficient funds to cover your living expenses in Germany for one academic year (€11,904 total / €992 per month)."
+      question: "What is a German blocked account?",
+      answer: "A blocked account is a mandatory financial proof required by German immigration law for international student visas. It proves that you have sufficient funds to cover your living expenses in Germany for one academic year (€11,904 total / €992 per month)."
     },
     {
       question: "Can I use the blocked account directly to pay monthly rent or buy groceries?",
-      answer: "No. You cannot pay expenses directly from the blocked account itself. Once you arrive in Germany and register your local address (Anmeldung), your blocked account automatically transfers your €992 monthly allowance into your local personal German current account (Girokonto), from which you pay rent and daily bills."
+      answer: "No. You cannot pay expenses directly from the blocked account itself. Once you arrive in Germany and complete your city address registration, your blocked account automatically transfers your €992 monthly allowance into your local personal German checking account, from which you pay rent and daily bills."
     },
     {
       question: "Do I have to pay administration banking fees separately?",

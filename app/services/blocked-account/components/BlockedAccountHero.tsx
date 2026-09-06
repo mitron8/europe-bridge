@@ -31,7 +31,7 @@ export const BlockedAccountHero = () => {
 
             <div className="flex items-start gap-4">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-germany-black leading-tight tracking-tight font-display flex-1">
-                Blocked Account for <span className="text-germany-red">Germany (Sperrkonto)</span>
+                Blocked Account for <span className="text-germany-red">Germany</span>
               </h1>
               <motion.img 
                 src="/doodles/visa approved.png" 
@@ -43,7 +43,7 @@ export const BlockedAccountHero = () => {
             </div>
 
             <p className="text-base sm:text-lg text-gray-700 font-medium leading-relaxed">
-              Open your mandatory <em>Sperrkonto</em> for your German student visa interview. Speak to an expert counselor within 60 minutes, submit your passport details, and receive your official blocking confirmation (<em>Sperrbescheinigung</em>) within 24 hours.
+              Open your mandatory German blocked account for your student visa interview. Speak to an expert counselor within 60 minutes, submit your passport details, and receive your official blocking confirmation within 24 hours.
             </p>
 
             {/* CTA Buttons */}

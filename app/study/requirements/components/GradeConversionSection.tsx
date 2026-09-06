@@ -103,7 +103,7 @@ export const GradeConversionSection = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="neu-card p-6 space-y-3 border-l-4 border-l-germany-red">
             <span className="text-xs font-black uppercase text-germany-red">Restricted Admission</span>
-            <h4 className="text-lg font-black text-germany-black font-display">NC Programs (Numerus Clausus)</h4>
+            <h4 className="text-lg font-black text-germany-black font-display">Restricted Admission Programs (NC)</h4>
             <p className="text-xs text-gray-700 font-medium leading-relaxed">
               NC programs have a fixed quota of seats. Applicants are ranked strictly by GPA. Popular subjects (Business, Data Science, Psychology) may require a top grade of 1.2–1.8.
             </p>
@@ -111,7 +111,7 @@ export const GradeConversionSection = () => {
 
           <div className="neu-card p-6 space-y-3 border-l-4 border-l-emerald-500">
             <span className="text-xs font-black uppercase text-emerald-600">Unrestricted Admission</span>
-            <h4 className="text-lg font-black text-germany-black font-display">Non-NC Programs (Zulassungsfrei)</h4>
+            <h4 className="text-lg font-black text-germany-black font-display">Open Admission Programs (Non-NC)</h4>
             <p className="text-xs text-gray-700 font-medium leading-relaxed">
               No seat limit. As long as you meet the minimum academic prerequisite credits (e.g. German grade 2.5 or better) and language score, you are guaranteed admission.
             </p>

@@ -11,7 +11,7 @@ export const CityCostComparison = () => {
       wgCost: "€550 – €750",
       groceries: "€250 – €320",
       totalBudget: "€1,200 – €1,500",
-      desc: "Germany's most expensive city with high rental prices. However, Munich offers top-tier universities (TUM, LMU) and the highest hourly pay for Werkstudent student jobs (€15–€20/hr) at BMW, Siemens, Allianz.",
+      desc: "Germany's most expensive city with high rental prices. However, Munich offers top-tier universities (TUM, LMU) and the highest hourly pay for working student jobs (€15–€20/hr) at BMW, Siemens, Allianz.",
     },
     {
       name: "Berlin",

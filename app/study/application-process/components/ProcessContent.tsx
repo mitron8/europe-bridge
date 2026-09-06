@@ -62,7 +62,7 @@ export const ProcessContent = () => {
                     <li>Language of instruction (English vs. German vs. Mixed)</li>
                     <li>Specific credit requirements (minimum ECTS in core subjects)</li>
                     <li>Application deadlines (some cutoffs differ from standard dates)</li>
-                    <li>Restricted admission (Numerus Clausus - NC) vs. Open admission</li>
+                    <li>Restricted admission (NC) vs. Open admission</li>
                   </ul>
                 </div>
               </div>
@@ -198,18 +198,18 @@ export const ProcessContent = () => {
                     </thead>
                     <tbody className="divide-y divide-[#EBE7E0] text-gray-700 font-medium">
                       <tr>
-                        <td className="px-4 py-3 font-bold text-emerald-600">Zulassung</td>
+                        <td className="px-4 py-3 font-bold text-emerald-600">Full Admission</td>
                         <td className="px-4 py-3">Unconditional Admission</td>
                         <td className="px-4 py-3 font-bold">Enroll and start visa process</td>
                       </tr>
                       <tr>
-                        <td className="px-4 py-3 font-bold text-amber-600">Bedingte Zulassung</td>
+                        <td className="px-4 py-3 font-bold text-amber-600">Conditional Admission</td>
                         <td className="px-4 py-3">Conditional Admission (e.g. submit pending transcripts)</td>
                         <td className="px-4 py-3">Fulfill conditions before the deadline</td>
                       </tr>
                       <tr>
-                        <td className="px-4 py-3 font-bold text-germany-red">Ablehnung</td>
-                        <td className="px-4 py-3">Rejection (Not Admitted)</td>
+                        <td className="px-4 py-3 font-bold text-germany-red">Rejection</td>
+                        <td className="px-4 py-3">Not Admitted</td>
                         <td className="px-4 py-3">Evaluate profile and apply next cycle</td>
                       </tr>
                     </tbody>
@@ -235,21 +235,21 @@ export const ProcessContent = () => {
                 </div>
 
                 <p className="text-sm text-gray-700 leading-relaxed font-medium">
-                  Once you get the admission letter (<em>Zulassungsbescheid</em>), accept within the <strong>2–4 week deadline</strong>.
+                  Once you get the admission letter, accept within the <strong>2–4 week deadline</strong>.
                 </p>
 
                 <div className="space-y-3 font-medium text-xs text-gray-600">
                   <div className="p-4 rounded-2xl bg-[#FDFBF7] border border-[#EBE7E0]/40 space-y-2">
-                    <span className="font-bold text-germany-black block">Semester Contribution (Semesterbeitrag)</span>
+                    <span className="font-bold text-germany-black block">Semester Contribution</span>
                     <p className="leading-relaxed">
                       Public universities are tuition-free, but they charge a semester contribution ranging from <strong>€70 to €390</strong> depending on the university. This covers student services, administration, and public transit tickets.
                     </p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-[#FDFBF7] border border-[#EBE7E0]/40 space-y-2">
-                    <span className="font-bold text-germany-black block">Official Enrollment (Immatrikulation)</span>
+                    <span className="font-bold text-germany-black block">Official University Enrollment</span>
                     <p className="leading-relaxed">
-                      Done online or in-person. Requires proof of public health insurance (GKV funds TK, AOK, Barmer, etc. push confirmation via the electronic M10 procedure). You will receive your <em>Immatrikulationsbescheinigung</em> (Enrollment Certificate).
+                      Done online or in-person. Requires proof of public health insurance (funds like TK, AOK, Barmer push confirmation electronically). You will receive your official Enrollment Certificate.
                     </p>
                   </div>
                 </div>

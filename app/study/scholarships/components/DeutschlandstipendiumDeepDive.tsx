@@ -9,7 +9,7 @@ export const DeutschlandstipendiumDeepDive = () => {
     {
       step: '01',
       title: 'Secure Admission / Enrolment',
-      desc: 'You can apply as an incoming 1st-semester student with your admission letter (Zulassungsbescheid) or as a continuing student with your transcript of records.'
+      desc: 'You can apply as an incoming 1st-semester student with your official admission letter or as a continuing student with your transcript of records.'
     },
     {
       step: '02',

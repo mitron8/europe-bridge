@@ -24,7 +24,7 @@ export const AlternativeFundingSection = () => {
 
         {/* 4 Alternative Pillars */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* 1. Werkstudent & Part-Time Jobs */}
+          {/* 1. Working Student & Part-Time Jobs */}
           <div className="neu-card p-6 space-y-4 flex flex-col justify-between">
             <div className="space-y-2">
               <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-800">
@@ -32,7 +32,7 @@ export const AlternativeFundingSection = () => {
               </div>
               <h3 className="text-lg font-black text-germany-black">140 Full Days / 280 Half Days</h3>
               <p className="text-xs text-gray-600 font-medium leading-relaxed">
-                Germany’s updated skilled immigration law allows students to work up to <strong>140 full days</strong> per year. Werkstudent jobs in tech, engineering, and finance pay <strong>€14 to €22 / hr</strong> (€1,100–€1,700/mo).
+                Germany’s updated skilled immigration law allows students to work up to <strong>140 full days</strong> per year. Working student jobs in tech, engineering, and finance pay <strong>€14 to €22 / hr</strong> (€1,100–€1,700/mo).
               </p>
             </div>
             <div className="pt-3 border-t border-gray-100 text-xs font-bold text-emerald-700">

@@ -1,8 +1,10 @@
 "use client";
 
-import React from 'react';
-import { Search, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
+import { Search, Loader2, Eye } from 'lucide-react';
 import { usePaginatedList } from '../hooks/usePaginatedList';
+import { StudentDetailModal } from './StudentDetailModal';
 
 export interface AssignedStudent {
   userId: string;
@@ -22,6 +24,8 @@ export function CounsellorStudents() {
     bottomSentinelRef,
     hasMore,
   } = usePaginatedList<AssignedStudent>('/counsellor/students', 20);
+
+  const [selectedStudent, setSelectedStudent] = useState<AssignedStudent | null>(null);
 
   const formatStatus = (status: string | null) => {
     if (!status) return 'Unknown';
@@ -63,6 +67,7 @@ export function CounsellorStudents() {
             <th className="px-4 py-3 text-xs font-extrabold text-gray-500 uppercase tracking-wider">Student Name</th>
             <th className="px-4 py-3 text-xs font-extrabold text-gray-500 uppercase tracking-wider">Email</th>
             <th className="px-4 py-3 text-xs font-extrabold text-gray-500 uppercase tracking-wider">Status</th>
+            <th className="px-4 py-3 text-xs font-extrabold text-gray-500 uppercase tracking-wider text-right">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -79,6 +84,17 @@ export function CounsellorStudents() {
                   {formatStatus(student.status)}
                 </span>
               </td>
+              <td className="px-4 py-3 text-sm text-right">
+                <button
+                  type="button"
+                  onClick={() => setSelectedStudent(student)}
+                  className="neu-btn py-1.5 px-3.5 text-xs font-extrabold text-germany-black hover:text-germany-red inline-flex items-center gap-1.5 cursor-pointer shadow-[3px_3px_8px_rgba(210,205,195,0.6),-3px_-3px_8px_rgba(255,255,255,0.9)] active:shadow-[inset_2px_2px_5px_rgba(210,205,195,0.5)] transition-all"
+                  title={`View details for ${student.firstName} ${student.lastName}`}
+                >
+                  <Eye className="w-3.5 h-3.5 text-germany-red" />
+                  <span>View</span>
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -90,6 +106,17 @@ export function CounsellorStudents() {
       )}
     </div>
     )}
+
+      {/* Student Detail Modal */}
+      <AnimatePresence>
+        {selectedStudent && (
+          <StudentDetailModal
+            key={selectedStudent.userId}
+            student={selectedStudent}
+            onClose={() => setSelectedStudent(null)}
+          />
+        )}
+      </AnimatePresence>
   </div>
   );
 }

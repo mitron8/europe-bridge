@@ -21,7 +21,7 @@ export const MonthlyBudgetBreakdown = () => {
         </div>
 
         <p className="text-base text-gray-700 font-medium leading-relaxed">
-          The German Federal Ministry of Education and Research sets the mandatory student visa financial proof (Blocked Account / <em>Sperrkonto</em>) at <strong className="text-germany-black">€11,904 per year (€992 per month)</strong>. This amount represents the official minimum required to cover basic living expenses. Below is how that budget translates in real life across different German city tiers:
+          The German Federal Ministry of Education and Research sets the mandatory student visa financial proof (Blocked Account) at <strong className="text-germany-black">€11,904 per year (€992 per month)</strong>. This amount represents the official minimum required to cover basic living expenses. Below is how that budget translates in real life across different German city tiers:
         </p>
 
         {/* Budget Comparison Table */}
@@ -38,7 +38,7 @@ export const MonthlyBudgetBreakdown = () => {
             <tbody className="divide-y divide-gray-100 bg-white">
               <tr className="hover:bg-red-50/40 transition-colors">
                 <td className="py-3.5 px-5 font-bold text-gray-900 flex items-center gap-2">
-                  <span>Rent (Shared WG Room)</span>
+                  <span>Rent (Shared Flat Room)</span>
                 </td>
                 <td className="py-3.5 px-5 text-gray-700 font-semibold">€280 – €380</td>
                 <td className="py-3.5 px-5 text-gray-700 font-semibold">€400 – €500</td>
@@ -95,12 +95,12 @@ export const MonthlyBudgetBreakdown = () => {
           <div className="p-5 rounded-2xl bg-green-50/60 border border-green-200 space-y-2">
             <span className="text-xs font-black uppercase text-green-700 tracking-wider">Budget-Friendly Cities</span>
             <p className="text-sm text-gray-700 font-semibold">Leipzig, Chemnitz, Magdeburg, Greifswald, Ilmenau, Siegen</p>
-            <p className="text-xs text-gray-500">Ideal for students on tight budgets. Very affordable student dorms and WG rooms under €350/mo.</p>
+            <p className="text-xs text-gray-500">Ideal for students on tight budgets. Very affordable student dorms and shared flat rooms under €350/mo.</p>
           </div>
           <div className="p-5 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-2">
             <span className="text-xs font-black uppercase text-amber-700 tracking-wider">Mid-Range Cities</span>
             <p className="text-sm text-gray-700 font-semibold">Berlin, Hannover, Bremen, Dortmund, Aachen, Dresden</p>
-            <p className="text-xs text-gray-500">Balanced cost of living with vibrant tech hubs, student life, and abundant part-time Werkstudent jobs.</p>
+            <p className="text-xs text-gray-500">Balanced cost of living with vibrant tech hubs, student life, and abundant part-time working student jobs.</p>
           </div>
           <div className="p-5 rounded-2xl bg-red-50/60 border border-red-200 space-y-2">
             <span className="text-xs font-black uppercase text-red-700 tracking-wider">High-Cost Metropolises</span>

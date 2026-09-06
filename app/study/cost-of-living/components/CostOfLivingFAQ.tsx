@@ -13,23 +13,23 @@ export const CostOfLivingFAQ = () => {
     },
     {
       question: "Is Munich really that expensive compared to other university cities?",
-      answer: "Yes, Munich is Germany's most expensive student city. A room in a shared apartment (WG) costs €550–€750/month compared to €280–€380 in Leipzig. However, Munich also offers higher student Werkstudent hourly wages (€15–€20/hr) at global tech & corporate headquarters (BMW, Siemens, Allianz, TUM/LMU spin-offs)."
+      answer: "Yes, Munich is Germany's most expensive student city. A room in a shared apartment costs €550–€750/month compared to €280–€380 in Leipzig. However, Munich also offers higher working student hourly wages (€15–€20/hr) at global corporate headquarters (BMW, Siemens, Allianz, TUM/LMU spin-offs)."
     },
     {
       question: "What is the Deutschlandticket and is it worth it for students?",
-      answer: "The Deutschlandticket costs €63/month and provides unlimited access to all local buses, trams, U-Bahn, S-Bahn, and regional trains (RE, RB) across the ENTIRE country of Germany. For students, it is an incredible deal because standard single-city monthly passes often cost over €80. Most public universities include this ticket directly in the mandatory student semester contribution."
+      answer: "The Deutschlandticket costs €63/month and provides unlimited access to all local buses, trams, subways, commuter rail, and regional trains across the ENTIRE country of Germany. For students, it is an incredible deal because standard single-city monthly passes often cost over €80. Most public universities include this ticket directly in the mandatory student semester contribution."
     },
     {
       question: "Can I survive strictly on the blocked account monthly payout (€992/mo)?",
-      answer: "Yes, €992/month is sufficient to cover rent, groceries, health insurance, and public transport in budget and mid-range cities (like Leipzig, Dresden, Aachen, Bremen, or Magdeburg). In expensive cities like Munich or Frankfurt, you will likely need supplementary income from a part-time student job (Werkstudent or Minijob)."
+      answer: "Yes, €992/month is sufficient to cover rent, groceries, health insurance, and public transport in budget and mid-range cities (like Leipzig, Dresden, Aachen, Bremen, or Magdeburg). In expensive cities like Munich or Frankfurt, you will likely need supplementary income from a part-time student job (working student role or mini-job)."
     },
     {
       question: "How much does public health insurance cost for students in 2026?",
-      answer: "Statutory public health insurance (gesetzliche Krankenversicherung e.g., TK, Barmer, AOK) for students under 30 costs approximately €141–€146 per month (inclusive of long-term nursing care insurance). It covers all doctor visits, hospital treatments, emergency care, and prescription medication with no hidden deductibles."
+      answer: "Statutory public health insurance (e.g., TK, Barmer, AOK) for students under 30 costs approximately €141–€146 per month (inclusive of long-term nursing care insurance). It covers all doctor visits, hospital treatments, emergency care, and prescription medication with no hidden deductibles."
     },
     {
       question: "What are the cheapest university cities in Germany?",
-      answer: "The most affordable university cities are primarily located in eastern and central Germany: Chemnitz, Leipzig, Magdeburg, Greifswald, Jena, Ilmenau, and Siegen. Monthly living costs in these cities range from €700 to €950, with shared WG room rents under €350/mo."
+      answer: "The most affordable university cities are primarily located in eastern and central Germany: Chemnitz, Leipzig, Magdeburg, Greifswald, Jena, Ilmenau, and Siegen. Monthly living costs in these cities range from €700 to €950, with shared flat room rents under €350/mo."
     }
   ];
 

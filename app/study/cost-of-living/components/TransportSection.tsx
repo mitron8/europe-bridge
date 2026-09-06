@@ -68,7 +68,7 @@ export const TransportSection = () => {
             </div>
             <h4 className="font-extrabold text-germany-black text-base">University Semester Ticket</h4>
             <p className="text-xs text-gray-600 font-medium leading-relaxed">
-              Most public universities bundle a discounted student Deutschlandticket directly into your mandatory semester contribution (<em>Semesterbeitrag</em>).
+              Most public universities bundle a discounted student Deutschlandticket directly into your mandatory semester contribution.
             </p>
           </div>
 

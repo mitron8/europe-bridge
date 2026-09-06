@@ -12,7 +12,7 @@ export const LoanFeatures = () => {
     {
       icon: Wallet,
       title: "Covers Living Expenses & Blocked Account",
-      desc: "The loan directly funds your mandatory German Sperrkonto deposit and monthly living expenses, ensuring you meet all financial proof requirements effortlessly."
+      desc: "The loan directly funds your mandatory German blocked account deposit and monthly living expenses, ensuring you meet all financial proof requirements effortlessly."
     },
     {
       icon: FileCheck,

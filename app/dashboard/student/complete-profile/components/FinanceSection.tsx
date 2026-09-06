@@ -54,7 +54,7 @@ export default function FinanceSection({ data, onChange, onNext, onPrev }: Props
       <div className="mb-8 p-6 rounded-2xl bg-gray-50 border border-gray-100 shadow-sm animate-fade-in">
         <h4 className="text-md font-extrabold text-germany-black font-display mb-2">Blocked Account Requirement</h4>
         <p className="text-xs text-gray-500 mb-4 font-bold">
-          Germany requires a blocked account (Sperrkonto) for the student visa, currently around 11,208 EUR per year to cover living expenses.
+          Germany requires an official blocked account for the student visa, currently around €11,904 per year to cover living expenses.
         </p>
         <label className="flex items-center space-x-2 text-xs font-bold text-gray-600 cursor-pointer select-none">
           <input 

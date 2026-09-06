@@ -45,7 +45,7 @@ export default function StudentDashboard() {
               Winter Intake 2026 Preparation
             </div>
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-display text-germany-black flex items-center justify-center md:justify-start gap-2">
-              <span>Willkommen zurück!</span>
+              <span>Welcome back!</span>
             </h1>
             <p className="text-xs md:text-sm font-bold text-gray-500 max-w-xl">
               You are currently on <span className="text-germany-red font-extrabold">Step 2: AI Matching Engine</span>. Review your recommended German universities and finalize your shortlist today.
@@ -127,7 +127,7 @@ export default function StudentDashboard() {
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-display text-germany-black">1.6 (Sehr Gut)</div>
+          <div className="text-2xl font-display text-germany-black">1.6 (Excellent)</div>
           <p className="text-[11px] font-bold text-emerald-600">Top 10% competitive tier</p>
         </div>
 

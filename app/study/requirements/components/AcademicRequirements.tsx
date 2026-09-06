@@ -150,11 +150,11 @@ export const AcademicRequirements = () => {
                   </li>
                   <li className="flex items-start gap-2.5">
                     <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
-                    <span><strong>Studienkolleg (Foundation Year):</strong> If your 12th certificate is not considered 100% equivalent to the German <em className="italic font-bold">Abitur</em>, you must complete a 1-year Studienkolleg prep course and pass the <em className="italic font-bold">Feststellungsprüfung (FSP)</em>.</span>
+                    <span><strong>Foundation Year (Preparatory Course):</strong> If your 12th certificate is not considered 100% equivalent to the German high school leaving certificate, you must complete a 1-year preparatory course and pass the university entrance assessment exam (FSP).</span>
                   </li>
                   <li className="flex items-start gap-2.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-                    <span><strong>Direct Entry Exemption:</strong> Students with 1 year of completed Bachelor's in home country or JEE Advanced rank may qualify for direct entry without Studienkolleg.</span>
+                    <span><strong>Direct Entry Exemption:</strong> Students with 1 year of completed Bachelor's in home country or JEE Advanced rank may qualify for direct entry without a foundation year.</span>
                   </li>
                 </ul>
               </div>

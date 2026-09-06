@@ -47,7 +47,7 @@ export const EarningAndBudgetingTips = () => {
             </div>
 
             <div className="space-y-2 p-4 bg-white/5 rounded-xl border border-white/10">
-              <span className="text-xs font-black text-red-400 uppercase tracking-wider">Werkstudent Position</span>
+              <span className="text-xs font-black text-red-400 uppercase tracking-wider">Working Student Position</span>
               <div className="text-xl font-black text-white">€14 – €20 / hour</div>
               <p className="text-xs text-gray-300">Working student jobs at companies in your field (Software, Engineering, Finance) earn €1,100–€1,500 gross/mo.</p>
             </div>
@@ -60,13 +60,13 @@ export const EarningAndBudgetingTips = () => {
           <div className="p-6 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-3">
             <h3 className="font-extrabold text-germany-black text-lg flex items-center gap-2">
               <Radio className="w-5 h-5 text-amber-700" />
-              GEZ Broadcasting Fee (Rundfunkbeitrag)
+              Broadcasting Fee (GEZ)
             </h3>
             <p className="text-xs text-gray-700 font-medium leading-relaxed">
               Every household in Germany must pay the mandatory TV/Radio fee of <strong className="text-germany-black">€18.36 per month</strong>.
             </p>
             <div className="p-3 bg-white rounded-xl border border-amber-200 text-xs text-gray-700 font-semibold space-y-1">
-              <div>💡 <strong>WG Flatmate Hack:</strong> In a shared flat (WG), only ONE person pays for the whole apartment. Split the €18.36 fee evenly among all flatmates (~€4.50/mo per person)!</div>
+              <div>💡 <strong>Shared Flat Hack:</strong> In a shared flat, only ONE person pays for the whole apartment. Split the €18.36 fee evenly among all flatmates (~€4.50/mo per person)!</div>
             </div>
           </div>
 
@@ -79,7 +79,7 @@ export const EarningAndBudgetingTips = () => {
             <ul className="space-y-2 text-xs text-gray-700 font-medium">
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
-                <span>Open a free digital current account (<em>Girokonto</em>) with <strong>N26, DKB, or ING</strong> to avoid monthly bank maintenance fees.</span>
+                <span>Open a free digital checking account with <strong>N26, DKB, or ING</strong> to avoid monthly bank maintenance fees.</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />

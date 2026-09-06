@@ -12,7 +12,7 @@ export const DeadlinesTimeline = () => {
     { month: "8–10 Months Before", title: "Shortlisting & LORs", desc: "Finalize your shortlist of 8–10 German universities. Request recommendation letters from professors or workplace supervisors." },
     { month: "6–8 Months Before", title: "SOP & Document Legalization", desc: "Draft tailored Statement of Purpose (SOP) letters. Notarize, translate, and obtain MEA Apostille on degree certificates." },
     { month: "4–6 Months Before", title: "Application Submission", desc: "Submit applications via uni-assist or direct university portals before target deadlines (July 15 for Winter, Jan 15 for Summer)." },
-    { month: "2–3 Months Before", title: "Offer Letter & Blocked Account", desc: "Receive admission offers (Zulassungsbescheid). Deposit €11,904 into an official German Blocked Account (Expatrio, Fintiba, Coracle)." },
+    { month: "2–3 Months Before", title: "Offer Letter & Blocked Account", desc: "Receive admission offers. Deposit €11,904 into an official German Blocked Account (Expatrio, Fintiba, Coracle)." },
     { month: "6–8 Weeks Before", title: "Visa Application & Travel", desc: "Book appointment and submit national student visa application via the German embassy digital portal. Secure flight & housing." },
   ];
 

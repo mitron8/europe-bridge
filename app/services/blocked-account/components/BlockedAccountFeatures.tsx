@@ -7,7 +7,7 @@ export const BlockedAccountFeatures = () => {
     {
       icon: Briefcase,
       title: "Mandatory Visa Requirement",
-      desc: "A blocked account serves as official proof of financial resources accepted by German embassies, consulates, and local Ausländerbehörde immigration offices worldwide."
+      desc: "A blocked account serves as official proof of financial resources accepted by German embassies, consulates, and local German immigration offices worldwide."
     },
     {
       icon: Banknote,
@@ -22,17 +22,17 @@ export const BlockedAccountFeatures = () => {
     {
       icon: Stamp,
       title: "24-Hour Blocking Confirmation",
-      desc: "Receive your official Sperrbescheinigung PDF document within 24 hours of funding to present at your embassy visa appointment."
+      desc: "Receive your official blocking confirmation PDF document within 24 hours of funding to present at your embassy visa appointment."
     },
     {
       icon: ShieldCheck,
       title: "Bank-Grade German Security",
-      desc: "Your money is held in a licensed German bank backed by the statutory German Deposit Protection Scheme (Einlagensicherung) up to €100,000 per student."
+      desc: "Your money is held in a licensed German bank backed by the statutory German Deposit Protection Scheme up to €100,000 per student."
     },
     {
       icon: Building2,
-      title: "Local Girokonto Setup",
-      desc: "Get full support opening your local German current account (e.g. N26, DKB, Sparkasse) to receive your monthly payouts upon arrival."
+      title: "Local Checking Account Setup",
+      desc: "Get full support opening your local German checking account (e.g. N26, DKB, Sparkasse) to receive your monthly payouts upon arrival."
     }
   ];
 

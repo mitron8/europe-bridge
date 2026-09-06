@@ -28,7 +28,7 @@ export const BlockedAccountPricing = () => {
           <div className="p-4 bg-white rounded-2xl border border-amber-200 space-y-1">
             <span className="text-[11px] font-bold text-gray-500 uppercase">Standard Setup Fee</span>
             <div className="text-lg font-black text-germany-black">€49 – €89 <span className="text-xs font-normal text-gray-500">(one-time)</span></div>
-            <p className="text-[11px] text-gray-500 font-medium">Covers account opening &amp; 24h Sperrbescheinigung issuing.</p>
+            <p className="text-[11px] text-gray-500 font-medium">Covers account opening &amp; 24h blocking confirmation issuing.</p>
           </div>
 
           <div className="p-4 bg-white rounded-2xl border border-amber-200 space-y-1">

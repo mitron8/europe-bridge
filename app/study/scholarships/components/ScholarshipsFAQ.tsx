@@ -32,12 +32,12 @@ const FAQS_DATA: FAQItem[] = [
   },
   {
     question: "Can I work a part-time student job while receiving a scholarship?",
-    answer: "For most scholarships like the Deutschlandstipendium, you are completely allowed to work as a Werkstudent or HiWi without any reduction in your grant. For fully-funded DAAD scholarships, you are permitted to work only if your supervisor/host institution approves and if your monthly earnings do not exceed the German Minijob threshold (currently €538 to €603/month). Any earnings above that limit may be deducted from your DAAD stipend.",
+    answer: "For most scholarships like the Deutschlandstipendium, you are completely allowed to work as a working student or student assistant without any reduction in your grant. For fully-funded DAAD scholarships, you are permitted to work only if your supervisor/host institution approves and if your monthly earnings do not exceed the German mini-job threshold (currently €538 to €603/month). Any earnings above that limit may be deducted from your DAAD stipend.",
     category: "Working"
   },
   {
     question: "Are scholarship stipends taxed in Germany?",
-    answer: "In almost all cases, pure academic scholarships and research stipends (like DAAD and Deutschlandstipendium) are exempt from German income tax under § 3 No. 44 of the German Income Tax Act (Einkommensteuergesetz - EStG), provided they do not require you to provide a counter-service (like mandatory commercial labor) and are intended to cover your cost of living and scientific advancement.",
+    answer: "In almost all cases, pure academic scholarships and research stipends (like DAAD and Deutschlandstipendium) are exempt from German income tax under the German Income Tax Act, provided they do not require you to provide a counter-service (like mandatory commercial labor) and are intended to cover your cost of living and scientific advancement.",
     category: "Tax"
   },
   {
@@ -47,7 +47,7 @@ const FAQS_DATA: FAQItem[] = [
   },
   {
     question: "What if I don't win any scholarship? Can I still afford to study in Germany?",
-    answer: "Yes, definitely! Unlike the US or UK, German public universities do not charge tuition fees (except for a nominal semester contribution of €150–€350). You only need to fund your living expenses (€900–€1,100/month). International students can legally work up to 140 full days per year. A part-time Werkstudent role paying €15–€20/hr enables you to earn €1,100–€1,600/month, making you completely financially self-sufficient.",
+    answer: "Yes, definitely! Unlike the US or UK, German public universities do not charge tuition fees (except for a nominal semester contribution of €150–€350). You only need to fund your living expenses (€900–€1,100/month). International students can legally work up to 140 full days per year. A part-time working student role paying €15–€20/hr enables you to earn €1,100–€1,600/month, making you completely financially self-sufficient.",
     category: "General"
   }
 ];

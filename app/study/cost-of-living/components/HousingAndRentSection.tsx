@@ -38,7 +38,7 @@ export const HousingAndRentSection = () => {
               <tr className="hover:bg-gray-50 transition-colors">
                 <td className="py-4 px-5 font-extrabold text-germany-black">
                   Student Dormitory<br/>
-                  <span className="text-xs font-normal text-gray-500 italic">(Studentenwohnheim)</span>
+                  <span className="text-xs font-normal text-gray-500 italic">(Student Residence)</span>
                 </td>
                 <td className="py-4 px-5 font-bold text-green-700">€200 – €350</td>
                 <td className="py-4 px-5 text-gray-700 text-xs font-medium">
@@ -50,15 +50,15 @@ export const HousingAndRentSection = () => {
               </tr>
               <tr className="hover:bg-gray-50 transition-colors">
                 <td className="py-4 px-5 font-extrabold text-germany-black">
-                  Shared Flat / WG<br/>
-                  <span className="text-xs font-normal text-gray-500 italic">(Wohngemeinschaft)</span>
+                  Shared Flat<br/>
+                  <span className="text-xs font-normal text-gray-500 italic">(Shared Apartment)</span>
                 </td>
                 <td className="py-4 px-5 font-bold text-amber-700">€350 – €600</td>
                 <td className="py-4 px-5 text-gray-700 text-xs font-medium">
-                  Social, great way to learn German, flexible lease terms, widespread.
+                  Social, great way to practice language, flexible lease terms, widespread.
                 </td>
                 <td className="py-4 px-5 text-gray-700 text-xs font-medium">
-                  Competitive interview process (<em>WG-Casting</em>), higher in Munich.
+                  Competitive flatmate interview process, higher in Munich.
                 </td>
               </tr>
               <tr className="hover:bg-gray-50 transition-colors">
@@ -107,10 +107,10 @@ export const HousingAndRentSection = () => {
             </h3>
             <ul className="space-y-2 text-sm text-gray-700 font-medium">
               <li className="flex items-start gap-2">
-                <strong className="text-germany-black shrink-0 font-bold">1. Studierendenwerk:</strong> Official public university dorms. Apply immediately upon receiving your admission letter!
+                <strong className="text-germany-black shrink-0 font-bold">1. Student Services Dorms:</strong> Official public university dorms. Apply immediately upon receiving your admission letter!
               </li>
               <li className="flex items-start gap-2">
-                <strong className="text-germany-black shrink-0 font-bold">2. WG-Gesucht.de:</strong> Germany's largest portal for shared flat WG rooms.
+                <strong className="text-germany-black shrink-0 font-bold">2. WG-Gesucht.de:</strong> Germany's largest portal for shared flat rooms.
               </li>
               <li className="flex items-start gap-2">
                 <strong className="text-germany-black shrink-0 font-bold">3. Immobilienscout24:</strong> Standard portal for private apartments and studios.

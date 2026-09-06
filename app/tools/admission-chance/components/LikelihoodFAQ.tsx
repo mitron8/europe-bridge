@@ -17,7 +17,7 @@ export const LikelihoodFAQ = () => {
     },
     {
       q: "What is the difference between NC and Non-NC programs?",
-      a: "NC (Numerus Clausus) programs have fixed seat quotas and rank applicants strictly by GPA. Non-NC programs have no seat limit—anyone meeting the minimum entry prerequisites is admitted."
+      a: "Restricted (NC) programs have fixed seat quotas and rank applicants strictly by GPA. Non-NC programs have no seat limit—anyone meeting the minimum entry prerequisites is admitted."
     },
     {
       q: "Can work experience compensate for a lower undergraduate CGPA?",

@@ -67,7 +67,7 @@ const SCHOLARSHIPS_DATA: ScholarshipItem[] = [
       'Open to all nationalities and degree subjects without quotas',
       'Does not count toward statutory income limits or BAföG',
       'Direct access to corporate mentorship, internships, and networking galas',
-      'Can be held concurrently with student jobs (HiWi / Werkstudent)'
+      'Can be held concurrently with student jobs (research assistant / working student)'
     ],
     eligibility: [
       'Enrolled or currently admitted at a participating German university',
@@ -231,7 +231,7 @@ const SCHOLARSHIPS_DATA: ScholarshipItem[] = [
   },
   {
     id: 'bavaria-grant',
-    name: 'Bavarian State International Student Grants (Bayerische Stipendien)',
+    name: 'Bavarian State International Student Grants',
     organization: 'Bavarian Ministry of Science and the Arts',
     category: 'partial',
     amount: '€300 to €600 / month (or one-off grant)',
