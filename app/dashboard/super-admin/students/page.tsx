@@ -305,7 +305,7 @@ export default function SuperAdminStudentsPage() {
           }
 
           return (
-            <div className="overflow-x-auto" ref={menuRef}>
+            <div className="overflow-x-auto pt-2 pb-4" ref={menuRef}>
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-[#EBE7E0] text-gray-400 font-extrabold uppercase text-[10px]">
@@ -340,24 +340,26 @@ export default function SuperAdminStudentsPage() {
                             {formatStatus(student.status)}
                           </span>
                         </td>
-                        <td className="py-3.5 text-right relative">
-                          <button
-                            onClick={() => setActiveMenu(activeMenu === student.userId ? null : student.userId)}
-                            className="p-1.5 rounded-lg hover:bg-[#EBE7E0] transition-colors text-gray-400 hover:text-germany-black"
-                          >
-                            <MoreHorizontal className="w-4 h-4" />
-                          </button>
+                        <td className="py-3.5 text-right">
+                          <div className="relative inline-block text-left">
+                            <button
+                              onClick={() => setActiveMenu(activeMenu === student.userId ? null : student.userId)}
+                              className="p-1.5 rounded-lg hover:bg-[#EBE7E0] transition-colors text-gray-400 hover:text-germany-black"
+                            >
+                              <MoreHorizontal className="w-4 h-4" />
+                            </button>
 
-                          {activeMenu === student.userId && (
-                            <div className="absolute right-0 top-full mt-2 w-48 neu-dropdown z-30 p-1.5 overflow-hidden">
-                              <button
-                                onClick={() => openAssignModal(student)}
-                                className="w-full text-left px-3.5 py-2 text-xs font-bold text-germany-black neu-dropdown-item hover:bg-[#EBE7E0] transition-colors"
-                              >
-                                Assign Counsellor
-                              </button>
-                            </div>
-                          )}
+                            {activeMenu === student.userId && (
+                              <div className="absolute right-0 bottom-full mb-2 w-48 neu-dropdown z-30 p-1.5 overflow-hidden">
+                                <button
+                                  onClick={() => openAssignModal(student)}
+                                  className="w-full text-left px-3.5 py-2 text-xs font-bold text-germany-black neu-dropdown-item hover:bg-[#EBE7E0] transition-colors"
+                                >
+                                  Assign Counsellor
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
