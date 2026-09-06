@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  Sparkles,
   ArrowRight,
   CheckCircle2,
   Clock,
@@ -135,7 +134,7 @@ export default function StudentDashboard() {
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-400">Matched Unis</span>
             <div className="p-2 bg-germany-red/10 rounded-xl text-germany-red">
-              <Sparkles className="w-4 h-4" />
+              <GraduationCap className="w-4 h-4" />
             </div>
           </div>
           <div className="text-2xl font-display text-germany-black">14 Programs</div>

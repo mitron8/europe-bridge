@@ -7,7 +7,7 @@ import { logout } from '@/lib/auth';
 import {
   LayoutDashboard,
   UserCheck,
-  Sparkles,
+  Compass,
   Bookmark,
   FileText,
   CheckCircle2,
@@ -16,7 +16,7 @@ import {
   LogOut,
   ChevronRight,
   GraduationCap,
-  Sparkle,
+  TrendingUp,
   X
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -24,7 +24,7 @@ import { useState, useEffect } from 'react';
 const mainNavItems = [
   { name: 'Dashboard', path: '/dashboard/student', icon: LayoutDashboard, step: 'Overview' },
   { name: 'Complete Profile', path: '/dashboard/student/complete-profile', icon: UserCheck, step: 'Step 1' },
-  { name: 'Matching Engine', path: '/dashboard/student/matching', icon: Sparkles, step: 'Step 2' },
+  { name: 'Matching Engine', path: '/dashboard/student/matching', icon: Compass, step: 'Step 2' },
   { name: 'My Shortlist', path: '/dashboard/student/shortlist', icon: Bookmark, step: 'Step 3' },
 ];
 
@@ -202,7 +202,7 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
         <div className="p-3 bg-[#EBE7E0]/60 rounded-2xl border border-[#E2DDD3]/50 space-y-2">
           <div className="flex items-center justify-between text-[11px] font-extrabold">
             <span className="text-germany-black flex items-center gap-1">
-              <Sparkle className="w-3 h-3 text-germany-red" />
+              <TrendingUp className="w-3 h-3 text-germany-red" />
               <span>Admission Progress</span>
             </span>
             <span className="text-germany-red font-black">35%</span>

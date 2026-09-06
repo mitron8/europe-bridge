@@ -9,7 +9,7 @@ import {
   User, 
   MessageSquare, 
   Check, 
-  Sparkles,
+  GraduationCap,
   ChevronDown
 } from 'lucide-react';
 
@@ -154,7 +154,7 @@ const Hero = () => {
               <>
                 <div className="text-center mt-1 mb-4">
                   <div className="inline-flex items-center gap-1.5 px-3 py-0.5 bg-germany-red/10 text-germany-red rounded-full font-extrabold text-[10px] uppercase tracking-wider mb-1">
-                    <Sparkles className="w-3 h-3" />
+                    <GraduationCap className="w-3.5 h-3.5" />
                     <span>Free 1-on-1 Consultation</span>
                   </div>
                   <h3 className="font-display text-2xl text-germany-black tracking-wide leading-tight">

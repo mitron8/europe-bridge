@@ -2,7 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, UserCheck, ShieldCheck } from 'lucide-react';
+import { ArrowRight, UserCheck, ShieldCheck } from 'lucide-react';
 
 export const APSCTA = () => {
   return (
@@ -24,7 +24,7 @@ export const APSCTA = () => {
 
           <div className="relative z-10 max-w-3xl space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-black uppercase tracking-wider backdrop-blur-md">
-              <Sparkles className="w-3.5 h-3.5" />
+              <ShieldCheck className="w-3.5 h-3.5" />
               <span>APS Guidance &amp; Verification Support</span>
             </div>
 

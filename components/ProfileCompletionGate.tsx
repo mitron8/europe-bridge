@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  Sparkles,
+  UserCheck,
   ArrowRight,
   Clock,
   ShieldCheck,
@@ -39,7 +39,7 @@ export default function ProfileCompletionGate({
         <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6 pt-2">
           <div className="space-y-3 text-center sm:text-left flex-1">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-germany-gold/15 border border-germany-gold/40 rounded-full font-extrabold text-germany-black text-xs">
-              <Sparkles className="w-3.5 h-3.5 text-germany-red animate-pulse" />
+              <UserCheck className="w-3.5 h-3.5 text-germany-red" />
               <span>Personalization Required</span>
             </div>
 

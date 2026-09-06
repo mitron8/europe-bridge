@@ -12,7 +12,7 @@ import {
   ArrowLeft, 
   RotateCcw,
   CheckCircle2,
-  Sparkles
+  Target
 } from 'lucide-react';
 import { EvaluationResults } from './EvaluationResults';
 
@@ -75,7 +75,7 @@ export const AdmissionEvaluatorForm = () => {
           <div className="space-y-3 border-b border-gray-200 pb-6 mb-8">
             <div className="flex items-center justify-between text-xs font-bold text-gray-600">
               <span className="text-germany-red font-black uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4" /> Step {currentStep} of {totalSteps}
+                <Target className="w-4 h-4" /> Step {currentStep} of {totalSteps}
               </span>
               <span>{Math.round((currentStep / totalSteps) * 100)}% Completed</span>
             </div>

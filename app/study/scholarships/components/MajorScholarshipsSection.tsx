@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Award, Search, Filter, CheckCircle2, DollarSign, Calendar, 
-  ExternalLink, Sparkles, GraduationCap, Clock, AlertCircle, ChevronDown, ChevronUp, BookOpen
+  ExternalLink, Star, Lightbulb, GraduationCap, Clock, AlertCircle, ChevronDown, ChevronUp, BookOpen
 } from 'lucide-react';
 
 interface ScholarshipItem {
@@ -368,7 +368,7 @@ export const MajorScholarshipsSection = () => {
                         </span>
                         {scholarship.featured && (
                           <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-white bg-germany-red px-2.5 py-0.5 rounded-full shadow-sm">
-                            <Sparkles className="w-3 h-3" /> Top Pick
+                            <Star className="w-3 h-3 fill-current" /> Top Pick
                           </span>
                         )}
                         <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
@@ -450,7 +450,7 @@ export const MajorScholarshipsSection = () => {
                         {/* Counselor Pro Tip Box */}
                         <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-xl space-y-1">
                           <div className="flex items-center gap-1.5 text-xs font-extrabold text-amber-900 uppercase tracking-wider">
-                            <Sparkles className="w-4 h-4 text-amber-600" /> EuropeBridge Counselor Insight
+                            <Lightbulb className="w-4 h-4 text-amber-600" /> EuropeBridge Counselor Insight
                           </div>
                           <p className="text-xs text-amber-950 font-medium leading-relaxed">
                             {scholarship.proTip}

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Sparkles,
+  AlertCircle,
   ArrowRight,
   X,
   GraduationCap,
@@ -200,7 +200,7 @@ export default function ProfileCompletionModal() {
               {/* Header Badge & Title */}
               <div className="space-y-2 mt-0.5">
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-germany-gold/15 border border-germany-gold/40 rounded-full font-bold text-germany-black text-[10px]">
-                  <Sparkles className="w-3 h-3 text-germany-red" />
+                  <AlertCircle className="w-3 h-3 text-germany-red" />
                   <span>Profile Incomplete</span>
                 </div>
 

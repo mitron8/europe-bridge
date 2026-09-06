@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, ArrowRight, Languages } from 'lucide-react';
+import { Tag, ArrowRight, Languages } from 'lucide-react';
 
 const LanguagePartner = () => {
   const [dinoImgSrc, setDinoImgSrc] = useState("/doodles/teacher_dino.png");
@@ -55,7 +55,7 @@ const LanguagePartner = () => {
               {/* Simple Discount Badge */}
               <div className="inline-flex flex-wrap items-center justify-center md:justify-start gap-2 pt-1">
                 <span className="inline-flex items-center gap-1 px-3 py-1 bg-amber-100/90 text-amber-900 border border-amber-300/60 rounded-full text-xs font-black">
-                  <Sparkles className="w-3 h-3 text-amber-600" />
+                  <Tag className="w-3 h-3 text-amber-600" />
                   Exclusive 25% Off
                 </span>
                 <span className="text-xs font-extrabold text-germany-black bg-white px-2.5 py-1 rounded-full shadow-[inset_1px_1px_3px_rgba(210,205,195,0.5)]">

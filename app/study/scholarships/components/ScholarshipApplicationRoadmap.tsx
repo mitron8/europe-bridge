@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
-import { GitPullRequest, Clock, CheckCircle2, AlertTriangle, FileText, UserCheck, Sparkles, Send } from 'lucide-react';
+import { GitPullRequest, Clock, CheckCircle2, AlertTriangle, FileText, UserCheck, Send } from 'lucide-react';
 
 export const ScholarshipApplicationRoadmap = () => {
   const roadmapSteps = [

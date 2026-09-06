@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Award, Calendar, CheckCircle2, Sparkles, ArrowRight, ShieldCheck, DollarSign, BookOpen, GraduationCap } from 'lucide-react';
+import { Award, Calendar, CheckCircle2, ArrowRight, ShieldCheck, DollarSign, BookOpen, GraduationCap } from 'lucide-react';
 
 export const ScholarshipsHero = () => {
   const [degreeLevel, setDegreeLevel] = useState<'masters' | 'bachelors' | 'phd'>('masters');
@@ -141,7 +141,7 @@ export const ScholarshipsHero = () => {
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-red-100 flex items-center justify-center text-germany-red shadow-inner">
-                  <Sparkles className="w-5 h-5" />
+                  <Award className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="font-extrabold text-germany-black text-lg">Scholarship Matcher</h3>

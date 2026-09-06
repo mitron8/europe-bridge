@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Languages, CheckCircle, Info, Sparkles, FileCheck } from 'lucide-react';
+import { Languages, CheckCircle, Info, FileCheck } from 'lucide-react';
 
 export const LanguageRequirements = () => {
   const [activeTab, setActiveTab] = useState<'english' | 'german'>('english');
@@ -58,7 +58,7 @@ export const LanguageRequirements = () => {
                   : 'text-gray-700 hover:text-germany-black'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              <Languages className="w-3.5 h-3.5" />
               <span>English Taught Programs</span>
             </button>
             <button

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { MapPin, Building2, TrendingUp, Sparkles } from 'lucide-react';
+import { MapPin, Building2, TrendingUp } from 'lucide-react';
 
 export const CityCostComparison = () => {
   const cities = [

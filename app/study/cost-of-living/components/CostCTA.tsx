@@ -2,7 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
+import { ArrowRight, ShieldCheck } from 'lucide-react';
 
 export const CostCTA = () => {
   return (
@@ -14,7 +14,7 @@ export const CostCTA = () => {
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
           <div className="space-y-4 max-w-2xl text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-black uppercase tracking-wider">
-              <Sparkles className="w-4 h-4" />
+              <ShieldCheck className="w-4 h-4" />
               <span>EuropeBridge Advisory</span>
             </div>
 

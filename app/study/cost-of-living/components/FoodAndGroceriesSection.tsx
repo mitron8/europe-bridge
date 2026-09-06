@@ -1,6 +1,6 @@
 "use client";
 import React from 'react';
-import { UtensilsCrossed, ShoppingCart, Sparkles, Tag, CheckCircle2 } from 'lucide-react';
+import { UtensilsCrossed, ShoppingCart, Tag, CheckCircle2 } from 'lucide-react';
 
 export const FoodAndGroceriesSection = () => {
   return (
@@ -103,7 +103,7 @@ export const FoodAndGroceriesSection = () => {
         <div className="p-6 rounded-2xl bg-amber-50 border border-amber-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-1">
             <h4 className="font-extrabold text-germany-black text-base flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-amber-600" />
+              <UtensilsCrossed className="w-5 h-5 text-amber-600" />
               University Cafeteria (Mensa) Subsidies
             </h4>
             <p className="text-xs text-gray-700 font-medium leading-relaxed max-w-2xl">

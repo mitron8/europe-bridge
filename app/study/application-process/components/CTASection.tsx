@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { UserCheck, ArrowRight } from 'lucide-react';
 
 export const CTASection = () => {
   return (
@@ -20,7 +20,7 @@ export const CTASection = () => {
           <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
             <div className="space-y-4 max-w-2xl text-center md:text-left">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-germany-gold/20 text-germany-black rounded-full font-extrabold text-[11px] uppercase tracking-wider">
-                <Sparkles className="w-3.5 h-3.5 text-germany-red" />
+                <UserCheck className="w-3.5 h-3.5 text-germany-red" />
                 <span>Get Professional Guidance</span>
               </div>
               <h2 className="text-2xl md:text-3xl font-display text-germany-black leading-tight">

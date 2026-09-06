@@ -2,7 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Sparkles, Calendar, Target, Award, BarChart3 } from 'lucide-react';
+import { Calendar, Target, Award, BarChart3 } from 'lucide-react';
 
 export const ToolHeroHeader = () => {
   return (
@@ -25,7 +25,7 @@ export const ToolHeroHeader = () => {
           {/* Main Hero Content */}
           <div className="lg:col-span-7 space-y-6">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-100/80 border border-red-200 text-germany-red text-xs font-black uppercase tracking-wider">
-              <Sparkles className="w-4 h-4" />
+              <Target className="w-4 h-4" />
               <span>Interactive Evaluation Tool 2026</span>
             </div>
 

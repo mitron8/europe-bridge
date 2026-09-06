@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
-import { Building2, Briefcase, GraduationCap, CheckCircle2, DollarSign, Award, BookOpen, Clock, Sparkles } from 'lucide-react';
+import { Building2, Briefcase, GraduationCap, CheckCircle2, DollarSign, Award, BookOpen, Clock, Lightbulb } from 'lucide-react';
 
 export const FoundationsAndUniversityGrants = () => {
   const foundations = [
@@ -165,7 +165,7 @@ export const FoundationsAndUniversityGrants = () => {
           {/* How to land a HiWi job */}
           <div className="bg-amber-100/60 p-4 rounded-xl border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="font-semibold text-amber-950 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-700 shrink-0" />
+              <Lightbulb className="w-4 h-4 text-amber-700 shrink-0" />
               <span>
                 <strong>How to land one:</strong> Attend office hours, achieve a top grade in a seminar, or inspect the institute’s bulletin board (Schwarzes Brett) in your 1st semester.
               </span>

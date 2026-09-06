@@ -6,7 +6,6 @@ import { UserProfileData } from './AdmissionEvaluatorForm';
 import { 
   Trophy, 
   RotateCcw, 
-  Sparkles, 
   CheckCircle2, 
   TrendingUp, 
   AlertCircle, 

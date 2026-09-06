@@ -26,7 +26,7 @@ import {
   Filter,
   ExternalLink,
   Award,
-  Sparkles,
+  Target,
   Download,
   AlertCircle
 } from 'lucide-react';
@@ -210,7 +210,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
         size: '0.5 MB',
         uploadDate: 'Aug 26, 2026',
         status: 'rejected',
-        rejectionReason: 'Format must follow strict reverse chronological order without graphical bars. Please link your GitHub repositories and clarify course credit equivalencies.',
+        rejectionReason: 'Format must follow strict reverse chronological order without graphical bars. Please link your project portfolio and clarify course credit equivalencies.',
         previewSnippet: 'Tabular Curriculum Vitae according to Europass guidelines. Lists internships, technical skills (Python, Go, Docker), and leadership activities.'
       },
       {
@@ -681,7 +681,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                     <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Readiness Score</span>
                     <div className="text-sm font-display text-germany-red font-black flex items-center gap-1.5">
                       <span>85% Ready</span>
-                      <Sparkles className="w-3.5 h-3.5 text-germany-gold" />
+                      <Award className="w-3.5 h-3.5 text-germany-gold" />
                     </div>
                     <p className="text-[10px] font-bold text-gray-400">APS In Verification</p>
                   </div>
@@ -1007,7 +1007,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
 
                           <div className="text-right shrink-0">
                             <span className="text-xs font-black text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full inline-flex items-center gap-1">
-                              <Sparkles className="w-3 h-3 text-emerald-600" />
+                              <Target className="w-3 h-3 text-emerald-600" />
                               {uni.matchScore}% Match
                             </span>
                           </div>

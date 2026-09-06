@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProfileCompletionGate from '@/components/ProfileCompletionGate';
 import {
-  Sparkles,
+  Compass,
   Bookmark,
   FileText,
   CheckCircle2,
@@ -46,7 +46,7 @@ const SECTION_CONFIGS: Record<string, SectionConfig> = {
     title: 'AI Matching Engine',
     subtitle: 'Find German universities matching your exact academic profile and career goals.',
     doodle: '/doodles/match.png',
-    icon: Sparkles,
+    icon: Compass,
   },
   documents: {
     title: 'Document Hub',
@@ -98,7 +98,7 @@ export default function StudentSectionPage({ params }: { params: Promise<{ secti
     title: section.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
     subtitle: `Manage your ${section}`,
     doodle: '/doodles/university.png',
-    icon: Sparkles,
+    icon: Compass,
   };
 
   const Icon = config.icon;
