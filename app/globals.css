@@ -38,6 +38,18 @@
     border: none;
   }
 
+  /* Claymorphism Dark Card */
+  .neu-card-dark {
+    background-color: var(--color-germany-black);
+    color: #ffffff;
+    border-radius: 36px;
+    box-shadow: 
+      12px 12px 30px rgba(0, 0, 0, 0.25),
+      inset -6px -6px 14px rgba(0, 0, 0, 0.6),
+      inset 6px 6px 14px rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
   /* Claymorphism Inputs (carved into the clay) */
   .neu-input {
     background-color: #EBE7E0; /* Carved into cream clay */

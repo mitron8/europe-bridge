@@ -1,0 +1,73 @@
+"use client";
+
+import React, { useState, useEffect } from 'react';
+import { CheckCircle2, Globe, FileCheck, Clock, Layers, MessageSquare, HelpCircle } from 'lucide-react';
+
+export const VisaSectionNav = () => {
+  const [activeId, setActiveId] = useState('features');
+
+  const navLinks = [
+    { id: 'features', label: 'What You Get', icon: CheckCircle2 },
+    { id: 'csp', label: 'CSP & VIDEX', icon: Globe },
+    { id: 'checklist', label: 'Documents', icon: FileCheck },
+    { id: 'timeline', label: 'Timeline', icon: Clock },
+    { id: 'interview', label: 'Interview Prep', icon: MessageSquare },
+    { id: 'pricing', label: 'Support Plans', icon: Layers },
+    { id: 'faq', label: 'FAQs', icon: HelpCircle },
+  ];
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 160;
+
+      for (let i = navLinks.length - 1; i >= 0; i--) {
+        const section = document.getElementById(`section-${navLinks[i].id}`);
+        if (section) {
+          const sectionTop = section.getBoundingClientRect().top + window.scrollY;
+          if (sectionTop <= scrollPosition) {
+            setActiveId(navLinks[i].id);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(`section-${id}`);
+    if (element) {
+      const yOffset = -110;
+      const y = element.getBoundingClientRect().top + window.scrollY + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  };
+
+  return (
+    <div className="hidden md:block sticky top-16 z-40 bg-[#F4F1EA]/95 backdrop-blur-md border-y border-[#EBE7E0] shadow-xs py-2.5 px-4 sm:px-8 transition-all">
+      <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+        <span className="text-[11px] font-black uppercase text-gray-500 shrink-0 mr-2 tracking-wider">Navigate:</span>
+        {navLinks.map((link) => {
+          const Icon = link.icon;
+          const isActive = activeId === link.id;
+          return (
+            <button
+              key={link.id}
+              onClick={() => scrollToSection(link.id)}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
+                isActive
+                  ? 'bg-germany-black text-white shadow-md scale-105 border border-germany-black'
+                  : 'bg-white/85 text-gray-700 hover:bg-white hover:text-germany-red border border-[#EBE7E0]/80 shadow-2xs'
+              }`}
+            >
+              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-germany-gold' : 'text-gray-400'}`} />
+              <span>{link.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};

@@ -42,7 +42,7 @@ export const SectionNav = () => {
   };
 
   return (
-    <div className="sticky top-16 z-40 bg-white/90 backdrop-blur-md border-y border-gray-200 shadow-sm py-2.5 px-4 transition-all">
+    <div className="hidden md:block sticky top-16 z-40 bg-white/90 backdrop-blur-md border-y border-gray-200 shadow-sm py-2.5 px-4 transition-all">
       <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
         <span className="text-xs font-black uppercase text-gray-400 shrink-0 mr-2">Jump to:</span>
         {navLinks.map((link) => {

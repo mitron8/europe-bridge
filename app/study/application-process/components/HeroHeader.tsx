@@ -50,27 +50,27 @@ export const HeroHeader = () => {
 
           {/* Quick Stats sidebar/card */}
           <div className="lg:col-span-5">
-            <div className="neu-card p-6 bg-white space-y-4">
+            <div className="neu-card p-6 bg-white space-y-4 shadow-[12px_12px_30px_rgba(210,205,195,0.6)]">
               <h3 className="font-display text-lg text-germany-black flex items-center gap-2 border-b border-[#EBE7E0] pb-3">
                 <Compass className="w-5 h-5 text-germany-red" />
                 <span>Application Quick Facts</span>
               </h3>
-              <div className="grid grid-cols-2 gap-4 text-xs font-bold text-gray-600">
-                <div className="p-3.5 rounded-2xl bg-[#FDFBF7]">
-                  <span className="block text-gray-400 text-[10px] uppercase">Winter Deadline</span>
-                  <span className="text-germany-black text-sm">July 15</span>
+              <div className="grid grid-cols-2 gap-3.5 text-xs font-bold text-gray-700">
+                <div className="p-3.5 rounded-2xl bg-white border border-[#EBE7E0]/80 shadow-xs hover:border-germany-red/30 transition-colors">
+                  <span className="block text-gray-500 font-extrabold text-[10px] uppercase tracking-wider mb-0.5">Winter Deadline</span>
+                  <span className="text-germany-black text-sm font-black">July 15</span>
                 </div>
-                <div className="p-3.5 rounded-2xl bg-[#FDFBF7]">
-                  <span className="block text-gray-400 text-[10px] uppercase">Summer Deadline</span>
-                  <span className="text-germany-black text-sm">January 15</span>
+                <div className="p-3.5 rounded-2xl bg-white border border-[#EBE7E0]/80 shadow-xs hover:border-germany-red/30 transition-colors">
+                  <span className="block text-gray-500 font-extrabold text-[10px] uppercase tracking-wider mb-0.5">Summer Deadline</span>
+                  <span className="text-germany-black text-sm font-black">January 15</span>
                 </div>
-                <div className="p-3.5 rounded-2xl bg-[#FDFBF7]">
-                  <span className="block text-gray-400 text-[10px] uppercase">uni-assist Fee</span>
-                  <span className="text-germany-black text-sm">€75 (+€30 addl.)</span>
+                <div className="p-3.5 rounded-2xl bg-white border border-[#EBE7E0]/80 shadow-xs hover:border-germany-red/30 transition-colors">
+                  <span className="block text-gray-500 font-extrabold text-[10px] uppercase tracking-wider mb-0.5">uni-assist Fee</span>
+                  <span className="text-germany-black text-sm font-black">€75 (+€30 addl.)</span>
                 </div>
-                <div className="p-3.5 rounded-2xl bg-[#FDFBF7]">
-                  <span className="block text-gray-400 text-[10px] uppercase">Avg. Processing</span>
-                  <span className="text-germany-black text-sm">4–8 Weeks</span>
+                <div className="p-3.5 rounded-2xl bg-white border border-[#EBE7E0]/80 shadow-xs hover:border-germany-red/30 transition-colors">
+                  <span className="block text-gray-500 font-extrabold text-[10px] uppercase tracking-wider mb-0.5">Avg. Processing</span>
+                  <span className="text-germany-black text-sm font-black">4–8 Weeks</span>
                 </div>
               </div>
             </div>

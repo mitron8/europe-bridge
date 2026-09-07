@@ -33,7 +33,7 @@ export const ScholarshipsNav = () => {
   }, []);
 
   return (
-    <div className="sticky top-16 z-30 neu-bg/95 backdrop-blur-md py-3 px-4 border-y border-gray-200/50 shadow-sm overflow-x-auto no-scrollbar">
+    <div className="hidden md:block sticky top-16 z-30 neu-bg/95 backdrop-blur-md py-3 px-4 border-y border-gray-200/50 shadow-sm overflow-x-auto no-scrollbar">
       <div className="max-w-7xl mx-auto flex items-center justify-start sm:justify-center gap-2 min-w-max">
         {navLinks.map((link) => {
           const Icon = link.icon;

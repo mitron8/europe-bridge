@@ -3,43 +3,71 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { UserCheck, ArrowRight } from 'lucide-react';
+import { UserCheck, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export const CTASection = () => {
   return (
-    <section className="py-12 px-6 lg:px-12">
+    <section className="py-16 px-6 lg:px-12 my-10">
       <div className="max-w-7xl mx-auto">
-        <div className="neu-card p-8 md:p-12 bg-white relative overflow-hidden shadow-[12px_12px_30px_rgba(210,205,195,0.6)]">
-          {/* Top flag stripe */}
-          <div className="absolute top-0 left-0 w-full h-2 flex">
-            <div className="flex-1 bg-germany-black"></div>
-            <div className="flex-1 bg-germany-red"></div>
-            <div className="flex-1 bg-germany-gold"></div>
-          </div>
+        <div className="neu-card p-8 sm:p-12 bg-gradient-to-r from-red-600 to-red-700 text-white relative overflow-hidden space-y-6 shadow-2xl">
+          {/* Decorative ambient circles */}
+          <div className="absolute -top-12 -right-12 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-amber-400/20 rounded-full blur-2xl pointer-events-none" />
 
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
-            <div className="space-y-4 max-w-2xl text-center md:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-germany-gold/20 text-germany-black rounded-full font-extrabold text-[11px] uppercase tracking-wider">
-                <UserCheck className="w-3.5 h-3.5 text-germany-red" />
-                <span>Get Professional Guidance</span>
-              </div>
-              <h2 className="text-2xl md:text-3xl font-display text-germany-black leading-tight">
-                Need Help with Your German University Applications?
-              </h2>
-              <p className="text-sm font-semibold text-gray-500 leading-relaxed">
-                From finding courses matching your credit profile to drafting motivation letters, requesting uni-assist VPDs, and blocking visa funds — our counsellors guide you through every step.
-              </p>
+          {/* Floating Success Doodle Accent */}
+          <motion.img
+            src="/doodles/sucesss.png"
+            alt="Success Doodle"
+            className="absolute right-6 top-1/2 -translate-y-1/2 w-44 h-44 sm:w-56 sm:h-56 object-contain opacity-90 hidden lg:block pointer-events-none drop-shadow-xl"
+            animate={{ y: [-5, 5, -5] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          />
+
+          <div className="relative z-10 max-w-3xl space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-black uppercase tracking-wider backdrop-blur-md">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Dedicated Application Guidance</span>
             </div>
 
-            <div className="shrink-0 flex flex-col items-center gap-2 w-full md:w-auto">
+            <h2 className="text-3xl sm:text-4xl font-black font-display leading-tight text-white">
+              Need Help with Your German University Applications?
+            </h2>
+
+            <p className="text-sm sm:text-base text-red-100 font-medium leading-relaxed">
+              From shortlisting courses matching your ECTS credits to drafting winning motivation letters, submitting via uni-assist VPDs, opening blocked accounts, and visa filing — our counsellors guide you through every milestone.
+            </p>
+
+            <div className="pt-4 flex flex-wrap items-center gap-4">
               <Link 
-                href="/profile-evaluation"
-                className="w-full md:w-auto neu-btn-primary py-3.5 px-8 text-xs font-black uppercase text-white flex items-center justify-center gap-2 shadow-md"
+                href="/signup"
+                className="neu-btn-gold px-8 py-3 text-sm font-extrabold text-germany-black flex items-center gap-2 shadow-lg"
               >
-                <span>Get Free Evaluation</span>
+                <span>Get Free Application Support</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
-              <span className="text-[10px] text-gray-400 font-bold">No commitments, 100% free review</span>
+
+              <Link 
+                href="/tools/admission-chance"
+                className="px-6 py-3 rounded-full text-xs font-bold text-white bg-white/10 border border-white/30 hover:bg-white/20 transition-all flex items-center gap-2"
+              >
+                <UserCheck className="w-4 h-4" />
+                <span>Check Admission Odds First</span>
+              </Link>
+            </div>
+          </div>
+
+          <div className="pt-6 border-t border-white/20 flex flex-wrap items-center gap-6 text-xs text-red-100 font-semibold">
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-amber-300" />
+              <span>uni-assist &amp; Direct Portal Filing</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-amber-300" />
+              <span>SOP &amp; CV Tailoring Included</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-amber-300" />
+              <span>Blocked Account &amp; Visa Guidance</span>
             </div>
           </div>
         </div>
@@ -47,3 +75,4 @@ export const CTASection = () => {
     </section>
   );
 };
+

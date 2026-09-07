@@ -44,7 +44,7 @@ export const CostSectionNav = () => {
   };
 
   return (
-    <div className="sticky top-[60px] lg:top-[64px] z-40 bg-white/95 backdrop-blur-md border-y border-gray-200 shadow-sm py-2.5 px-6 lg:px-12 my-6 transition-all">
+    <div className="hidden md:block sticky top-[60px] lg:top-[64px] z-40 bg-white/95 backdrop-blur-md border-y border-gray-200 shadow-sm py-2.5 px-6 lg:px-12 my-6 transition-all">
       <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth">
         <span className="text-xs font-black uppercase text-gray-400 shrink-0 mr-1 hidden sm:inline">Jump to:</span>
         {sections.map((sec) => {

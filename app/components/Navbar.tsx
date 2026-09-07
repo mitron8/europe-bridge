@@ -49,9 +49,9 @@ const Navbar = () => {
         {
           title: "Getting the visa",
           items: [
-            { title: "Student visa", desc: "Application to appointment" },
-            { title: "Motivation letter", desc: "The letter that gets you in" },
-            { title: "Health insurance", desc: "Cover from day one" }
+            { title: "Student visa", desc: "Application to appointment", href: "/study/student-visa" },
+            { title: "Motivation letter", desc: "The letter that gets you in", href: "/study/motivation-letter" },
+            { title: "Health insurance", desc: "Cover from day one", href: "/study/health-insurance" }
           ]
         },
         {
