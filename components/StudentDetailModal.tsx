@@ -28,9 +28,11 @@ import {
   Award,
   Target,
   Download,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import { AssignedStudent } from './CounsellorStudents';
+import { StudentFullProfileView } from './StudentFullProfileView';
 
 export interface StudentDocument {
   id: string;
@@ -77,6 +79,11 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
   const [copiedId, setCopiedId] = useState(false);
   const [note, setNote] = useState('');
   const [noteSaved, setNoteSaved] = useState(false);
+  const [showFullProfile, setShowFullProfile] = useState(false);
+
+  const [summaryData, setSummaryData] = useState<any>(null);
+  const [summaryLoading, setSummaryLoading] = useState(true);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   // Document state & sub-modals
   const [documents, setDocuments] = useState<StudentDocument[]>([]);
@@ -112,6 +119,32 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
     if (!student?.userId) return;
 
     const studentId = student.userId;
+
+    // Reset summary state
+    setSummaryData(null);
+    setSummaryLoading(true);
+    setSummaryError(null);
+    setShowFullProfile(false);
+
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+    // Fetch summary
+    const fetchSummary = async () => {
+      try {
+        const res = await fetch(`${API_URL}/counsellor/students/${studentId}/summary`, { credentials: 'include' });
+        if (!res.ok) {
+          if (res.status === 403) throw new Error("Access Denied");
+          throw new Error("Failed to fetch summary");
+        }
+        const data = await res.json();
+        setSummaryData(data);
+      } catch (err: any) {
+        setSummaryError(err.message || 'Error loading student data');
+      } finally {
+        setSummaryLoading(false);
+      }
+    };
+    fetchSummary();
 
     // Load or generate documents
     const savedDocs = localStorage.getItem(`eb_student_docs_${studentId}`);
@@ -650,94 +683,122 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
             ======================================================== */}
             {activeTab === 'overview' && (
               <div className="space-y-5">
-                {/* Profile Snapshot Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="neu-card p-3.5 bg-white space-y-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">German Bavarian GPA</span>
-                    <div className="text-sm font-display text-germany-black flex items-center gap-1.5">
-                      <span className="text-emerald-700 font-black">1.33</span>
-                      <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">
-                        Very Good (Sehr Gut)
-                      </span>
-                    </div>
-                    <p className="text-[10px] font-bold text-gray-400">From 8.85 / 10.0 CGPA</p>
+                {summaryLoading ? (
+                  <div className="p-8 flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-germany-red" />
                   </div>
-
-                  <div className="neu-card p-3.5 bg-white space-y-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Language Scores</span>
-                    <div className="text-sm font-display text-germany-black">
-                      IELTS 7.5 <span className="text-[11px] font-bold text-gray-400">(C1)</span>
-                    </div>
-                    <p className="text-[10px] font-bold text-gray-400">German: A2 Certified</p>
+                ) : summaryError ? (
+                  <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-red-500 text-xs font-bold bg-red-50">
+                    {summaryError}
                   </div>
-
-                  <div className="neu-card p-3.5 bg-white space-y-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Target Intake</span>
-                    <div className="text-sm font-display text-germany-black">Winter 2026/27</div>
-                    <p className="text-[10px] font-bold text-gray-400">Master of Science</p>
-                  </div>
-
-                  <div className="neu-card p-3.5 bg-white space-y-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Readiness Score</span>
-                    <div className="text-sm font-display text-germany-red font-black flex items-center gap-1.5">
-                      <span>85% Ready</span>
-                      <Award className="w-3.5 h-3.5 text-germany-gold" />
-                    </div>
-                    <p className="text-[10px] font-bold text-gray-400">APS In Verification</p>
-                  </div>
-                </div>
-
-                {/* Advising Roadmap */}
-                <div className="neu-card p-5 bg-white space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Compass className="w-4 h-4 text-germany-red" />
-                      <h3 className="text-xs sm:text-sm font-extrabold text-germany-black uppercase tracking-wider">
-                        Study in Germany Admission Milestone Track
-                      </h3>
-                    </div>
-                    <span className="text-[11px] font-bold text-gray-400">Status Overview</span>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                    {[
-                      { title: 'Academic Profile Evaluation', status: 'Completed', detail: 'Bavarian GPA 1.33 Verified' },
-                      { title: 'Program & University Shortlist', status: 'In Progress', detail: `${universities.length} Universities Selected` },
-                      { title: 'Document Verification', status: pendingDocsCount === 0 ? 'Verified' : 'Pending', detail: `${verifiedDocsCount}/${documents.length} Docs Verified` },
-                      { title: 'APS India Certificate', status: 'In Progress', detail: 'Token APS-ND-2026-8812' },
-                      { title: 'Uni-Assist & Applications', status: 'Upcoming', detail: 'Submission window opens April' },
-                      { title: 'Visa & Blocked Account', status: 'Upcoming', detail: 'Expatrio prep phase' },
-                    ].map((step, idx) => (
-                      <div
-                        key={step.title}
-                        className={`p-3 rounded-xl border flex flex-col justify-between gap-1 text-xs ${
-                          step.status === 'Completed' || step.status === 'Verified'
-                            ? 'bg-emerald-50/60 border-emerald-200'
-                            : step.status === 'In Progress'
-                            ? 'bg-amber-50/60 border-amber-200'
-                            : 'bg-[#F4F1EA]/60 border-[#EBE7E0]'
-                        }`}
+                ) : (
+                  <>
+                    <div className="flex justify-end">
+                      <button 
+                        onClick={() => setShowFullProfile(true)}
+                        className="neu-btn py-2 px-4 text-xs font-extrabold flex items-center gap-1.5 bg-white text-germany-black hover:text-germany-gold border border-[#EBE7E0]"
                       >
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-black uppercase text-gray-400">Step 0{idx + 1}</span>
-                          <span
-                            className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
-                              step.status === 'Completed' || step.status === 'Verified'
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : step.status === 'In Progress'
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-gray-200/80 text-gray-600'
+                        <User className="w-4 h-4" />
+                        <span>View Student Profile</span>
+                      </button>
+                    </div>
+
+                    {/* Profile Snapshot Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="neu-card p-3.5 bg-white space-y-1">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">German Bavarian GPA</span>
+                        <div className="text-sm font-display text-germany-black flex items-center gap-1.5">
+                          <span className="text-germany-black font-black">{summaryData?.summary?.gpa || 'NA'}</span>
+                        </div>
+                      </div>
+
+                      <div className="neu-card p-3.5 bg-white space-y-1">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Language Scores</span>
+                        <div className="text-sm font-display text-germany-black">
+                          {summaryData?.summary?.languageScore || 'NA'}
+                        </div>
+                      </div>
+
+                      <div className="neu-card p-3.5 bg-white space-y-1">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Target Intake</span>
+                        <div className="text-sm font-display text-germany-black">{summaryData?.summary?.targetIntake || 'NA'}</div>
+                      </div>
+
+                      <div className="neu-card p-3.5 bg-white space-y-1">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Readiness Score</span>
+                        <div className="text-sm font-display text-germany-red font-black flex items-center gap-1.5">
+                          <span>{summaryData?.summary?.readinessScore || 'NA'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Advising Roadmap */}
+                    <div className="neu-card p-5 bg-white space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Compass className="w-4 h-4 text-germany-red" />
+                          <h3 className="text-xs sm:text-sm font-extrabold text-germany-black uppercase tracking-wider">
+                            Study in Germany Admission Milestone Track
+                          </h3>
+                        </div>
+                        <span className="text-[11px] font-bold text-gray-400">Status Overview</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                        {[
+                          { title: 'Profile / Registration', stage: 'signed_up' },
+                          { title: 'Matching', stage: 'profile_completed' },
+                          { title: 'Plan / Subscription', stage: 'plan_purchased' },
+                          { title: 'Document Verification', stage: 'documents' },
+                          { title: 'APS India Certificate', stage: 'aps' },
+                          { title: 'Applications & Uni-Assist', stage: 'applications' },
+                          { title: 'Visa & Blocked Account', stage: 'visa' },
+                        ].map((step, idx) => {
+                          const statusOrder = ['signed_up', 'profile_completed', 'plan_purchased', 'documents', 'aps', 'applications', 'visa'];
+                          const currentIdx = statusOrder.indexOf(summaryData?.status);
+                          const stepIdx = statusOrder.indexOf(step.stage);
+                          
+                          let status = 'Pending';
+                          // For future stages not yet supported by backend, always show as Pending
+                          if (stepIdx > 2) {
+                            status = 'Pending';
+                          } else {
+                            if (currentIdx > stepIdx) status = 'Completed';
+                            else if (currentIdx === stepIdx) status = 'Current';
+                          }
+
+                          return (
+                          <div
+                            key={step.title}
+                            className={`p-3 rounded-xl border flex flex-col justify-between gap-1 text-xs ${
+                              status === 'Completed'
+                                ? 'bg-emerald-50/60 border-emerald-200'
+                                : status === 'Current'
+                                ? 'bg-amber-50/60 border-amber-200'
+                                : 'bg-[#F4F1EA]/60 border-[#EBE7E0]'
                             }`}
                           >
-                            {step.status}
-                          </span>
-                        </div>
-                        <div className="font-extrabold text-germany-black text-xs leading-tight">{step.title}</div>
-                        <div className="text-[11px] font-bold text-gray-500">{step.detail}</div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black uppercase text-gray-400">Step 0{idx + 1}</span>
+                              <span
+                                className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                                  status === 'Completed'
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : status === 'Current'
+                                    ? 'bg-amber-100 text-amber-800'
+                                    : 'bg-gray-200/80 text-gray-600'
+                                }`}
+                              >
+                                {status}
+                              </span>
+                            </div>
+                            <div className="font-extrabold text-germany-black text-xs leading-tight">{step.title}</div>
+                          </div>
+                        )})}
                       </div>
-                    ))}
-                  </div>
-                </div>
+                    </div>
+                  </>
+                )}
 
                 {/* Quick Consultation Jumpstart */}
                 <div className="neu-card p-4 sm:p-5 bg-white flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -1178,6 +1239,15 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
           </div>
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {showFullProfile && (
+          <StudentFullProfileView 
+            studentId={student.userId} 
+            onClose={() => setShowFullProfile(false)} 
+          />
+        )}
+      </AnimatePresence>
 
       {/* ========================================================
           SUB-MODAL: DOCUMENT PREVIEW MODAL
