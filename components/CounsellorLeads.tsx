@@ -9,6 +9,8 @@ export interface StudentLead {
   firstName: string;
   lastName: string;
   email: string;
+  phone: string | null;
+  whatsapp: string | null;
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -63,6 +65,8 @@ export function CounsellorLeads() {
           <tr className="border-b-2 border-[#EBE7E0]">
             <th className="px-4 py-3 text-xs font-extrabold text-gray-500 uppercase tracking-wider">Student Name</th>
             <th className="px-4 py-3 text-xs font-extrabold text-gray-500 uppercase tracking-wider">Email</th>
+            <th className="px-4 py-3 text-xs font-extrabold text-gray-500 uppercase tracking-wider">Phone</th>
+            <th className="px-4 py-3 text-xs font-extrabold text-gray-500 uppercase tracking-wider">WhatsApp</th>
             <th className="px-4 py-3 text-xs font-extrabold text-gray-500 uppercase tracking-wider">Status</th>
           </tr>
         </thead>
@@ -74,6 +78,12 @@ export function CounsellorLeads() {
               </td>
               <td className="px-4 py-3 text-sm text-gray-600">
                 {lead.email}
+              </td>
+              <td className="px-4 py-3 text-sm text-gray-600">
+                {lead.phone || 'NA'}
+              </td>
+              <td className="px-4 py-3 text-sm text-gray-600">
+                {lead.whatsapp || 'NA'}
               </td>
               <td className="px-4 py-3 text-sm font-bold text-germany-black">
                 <span className="px-2 py-1 bg-germany-gold/10 text-germany-gold rounded-full text-xs">

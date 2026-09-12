@@ -11,6 +11,8 @@ type Student = {
   firstName: string;
   lastName: string;
   email: string;
+  phone: string | null;
+  whatsapp: string | null;
   status: string | null;
   // these come from the LEFT JOIN on the assignments table — null if unassigned
   counsellorId: string | null;
@@ -311,6 +313,8 @@ export default function AdminStudentsPage() {
                   <tr className="border-b border-[#EBE7E0] text-gray-400 font-extrabold uppercase text-[10px]">
                     <th className="pb-3">Name</th>
                     <th className="pb-3">Email</th>
+                    <th className="pb-3">Phone</th>
+                    <th className="pb-3">WhatsApp</th>
                     <th className="pb-3">Counsellor</th>
                     <th className="pb-3">Status</th>
                     <th className="pb-3"></th>
@@ -326,6 +330,8 @@ export default function AdminStudentsPage() {
                       <tr key={student.userId} className="hover:bg-[#FDFBF7] relative">
                         <td className="py-3.5">{student.firstName} {student.lastName}</td>
                         <td className="py-3.5 text-gray-500">{student.email}</td>
+                        <td className="py-3.5 text-gray-500">{student.phone || 'NA'}</td>
+                        <td className="py-3.5 text-gray-500">{student.whatsapp || 'NA'}</td>
                         <td className="py-3.5">
                           {counsellorName ? (
                             <span className="font-bold text-germany-black">{counsellorName}</span>

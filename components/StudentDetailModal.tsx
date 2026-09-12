@@ -155,6 +155,8 @@ export function StudentDetailModal({
             firstName: data.student.firstName,
             lastName: data.student.lastName,
             email: data.student.email,
+            phone: data.student.phone || null,
+            whatsapp: data.student.whatsapp || null,
             status: data.status,
           });
         }

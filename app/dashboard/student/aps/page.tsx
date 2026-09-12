@@ -10,7 +10,16 @@ import {
   Loader2,
   FileText,
   X,
+  Bell,
+  BellRing,
+  Check,
 } from 'lucide-react';
+
+type StudentNotification = {
+  id: string;
+  message: string;
+  created_at: string;
+};
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -20,10 +29,11 @@ type ChecklistItem = {
   title: string;
   description: string;
   required: boolean;
-  status: 'UPLOADED' | 'MISSING';
+  status: 'UPLOADED' | 'MISSING' | 'PENDING' | 'VERIFIED' | 'REJECTED';
   uploadedAt: string | null;
   url: string | null;
   originalFilename: string | null;
+  rejectionNote: string | null;
 };
 
 type ChecklistResponse = {
@@ -42,6 +52,7 @@ type UploadAuth = {
   signature: string;
   publicKey: string;
   folder: string;
+  userId: string;
 };
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
@@ -63,6 +74,8 @@ export default function ApsChecklist() {
   const [uploading, setUploading] = useState<string | null>(null); // documentType being uploaded
   const [deleting, setDeleting] = useState<string | null>(null);   // documentType being deleted
   const [actionError, setActionError] = useState('');
+  const [notifications, setNotifications] = useState<StudentNotification[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   // fetching the checklist. backend does all the math, we just render it cause we're lazy
   const loadChecklist = useCallback(async () => {
@@ -78,7 +91,28 @@ export default function ApsChecklist() {
     }
   }, []);
 
-  React.useEffect(() => { loadChecklist(); }, [loadChecklist]);
+  const loadNotifications = useCallback(async () => {
+    try {
+      const data = await apiFetch<StudentNotification[]>('/student/notifications');
+      setNotifications(data || []);
+    } catch (e) {
+      console.error('Failed to load notifications', e);
+    }
+  }, []);
+
+  React.useEffect(() => { 
+    loadChecklist(); 
+    loadNotifications();
+  }, [loadChecklist, loadNotifications]);
+
+  const markNotificationDone = async (id: string) => {
+    try {
+      await apiFetch(`/student/notifications/${id}/done`, { method: 'POST' });
+      await loadNotifications();
+    } catch (e) {
+      console.error('Failed to mark notification done', e);
+    }
+  };
 
   // upload flow:
   // 1. grab auth token from backend
@@ -93,9 +127,13 @@ export default function ApsChecklist() {
       const auth = await apiFetch<UploadAuth>('/aps/upload-auth');
 
       // Step 2: Upload directly to ImageKit using their Upload API v1
+      // change filename to match exactly what the user wants: pasport+id (retaining extension)
+      const extension = file.name.split('.').pop();
+      const newFileName = `${documentType}+${auth.userId}.${extension}`;
+
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('fileName', file.name);
+      formData.append('fileName', newFileName);
       formData.append('publicKey', auth.publicKey);
       formData.append('signature', auth.signature);
       formData.append('expire', String(auth.expire));
@@ -196,7 +234,69 @@ export default function ApsChecklist() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="neu-card p-6 md:p-8 bg-white relative overflow-hidden shadow-[12px_12px_30px_rgba(210,205,195,0.6)]">
+      <div className="neu-card p-6 md:p-8 bg-white relative shadow-[12px_12px_30px_rgba(210,205,195,0.6)]">
+        
+        {/* Notification Bell */}
+        <div className="absolute top-6 right-6 z-10">
+          <button 
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="relative p-2 bg-[#FDFBF7] border border-[#EBE7E0] rounded-xl hover:bg-gray-50 transition-colors shadow-xs"
+          >
+            {notifications.length > 0 ? (
+              <>
+                <BellRing className="w-5 h-5 text-germany-red animate-pulse" />
+                <span className="absolute -top-1.5 -right-1.5 bg-germany-red text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center">
+                  {notifications.length}
+                </span>
+              </>
+            ) : (
+              <Bell className="w-5 h-5 text-gray-400" />
+            )}
+          </button>
+          
+          {/* Popover */}
+          {showNotifications && (
+            <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white border border-gray-200/80 rounded-2xl shadow-xl z-50 overflow-hidden">
+              <div className="p-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+                <h3 className="text-xs font-extrabold text-germany-black">Notifications</h3>
+                <span className="text-[10px] font-bold text-gray-400">{notifications.length} Unread</span>
+              </div>
+              <div className="max-h-64 overflow-y-auto">
+                {notifications.length === 0 ? (
+                  <div className="p-6 text-center text-xs font-bold text-gray-400">
+                    You're all caught up!
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-100">
+                    {notifications.map(n => (
+                      <div key={n.id} className="p-3.5 hover:bg-[#FDFBF7] transition-colors flex items-start gap-3">
+                        <div className="p-1.5 bg-red-100 text-red-600 rounded-lg shrink-0 mt-0.5">
+                          <AlertCircle className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-gray-700 leading-tight">
+                            {n.message}
+                          </p>
+                          <p className="text-[10px] font-bold text-gray-400 mt-1">
+                            {new Date(n.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <button 
+                          onClick={() => markNotificationDone(n.id)}
+                          className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors shrink-0"
+                          title="Mark as done"
+                        >
+                          <Check className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="absolute top-0 left-0 w-full h-2 flex">
           <div className="flex-1 bg-germany-black"></div>
           <div className="flex-1 bg-germany-red"></div>
@@ -255,24 +355,27 @@ export default function ApsChecklist() {
         <h2 className="text-xs font-black uppercase tracking-wider text-gray-400 mb-4">Documents</h2>
         <div className="space-y-3">
           {items.map((item) => {
-            const isUploaded = item.status === 'UPLOADED';
+            const isUploaded = ['UPLOADED', 'PENDING', 'VERIFIED'].includes(item.status);
+            const isRejected = item.status === 'REJECTED';
             const isUploading = uploading === item.type;
             const isDeleting = deleting === item.type;
             const isBusy = isUploading || isDeleting;
 
+            let bgColor = 'bg-white border-[#EBE7E0] hover:border-germany-red/30';
+            if (isUploaded) bgColor = 'bg-emerald-50 border-emerald-200';
+            if (isRejected) bgColor = 'bg-red-50 border-red-200';
+
             return (
               <div
                 key={item.type}
-                className={`flex items-start gap-4 p-4 rounded-2xl border transition-all ${
-                  isUploaded
-                    ? 'bg-emerald-50 border-emerald-200'
-                    : 'bg-white border-[#EBE7E0] hover:border-germany-red/30'
-                }`}
+                className={`flex items-start gap-4 p-4 rounded-2xl border transition-all ${bgColor}`}
               >
                 {/* Status icon */}
                 <div className="shrink-0 mt-0.5">
                   {isUploaded ? (
                     <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  ) : isRejected ? (
+                    <AlertCircle className="w-5 h-5 text-red-500" />
                   ) : (
                     <Circle className={`w-5 h-5 ${item.required ? 'text-germany-red/40' : 'text-gray-300'}`} />
                   )}
@@ -287,8 +390,20 @@ export default function ApsChecklist() {
                         Required
                       </span>
                     )}
+                    {isRejected && (
+                      <span className="px-1.5 py-0.5 rounded-md text-[10px] font-extrabold bg-red-100 text-red-600">
+                        Rejected
+                      </span>
+                    )}
                   </div>
                   <p className="text-[11px] font-bold text-gray-400 mt-0.5">{item.description}</p>
+                  
+                  {isRejected && item.rejectionNote && (
+                    <div className="mt-2 p-2.5 bg-white rounded-lg border border-red-100 text-[11px] font-bold text-red-700">
+                      Reason: {item.rejectionNote}
+                    </div>
+                  )}
+
                   {isUploaded && item.originalFilename && (
                     <div className="flex items-center gap-1.5 mt-1.5">
                       <FileText className="w-3 h-3 text-emerald-600" />
@@ -300,40 +415,47 @@ export default function ApsChecklist() {
                       >
                         {item.originalFilename}
                       </a>
+                      {item.status === 'PENDING' && (
+                        <span className="text-[9px] font-bold text-amber-500 ml-2 border border-amber-200 bg-amber-50 px-1 rounded">PENDING VERIFICATION</span>
+                      )}
                     </div>
                   )}
                 </div>
 
                 {/* Actions */}
                 <div className="shrink-0 flex items-center gap-2">
-                  {isUploaded ? (
+                  {isUploaded || isRejected ? (
                     <>
                       {/* Replace */}
                       <button
                         disabled={isBusy}
                         onClick={() => openFileDialog(item.type)}
-                        className="p-2 rounded-xl text-gray-400 hover:text-germany-red hover:bg-germany-red/10 transition-colors disabled:opacity-40"
+                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-extrabold transition-colors disabled:opacity-50 ${isRejected ? 'bg-red-600 text-white hover:bg-red-700' : 'text-gray-400 hover:text-germany-red hover:bg-germany-red/10'}`}
                         title="Replace"
                       >
                         {isUploading ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <Loader2 className={`w-3.5 h-3.5 animate-spin ${!isRejected && 'w-4 h-4'}`} />
                         ) : (
-                          <Upload className="w-4 h-4" />
+                          <Upload className={`w-3.5 h-3.5 ${!isRejected && 'w-4 h-4'}`} />
                         )}
+                        {isRejected && (isUploading ? 'Uploading...' : 'Replace')}
                       </button>
+                      
                       {/* Delete */}
-                      <button
-                        disabled={isBusy}
-                        onClick={() => handleDelete(item.type)}
-                        className="p-2 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
-                        title="Delete"
-                      >
-                        {isDeleting ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-4 h-4" />
-                        )}
-                      </button>
+                      {!isRejected && (
+                        <button
+                          disabled={isBusy}
+                          onClick={() => handleDelete(item.type)}
+                          className="p-2 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
+                          title="Delete"
+                        >
+                          {isDeleting ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
+                        </button>
+                      )}
                     </>
                   ) : (
                     <button
