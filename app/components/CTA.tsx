@@ -2,57 +2,66 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 
 const CTA = () => {
   return (
-    <section id="cta" className="py-24 px-4 neu-bg relative overflow-hidden z-20">
-      <div className="max-w-5xl mx-auto">
-        
+    <section id="cta" className="py-8 sm:py-10 px-4 sm:px-6 lg:px-8 neu-bg relative z-20">
+      <div className="max-w-6xl mx-auto">
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="overflow-hidden relative rounded-[40px] bg-germany-gold p-10 md:p-16 text-center shadow-[12px_12px_30px_rgba(244,162,97,0.4),inset_-8px_-8px_16px_rgba(200,110,40,0.3),inset_8px_8px_16px_rgba(255,230,180,0.9)]"
+          transition={{ duration: 0.5 }}
+          className="overflow-hidden relative rounded-[30px] bg-germany-black p-6 sm:p-8 lg:p-9 shadow-[12px_12px_30px_rgba(71,85,105,0.3),inset_0_-4px_10px_rgba(0,0,0,0.8)] flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 text-center lg:text-left"
         >
-          {/* Decorative Background Elements */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-germany-red/10 rounded-full blur-[80px] pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-germany-gold/20 rounded-full blur-[80px] pointer-events-none"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-32 bg-germany-black/5 rotate-[-15deg] blur-[40px] pointer-events-none"></div>
+          {/* Subtle Ambient Clay Glows */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-germany-red/15 rounded-full blur-[70px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-germany-gold/20 rounded-full blur-[70px] pointer-events-none" />
 
-          {/* Doodles */}
-          <img 
-            src="/doodles/contact us.png" 
-            alt="Contact" 
-            className="absolute -left-4 md:left-8 bottom-0 w-32 md:w-48 object-contain drop-shadow-md z-10 pointer-events-none hidden sm:block" 
-          />
-          <img 
-            src="/doodles/happy.png" 
-            alt="Happy" 
-            className="absolute -right-4 md:right-8 top-8 w-24 md:w-40 object-contain drop-shadow-md z-10 pointer-events-none hidden sm:block transform rotate-12" 
-          />
+          {/* Left Side Content */}
+          <div className="relative z-10 space-y-2.5 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full font-bold text-germany-gold text-xs shadow-inner cursor-default">
+              <Sparkles className="w-3.5 h-3.5 text-germany-gold" />
+              <span>Start Your Free Evaluation</span>
+            </div>
 
-          <div className="relative z-20 max-w-2xl mx-auto">
-            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl mb-6 leading-tight text-germany-black drop-shadow-sm">
-              Ready to start your <br className="hidden sm:block" /><span className="text-white drop-shadow-md">German Journey?</span>
+            <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight leading-tight">
+              Ready to Start Your <span className="text-germany-gold">German Journey?</span>
             </h2>
-            <p className="text-germany-black/90 font-extrabold text-sm md:text-base mb-10 max-w-xl mx-auto">
-              Create your free account today. Let our AI evaluate your profile, draft your documents, and connect you with a dedicated guide. No commitments required.
+
+            <p className="text-neutral-300 font-medium text-xs sm:text-sm leading-relaxed max-w-xl">
+              Create your free account. Let our AI evaluate your profile, audit prerequisite course credits, and connect you with a dedicated TU9 alumni guide.
             </p>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/login" className="neu-btn-primary w-full sm:w-auto px-8 py-4 gap-2 text-base inline-flex items-center justify-center">
+          </div>
+
+          {/* Right Side Buttons & Reassurance */}
+          <div className="relative z-10 flex flex-col items-center lg:items-end gap-3 shrink-0 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+              <Link 
+                href="/login" 
+                className="w-full sm:w-auto px-7 py-3 rounded-full bg-germany-red hover:bg-rose-600 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(230,57,70,0.35)] whitespace-nowrap transition-colors"
+              >
                 <span>Start for Free</span>
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-4 h-4" />
               </Link>
-              <Link href="/login" className="neu-btn w-full sm:w-auto px-8 py-4 text-germany-black font-extrabold text-base inline-flex items-center justify-center">
-                Talk to Sales
+              
+              <Link 
+                href="/tools/admission-chance" 
+                className="w-full sm:w-auto px-6 py-3 rounded-full bg-white hover:bg-neutral-100 text-germany-black hover:text-germany-red font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(0,0,0,0.5)] whitespace-nowrap transition-colors"
+              >
+                <span>Check Chances</span>
               </Link>
             </div>
-          </div>
-        </motion.div>
 
+            <div className="flex items-center justify-center gap-3 text-[11px] text-neutral-400 font-semibold pt-1">
+              <span>✓ 100% Free Initial Assessment</span>
+              <span>•</span>
+              <span>✓ Direct Mentorship</span>
+            </div>
+          </div>
+
+        </motion.div>
       </div>
     </section>
   );

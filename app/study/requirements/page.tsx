@@ -9,6 +9,7 @@ import { RequiredDocuments } from './components/RequiredDocuments';
 import { DeadlinesTimeline } from './components/DeadlinesTimeline';
 import { GradeConversionSection } from './components/GradeConversionSection';
 import { CountrySpecificInfo } from './components/CountrySpecificInfo';
+import { RequirementsFAQ } from './components/RequirementsFAQ';
 import { RequirementsCTA } from './components/RequirementsCTA';
 import { Metadata } from 'next';
 
@@ -31,6 +32,7 @@ export default function RequirementsPage() {
         <DeadlinesTimeline />
         <GradeConversionSection />
         <CountrySpecificInfo />
+        <RequirementsFAQ />
         <RequirementsCTA />
       </div>
 

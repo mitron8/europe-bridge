@@ -28,43 +28,38 @@ export default function StudentDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner Hero Card */}
-      <div className="neu-card p-6 md:p-8 bg-white relative overflow-hidden shadow-[12px_12px_30px_rgba(210,205,195,0.6)]">
-        {/* Tricolor Header Strip */}
-        <div className="absolute top-0 left-0 w-full h-2 flex">
+      {/* Sleek Compact Welcome Banner */}
+      <div className="bg-white rounded-2xl border border-gray-200/80 shadow-[2px_2px_8px_rgba(71,85,105,0.04)] px-5 py-4 sm:px-6 sm:py-4.5 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden">
+        {/* Subtle German Tricolor Top Accent */}
+        <div className="absolute top-0 left-0 w-full h-[3px] flex">
           <div className="flex-1 bg-germany-black"></div>
           <div className="flex-1 bg-germany-red"></div>
           <div className="flex-1 bg-germany-gold"></div>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10 mt-1">
-          <div className="space-y-2 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-germany-gold/15 border border-germany-gold/40 rounded-full font-bold text-germany-black text-[11px]">
-              <span className="w-2 h-2 rounded-full bg-germany-gold animate-pulse"></span>
-              Winter Intake 2026 Preparation
-            </div>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-display text-germany-black flex items-center justify-center md:justify-start gap-2">
-              <span>Welcome back!</span>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg sm:text-xl font-display font-bold text-germany-black">
+              Welcome back!
             </h1>
-            <p className="text-xs md:text-sm font-bold text-gray-500 max-w-xl">
-              You are currently on <span className="text-germany-red font-extrabold">Step 2: AI Matching Engine</span>. Review your recommended German universities and finalize your shortlist today.
-            </p>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-germany-gold/15 border border-germany-gold/40 rounded-full font-bold text-germany-black text-[10px]">
+              <span className="w-1.5 h-1.5 rounded-full bg-germany-gold animate-pulse"></span>
+              Winter 2026 Intake
+            </span>
           </div>
+          <p className="text-xs text-gray-500 font-medium max-w-xl">
+            You are currently on <span className="text-germany-red font-bold">Step 2: AI Matching Engine</span>. Review recommended German universities and finalize your shortlist.
+          </p>
+        </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0">
-            <Link
-              href="/dashboard/student/matching"
-              className="neu-btn-primary py-3 px-6 text-sm font-extrabold cursor-pointer gap-2"
-            >
-              <span>Explore AI Matches</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <img
-              src="/doodles/german cutie.png"
-              alt="Mascot"
-              className="w-20 h-20 object-contain hidden lg:block drop-shadow-md"
-            />
-          </div>
+        <div className="flex items-center gap-3 shrink-0">
+          <Link
+            href="/dashboard/student/matching"
+            className="neu-btn-primary py-2 px-4 sm:py-2.5 sm:px-5 text-xs font-extrabold cursor-pointer inline-flex items-center gap-2 shadow-sm"
+          >
+            <span>Explore AI Matches</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
       </div>
 

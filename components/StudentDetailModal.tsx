@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -68,18 +69,28 @@ export interface ConsultationTask {
   dueDate: string;
 }
 
-interface StudentDetailModalProps {
-  student: AssignedStudent | null;
-  onClose: () => void;
+export interface StudentDetailModalProps {
+  student?: AssignedStudent | null;
+  studentId?: string;
+  onClose?: () => void;
+  isPage?: boolean;
 }
 
-export function StudentDetailModal({ student, onClose }: StudentDetailModalProps) {
+export function StudentDetailModal({
+  student: propStudent,
+  studentId,
+  onClose,
+  isPage = false,
+}: StudentDetailModalProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'universities' | 'notes'>('overview');
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
   const [note, setNote] = useState('');
   const [noteSaved, setNoteSaved] = useState(false);
   const [showFullProfile, setShowFullProfile] = useState(false);
+
+  const [fetchedStudent, setFetchedStudent] = useState<AssignedStudent | null>(null);
+  const student = propStudent || fetchedStudent;
 
   const [summaryData, setSummaryData] = useState<any>(null);
   const [summaryLoading, setSummaryLoading] = useState(true);
@@ -103,8 +114,9 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
   const [tasks, setTasks] = useState<ConsultationTask[]>([]);
   const [newTaskText, setNewTaskText] = useState('');
 
-  // Close on Escape key press
+  // Close on Escape key press (only in modal mode)
   useEffect(() => {
+    if (isPage || !onClose) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !previewDoc && !rejectingDoc) {
         onClose();
@@ -112,13 +124,12 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose, previewDoc, rejectingDoc]);
+  }, [isPage, onClose, previewDoc, rejectingDoc]);
 
   // Initialize data for this student
   useEffect(() => {
-    if (!student?.userId) return;
-
-    const studentId = student.userId;
+    const effectiveStudentId = propStudent?.userId || studentId;
+    if (!effectiveStudentId) return;
 
     // Reset summary state
     setSummaryData(null);
@@ -131,13 +142,22 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
     // Fetch summary
     const fetchSummary = async () => {
       try {
-        const res = await fetch(`${API_URL}/counsellor/students/${studentId}/summary`, { credentials: 'include' });
+        const res = await fetch(`${API_URL}/counsellor/students/${effectiveStudentId}/summary`, { credentials: 'include' });
         if (!res.ok) {
           if (res.status === 403) throw new Error("Access Denied");
           throw new Error("Failed to fetch summary");
         }
         const data = await res.json();
         setSummaryData(data);
+        if (!propStudent && data.student) {
+          setFetchedStudent({
+            userId: data.student.id,
+            firstName: data.student.firstName,
+            lastName: data.student.lastName,
+            email: data.student.email,
+            status: data.status,
+          });
+        }
       } catch (err: any) {
         setSummaryError(err.message || 'Error loading student data');
       } finally {
@@ -147,7 +167,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
     fetchSummary();
 
     // Load or generate documents
-    const savedDocs = localStorage.getItem(`eb_student_docs_${studentId}`);
+    const savedDocs = localStorage.getItem(`eb_student_docs_${effectiveStudentId}`);
     if (savedDocs) {
       try {
         setDocuments(JSON.parse(savedDocs));
@@ -157,11 +177,11 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
     } else {
       const defDocs = getDefaultDocuments();
       setDocuments(defDocs);
-      localStorage.setItem(`eb_student_docs_${studentId}`, JSON.stringify(defDocs));
+      localStorage.setItem(`eb_student_docs_${effectiveStudentId}`, JSON.stringify(defDocs));
     }
 
     // Load or generate universities
-    const savedUnis = localStorage.getItem(`eb_student_unis_${studentId}`);
+    const savedUnis = localStorage.getItem(`eb_student_unis_${effectiveStudentId}`);
     if (savedUnis) {
       try {
         setUniversities(JSON.parse(savedUnis));
@@ -171,15 +191,15 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
     } else {
       const defUnis = getDefaultUniversities();
       setUniversities(defUnis);
-      localStorage.setItem(`eb_student_unis_${studentId}`, JSON.stringify(defUnis));
+      localStorage.setItem(`eb_student_unis_${effectiveStudentId}`, JSON.stringify(defUnis));
     }
 
     // Load counsellor notes
-    const savedNote = localStorage.getItem(`eb_counsellor_notes_${studentId}`);
+    const savedNote = localStorage.getItem(`eb_counsellor_notes_${effectiveStudentId}`);
     setNote(savedNote || '');
 
     // Load tasks
-    const savedTasks = localStorage.getItem(`eb_student_tasks_${studentId}`);
+    const savedTasks = localStorage.getItem(`eb_student_tasks_${effectiveStudentId}`);
     if (savedTasks) {
       try {
         setTasks(JSON.parse(savedTasks));
@@ -189,11 +209,38 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
     } else {
       const defTasks = getDefaultTasks();
       setTasks(defTasks);
-      localStorage.setItem(`eb_student_tasks_${studentId}`, JSON.stringify(defTasks));
+      localStorage.setItem(`eb_student_tasks_${effectiveStudentId}`, JSON.stringify(defTasks));
     }
-  }, [student]);
+  }, [propStudent, studentId]);
 
-  if (!student) return null;
+  if (!student) {
+    if (summaryLoading) {
+      return (
+        <div className="relative w-full neu-card bg-[#FDFBF7] p-12 overflow-hidden shadow-[4px_4px_16px_rgba(210,205,195,0.4)] border border-gray-200/80 rounded-3xl flex flex-col items-center justify-center gap-3">
+          <Loader2 className="w-8 h-8 animate-spin text-germany-red" />
+          <p className="text-xs font-bold text-gray-500">Loading student details...</p>
+        </div>
+      );
+    }
+    if (summaryError) {
+      return (
+        <div className="relative w-full neu-card bg-[#FDFBF7] p-8 overflow-hidden shadow-[4px_4px_16px_rgba(210,205,195,0.4)] border border-gray-200/80 rounded-3xl text-center space-y-4">
+          <div className="p-6 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-red-500 text-xs font-bold bg-red-50">
+            {summaryError}
+          </div>
+          {isPage && (
+            <Link
+              href="/dashboard/counsellor/students"
+              className="neu-btn py-2 px-4 text-xs font-bold inline-flex items-center gap-1.5"
+            >
+              <span>Back to Assigned Students</span>
+            </Link>
+          )}
+        </div>
+      );
+    }
+    return null;
+  }
 
   // Default Document generator
   function getDefaultDocuments(): StudentDocument[] {
@@ -524,44 +571,9 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
     return d.status === docFilter;
   });
 
-  return (
+  const bodyContent = (
     <>
-      <div key="student-detail-modal-main" className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
-        {/* Backdrop */}
-        <motion.div
-          key="student-detail-backdrop"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
-        />
-
-        {/* Modal Window */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.94, y: 16 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.94, y: 12 }}
-          transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-          className="relative w-full max-w-4xl neu-card bg-[#FDFBF7] p-5 sm:p-7 overflow-hidden shadow-[12px_12px_40px_rgba(210,205,195,0.8)] border border-white/90 z-10 my-auto max-h-[92vh] flex flex-col"
-        >
-          {/* German Tricolor Accent Bar */}
-          <div className="absolute top-0 left-0 w-full h-2 flex">
-            <div className="flex-1 bg-germany-black"></div>
-            <div className="flex-1 bg-germany-red"></div>
-            <div className="flex-1 bg-germany-gold"></div>
-          </div>
-
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute top-3.5 right-3.5 p-2 rounded-full text-gray-400 hover:text-germany-black hover:bg-[#EBE7E0]/70 transition-colors cursor-pointer"
-            aria-label="Close modal"
-          >
-            <X className="w-5 h-5" />
-          </button>
-
-          {/* Student Profile Header */}
+      {/* Student Profile Header */}
           <div className="pt-2 pb-4 border-b border-[#EBE7E0] shrink-0">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3.5">
@@ -608,7 +620,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
 
                 <button
                   onClick={handleCopyEmail}
-                  className="neu-btn p-2 text-gray-600 hover:text-germany-red cursor-pointer transition-colors"
+                  className="p-2 bg-white border border-gray-200/80 rounded-xl text-gray-600 hover:text-germany-red hover:bg-gray-50 cursor-pointer transition-colors shadow-xs"
                   title="Copy email address"
                 >
                   {copiedEmail ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
@@ -677,7 +689,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
           </div>
 
           {/* Scrollable Tab Content Body */}
-          <div className="flex-1 overflow-y-auto pt-5 pb-2 pr-1 space-y-5">
+          <div className={isPage ? "pt-5 pb-2 pr-1 space-y-5" : "flex-1 overflow-y-auto pt-5 pb-2 pr-1 space-y-5"}>
             {/* ========================================================
                 TAB 1: OVERVIEW & PROFILE
             ======================================================== */}
@@ -696,7 +708,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                     <div className="flex justify-end">
                       <button 
                         onClick={() => setShowFullProfile(true)}
-                        className="neu-btn py-2 px-4 text-xs font-extrabold flex items-center gap-1.5 bg-white text-germany-black hover:text-germany-gold border border-[#EBE7E0]"
+                        className="py-2 px-4 text-xs font-extrabold flex items-center gap-1.5 bg-white text-germany-black hover:text-germany-red border border-gray-200/80 rounded-xl shadow-xs transition-colors cursor-pointer"
                       >
                         <User className="w-4 h-4" />
                         <span>View Student Profile</span>
@@ -705,26 +717,26 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
 
                     {/* Profile Snapshot Grid */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <div className="neu-card p-3.5 bg-white space-y-1">
+                      <div className="p-3.5 bg-white rounded-xl border border-gray-200/80 shadow-xs space-y-1">
                         <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">German Bavarian GPA</span>
                         <div className="text-sm font-display text-germany-black flex items-center gap-1.5">
                           <span className="text-germany-black font-black">{summaryData?.summary?.gpa || 'NA'}</span>
                         </div>
                       </div>
 
-                      <div className="neu-card p-3.5 bg-white space-y-1">
+                      <div className="p-3.5 bg-white rounded-xl border border-gray-200/80 shadow-xs space-y-1">
                         <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Language Scores</span>
                         <div className="text-sm font-display text-germany-black">
                           {summaryData?.summary?.languageScore || 'NA'}
                         </div>
                       </div>
 
-                      <div className="neu-card p-3.5 bg-white space-y-1">
+                      <div className="p-3.5 bg-white rounded-xl border border-gray-200/80 shadow-xs space-y-1">
                         <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Target Intake</span>
                         <div className="text-sm font-display text-germany-black">{summaryData?.summary?.targetIntake || 'NA'}</div>
                       </div>
 
-                      <div className="neu-card p-3.5 bg-white space-y-1">
+                      <div className="p-3.5 bg-white rounded-xl border border-gray-200/80 shadow-xs space-y-1">
                         <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Readiness Score</span>
                         <div className="text-sm font-display text-germany-red font-black flex items-center gap-1.5">
                           <span>{summaryData?.summary?.readinessScore || 'NA'}</span>
@@ -733,7 +745,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                     </div>
 
                     {/* Advising Roadmap */}
-                    <div className="neu-card p-5 bg-white space-y-3">
+                    <div className="p-5 bg-white rounded-2xl border border-gray-200/80 shadow-xs space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Compass className="w-4 h-4 text-germany-red" />
@@ -801,7 +813,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                 )}
 
                 {/* Quick Consultation Jumpstart */}
-                <div className="neu-card p-4 sm:p-5 bg-white flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="p-4 sm:p-5 bg-white rounded-2xl border border-gray-200/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="space-y-1 text-center sm:text-left">
                     <h4 className="text-xs sm:text-sm font-extrabold text-germany-black">
                       Action Required: {pendingDocsCount} Student Documents Pending Verification
@@ -812,7 +824,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                   </div>
                   <button
                     onClick={() => setActiveTab('documents')}
-                    className="neu-btn-primary py-2 px-4 text-xs font-extrabold whitespace-nowrap cursor-pointer"
+                    className="neu-btn-primary py-2 px-4 text-xs font-extrabold whitespace-nowrap cursor-pointer shadow-xs"
                   >
                     Go to Document Hub
                   </button>
@@ -826,7 +838,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
             {activeTab === 'documents' && (
               <div className="space-y-4">
                 {/* Header & Filter Bar */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white neu-card p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white rounded-2xl border border-gray-200/80 shadow-xs p-4">
                   <div>
                     <h3 className="font-display text-base text-germany-black">Uploaded Documents Verification Hub</h3>
                     <p className="text-xs font-bold text-gray-500">
@@ -854,7 +866,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                 </div>
 
                 {/* Documents List */}
-                <div className="neu-card p-4 sm:p-5 bg-white space-y-3">
+                <div className="p-4 sm:p-5 bg-white rounded-2xl border border-gray-200/80 shadow-xs space-y-3">
                   {filteredDocs.length === 0 ? (
                     <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-gray-400 text-xs font-bold">
                       No documents found for this filter.
@@ -913,7 +925,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                                 {/* Preview Button */}
                                 <button
                                   onClick={() => setPreviewDoc(doc)}
-                                  className="neu-btn py-1.5 px-3 text-xs font-extrabold text-gray-700 hover:text-germany-black inline-flex items-center gap-1.5 cursor-pointer"
+                                  className="py-1.5 px-3 text-xs font-extrabold text-gray-700 hover:text-germany-black bg-white border border-gray-200/80 rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
                                   title="Preview document contents"
                                 >
                                   <Eye className="w-3.5 h-3.5" />
@@ -926,7 +938,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                                   className={`py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer ${
                                     isVerified
                                       ? 'bg-emerald-700 text-white shadow-xs'
-                                      : 'neu-btn text-emerald-700 hover:bg-emerald-50'
+                                      : 'bg-white border border-gray-200/80 text-emerald-700 hover:bg-emerald-50 shadow-xs'
                                   }`}
                                   title="Accept and verify document"
                                 >
@@ -940,7 +952,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                                   className={`py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer ${
                                     isRejected
                                       ? 'bg-red-700 text-white shadow-xs'
-                                      : 'neu-btn text-red-600 hover:bg-red-50'
+                                      : 'bg-white border border-gray-200/80 text-red-600 hover:bg-red-50 shadow-xs'
                                   }`}
                                   title="Reject document and request revision"
                                 >
@@ -975,7 +987,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
             {activeTab === 'universities' && (
               <div className="space-y-4">
                 {/* Header with Add University Recommendation */}
-                <div className="neu-card p-4 sm:p-5 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="p-4 sm:p-5 bg-white rounded-2xl border border-gray-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <h3 className="font-display text-base text-germany-black">University Eligibility &amp; Recommendations</h3>
                     <p className="text-xs font-bold text-gray-500">
@@ -985,7 +997,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
 
                   <button
                     onClick={() => setShowAddUni(!showAddUni)}
-                    className="neu-btn-primary py-2 px-3.5 text-xs font-extrabold inline-flex items-center gap-1.5 cursor-pointer shrink-0"
+                    className="neu-btn-primary py-2 px-3.5 text-xs font-extrabold inline-flex items-center gap-1.5 cursor-pointer shrink-0 shadow-xs"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Recommend Program</span>
@@ -994,7 +1006,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
 
                 {/* Add University Form Drawer */}
                 {showAddUni && (
-                  <form onSubmit={handleAddUniversity} className="neu-card p-4 bg-[#FDFBF7] border border-[#EBE7E0] space-y-3">
+                  <form onSubmit={handleAddUniversity} className="p-4 bg-white rounded-2xl border border-gray-200/80 shadow-xs space-y-3">
                     <h4 className="text-xs font-extrabold text-germany-black uppercase tracking-wider">
                       Add New University Recommendation
                     </h4>
@@ -1004,7 +1016,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                         placeholder="University (e.g. TU Darmstadt)"
                         value={newUniName}
                         onChange={(e) => setNewUniName(e.target.value)}
-                        className="p-2.5 neu-input text-xs font-bold"
+                        className="p-2.5 bg-white border border-gray-200/80 rounded-xl text-xs font-bold text-germany-black placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
                         required
                       />
                       <input
@@ -1012,7 +1024,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                         placeholder="Program (e.g. M.Sc. Distributed Systems)"
                         value={newUniProgram}
                         onChange={(e) => setNewUniProgram(e.target.value)}
-                        className="p-2.5 neu-input text-xs font-bold"
+                        className="p-2.5 bg-white border border-gray-200/80 rounded-xl text-xs font-bold text-germany-black placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
                         required
                       />
                       <input
@@ -1020,14 +1032,14 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                         placeholder="City / State (e.g. Darmstadt, Hesse)"
                         value={newUniLocation}
                         onChange={(e) => setNewUniLocation(e.target.value)}
-                        className="p-2.5 neu-input text-xs font-bold"
+                        className="p-2.5 bg-white border border-gray-200/80 rounded-xl text-xs font-bold text-germany-black placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
                       />
                     </div>
                     <div className="flex items-center justify-end gap-2 pt-1">
                       <button
                         type="button"
                         onClick={() => setShowAddUni(false)}
-                        className="neu-btn py-1.5 px-3 text-xs font-extrabold"
+                        className="py-1.5 px-3 text-xs font-extrabold bg-white border border-gray-200/80 rounded-xl hover:bg-gray-100 shadow-xs"
                       >
                         Cancel
                       </button>
@@ -1053,7 +1065,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                     };
 
                     return (
-                      <div key={uni.id} className="neu-card p-4 sm:p-5 bg-white space-y-3.5 hover:-translate-y-0.5 transition-transform">
+                      <div key={uni.id} className="p-4 sm:p-5 bg-white rounded-2xl border border-gray-200/80 shadow-xs hover:border-germany-red/30 space-y-3.5 transition-colors">
                         {/* Top: University, Type & Match Score */}
                         <div className="flex items-start justify-between gap-2">
                           <div className="space-y-0.5">
@@ -1111,7 +1123,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                           <select
                             value={uni.status}
                             onChange={(e) => handleUpdateUniStatus(uni.id, e.target.value as UniversityMatch['status'])}
-                            className="text-[11px] font-extrabold neu-btn py-1 px-2 text-germany-black cursor-pointer bg-white"
+                            className="text-[11px] font-extrabold py-1 px-2.5 text-germany-black cursor-pointer bg-white border border-gray-200/80 rounded-xl shadow-xs"
                           >
                             <option value="recommended">Recommended</option>
                             <option value="shortlisted">Shortlisted</option>
@@ -1133,7 +1145,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
             {activeTab === 'notes' && (
               <div className="space-y-4">
                 {/* Notes Editor */}
-                <div className="neu-card p-5 bg-white space-y-3">
+                <div className="p-5 bg-white rounded-2xl border border-gray-200/80 shadow-xs space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4 text-germany-black" />
@@ -1154,7 +1166,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                     onChange={(e) => setNote(e.target.value)}
                     placeholder="Document consultation takeaways (e.g. Target TUM Data Engineering, advised to re-take German A2 Goethe exam in October, notarization complete for APS Delhi)..."
                     rows={4}
-                    className="w-full p-3 neu-input text-xs font-bold placeholder:text-gray-400 placeholder:font-normal resize-none focus:outline-none"
+                    className="w-full p-3 bg-white border border-gray-200/80 rounded-xl text-xs font-bold placeholder:text-gray-400 placeholder:font-normal resize-none focus:outline-none focus:border-germany-red shadow-xs"
                   />
 
                   <div className="flex items-center justify-between pt-1">
@@ -1164,7 +1176,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                     <button
                       type="button"
                       onClick={handleSaveNote}
-                      className="neu-btn py-1.5 px-3.5 text-xs font-extrabold flex items-center gap-1.5 text-germany-black hover:text-germany-red cursor-pointer"
+                      className="py-1.5 px-3.5 text-xs font-extrabold flex items-center gap-1.5 text-germany-black hover:text-germany-red bg-white border border-gray-200/80 rounded-xl cursor-pointer shadow-xs transition-colors"
                     >
                       <Save className="w-3.5 h-3.5" />
                       <span>Save Notes</span>
@@ -1173,7 +1185,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                 </div>
 
                 {/* Consultation Follow-Up Checklist */}
-                <div className="neu-card p-5 bg-white space-y-3">
+                <div className="p-5 bg-white rounded-2xl border border-gray-200/80 shadow-xs space-y-3">
                   <h3 className="text-xs sm:text-sm font-extrabold text-germany-black uppercase tracking-wider">
                     Advising Checklist &amp; Action Items
                   </h3>
@@ -1206,11 +1218,11 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                       placeholder="Add an advising follow-up item..."
                       value={newTaskText}
                       onChange={(e) => setNewTaskText(e.target.value)}
-                      className="flex-1 p-2 neu-input text-xs font-bold"
+                      className="flex-1 p-2 bg-white border border-gray-200/80 rounded-xl text-xs font-bold focus:outline-none focus:border-germany-red shadow-xs"
                     />
                     <button
                       type="submit"
-                      className="neu-btn py-2 px-3 text-xs font-extrabold flex items-center gap-1 shrink-0"
+                      className="py-2 px-3 text-xs font-extrabold flex items-center gap-1 shrink-0 bg-white border border-gray-200/80 rounded-xl hover:bg-gray-100 shadow-xs"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Add Task</span>
@@ -1229,16 +1241,74 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
               <span>Student ID: {student.userId.substring(0, 10)}</span>
             </div>
 
-            <button
-              type="button"
-              onClick={onClose}
-              className="neu-btn py-2 px-6 text-xs font-extrabold text-gray-700 hover:text-germany-black cursor-pointer"
-            >
-              Close
-            </button>
+            {!isPage && onClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="py-2 px-6 text-xs font-extrabold text-gray-700 hover:text-germany-black bg-white border border-gray-200/80 rounded-xl cursor-pointer shadow-xs"
+              >
+                Close
+              </button>
+            )}
           </div>
-        </motion.div>
-      </div>
+    </>
+  );
+
+  return (
+    <>
+      {isPage ? (
+        <div className="relative w-full bg-white p-5 sm:p-7 overflow-hidden border border-gray-200/80 rounded-2xl sm:rounded-3xl shadow-xs flex flex-col">
+          {/* German Tricolor Accent Bar */}
+          <div className="absolute top-0 left-0 w-full h-[3px] flex">
+            <div className="flex-1 bg-germany-black"></div>
+            <div className="flex-1 bg-germany-red"></div>
+            <div className="flex-1 bg-germany-gold"></div>
+          </div>
+
+          {bodyContent}
+        </div>
+      ) : (
+        <div key="student-detail-modal-main" className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          {/* Backdrop */}
+          <motion.div
+            key="student-detail-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+          />
+
+          {/* Modal Window */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 8 }}
+            transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+            className="relative w-full max-w-4xl bg-white p-5 sm:p-7 overflow-hidden shadow-2xl border border-gray-200/80 rounded-2xl sm:rounded-3xl z-10 my-auto max-h-[92vh] flex flex-col"
+          >
+            {/* German Tricolor Accent Bar */}
+            <div className="absolute top-0 left-0 w-full h-2 flex">
+              <div className="flex-1 bg-germany-black"></div>
+              <div className="flex-1 bg-germany-red"></div>
+              <div className="flex-1 bg-germany-gold"></div>
+            </div>
+
+            {/* Close Button */}
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="absolute top-3.5 right-3.5 p-2 rounded-full text-gray-400 hover:text-germany-black hover:bg-gray-100 transition-colors cursor-pointer"
+                aria-label="Close modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+
+            {bodyContent}
+          </motion.div>
+        </div>
+      )}
 
       <AnimatePresence>
         {showFullProfile && (
@@ -1260,11 +1330,11 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="neu-card bg-[#FDFBF7] max-w-xl w-full p-6 space-y-4 relative border border-white/90 shadow-2xl"
+              className="bg-white rounded-2xl max-w-xl w-full p-6 space-y-4 relative border border-gray-200/80 shadow-2xl"
             >
               <button
                 onClick={() => setPreviewDoc(null)}
-                className="absolute top-4 right-4 p-1.5 rounded-full text-gray-400 hover:text-germany-black hover:bg-[#EBE7E0]"
+                className="absolute top-4 right-4 p-1.5 rounded-full text-gray-400 hover:text-germany-black hover:bg-gray-100 cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1282,15 +1352,15 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
               </div>
 
               {/* Simulated Document Preview Viewer */}
-              <div className="p-4 rounded-xl bg-white border border-[#EBE7E0] space-y-3 font-mono text-xs text-gray-700 shadow-inner">
-                <div className="flex items-center justify-between border-b border-gray-100 pb-2 text-[11px] font-sans font-extrabold text-gray-400">
+              <div className="p-4 rounded-xl bg-[#FAF8F5] border border-gray-200/70 space-y-3 font-mono text-xs text-gray-700">
+                <div className="flex items-center justify-between border-b border-gray-200/60 pb-2 text-[11px] font-sans font-extrabold text-gray-400">
                   <span>SIMULATED DOCUMENT PREVIEW</span>
                   <span className="text-emerald-700">AUTHENTICATED PDF SCAN</span>
                 </div>
                 <p className="leading-relaxed whitespace-pre-wrap font-sans text-xs text-gray-700">
                   {previewDoc.previewSnippet || 'Document content certified for German Higher Education and APS verification.'}
                 </p>
-                <div className="pt-2 text-[10px] text-gray-400 font-sans flex items-center justify-between border-t border-gray-100">
+                <div className="pt-2 text-[10px] text-gray-400 font-sans flex items-center justify-between border-t border-gray-200/60">
                   <span>Verification Hash: SHA256-EB981247</span>
                   <span>Page 1 of 2</span>
                 </div>
@@ -1316,7 +1386,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleVerifyDoc(previewDoc.id)}
-                    className="neu-btn-primary py-1.5 px-3 text-xs font-extrabold flex items-center gap-1"
+                    className="neu-btn-primary py-1.5 px-3 text-xs font-extrabold flex items-center gap-1 shadow-xs"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>Verify / Accept</span>
@@ -1325,7 +1395,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                     onClick={() => {
                       handleOpenRejectModal(previewDoc);
                     }}
-                    className="neu-btn py-1.5 px-3 text-xs font-extrabold text-red-600 flex items-center gap-1"
+                    className="py-1.5 px-3 text-xs font-extrabold text-red-600 hover:bg-red-50 bg-white border border-gray-200/80 rounded-xl flex items-center gap-1 shadow-xs cursor-pointer"
                   >
                     <AlertTriangle className="w-3.5 h-3.5" />
                     <span>Reject</span>
@@ -1348,7 +1418,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="neu-card bg-[#FDFBF7] max-w-md w-full p-6 space-y-4 relative border border-white/90 shadow-2xl"
+              className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 relative border border-gray-200/80 shadow-2xl"
             >
               <div className="flex items-center gap-2 text-red-600 font-display text-base">
                 <AlertTriangle className="w-5 h-5" />
@@ -1364,7 +1434,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                 onChange={(e) => setRejectionReasonInput(e.target.value)}
                 placeholder="e.g. Official semester marksheet lacks college registrar stamp. Please re-scan in high resolution (300 DPI)."
                 rows={3}
-                className="w-full p-3 neu-input text-xs font-bold resize-none focus:outline-none"
+                className="w-full p-3 bg-white border border-gray-200/80 rounded-xl text-xs font-bold resize-none focus:outline-none focus:border-red-500 shadow-xs"
                 autoFocus
               />
 
@@ -1372,14 +1442,14 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
                 <button
                   type="button"
                   onClick={() => setRejectingDoc(null)}
-                  className="neu-btn py-1.5 px-3 text-xs font-extrabold text-gray-600"
+                  className="py-1.5 px-3 text-xs font-extrabold text-gray-600 bg-white border border-gray-200/80 rounded-xl hover:bg-gray-100 shadow-xs cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleConfirmRejectDoc}
-                  className="py-1.5 px-4 text-xs font-extrabold bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-sm transition-colors cursor-pointer"
+                  className="py-1.5 px-4 text-xs font-extrabold bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-xs transition-colors cursor-pointer"
                 >
                   Confirm Rejection
                 </button>
@@ -1391,3 +1461,5 @@ export function StudentDetailModal({ student, onClose }: StudentDetailModalProps
     </>
   );
 }
+
+export { StudentDetailModal as StudentDetailView };

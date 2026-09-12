@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import React from 'react';
+import Link from 'next/link';
 import { Search, Loader2, Eye } from 'lucide-react';
 import { usePaginatedList } from '../hooks/usePaginatedList';
-import { StudentDetailModal } from './StudentDetailModal';
 
 export interface AssignedStudent {
   userId: string;
@@ -25,8 +24,6 @@ export function CounsellorStudents() {
     hasMore,
   } = usePaginatedList<AssignedStudent>('/counsellor/students', 20);
 
-  const [selectedStudent, setSelectedStudent] = useState<AssignedStudent | null>(null);
-
   const formatStatus = (status: string | null) => {
     if (!status) return 'Unknown';
     return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
@@ -42,7 +39,7 @@ export function CounsellorStudents() {
             placeholder="Search students..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 neu-input text-xs font-bold"
+            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200/80 rounded-xl text-xs font-bold text-germany-black placeholder:text-gray-400 focus:outline-none focus:border-germany-red focus:ring-1 focus:ring-germany-red/20 shadow-xs"
           />
         </div>
       </div>
@@ -85,15 +82,14 @@ export function CounsellorStudents() {
                 </span>
               </td>
               <td className="px-4 py-3 text-sm text-right">
-                <button
-                  type="button"
-                  onClick={() => setSelectedStudent(student)}
-                  className="neu-btn py-1.5 px-3.5 text-xs font-extrabold text-germany-black hover:text-germany-red inline-flex items-center gap-1.5 cursor-pointer shadow-[3px_3px_8px_rgba(210,205,195,0.6),-3px_-3px_8px_rgba(255,255,255,0.9)] active:shadow-[inset_2px_2px_5px_rgba(210,205,195,0.5)] transition-all"
+                <Link
+                  href={`/dashboard/counsellor/students/${student.userId}`}
+                  className="py-1.5 px-3.5 text-xs font-extrabold text-germany-black hover:text-germany-red hover:border-germany-red/40 bg-white border border-gray-200/80 rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-all"
                   title={`View details for ${student.firstName} ${student.lastName}`}
                 >
                   <Eye className="w-3.5 h-3.5 text-germany-red" />
                   <span>View</span>
-                </button>
+                </Link>
               </td>
             </tr>
           ))}
@@ -106,17 +102,6 @@ export function CounsellorStudents() {
       )}
     </div>
     )}
-
-      {/* Student Detail Modal */}
-      <AnimatePresence>
-        {selectedStudent && (
-          <StudentDetailModal
-            key={selectedStudent.userId}
-            student={selectedStudent}
-            onClose={() => setSelectedStudent(null)}
-          />
-        )}
-      </AnimatePresence>
   </div>
   );
 }

@@ -9,6 +9,7 @@ import { APSProcessSteps } from './components/APSProcessSteps';
 import { APSInterviewPrep } from './components/APSInterviewPrep';
 import { APSFailureHandling } from './components/APSFailureHandling';
 import { PostAPSSteps } from './components/PostAPSSteps';
+import { APSFAQ } from './components/APSFAQ';
 import { APSCTA } from './components/APSCTA';
 import { Metadata } from 'next';
 
@@ -31,6 +32,7 @@ export default function APSPage() {
         <APSInterviewPrep />
         <APSFailureHandling />
         <PostAPSSteps />
+        <APSFAQ />
         <APSCTA />
       </div>
 

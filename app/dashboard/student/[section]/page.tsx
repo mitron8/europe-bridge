@@ -134,36 +134,45 @@ export default function StudentSectionPage({ params }: { params: Promise<{ secti
 
   return (
     <div className="space-y-6">
-      {/* Header Banner Card */}
-      <div className="neu-card p-6 md:p-8 bg-white relative overflow-hidden shadow-[12px_12px_30px_rgba(210,205,195,0.6)]">
-        {/* Tricolor Header Strip */}
-        <div className="absolute top-0 left-0 w-full h-2 flex">
+      {/* Sleek Compact Section Header */}
+      <div className="bg-white rounded-2xl border border-gray-200/80 shadow-[2px_2px_8px_rgba(71,85,105,0.04)] px-4 sm:px-6 py-3.5 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative overflow-hidden">
+        {/* Subtle German Tricolor Top Accent */}
+        <div className="absolute top-0 left-0 w-full h-[3px] flex">
           <div className="flex-1 bg-germany-black"></div>
           <div className="flex-1 bg-germany-red"></div>
           <div className="flex-1 bg-germany-gold"></div>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10 mt-1">
-          <div className="space-y-2 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-germany-red/10 text-germany-red rounded-full font-extrabold text-[11px]">
-              <Icon className="w-3.5 h-3.5" />
-              <span>Student Portal Section</span>
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-germany-red/10 text-germany-red flex items-center justify-center shrink-0 border border-germany-red/20 shadow-xs">
+            <Icon className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-base sm:text-lg font-display font-bold text-germany-black tracking-tight leading-tight">
+                {config.title}
+              </h1>
+              {isRestricted && completionPercentage !== null && completionPercentage >= 100 && (
+                <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                  Unlocked
+                </span>
+              )}
             </div>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-display text-germany-black">
-              {config.title}
-            </h1>
-            <p className="text-xs md:text-sm font-bold text-gray-500 max-w-xl">
+            <p className="text-[11px] sm:text-xs text-gray-500 font-medium leading-normal mt-0.5">
               {config.subtitle}
             </p>
           </div>
+        </div>
 
-          <div className="shrink-0">
-            <img
-              src={config.doodle}
-              alt={config.title}
-              className="w-24 h-24 object-contain drop-shadow-md"
-            />
-          </div>
+        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 pt-1 sm:pt-0">
+          <Link
+            href="/dashboard/student"
+            className="text-[11px] font-bold text-gray-600 hover:text-germany-black px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors inline-flex items-center gap-1.5 border border-gray-200/70"
+          >
+            <span>Overview</span>
+            <ArrowRight className="w-3 h-3 text-gray-400" />
+          </Link>
         </div>
       </div>
 

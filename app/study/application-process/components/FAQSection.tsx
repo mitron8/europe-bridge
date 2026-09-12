@@ -1,8 +1,6 @@
 "use client";
-
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import React from 'react';
+import { StudyFAQ } from '@/app/study/components/StudyFAQ';
 
 export const FAQSection = () => {
   const faqs = [
@@ -32,68 +30,13 @@ export const FAQSection = () => {
     }
   ];
 
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
-
-  const toggleFAQ = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
-
   return (
-    <section id="section-faq" className="scroll-mt-36 py-8 px-6 lg:px-12">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <h2 className="text-2xl md:text-3xl font-display text-germany-black flex items-center gap-2 border-b border-[#EBE7E0] pb-3">
-          <HelpCircle className="w-6 h-6 text-germany-red" />
-          <span>Frequently Asked Questions</span>
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-          {faqs.map((faq, idx) => {
-            const isOpen = openIndex === idx;
-            return (
-              <div 
-                key={idx} 
-                className={`neu-card p-5 bg-white space-y-3 cursor-pointer select-none transition-all shadow-xs border ${
-                  isOpen ? 'border-germany-red/30 ring-1 ring-germany-red/10' : 'border-[#EBE7E0]/60 hover:border-gray-300'
-                }`}
-                onClick={() => toggleFAQ(idx)}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-2">
-                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-red-100/70 text-germany-red shrink-0 mt-0.5">
-                      Q{idx + 1}
-                    </span>
-                    <span className="text-xs sm:text-sm font-bold text-germany-black leading-snug">{faq.q}</span>
-                  </div>
-                  <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 shrink-0">
-                    {isOpen ? (
-                      <ChevronUp className="w-3.5 h-3.5 text-germany-red" />
-                    ) : (
-                      <ChevronDown className="w-3.5 h-3.5" />
-                    )}
-                  </div>
-                </div>
-                
-                <AnimatePresence>
-                  {isOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
-                    >
-                      <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed border-t border-[#EBE7E0]/60 pt-3 mt-1">
-                        {faq.a}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
+    <StudyFAQ
+      id="section-faq"
+      badge="Application FAQs"
+      title="Frequently Asked Questions about University Applications"
+      subtitle="Strategic guidance on uni-assist, direct portal deadlines, admission odds, and acceptance offers."
+      faqs={faqs}
+    />
   );
 };
-

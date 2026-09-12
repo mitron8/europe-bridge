@@ -2,62 +2,66 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Award, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Award, UserCheck } from 'lucide-react';
 
 export const ScholarshipsCTA = () => {
   return (
-    <section className="py-12 px-6 lg:px-12 max-w-7xl mx-auto">
-      <div className="neu-card p-8 sm:p-12 bg-gradient-to-r from-germany-black via-gray-900 to-germany-black text-white relative overflow-hidden rounded-3xl shadow-xl">
-        {/* Background decorative glow */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-red-600/20 rounded-full blur-3xl -z-0 pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl -z-0 pointer-events-none" />
+    <section className="py-8 sm:py-10 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto my-4">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="rounded-[30px] bg-germany-black p-6 sm:p-8 lg:p-9 relative overflow-hidden shadow-[12px_12px_30px_rgba(71,85,105,0.3),inset_0_-4px_10px_rgba(0,0,0,0.8)] flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 text-center lg:text-left"
+      >
+        {/* Subtle Ambient Glows */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-germany-red/15 rounded-full blur-[70px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-germany-gold/20 rounded-full blur-[70px] pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-          <div className="space-y-4 max-w-2xl text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-black uppercase tracking-wider">
-              <Award className="w-4 h-4" />
-              <span>Scholarship Evaluation</span>
-            </div>
-
-            <h2 className="text-3xl sm:text-4xl font-black text-white font-display leading-tight">
-              Need Help Finding & Winning <span className="text-germany-red">German Scholarships?</span>
-            </h2>
-
-            <p className="text-gray-300 font-medium text-base leading-relaxed">
-              Our specialized advisors evaluate your academic background, convert your grades to the German scale, craft winning motivation letters, and identify which high-value grants you can realistically secure.
-            </p>
-
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2 text-xs text-gray-300 font-semibold">
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Free German Grade Assessment
-              </span>
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Tailored SOP & LOR Review
-              </span>
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> University + DAAD Shortlist
-              </span>
-            </div>
+        {/* Left Side Content */}
+        <div className="relative z-10 space-y-2.5 max-w-2xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full font-bold text-germany-gold text-xs shadow-inner cursor-default">
+            <Award className="w-3.5 h-3.5 text-germany-gold" />
+            <span>Scholarship Strategic Advisory</span>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0">
-            <Link
-              href="/#cta"
-              className="neu-btn-primary px-8 py-4 text-base font-extrabold flex items-center gap-2 shadow-lg cursor-pointer"
+          <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold font-display text-white tracking-tight leading-tight">
+            Maximize Your Funding &amp; <span className="text-germany-gold">Scholarship Odds</span>
+          </h2>
+
+          <p className="text-neutral-300 font-medium text-xs sm:text-sm leading-relaxed max-w-xl">
+            From DAAD and Deutschlandstipendium to university grants, our advisors help you identify funding opportunities and polish winning scholarship essays.
+          </p>
+        </div>
+
+        {/* Right Side Buttons & Reassurance */}
+        <div className="relative z-10 flex flex-col items-center lg:items-end gap-3 shrink-0 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+            <Link 
+              href="/signup" 
+              className="w-full sm:w-auto px-7 py-3 rounded-full bg-germany-red hover:bg-rose-600 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(230,57,70,0.35)] whitespace-nowrap transition-colors"
             >
-              <span>Get Free Profile Evaluation</span>
-              <ArrowRight className="w-5 h-5" />
+              <span>Explore Funding</span>
+              <ArrowRight className="w-4 h-4" />
             </Link>
 
-            <Link
+            <Link 
               href="/tools/admission-chance"
-              className="neu-btn px-6 py-4 text-base font-extrabold text-germany-black hover:text-germany-red bg-white border border-gray-200 cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 rounded-full bg-white hover:bg-neutral-100 text-germany-black hover:text-germany-red font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(0,0,0,0.5)] whitespace-nowrap transition-colors"
             >
-              <span>Admission Chance Tool</span>
+              <UserCheck className="w-4 h-4" />
+              <span>Check Eligibility</span>
             </Link>
+          </div>
+
+          <div className="flex items-center justify-center gap-3 text-[11px] text-neutral-400 font-semibold pt-1">
+            <span>✓ DAAD &amp; Foundation Coaching</span>
+            <span>•</span>
+            <span>✓ Essay Reviews</span>
           </div>
         </div>
-      </div>
+
+      </motion.div>
     </section>
   );
 };

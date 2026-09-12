@@ -1,77 +1,67 @@
 "use client";
-
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { UserCheck, ArrowRight, ShieldCheck } from 'lucide-react';
+import { ArrowRight, ShieldCheck, UserCheck } from 'lucide-react';
 
 export const VisaCTA = () => {
   return (
-    <section className="py-16 px-6 lg:px-12 my-10">
-      <div className="max-w-7xl mx-auto">
-        <div className="neu-card p-8 sm:p-12 bg-gradient-to-r from-red-600 to-red-700 text-white relative overflow-hidden space-y-6 shadow-2xl">
-          {/* Decorative ambient circles */}
-          <div className="absolute -top-12 -right-12 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-amber-400/20 rounded-full blur-2xl pointer-events-none" />
+    <section className="py-8 sm:py-10 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto my-4">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="rounded-[30px] bg-germany-black p-6 sm:p-8 lg:p-9 relative overflow-hidden shadow-[12px_12px_30px_rgba(71,85,105,0.3),inset_0_-4px_10px_rgba(0,0,0,0.8)] flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 text-center lg:text-left"
+      >
+        {/* Subtle Ambient Glows */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-germany-red/15 rounded-full blur-[70px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-germany-gold/20 rounded-full blur-[70px] pointer-events-none" />
 
-          {/* Floating Success Doodle Accent */}
-          <motion.img
-            src="/doodles/sucesss.png"
-            alt="Visa Success Doodle"
-            className="absolute right-6 top-1/2 -translate-y-1/2 w-44 h-44 sm:w-56 sm:h-56 object-contain opacity-90 hidden lg:block pointer-events-none drop-shadow-xl"
-            animate={{ y: [-5, 5, -5] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          />
-
-          <div className="relative z-10 max-w-3xl space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-black uppercase tracking-wider backdrop-blur-md">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Certified German Visa Assistance</span>
-            </div>
-
-            <h2 className="text-3xl sm:text-4xl font-black font-display leading-tight text-white">
-              Ready to Secure Your German Student Visa with 100% Confidence?
-            </h2>
-
-            <p className="text-sm sm:text-base text-red-100 font-medium leading-relaxed">
-              Don't leave your visa approval to guesswork. Let EuropeBridge specialists review your paperwork, manage your digital CSP submission, book your VFS slot, and train you for consular interviews.
-            </p>
-
-            <div className="pt-4 flex flex-wrap items-center gap-4">
-              <Link 
-                href="/signup"
-                className="neu-btn-gold px-8 py-3 text-sm font-extrabold text-germany-black flex items-center gap-2 shadow-lg"
-              >
-                <span>Book Visa Guidance Session</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-
-              <Link 
-                href="/tools/admission-chance"
-                className="px-6 py-3 rounded-full text-xs font-bold text-white bg-white/10 border border-white/30 hover:bg-white/20 transition-all flex items-center gap-2"
-              >
-                <UserCheck className="w-4 h-4" />
-                <span>Check Admission Odds First</span>
-              </Link>
-            </div>
+        {/* Left Side Content */}
+        <div className="relative z-10 space-y-2.5 max-w-2xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full font-bold text-germany-gold text-xs shadow-inner cursor-default">
+            <ShieldCheck className="w-3.5 h-3.5 text-germany-gold" />
+            <span>Certified German Visa Guidance</span>
           </div>
 
-          <div className="pt-6 border-t border-white/20 flex flex-wrap items-center gap-6 text-xs text-red-100 font-semibold">
-            <div className="flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-amber-300" />
-              <span>99.2% Visa Approval Success</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-amber-300" />
-              <span>Consular Services Portal (CSP) Compliant</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-amber-300" />
-              <span>1:1 Visa Mock Interview Included</span>
-            </div>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-display text-white tracking-tight leading-tight">
+            Secure Your German Student Visa with <span className="text-germany-gold">Confidence</span>
+          </h2>
+
+          <p className="text-neutral-300 font-medium text-xs sm:text-sm leading-relaxed max-w-xl">
+            EuropeBridge specialists audit your paperwork, manage digital CSP submission, book VFS slots, and conduct 1-on-1 consular interview coaching.
+          </p>
+        </div>
+
+        {/* Right Side Buttons & Reassurance */}
+        <div className="relative z-10 flex flex-col items-center lg:items-end gap-3 shrink-0 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+            <Link 
+              href="/signup" 
+              className="w-full sm:w-auto px-7 py-3 rounded-full bg-germany-red hover:bg-rose-600 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(230,57,70,0.35)] whitespace-nowrap transition-colors"
+            >
+              <span>Book Visa Session</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+
+            <Link 
+              href="/tools/admission-chance"
+              className="w-full sm:w-auto px-6 py-3 rounded-full bg-white hover:bg-neutral-100 text-germany-black hover:text-germany-red font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(0,0,0,0.5)] whitespace-nowrap transition-colors"
+            >
+              <UserCheck className="w-4 h-4" />
+              <span>Check Odds</span>
+            </Link>
+          </div>
+
+          <div className="flex items-center justify-center gap-3 text-[11px] text-neutral-400 font-semibold pt-1">
+            <span>✓ 99.2% Visa Grant Rate</span>
+            <span>•</span>
+            <span>✓ CSP &amp; VIDEX Verified</span>
           </div>
         </div>
-      </div>
+
+      </motion.div>
     </section>
   );
 };
