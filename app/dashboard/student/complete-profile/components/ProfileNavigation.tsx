@@ -19,23 +19,10 @@ const SECTIONS: { id: ProfileSection; label: string }[] = [
 
 export default function ProfileNavigation({ activeSection, setActiveSection, completionPercentage, data }: Props) {
   
-  // Basic validation to check if a section is complete for the UI tick mark
+  // The backend strictly calculates whether each section is fully complete according to business rules.
+  // We simply read from the authoritative sectionCompletion object.
   const isSectionComplete = (section: ProfileSection) => {
-    switch(section) {
-      case 'personal':
-        return !!(data.firstName && data.lastName && data.dateOfBirth && data.email && data.phone && data.addressLine && data.city && data.country && data.postalCode && data.nationality && data.gender);
-      case 'education':
-        return data.educationRecords.length > 0;
-      case 'preferences':
-        return !!(data.intendedDegreeLevel && data.preferredFieldOfStudy && data.intakeSeason && data.intakeYear);
-      case 'finance':
-        return !!data.fundingPreference;
-      case 'tests':
-      case 'experience':
-        return true; // Optional sections can always have a checkmark if we don't have hard requirements
-      default:
-        return false;
-    }
+    return !!data.sectionCompletion?.[section];
   };
 
   return (

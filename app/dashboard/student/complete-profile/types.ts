@@ -60,6 +60,7 @@ export interface ExperienceRecord {
 export interface ProfileData {
   // Calculated on backend
   completionPercentage: number;
+  sectionCompletion: Record<string, boolean>;
 
   // From users table — read-only, populated from GET /student/profile
   firstName: string;
@@ -85,6 +86,9 @@ export interface ProfileData {
   passportIssueDate: string;
   passportExpiryDate: string;
   passportIssuingCountry: string;
+
+  englishProficiencyState: 'NO' | 'LEVEL' | '';
+  germanProficiencyState: 'NO' | 'LEVEL' | '';
 
   germanLevel: 'None' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2' | '';
   germanCertificateType: 'Goethe' | 'TELC' | 'TestDaF' | 'DSH' | 'Other' | 'None' | '';
@@ -115,6 +119,14 @@ export interface ProfileData {
 // Never used as fallback for persistence.
 export const emptyProfile: ProfileData = {
   completionPercentage: 0,
+  sectionCompletion: {
+    personal: false,
+    education: false,
+    tests: false,
+    experience: false,
+    preferences: false,
+    finance: false,
+  },
   firstName: '',
   lastName: '',
   email: '',
@@ -137,6 +149,9 @@ export const emptyProfile: ProfileData = {
   passportIssueDate: '',
   passportExpiryDate: '',
   passportIssuingCountry: '',
+
+  englishProficiencyState: '',
+  germanProficiencyState: '',
 
   germanLevel: '',
   germanCertificateType: '',

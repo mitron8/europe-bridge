@@ -49,7 +49,10 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-xl font-extrabold text-germany-black font-display">Academic History</h3>
+        <div>
+          <h3 className="text-xl font-extrabold text-germany-black font-display">Academic History</h3>
+          <p className="text-xs font-bold text-gray-500 mt-1">A completed <strong className="text-germany-red">Bachelor&apos;s</strong> degree is required to complete this section.</p>
+        </div>
         <button onClick={addEducation} className="px-4 py-2 rounded-xl bg-[#EBE7E0] hover:bg-germany-black hover:text-white font-extrabold text-xs transition-all text-germany-black cursor-pointer">
           + Add Education Record
         </button>
