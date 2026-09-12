@@ -353,45 +353,6 @@ export default function StudentSectionPage({ params }: { params: Promise<{ secti
         </div>
       )}
 
-      {section === 'aps' && (
-        <div className="space-y-6">
-          <div className="neu-card p-6 bg-white space-y-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-display text-lg text-germany-black">APS India Certificate Roadmap</h3>
-                <p className="text-xs font-bold text-gray-400">Mandatory for all students holding Indian academic qualifications</p>
-              </div>
-              <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-extrabold rounded-full">
-                Phase: Document Verification
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              {[
-                { title: '1. Online Registration on APS India Portal', status: 'Completed', detail: 'Registration Number: APS-2026-98124' },
-                { title: '2. Payment of ₹18,000 APS Processing Fee', status: 'Completed', detail: 'Transaction ID: HDFC-98234710' },
-                { title: '3. Submission of Printed Application & Notarized Documents', status: 'Completed', detail: 'Delivered to New Delhi Embassy Center' },
-                { title: '4. Professor Verification / Digilocker Consent', status: 'In Progress', detail: 'Awaiting college registrar email confirmation' },
-                { title: '5. Issuance of Digital APS Certificate', status: 'Pending', detail: 'Expected within 15 working days' },
-              ].map((step, i) => (
-                <div key={step.title} className="p-4 rounded-2xl bg-[#FDFBF7] border border-[#EBE7E0] flex items-center justify-between gap-4">
-                  <div className="space-y-0.5">
-                    <div className="text-xs font-extrabold text-germany-black">{step.title}</div>
-                    <div className="text-[11px] font-bold text-gray-500">{step.detail}</div>
-                  </div>
-                  <span className={`text-xs font-extrabold px-3 py-1 rounded-full shrink-0 ${
-                    step.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' :
-                    step.status === 'In Progress' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    {step.status}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Fallback for other sub-sections */}
       {!['matching', 'documents', 'aps'].includes(section) && (
         <div className="neu-card p-8 bg-white text-center space-y-4">
