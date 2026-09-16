@@ -79,21 +79,21 @@ export function ClaySelect<T extends string = string>({
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0] text-germany-black text-left flex items-center justify-between cursor-pointer transition-all ${
-          disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-germany-red/20'
-        } ${isOpen ? 'ring-2 ring-germany-red/30 bg-[#FDFBF7]' : ''}`}
+        className={`w-full px-3.5 py-2.5 text-xs font-bold bg-white border border-gray-200/80 rounded-xl text-germany-black text-left flex items-center justify-between cursor-pointer transition-all shadow-xs ${
+          disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-gray-300'
+        } ${isOpen ? 'ring-2 ring-germany-red/20 border-germany-red bg-white' : ''}`}
       >
-        <span className={`truncate ${!selectedOption?.label ? 'text-gray-400 font-semibold' : 'text-germany-black'}`}>
+        <span className={`truncate ${!selectedOption?.label ? 'text-gray-400 font-medium' : 'text-germany-black'}`}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown
-          className={`w-4 h-4 text-gray-500 shrink-0 ml-2 transition-transform duration-200 ${
+          className={`w-4 h-4 text-gray-400 shrink-0 ml-2 transition-transform duration-200 ${
             isOpen ? 'rotate-180 text-germany-red' : ''
           }`}
         />
       </button>
 
-      {/* Floating Clay Menu */}
+      {/* Floating Menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -101,18 +101,18 @@ export function ClaySelect<T extends string = string>({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="absolute left-0 right-0 mt-2 p-2 neu-dropdown z-50 max-h-64 flex flex-col overflow-hidden"
+            className="absolute left-0 right-0 mt-1.5 p-1.5 bg-white border border-gray-200/80 rounded-xl shadow-lg z-50 max-h-64 flex flex-col overflow-hidden"
           >
             {/* Optional Search Bar */}
             {(searchable || normalizedOptions.length > 8) && (
-              <div className="mb-2 p-1 relative shrink-0">
+              <div className="mb-1.5 p-1 relative shrink-0">
                 <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 text-xs font-bold neu-input bg-white focus:outline-none"
+                  className="w-full pl-8 pr-3 py-1.5 text-xs font-bold bg-gray-50 border border-gray-200/80 rounded-lg text-germany-black placeholder:text-gray-400 focus:outline-none focus:border-germany-red focus:bg-white transition-colors"
                   autoFocus
                 />
               </div>
@@ -124,14 +124,14 @@ export function ClaySelect<T extends string = string>({
                 <button
                   type="button"
                   onClick={() => handleSelect('' as T)}
-                  className="w-full text-left px-3 py-2 text-xs font-bold text-gray-400 neu-dropdown-item hover:bg-[#EBE7E0] transition-colors"
+                  className="w-full text-left px-3 py-2 text-xs font-medium text-gray-400 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   {placeholder}
                 </button>
               )}
 
               {filteredOptions.length === 0 ? (
-                <div className="p-3 text-center text-xs font-bold text-gray-400">
+                <div className="p-3 text-center text-xs font-medium text-gray-400">
                   No matching options
                 </div>
               ) : (
@@ -142,21 +142,21 @@ export function ClaySelect<T extends string = string>({
                       key={opt.value}
                       type="button"
                       onClick={() => handleSelect(opt.value)}
-                      className={`w-full text-left px-3 py-2 text-xs font-bold neu-dropdown-item flex items-center justify-between transition-all ${
+                      className={`w-full text-left px-3 py-2 text-xs font-bold rounded-lg flex items-center justify-between transition-colors ${
                         isSelected
-                          ? 'neu-dropdown-item-active'
-                          : 'text-germany-black hover:bg-[#EBE7E0]'
+                          ? 'bg-germany-red text-white'
+                          : 'text-germany-black hover:bg-gray-100'
                       }`}
                     >
-                      <div className="truncate">
-                        <span>{opt.label}</span>
+                      <div className="flex flex-col min-w-0 pr-2">
+                        <span className="truncate">{opt.label}</span>
                         {opt.sublabel && (
-                          <span className={`block text-[10px] truncate ${isSelected ? 'text-white/80' : 'text-gray-400'}`}>
+                          <span className={`text-[10px] font-medium truncate ${isSelected ? 'text-white/80' : 'text-gray-400'}`}>
                             {opt.sublabel}
                           </span>
                         )}
                       </div>
-                      {isSelected && <Check className="w-3.5 h-3.5 ml-2 shrink-0 text-white" />}
+                      {isSelected && <Check className="w-3.5 h-3.5 shrink-0" />}
                     </button>
                   );
                 })

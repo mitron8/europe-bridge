@@ -39,5 +39,10 @@ export default async function DashboardLayout({
     redirect('/login');
   }
 
-  return <>{children}</>;
+  return (
+    <div className="dashboard-container min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased">
+      {children}
+    </div>
+  );
 }
+

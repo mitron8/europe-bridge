@@ -243,3 +243,138 @@ body {
   background-color: #F4F1EA;
   color: var(--color-germany-black);
 }
+
+/* ==========================================================================
+   DASHBOARD CLEAN UI THEME
+   Replaces claymorphism in all dashboards with a crisp, eye-soothing,
+   professional SaaS interface matching /dashboard/counsellor/students view
+   ========================================================================== */
+.dashboard-container {
+  background-color: #F8FAFC !important;
+  color: #1a1a1a !important;
+}
+
+.dashboard-container .neu-bg {
+  background-color: #F8FAFC !important;
+}
+
+.dashboard-container .neu-card {
+  background-color: #FFFFFF !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(226, 232, 240, 0.85) !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04) !important;
+}
+
+.dashboard-container .neu-card-dark {
+  background-color: #1a1a1a !important;
+  border-radius: 16px !important;
+  border: 1px solid #334155 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+.dashboard-container .neu-input {
+  background-color: #FFFFFF !important;
+  border-radius: 12px !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04) !important;
+  color: #1a1a1a !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.dashboard-container .neu-input:focus {
+  background-color: #FFFFFF !important;
+  border-color: #E63946 !important;
+  box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.12) !important;
+  outline: none !important;
+}
+
+.dashboard-container .neu-btn {
+  background-color: #FFFFFF !important;
+  border-radius: 12px !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04) !important;
+  color: #1a1a1a !important;
+  font-weight: 700 !important;
+  transition: all 0.15s ease !important;
+  transform: none !important;
+}
+
+.dashboard-container .neu-btn:hover {
+  background-color: #F8FAFC !important;
+  border-color: #CBD5E1 !important;
+  color: #E63946 !important;
+  transform: none !important;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.06) !important;
+}
+
+.dashboard-container .neu-btn:active {
+  background-color: #F1F5F9 !important;
+  transform: none !important;
+}
+
+.dashboard-container .neu-btn-primary {
+  background-color: #E63946 !important;
+  color: #FFFFFF !important;
+  border-radius: 12px !important;
+  border: 1px solid transparent !important;
+  box-shadow: 0 1px 2px 0 rgba(230, 57, 70, 0.2) !important;
+  font-weight: 700 !important;
+  transition: all 0.15s ease !important;
+  transform: none !important;
+}
+
+.dashboard-container .neu-btn-primary:hover {
+  background-color: #D62839 !important;
+  box-shadow: 0 4px 6px -1px rgba(230, 57, 70, 0.25) !important;
+  transform: none !important;
+}
+
+.dashboard-container .neu-btn-primary:active {
+  background-color: #C92A37 !important;
+  transform: none !important;
+}
+
+.dashboard-container .neu-btn-gold {
+  background-color: #F4A261 !important;
+  color: #1a1a1a !important;
+  border-radius: 12px !important;
+  border: 1px solid transparent !important;
+  box-shadow: 0 1px 2px 0 rgba(244, 162, 97, 0.2) !important;
+  font-weight: 700 !important;
+  transition: all 0.15s ease !important;
+  transform: none !important;
+}
+
+.dashboard-container .neu-btn-gold:hover {
+  background-color: #E7924E !important;
+  transform: none !important;
+}
+
+.dashboard-container .neu-dropdown {
+  background-color: #FFFFFF !important;
+  border-radius: 14px !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04) !important;
+}
+
+.dashboard-container .neu-dropdown-item {
+  border-radius: 8px !important;
+  color: #334155 !important;
+  transition: background-color 0.15s ease, color 0.15s ease !important;
+}
+
+.dashboard-container .neu-dropdown-item:hover {
+  background-color: #F1F5F9 !important;
+  color: #0F172A !important;
+}
+
+.dashboard-container .neu-dropdown-item-active {
+  background-color: #E63946 !important;
+  color: #FFFFFF !important;
+  box-shadow: none !important;
+}
+
+.dashboard-container select.neu-input option {
+  background-color: #FFFFFF !important;
+  color: #1a1a1a !important;
+}
