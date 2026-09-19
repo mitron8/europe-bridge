@@ -85,10 +85,10 @@ export default function StudentDashboard() {
                 key={step.label}
                 className={`p-3.5 rounded-2xl border transition-all ${
                   isCurrent
-                    ? 'bg-[#FDFBF7] border-germany-red shadow-[4px_4px_12px_rgba(230,57,70,0.2)]'
+                    ? 'bg-[#FDFBF7] dark:bg-[#0E121A] border-germany-red shadow-[4px_4px_12px_rgba(230,57,70,0.2)]'
                     : isCompleted
-                    ? 'bg-emerald-50/50 border-emerald-300'
-                    : 'bg-[#EBE7E0]/40 border-transparent opacity-80'
+                    ? 'bg-emerald-50/70 dark:bg-[#0E121A] border-emerald-300 dark:border-emerald-500/50 shadow-sm'
+                    : 'bg-[#EBE7E0]/40 dark:bg-[#0E121A]/50 border-transparent opacity-80'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -104,9 +104,18 @@ export default function StudentDashboard() {
                   {isCurrent && (
                     <span className="text-[9px] font-extrabold text-germany-red uppercase tracking-wider">Active</span>
                   )}
+                  {isCompleted && (
+                    <span className="text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Done</span>
+                  )}
                 </div>
-                <div className="font-extrabold text-xs text-germany-black">{step.label}</div>
-                <div className="text-[10px] font-bold text-gray-500 mt-0.5">{step.desc}</div>
+                <div className="font-extrabold text-xs text-germany-black dark:text-white">{step.label}</div>
+                <div className={`text-[10px] font-bold mt-0.5 ${
+                  isCompleted 
+                    ? 'text-emerald-700 dark:text-emerald-400' 
+                    : 'text-gray-500 dark:text-gray-400'
+                }`}>
+                  {step.desc}
+                </div>
               </div>
             );
           })}
@@ -254,28 +263,28 @@ export default function StudentDashboard() {
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-1">
-                <div className="flex items-center justify-between text-emerald-800 font-extrabold text-xs">
+              <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-[#0E121A] border border-emerald-200 dark:border-emerald-500/30 space-y-1">
+                <div className="flex items-center justify-between text-emerald-800 dark:text-emerald-400 font-extrabold text-xs">
                   <span>Bachelor Degree / Transcript</span>
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <p className="text-[10px] font-bold text-emerald-700">Verified & Translated</p>
+                <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300">Verified & Translated</p>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-1">
-                <div className="flex items-center justify-between text-emerald-800 font-extrabold text-xs">
+              <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-[#0E121A] border border-emerald-200 dark:border-emerald-500/30 space-y-1">
+                <div className="flex items-center justify-between text-emerald-800 dark:text-emerald-400 font-extrabold text-xs">
                   <span>IELTS / TOEFL Score</span>
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <p className="text-[10px] font-bold text-emerald-700">7.5 Band Confirmed</p>
+                <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300">7.5 Band Confirmed</p>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 space-y-1">
-                <div className="flex items-center justify-between text-amber-900 font-extrabold text-xs">
+              <div className="p-3.5 rounded-2xl bg-amber-50/70 dark:bg-[#0E121A] border border-amber-200 dark:border-amber-500/30 space-y-1">
+                <div className="flex items-center justify-between text-amber-900 dark:text-amber-400 font-extrabold text-xs">
                   <span>APS Certification Form</span>
-                  <AlertCircle className="w-4 h-4 text-amber-600" />
+                  <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 </div>
-                <p className="text-[10px] font-bold text-amber-700">Notarization Pending</p>
+                <p className="text-[10px] font-bold text-amber-700 dark:text-amber-300">Notarization Pending</p>
               </div>
             </div>
           </div>
