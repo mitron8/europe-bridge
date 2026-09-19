@@ -137,7 +137,7 @@ export function StudentDetailModal({
     setSummaryError(null);
     setShowFullProfile(false);
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://europebridge.onrender.com';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
     // Fetch summary
     const fetchSummary = async () => {

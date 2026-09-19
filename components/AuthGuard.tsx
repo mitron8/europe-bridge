@@ -11,7 +11,7 @@ export async function AuthGuard({ children, allowedRoles }: { children: React.Re
     redirect('/login');
   }
 
-  const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'https://europebridge.onrender.com';
+  const apiUrl = (process.env.API_URL?.startsWith('http') ? process.env.API_URL : null) || 'https://europebridge.onrender.com';
 
   let userRole: string | undefined;
   let authFailed = false;

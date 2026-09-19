@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useDeferredValue } from 'react';
 
-const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://europebridge.onrender.com';
+const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
 interface PaginationResult<T> {
   data: T[];
@@ -39,7 +39,8 @@ export function usePaginatedList<T>(endpoint: string, limit: number = 25) {
       }
       abortControllerRef.current = new AbortController();
 
-      const url = new URL(`${NEXT_PUBLIC_API_URL}${endpoint}`);
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://europebridge.onrender.com';
+      const url = new URL(`${NEXT_PUBLIC_API_URL}${endpoint}`, baseUrl);
       url.searchParams.append('page', targetPage.toString());
       url.searchParams.append('limit', limit.toString());
       if (searchArg) {

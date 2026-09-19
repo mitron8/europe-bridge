@@ -14,7 +14,7 @@ export default async function DashboardLayout({
     redirect('/login');
   }
 
-  const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'https://europebridge.onrender.com';
+  const apiUrl = (process.env.API_URL?.startsWith('http') ? process.env.API_URL : null) || 'https://europebridge.onrender.com';
 
   let authFailed = false;
 

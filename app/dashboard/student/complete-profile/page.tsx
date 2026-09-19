@@ -11,7 +11,7 @@ import ExperienceSection from './components/ExperienceSection';
 import PreferencesSection from './components/PreferencesSection';
 import FinanceSection from './components/FinanceSection';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://europebridge.onrender.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
 export default function CompleteProfilePage() {
   const [activeSection, setActiveSection] = useState<ProfileSection>('personal');

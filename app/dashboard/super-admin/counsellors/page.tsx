@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ShieldAlert, Search, Plus, X, UserCheck, AlertCircle, MoreHorizontal, ChevronDown, Loader2 } from 'lucide-react';
 import { usePaginatedList } from '../../../../hooks/usePaginatedList';
 
-const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://europebridge.onrender.com';
+const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
 type Counsellor = {
   id: string;
