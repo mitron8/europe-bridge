@@ -20,32 +20,30 @@ export const MastersSectionNav = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      // Check if user has reached bottom of the page
-      const isAtBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100;
-      if (isAtBottom) {
+      // Check if user reached near bottom of page
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 80) {
         setActiveSection(navItems[navItems.length - 1].id);
         return;
       }
 
-      const scrollOffset = 190;
-      let currentActive = navItems[0].id;
+      // Detection line: 200px from top of viewport
+      const detectionLine = 200;
+      let current = navItems[0].id;
 
       for (const item of navItems) {
         const el = document.getElementById(item.id);
         if (el) {
           const rect = el.getBoundingClientRect();
-          // If the section top is above or at the threshold, set as active
-          if (rect.top <= scrollOffset) {
-            currentActive = item.id;
+          if (rect.top <= detectionLine) {
+            current = item.id;
           }
         }
       }
 
-      setActiveSection(currentActive);
+      setActiveSection(current);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    // Trigger once on mount to set initial state
     handleScroll();
 
     return () => window.removeEventListener('scroll', handleScroll);
@@ -54,7 +52,7 @@ export const MastersSectionNav = () => {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      const yOffset = -140;
+      const yOffset = -130; // Clearance for fixed navbar (68px) + sticky bar + breathing room
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({ top: y, behavior: 'smooth' });
       setActiveSection(id);
@@ -62,8 +60,8 @@ export const MastersSectionNav = () => {
   };
 
   return (
-    // Hidden on mobile/tablets (<1024px), visible only on big screens (lg and above)
-    <div className="hidden lg:block sticky top-20 z-30 py-3 px-4 bg-white/85 backdrop-blur-md border-y border-gray-200/80 shadow-xs mb-8">
+    // Hidden on mobile/tablets (<1024px), sticky under fixed navbar on desktop (lg:block)
+    <div className="hidden lg:block sticky top-[68px] z-40 py-3 px-4 bg-white/90 backdrop-blur-md border-y border-gray-200 shadow-xs mb-8 transition-all">
       <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 overflow-x-auto no-scrollbar">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -74,8 +72,8 @@ export const MastersSectionNav = () => {
               onClick={() => scrollToSection(item.id)}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-extrabold whitespace-nowrap transition-all duration-200 cursor-pointer ${
                 isActive
-                  ? 'bg-germany-black text-white shadow-sm scale-105'
-                  : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+                  ? 'bg-germany-black text-white shadow-md scale-105 ring-1 ring-black/10'
+                  : 'bg-gray-100/90 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
               }`}
             >
               <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-germany-gold' : 'text-gray-500'}`} />
