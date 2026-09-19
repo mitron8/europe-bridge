@@ -57,7 +57,7 @@ const Navbar = () => {
         {
           title: "The full path",
           items: [
-            { title: "Master's guide", desc: "Everything, start to finish" },
+            { title: "Master's guide", desc: "Everything, start to finish", href: "/study/masters" },
             { title: "Application process", desc: "Step by step, in order", href: "/study/application-process" },
             { title: "Life after the offer", desc: "Arriving and settling in" }
           ]
