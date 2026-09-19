@@ -24,8 +24,8 @@
   --dashboard-primary-red-hover: #C53743;
   --dashboard-primary-red-light: rgba(216, 67, 79, 0.08);
 
-  --dashboard-deep-charcoal: #2D3748;
-  --dashboard-deep-charcoal-hover: #1A202C;
+  --dashboard-deep-charcoal: #111111;
+  --dashboard-deep-charcoal-hover: #000000;
 
   --dashboard-accent-gold: #E29D52;
   --dashboard-accent-gold-light: rgba(226, 157, 82, 0.12);
@@ -122,46 +122,45 @@
 }
 
 /* Primary Card Surfaces */
-.dark .bg-white {
+.dark .dashboard-container .bg-white {
   background-color: #111622 !important;
 }
 
 /* Recessed wells / table headers / subtle panels - Deep dark instead of grey */
-.dark .bg-gray-50,
-.dark [class*="bg-gray-50"] {
+.dark .dashboard-container .bg-gray-50,
+.dark .dashboard-container [class*="bg-gray-50"] {
   background-color: #0E121A !important;
 }
 
 /* Badges / chips / subtle item rows - Translucent dark instead of muddy grey */
-.dark .bg-gray-100,
-.dark .bg-gray-100\/80,
-.dark [class*="bg-gray-100"] {
+.dark .dashboard-container .bg-gray-100,
+.dark .dashboard-container .bg-gray-100\/80,
+.dark .dashboard-container [class*="bg-gray-100"] {
   background-color: rgba(255, 255, 255, 0.05) !important;
   color: #F8FAFC !important;
 }
 
 /* Step badges / indicators - Clean dark tone instead of chalky grey */
-.dark .bg-gray-200,
-.dark .bg-gray-300,
-.dark [class*="bg-gray-200"],
-.dark [class*="bg-gray-300"] {
+.dark .dashboard-container .bg-gray-200,
+.dark .dashboard-container .bg-gray-300,
+.dark .dashboard-container [class*="bg-gray-200"],
+.dark .dashboard-container [class*="bg-gray-300"] {
   background-color: #171D2B !important;
   color: #FFFFFF !important;
 }
 
-.dark .bg-gray-300 * {
+.dark .dashboard-container .bg-gray-300 * {
   color: #FFFFFF !important;
 }
 
 /* Prevent opacity reduction from washing out text/cards in dark mode */
-.dark .opacity-80,
-.dark .opacity-75,
-.dark .opacity-70 {
+.dark .dashboard-container .opacity-80,
+.dark .dashboard-container .opacity-75,
+.dark .dashboard-container .opacity-70 {
   opacity: 0.95 !important;
 }
 
 /* Cards in Dark Mode */
-.dark .neu-card,
 .dark .dashboard-container .neu-card {
   background-color: #111622 !important;
   border-radius: 20px;
@@ -169,7 +168,6 @@
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
 }
 
-.dark .neu-card-dark,
 .dark .dashboard-container .neu-card-dark {
   background-color: #0D111A !important;
   border-radius: 20px;
@@ -177,7 +175,6 @@
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
 }
 
-.dark .neu-btn,
 .dark .dashboard-container .neu-btn {
   background-color: #151B27 !important;
   color: #FFFFFF !important;
@@ -185,14 +182,12 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
 }
 
-.dark .neu-btn:hover,
 .dark .dashboard-container .neu-btn:hover {
   background-color: #1B2333 !important;
   color: #FFFFFF !important;
   border-color: #2E3A50 !important;
 }
 
-.dark .neu-input,
 .dark .dashboard-container .neu-input {
   background-color: #0A0D14 !important;
   color: #FFFFFF !important;
@@ -200,40 +195,39 @@
   box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.5) !important;
 }
 
-.dark .neu-bg,
 .dark .dashboard-container .neu-bg {
   background-color: #0B0E14 !important;
 }
 
 /* Inner cards and boxes (replaces muddy grey #1A212D, #1F2736, #F4F1EA, #FAF8F5) */
-.dark [class*="bg-[#FDFBF7]"],
-.dark .bg-\[\#FDFBF7\],
-.dark .bg-\[\#FDFBF7\]\/30,
-.dark .bg-\[\#FDFBF7\]\/50 {
+.dark .dashboard-container [class*="bg-[#FDFBF7]"],
+.dark .dashboard-container .bg-\[\#FDFBF7\],
+.dark .dashboard-container .bg-\[\#FDFBF7\]\/30,
+.dark .dashboard-container .bg-\[\#FDFBF7\]\/50 {
   background-color: #0E121A !important;
   border-color: #1A2130 !important;
 }
 
-.dark [class*="bg-[#F4F1EA]"],
-.dark .bg-\[\#F4F1EA\],
-.dark .bg-\[\#F4F1EA\]\/60,
-.dark .bg-\[\#F4F1EA\]\/70 {
+.dark .dashboard-container [class*="bg-[#F4F1EA]"],
+.dark .dashboard-container .bg-\[\#F4F1EA\],
+.dark .dashboard-container .bg-\[\#F4F1EA\]\/60,
+.dark .dashboard-container .bg-\[\#F4F1EA\]\/70 {
   background-color: #0E121A !important;
   border-color: #1A2130 !important;
 }
 
-.dark [class*="bg-[#FAF8F5]"],
-.dark .bg-\[\#FAF8F5\] {
+.dark .dashboard-container [class*="bg-[#FAF8F5]"],
+.dark .dashboard-container .bg-\[\#FAF8F5\] {
   background-color: #0A0D14 !important;
   border-color: #1A2130 !important;
   color: #E2E8F0 !important;
 }
 
-.dark [class*="bg-[#EBE7E0]"],
-.dark .bg-\[\#EBE7E0\],
-.dark .bg-\[\#EBE7E0\]\/30,
-.dark .bg-\[\#EBE7E0\]\/40,
-.dark .bg-\[\#EBE7E0\]\/50 {
+.dark .dashboard-container [class*="bg-[#EBE7E0]"],
+.dark .dashboard-container .bg-\[\#EBE7E0\],
+.dark .dashboard-container .bg-\[\#EBE7E0\]\/30,
+.dark .dashboard-container .bg-\[\#EBE7E0\]\/40,
+.dark .dashboard-container .bg-\[\#EBE7E0\]\/50 {
   background-color: rgba(255, 255, 255, 0.04) !important;
   border-color: #1A2130 !important;
 }
@@ -243,100 +237,97 @@
 .dark .dashboard-container [class*="bg-white/80"],
 .dark .dashboard-container [class*="bg-white/90"],
 .dark .dashboard-container [class*="bg-white/60"],
-.dark .dashboard-container [class*="bg-white/50"],
-.dark [class*="bg-white/70"],
-.dark [class*="bg-white/80"],
-.dark [class*="bg-white/90"] {
+.dark .dashboard-container [class*="bg-white/50"] {
   background-color: rgba(0, 0, 0, 0.45) !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
   color: #F1F5F9 !important;
 }
 
-.dark [class*="bg-white/70"] *,
-.dark [class*="bg-white/80"] *,
-.dark [class*="bg-white/90"] * {
+.dark .dashboard-container [class*="bg-white/70"] *,
+.dark .dashboard-container [class*="bg-white/80"] *,
+.dark .dashboard-container [class*="bg-white/90"] * {
   color: #F1F5F9 !important;
 }
 
-.dark [class*="hover:bg-[#EBE7E0]"]:hover,
-.dark [class*="hover:bg-[#FDFBF7]"]:hover,
-.dark [class*="hover:bg-[#DDD8CF]"]:hover,
-.dark .hover\:bg-gray-50:hover,
-.dark .hover\:bg-gray-100:hover,
-.dark [class*="hover:bg-gray-50"]:hover,
-.dark [class*="hover:bg-gray-100"]:hover {
+.dark .dashboard-container [class*="hover:bg-[#EBE7E0]"]:hover,
+.dark .dashboard-container [class*="hover:bg-[#FDFBF7]"]:hover,
+.dark .dashboard-container [class*="hover:bg-[#DDD8CF]"]:hover,
+.dark .dashboard-container .hover\:bg-gray-50:hover,
+.dark .dashboard-container .hover\:bg-gray-100:hover,
+.dark .dashboard-container [class*="hover:bg-gray-50"]:hover,
+.dark .dashboard-container [class*="hover:bg-gray-100"]:hover {
   background-color: rgba(255, 255, 255, 0.07) !important;
 }
 
-.dark [class*="shadow-[12px_12px_30px"] {
+.dark .dashboard-container [class*="shadow-[12px_12px_30px"] {
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
 }
 
 /* Clean dark borders (replaces chalky grey #273142) */
-.dark .border-gray-100,
-.dark .border-gray-150,
-.dark .border-gray-200,
-.dark .border-gray-200\/80,
-.dark .border-gray-200\/70,
-.dark .border-gray-200\/60,
-.dark .border-gray-300,
-.dark .border-gray-400,
-.dark [class*="border-[#EBE7E0]"],
-.dark .border-\[\#EBE7E0\] {
+.dark .dashboard-container .border-gray-100,
+.dark .dashboard-container .border-gray-150,
+.dark .dashboard-container .border-gray-200,
+.dark .dashboard-container .border-gray-200\/80,
+.dark .dashboard-container .border-gray-200\/70,
+.dark .dashboard-container .border-gray-200\/60,
+.dark .dashboard-container .border-gray-300,
+.dark .dashboard-container .border-gray-400,
+.dark .dashboard-container [class*="border-[#EBE7E0]"],
+.dark .dashboard-container .border-\[\#EBE7E0\] {
   border-color: #1A2130 !important;
 }
 
-.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
-.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]),
-.dark [class*="divide-[#EBE7E0]"] > :not([hidden]) ~ :not([hidden]) {
+.dark .dashboard-container .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.dark .dashboard-container .divide-gray-200 > :not([hidden]) ~ :not([hidden]),
+.dark .dashboard-container [class*="divide-[#EBE7E0]"] > :not([hidden]) ~ :not([hidden]) {
   border-color: #1A2130 !important;
 }
 
 /* Sidebar Surfaces in Dark Mode */
-.dark aside,
-.dark aside .bg-white {
+.dark .dashboard-container aside,
+.dark .dashboard-container aside .bg-white {
   background-color: #111622 !important;
   border-color: #1A2130 !important;
 }
 
-.dark aside .bg-gray-50 {
+.dark .dashboard-container aside .bg-gray-50 {
   background-color: #0E121A !important;
   border-color: #1A2130 !important;
 }
 
-.dark aside .bg-gray-200 {
+.dark .dashboard-container aside .bg-gray-200 {
   background-color: #1A2130 !important;
 }
 
 /* Dark Action Buttons (e.g. "Ask Admin", "Open Desk", active tabs) */
-.dark .bg-germany-black {
+.dark .dashboard-container .bg-germany-black {
   background-color: #151B27 !important;
   color: #FFFFFF !important;
   border-color: #222B3D !important;
 }
 
-.dark .hover\:bg-black:hover,
-.dark .hover\:bg-germany-black:hover {
+.dark .dashboard-container .hover\:bg-black:hover,
+.dark .dashboard-container .hover\:bg-germany-black:hover {
   background-color: #1B2333 !important;
 }
 
 /* Sidebar Sign Out & Red Action Hover in Dark Mode (Never turn white) */
-.dark .hover\:bg-red-50:hover,
-.dark button.hover\:bg-red-50:hover,
-.dark a.hover\:bg-red-50:hover {
+.dark .dashboard-container .hover\:bg-red-50:hover,
+.dark .dashboard-container button.hover\:bg-red-50:hover,
+.dark .dashboard-container a.hover\:bg-red-50:hover {
   background-color: rgba(226, 82, 96, 0.18) !important;
   border-color: rgba(226, 82, 96, 0.45) !important;
   color: #FF6B7A !important;
 }
 
-.dark .hover\:bg-red-50:hover *,
-.dark button.hover\:bg-red-50:hover *,
-.dark a.hover\:bg-red-50:hover * {
+.dark .dashboard-container .hover\:bg-red-50:hover *,
+.dark .dashboard-container button.hover\:bg-red-50:hover *,
+.dark .dashboard-container a.hover\:bg-red-50:hover * {
   color: #FF6B7A !important;
 }
 
-.dark .hover\:text-germany-red:hover,
-.dark .hover\:text-germany-red:hover * {
+.dark .dashboard-container .hover\:text-germany-red:hover,
+.dark .dashboard-container .hover\:text-germany-red:hover * {
   color: #FF6B7A !important;
 }
 
@@ -345,42 +336,42 @@
    ============================================================================== */
 
 /* Primary Headings, Titles, Student Names, Metric Numbers */
-.dark .text-germany-black,
-.dark .text-slate-900,
-.dark .text-gray-900,
-.dark .text-gray-800 {
+.dark .dashboard-container .text-germany-black,
+.dark .dashboard-container .text-slate-900,
+.dark .dashboard-container .text-gray-900,
+.dark .dashboard-container .text-gray-800 {
   color: #FFFFFF !important;
 }
 
 /* Secondary Subtitles, Topic Names, Descriptions, Quotes */
-.dark .text-gray-700,
-.dark .text-gray-600,
-.dark .text-slate-700,
-.dark .text-slate-600 {
+.dark .dashboard-container .text-gray-700,
+.dark .dashboard-container .text-gray-600,
+.dark .dashboard-container .text-slate-700,
+.dark .dashboard-container .text-slate-600 {
   color: #FFFFFF !important;
 }
 
 /* Metadata, Timestamps, Section Headers, Subheadings */
-.dark .text-gray-500,
-.dark .text-slate-500 {
+.dark .dashboard-container .text-gray-500,
+.dark .dashboard-container .text-slate-500 {
   color: #F1F5F9 !important;
 }
 
 /* Captions, Stat Titles, Minor Labels, Icons */
-.dark .text-gray-400,
-.dark .text-slate-400 {
+.dark .dashboard-container .text-gray-400,
+.dark .dashboard-container .text-slate-400 {
   color: #E2E8F0 !important;
 }
 
-.dark .text-gray-300,
-.dark .text-slate-300 {
+.dark .dashboard-container .text-gray-300,
+.dark .dashboard-container .text-slate-300 {
   color: #FFFFFF !important;
 }
 
 /* Strong elements always stand out brilliantly */
-.dark strong,
-.dark strong.text-gray-700,
-.dark strong.text-germany-black {
+.dark .dashboard-container strong,
+.dark .dashboard-container strong.text-gray-700,
+.dark .dashboard-container strong.text-germany-black {
   color: #FFFFFF !important;
 }
 
@@ -535,34 +526,34 @@
 }
 
 /* ==============================================================================
-   FORM INPUTS, TEXTAREAS & DROPDOWNS IN DARK MODE
+   FORM INPUTS, TEXTAREAS & DROPDOWNS IN DARK MODE (DASHBOARD ONLY)
    ============================================================================== */
-.dark input:not([type="checkbox"]),
-.dark textarea {
+.dark .dashboard-container input:not([type="checkbox"]),
+.dark .dashboard-container textarea {
   background-color: #0A0D14 !important;
   color: #F8FAFC !important;
   border-color: #1A2130 !important;
 }
 
-.dark input:focus,
-.dark textarea:focus {
+.dark .dashboard-container input:focus,
+.dark .dashboard-container textarea:focus {
   background-color: #0E121A !important;
   border-color: var(--dashboard-primary-red) !important;
 }
 
-.dark input::placeholder,
-.dark textarea::placeholder {
+.dark .dashboard-container input::placeholder,
+.dark .dashboard-container textarea::placeholder {
   color: #64748B !important;
 }
 
-.dark select.neu-input option {
+.dark .dashboard-container select.neu-input option {
   background-color: #111622 !important;
   color: #FFFFFF !important;
 }
 
 /* Hover States */
-.dark .hover\:bg-gray-50:hover,
-.dark .hover\:bg-gray-100:hover {
+.dark .dashboard-container .hover\:bg-gray-50:hover,
+.dark .dashboard-container .hover\:bg-gray-100:hover {
   background-color: rgba(255, 255, 255, 0.07) !important;
 }
 

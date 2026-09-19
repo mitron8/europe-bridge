@@ -34,7 +34,7 @@ const Twitter = ({ className }: { className?: string }) => (
 
 const Footer = () => {
   return (
-    <footer className="bg-germany-black text-white pt-20 pb-10 px-4 relative z-20 border-t-4 border-germany-red">
+    <footer className="bg-[#111111] bg-germany-black text-white pt-20 pb-10 px-4 relative z-20 border-t-4 border-germany-red">
       <div className="max-w-7xl mx-auto">
         
         {/* Top Grid */}
@@ -118,7 +118,7 @@ const Footer = () => {
       
       {/* Decorative Tricolor Strip at the absolute bottom */}
       <div className="absolute bottom-0 left-0 w-full h-2 flex">
-        <div className="flex-1 bg-germany-black"></div>
+        <div className="flex-1 bg-[#111111]"></div>
         <div className="flex-1 bg-germany-red"></div>
         <div className="flex-1 bg-germany-gold"></div>
       </div>
