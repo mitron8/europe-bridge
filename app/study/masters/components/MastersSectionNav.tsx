@@ -20,26 +20,41 @@ export const MastersSectionNav = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = navItems.map(item => document.getElementById(item.id));
-      const scrollPos = window.scrollY + 180;
+      // Check if user has reached bottom of the page
+      const isAtBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100;
+      if (isAtBottom) {
+        setActiveSection(navItems[navItems.length - 1].id);
+        return;
+      }
 
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const section = sections[i];
-        if (section && section.offsetTop <= scrollPos) {
-          setActiveSection(navItems[i].id);
-          break;
+      const scrollOffset = 190;
+      let currentActive = navItems[0].id;
+
+      for (const item of navItems) {
+        const el = document.getElementById(item.id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          // If the section top is above or at the threshold, set as active
+          if (rect.top <= scrollOffset) {
+            currentActive = item.id;
+          }
         }
       }
+
+      setActiveSection(currentActive);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Trigger once on mount to set initial state
+    handleScroll();
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      const yOffset = -90;
+      const yOffset = -140;
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({ top: y, behavior: 'smooth' });
       setActiveSection(id);
@@ -47,8 +62,9 @@ export const MastersSectionNav = () => {
   };
 
   return (
-    <div className="sticky top-16 sm:top-20 z-30 py-2.5 sm:py-3.5 px-3 sm:px-4 bg-white/85 backdrop-blur-md border-y border-gray-200/80 shadow-xs mb-6 sm:mb-10">
-      <div className="max-w-7xl mx-auto flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar scroll-smooth px-1">
+    // Hidden on mobile/tablets (<1024px), visible only on big screens (lg and above)
+    <div className="hidden lg:block sticky top-20 z-30 py-3 px-4 bg-white/85 backdrop-blur-md border-y border-gray-200/80 shadow-xs mb-8">
+      <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 overflow-x-auto no-scrollbar">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeSection === item.id;
@@ -56,7 +72,7 @@ export const MastersSectionNav = () => {
             <button
               key={item.id}
               onClick={() => scrollToSection(item.id)}
-              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-extrabold whitespace-nowrap shrink-0 transition-all duration-200 cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-extrabold whitespace-nowrap transition-all duration-200 cursor-pointer ${
                 isActive
                   ? 'bg-germany-black text-white shadow-sm scale-105'
                   : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
