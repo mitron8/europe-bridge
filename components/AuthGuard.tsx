@@ -11,7 +11,7 @@ export async function AuthGuard({ children, allowedRoles }: { children: React.Re
     redirect('/login');
   }
 
-  const apiUrl = process.env.API_URL || 'http://localhost:3001';
+  const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
   let userRole: string | undefined;
   let authFailed = false;
