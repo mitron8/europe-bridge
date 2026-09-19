@@ -1,7 +1,7 @@
 import React from 'react';
 import { ProfileData, EducationRecord } from '../types';
 import { ClaySelect } from '@/components/ClaySelect';
-
+import { DEGREE_TYPE_OPTIONS, normalizeDegreeType } from '@/lib/profileHelpers';
 
 interface Props {
   data: ProfileData;
@@ -87,10 +87,10 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Degree Type *</label>
                   <ClaySelect 
-                    value={record.degreeType} 
+                    value={normalizeDegreeType(record.degreeType, record.educationLevel)} 
                     onChange={(val) => updateEducation(record.id, 'degreeType', val)} 
                     placeholder="Select Type"
-                    options={["B.Tech", "B.E.", "B.Sc.", "BBA", "BCA", "M.Tech", "M.E.", "M.Sc.", "MBA", "MCA", "Other"]}
+                    options={DEGREE_TYPE_OPTIONS}
                   />
                 </div>
                 <div>

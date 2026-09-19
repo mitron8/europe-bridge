@@ -53,10 +53,10 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
 
   if (loading) {
     return (
-      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-white">
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-white dark:bg-[#0B0E14]">
         <div className="flex flex-col items-center justify-center space-y-4">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-800" />
-          <p className="text-sm font-bold text-gray-600">Loading student profile document...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-gray-800 dark:text-gray-200" />
+          <p className="text-sm font-bold text-gray-600 dark:text-gray-400">Loading student profile document...</p>
         </div>
       </div>
     );
@@ -64,15 +64,15 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
 
   if (error) {
     return (
-      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-        <div className="bg-white rounded-2xl p-8 max-w-md w-full relative shadow-2xl">
-          <button onClick={onClose} className="absolute top-4 right-4 p-2 text-gray-400 hover:text-black transition-colors">
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800/80 rounded-2xl p-8 max-w-md w-full relative shadow-2xl">
+          <button onClick={onClose} className="absolute top-4 right-4 p-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer">
             <X className="w-5 h-5" />
           </button>
           <div className="flex flex-col items-center justify-center space-y-3 text-center">
             <AlertCircle className="w-10 h-10 text-red-500" />
-            <h3 className="text-lg font-bold text-black">Access Error</h3>
-            <p className="text-sm text-gray-600">{error}</p>
+            <h3 className="text-lg font-bold text-black dark:text-white">Access Error</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{error}</p>
           </div>
         </div>
       </div>
@@ -82,21 +82,21 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
   if (!profile) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm overflow-y-auto p-4 sm:p-10 print:bg-white print:p-0 print:block">
-      <div className="relative mx-auto w-full max-w-5xl bg-white rounded-xl sm:rounded-2xl p-6 sm:p-12 shadow-2xl print:shadow-none print:border-none print:m-0 print:p-0 print:rounded-none">
+    <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm overflow-y-auto p-4 sm:p-10 print:bg-white print:p-0 print:block">
+      <div className="relative mx-auto w-full max-w-5xl bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800/80 rounded-xl sm:rounded-2xl p-6 sm:p-12 shadow-2xl print:shadow-none print:border-none print:m-0 print:p-0 print:rounded-none">
         
         {/* Actions Bar - Hidden on Print */}
-        <div className="flex justify-end gap-4 mb-10 print:hidden border-b border-gray-200 pb-4">
+        <div className="flex justify-end gap-4 mb-10 print:hidden border-b border-gray-200 dark:border-gray-800/80 pb-4">
           <button
             onClick={() => window.print()}
-            className="px-4 py-2 text-sm font-bold border border-gray-400 hover:bg-gray-50 text-black flex items-center gap-2"
+            className="px-4 py-2 text-sm font-bold border border-gray-400 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 text-black dark:text-white flex items-center gap-2 rounded-xl transition-colors cursor-pointer"
           >
             <Download className="w-4 h-4" />
             Download as PDF
           </button>
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-bold bg-black text-white hover:bg-gray-800 flex items-center gap-2"
+            className="px-4 py-2 text-sm font-bold bg-slate-800 hover:bg-slate-900 dark:bg-[#151B27] text-white dark:hover:bg-[#1A2130] border border-transparent dark:border-gray-800 flex items-center gap-2 rounded-xl transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
             Close Profile
@@ -104,10 +104,10 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
         </div>
 
         {/* Document Header */}
-        <div className="mb-10 text-center border-b-2 border-black pb-6">
-          <h1 className="text-2xl font-bold tracking-tight text-black mb-2 uppercase">Student Profile</h1>
-          <h2 className="text-xl font-medium text-black mb-1">{profile.firstName} {profile.lastName}</h2>
-          <p className="text-sm text-gray-700">{profile.email} &bull; ID: {studentId}</p>
+        <div className="mb-10 text-center border-b-2 border-gray-300 dark:border-gray-800 pb-6">
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white mb-2 uppercase">Student Profile</h1>
+          <h2 className="text-xl font-medium text-gray-900 dark:text-gray-200 mb-1">{profile.firstName} {profile.lastName}</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{profile.email} &bull; ID: {studentId}</p>
         </div>
 
         <div className="space-y-12">
@@ -147,8 +147,8 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
             {profile.educationRecords && profile.educationRecords.length > 0 ? (
               <div className="space-y-8">
                 {profile.educationRecords.map((edu: any, idx: number) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-5">
-                    <h4 className="font-bold text-sm mb-4 text-black border-b border-gray-100 pb-2">{edu.degreeType} - {edu.fieldOfStudy}</h4>
+                  <div key={idx} className="border border-gray-200 dark:border-gray-800/80 dark:bg-[#0E121A] rounded-xl p-5">
+                    <h4 className="font-bold text-sm mb-4 text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-800/80 pb-2">{edu.degreeType} - {edu.fieldOfStudy}</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-6">
                       <Field label="Education Level" value={edu.educationLevel} />
                       <Field label="Specialization" value={edu.specialization} />
@@ -180,9 +180,9 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
             
             {profile.englishTests && profile.englishTests.length > 0 && (
               <div className="mb-8">
-                <h4 className="font-bold text-sm mb-4 text-gray-800 uppercase tracking-widest text-[10px]">English Tests</h4>
+                <h4 className="font-bold text-sm mb-4 text-gray-800 dark:text-gray-300 uppercase tracking-widest text-[10px]">English Tests</h4>
                 {profile.englishTests.map((test: any, idx: number) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-5 mb-4">
+                  <div key={idx} className="border border-gray-200 dark:border-gray-800/80 dark:bg-[#0E121A] rounded-xl p-5 mb-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-6">
                       <Field label="Test Type" value={test.testType} />
                       <Field label="Test Date" value={test.testDate} />
@@ -199,9 +199,9 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
             
             {profile.standardizedTests && profile.standardizedTests.length > 0 && (
               <div>
-                <h4 className="font-bold text-sm mb-4 text-gray-800 uppercase tracking-widest text-[10px]">Standardized Tests</h4>
+                <h4 className="font-bold text-sm mb-4 text-gray-800 dark:text-gray-300 uppercase tracking-widest text-[10px]">Standardized Tests</h4>
                 {profile.standardizedTests.map((test: any, idx: number) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-5 mb-4">
+                  <div key={idx} className="border border-gray-200 dark:border-gray-800/80 dark:bg-[#0E121A] rounded-xl p-5 mb-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-6">
                       <Field label="Test Type" value={test.testType} />
                       <Field label="Test Date" value={test.testDate} />
@@ -238,8 +238,8 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
             {profile.experienceRecords && profile.experienceRecords.length > 0 ? (
               <div className="space-y-6">
                 {profile.experienceRecords.map((exp: any, idx: number) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-5">
-                    <h4 className="font-bold text-sm mb-4 text-black border-b border-gray-100 pb-2">{exp.jobTitle} at {exp.companyName}</h4>
+                  <div key={idx} className="border border-gray-200 dark:border-gray-800/80 dark:bg-[#0E121A] rounded-xl p-5">
+                    <h4 className="font-bold text-sm mb-4 text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-800/80 pb-2">{exp.jobTitle} at {exp.companyName}</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-6">
                       <Field label="Employment Type" value={exp.employmentType} />
                       <Field label="Industry" value={exp.industry} />
@@ -266,8 +266,8 @@ function Section({ title, children }: { title: string, children: React.ReactNode
   return (
     <section className="break-inside-avoid">
       <div className="flex items-center gap-4 mb-6">
-        <h3 className="text-[13px] font-bold text-black uppercase tracking-[0.2em] whitespace-nowrap">{title}</h3>
-        <div className="h-px bg-gray-300 w-full"></div>
+        <h3 className="text-[13px] font-bold text-gray-900 dark:text-white uppercase tracking-[0.2em] whitespace-nowrap">{title}</h3>
+        <div className="h-px bg-gray-300 dark:bg-gray-800 w-full"></div>
       </div>
       <div>
         {children}
@@ -278,9 +278,9 @@ function Section({ title, children }: { title: string, children: React.ReactNode
 
 function Field({ label, value, className = "" }: { label: string, value: any, className?: string }) {
   return (
-    <div className={`flex flex-col border-b border-gray-200 pb-2 ${className}`}>
-      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">{label}</span>
-      <span className="text-sm font-medium text-black break-words">
+    <div className={`flex flex-col border-b border-gray-200 dark:border-gray-800/80 pb-2 ${className}`}>
+      <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{label}</span>
+      <span className="text-sm font-medium text-gray-900 dark:text-gray-200 break-words">
         {formatValue(value)}
       </span>
     </div>

@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+@import "./dashboard-theme.css";
 
 @font-face {
   font-family: 'Celinda';
@@ -9,12 +11,16 @@
 }
 
 @theme {
-  --font-sans: var(--font-nunito), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-display: 'Celinda', var(--font-celinda), serif;
+  --font-sans: var(--dashboard-font-sans);
+  --font-display: var(--dashboard-font-display);
   
-  --color-germany-black: #1a1a1a;
-  --color-germany-red: #E63946;
-  --color-germany-gold: #F4A261;
+  --color-germany-black: var(--dashboard-deep-charcoal);
+  --color-germany-red: var(--dashboard-primary-red);
+  --color-germany-gold: var(--dashboard-accent-gold);
+
+  --color-dashboard-bg: var(--dashboard-bg);
+  --color-dashboard-card: var(--dashboard-card);
+  --color-dashboard-border: var(--dashboard-border);
 }
 
 .font-display {
@@ -27,6 +33,10 @@
     background-color: #F4F1EA; /* Warm cream background */
   }
 
+  .dark .neu-bg {
+    background-color: #0F1218 !important;
+  }
+
   /* Claymorphism Card */
   .neu-card {
     background-color: #FDFBF7;
@@ -36,6 +46,14 @@
       inset -8px -8px 16px rgba(210, 205, 195, 0.4), /* Dark inner bottom shadow (clay thickness) */
       inset 8px 8px 16px rgba(255, 255, 255, 1); /* Light inner top highlight (clay curve) */
     border: none;
+  }
+
+  /* Dark Mode Claymorphism Card - Midnight Slate with soft elevation and no blinding white specular highlights */
+  .dark .neu-card {
+    background-color: #161B26 !important;
+    border-radius: 28px;
+    border: 1px solid #273142 !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
   }
 
   /* Claymorphism Dark Card */
@@ -50,6 +68,12 @@
     border: 1px solid rgba(255, 255, 255, 0.08);
   }
 
+  .dark .neu-card-dark {
+    background-color: #121620 !important;
+    border: 1px solid #273142 !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  }
+
   /* Claymorphism Inputs (carved into the clay) */
   .neu-input {
     background-color: #EBE7E0; /* Carved into cream clay */
@@ -61,6 +85,13 @@
     transition: all 0.2s ease-in-out;
     color: var(--color-germany-black);
   }
+
+  .dark .neu-input {
+    background-color: #12151E !important;
+    color: #F1F5F9 !important;
+    border: 1px solid #2D374A !important;
+    box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.5) !important;
+  }
   
   .neu-input:focus {
     outline: none;
@@ -70,6 +101,12 @@
       0 0 0 4px rgba(230, 57, 70, 0.1),
       inset 4px 4px 10px rgba(210, 205, 195, 0.4),
       inset -4px -4px 10px rgba(255, 255, 255, 1);
+  }
+
+  .dark .neu-input:focus {
+    background-color: #161B26 !important;
+    border-color: rgba(226, 82, 96, 0.5) !important;
+    box-shadow: 0 0 0 4px rgba(226, 82, 96, 0.15) !important;
   }
 
   /* Claymorphism Buttons */
@@ -85,6 +122,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .dark .neu-btn {
+    background-color: #222938 !important;
+    color: #F1F5F9 !important;
+    border: 1px solid #364154 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .dark .neu-btn:hover {
+    background-color: #2D374A !important;
+    color: #FFFFFF !important;
   }
 
   .neu-btn:hover {
@@ -249,30 +298,34 @@ body {
    Replaces claymorphism in all dashboards with a crisp, eye-soothing,
    professional SaaS interface matching /dashboard/counsellor/students view
    ========================================================================== */
-.dashboard-container {
+/* ==========================================================================
+   DASHBOARD CLEAN UI THEME
+   Crisp, eye-soothing, professional SaaS interface matching design specs
+   ========================================================================== */
+:root:not(.dark) .dashboard-container {
   background-color: #F8FAFC !important;
   color: #1a1a1a !important;
 }
 
-.dashboard-container .neu-bg {
+:root:not(.dark) .dashboard-container .neu-bg {
   background-color: #F8FAFC !important;
 }
 
-.dashboard-container .neu-card {
+:root:not(.dark) .dashboard-container .neu-card {
   background-color: #FFFFFF !important;
   border-radius: 16px !important;
   border: 1px solid rgba(226, 232, 240, 0.85) !important;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04) !important;
 }
 
-.dashboard-container .neu-card-dark {
+:root:not(.dark) .dashboard-container .neu-card-dark {
   background-color: #1a1a1a !important;
   border-radius: 16px !important;
   border: 1px solid #334155 !important;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
 }
 
-.dashboard-container .neu-input {
+:root:not(.dark) .dashboard-container .neu-input {
   background-color: #FFFFFF !important;
   border-radius: 12px !important;
   border: 1px solid #E2E8F0 !important;
@@ -281,14 +334,14 @@ body {
   transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
 }
 
-.dashboard-container .neu-input:focus {
+:root:not(.dark) .dashboard-container .neu-input:focus {
   background-color: #FFFFFF !important;
   border-color: #E63946 !important;
   box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.12) !important;
   outline: none !important;
 }
 
-.dashboard-container .neu-btn {
+:root:not(.dark) .dashboard-container .neu-btn {
   background-color: #FFFFFF !important;
   border-radius: 12px !important;
   border: 1px solid #E2E8F0 !important;
@@ -299,7 +352,7 @@ body {
   transform: none !important;
 }
 
-.dashboard-container .neu-btn:hover {
+:root:not(.dark) .dashboard-container .neu-btn:hover {
   background-color: #F8FAFC !important;
   border-color: #CBD5E1 !important;
   color: #E63946 !important;
@@ -307,12 +360,12 @@ body {
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.06) !important;
 }
 
-.dashboard-container .neu-btn:active {
+:root:not(.dark) .dashboard-container .neu-btn:active {
   background-color: #F1F5F9 !important;
   transform: none !important;
 }
 
-.dashboard-container .neu-btn-primary {
+:root:not(.dark) .dashboard-container .neu-btn-primary {
   background-color: #E63946 !important;
   color: #FFFFFF !important;
   border-radius: 12px !important;
@@ -323,18 +376,18 @@ body {
   transform: none !important;
 }
 
-.dashboard-container .neu-btn-primary:hover {
+:root:not(.dark) .dashboard-container .neu-btn-primary:hover {
   background-color: #D62839 !important;
   box-shadow: 0 4px 6px -1px rgba(230, 57, 70, 0.25) !important;
   transform: none !important;
 }
 
-.dashboard-container .neu-btn-primary:active {
+:root:not(.dark) .dashboard-container .neu-btn-primary:active {
   background-color: #C92A37 !important;
   transform: none !important;
 }
 
-.dashboard-container .neu-btn-gold {
+:root:not(.dark) .dashboard-container .neu-btn-gold {
   background-color: #F4A261 !important;
   color: #1a1a1a !important;
   border-radius: 12px !important;
@@ -345,36 +398,112 @@ body {
   transform: none !important;
 }
 
-.dashboard-container .neu-btn-gold:hover {
+:root:not(.dark) .dashboard-container .neu-btn-gold:hover {
   background-color: #E7924E !important;
   transform: none !important;
 }
 
-.dashboard-container .neu-dropdown {
+:root:not(.dark) .dashboard-container .neu-dropdown {
   background-color: #FFFFFF !important;
   border-radius: 14px !important;
   border: 1px solid #E2E8F0 !important;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04) !important;
 }
 
-.dashboard-container .neu-dropdown-item {
+:root:not(.dark) .dashboard-container .neu-dropdown-item {
   border-radius: 8px !important;
   color: #334155 !important;
   transition: background-color 0.15s ease, color 0.15s ease !important;
 }
 
-.dashboard-container .neu-dropdown-item:hover {
+:root:not(.dark) .dashboard-container .neu-dropdown-item:hover {
   background-color: #F1F5F9 !important;
   color: #0F172A !important;
 }
 
-.dashboard-container .neu-dropdown-item-active {
+:root:not(.dark) .dashboard-container .neu-dropdown-item-active {
   background-color: #E63946 !important;
   color: #FFFFFF !important;
   box-shadow: none !important;
 }
 
-.dashboard-container select.neu-input option {
+:root:not(.dark) .dashboard-container select.neu-input option {
   background-color: #FFFFFF !important;
   color: #1a1a1a !important;
 }
+
+/* Dark Mode Dashboard Rules */
+.dark .dashboard-container {
+  background-color: #0B0E14 !important;
+  color: #F8FAFC !important;
+}
+
+.dark .dashboard-container .neu-bg {
+  background-color: #0B0E14 !important;
+}
+
+.dark .dashboard-container .neu-card {
+  background-color: #111622 !important;
+  border-radius: 20px !important;
+  border: 1px solid #1A2130 !important;
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+}
+
+.dark .dashboard-container .neu-card-dark {
+  background-color: #0D111A !important;
+  border-radius: 20px !important;
+  border: 1px solid #1A2130 !important;
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .dashboard-container .neu-input {
+  background-color: #0A0D14 !important;
+  border-radius: 12px !important;
+  border: 1px solid #1A2130 !important;
+  box-shadow: inset 1px 1px 4px rgba(0, 0, 0, 0.5) !important;
+  color: #FFFFFF !important;
+}
+
+.dark .dashboard-container .neu-input:focus {
+  background-color: #0E121A !important;
+  border-color: #E25260 !important;
+  box-shadow: 0 0 0 3px rgba(226, 82, 96, 0.2) !important;
+  outline: none !important;
+}
+
+.dark .dashboard-container .neu-btn {
+  background-color: #151B27 !important;
+  border-radius: 12px !important;
+  border: 1px solid #222B3D !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+}
+
+.dark .dashboard-container .neu-btn:hover {
+  background-color: #1B2333 !important;
+  border-color: #2E3A50 !important;
+  color: #FFFFFF !important;
+}
+
+.dark .dashboard-container .neu-dropdown {
+  background-color: #111622 !important;
+  border-radius: 14px !important;
+  border: 1px solid #1A2130 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+}
+
+.dark .dashboard-container .neu-dropdown-item {
+  color: #CBD5E1 !important;
+}
+
+.dark .dashboard-container .neu-dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: #FFFFFF !important;
+}
+
+.dark .dashboard-container select.neu-input option {
+  background-color: #111622 !important;
+  color: #FFFFFF !important;
+}
+

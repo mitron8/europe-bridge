@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ProfileSection, ProfileData, emptyProfile } from './types';
 import ProfileNavigation from './components/ProfileNavigation';
+import { normalizeDegreeType } from '@/lib/profileHelpers';
 import PersonalSection from './components/PersonalSection';
 import EducationSection from './components/EducationSection';
 import TestsSection from './components/TestsSection';
@@ -28,6 +29,44 @@ export default function CompleteProfilePage() {
       });
       if (res.ok) {
         const data: ProfileData = await res.json();
+
+        // Check if education section was marked incomplete purely because degreeType missed 'bachelor'
+        let needsSync = false;
+        const normalizedRecords = data.educationRecords?.map((edu) => {
+          const normalized = normalizeDegreeType(edu.degreeType, edu.educationLevel);
+          if (normalized !== edu.degreeType) {
+            needsSync = true;
+          }
+          return { ...edu, degreeType: normalized };
+        }) || [];
+
+        // If records needed normalization and education is not marked complete, auto-patch immediately
+        if (needsSync && data.educationRecords && data.educationRecords.length > 0 && !data.sectionCompletion?.education) {
+          try {
+            const patchPayload = {
+              ...data,
+              educationRecords: normalizedRecords,
+            };
+            const patchRes = await fetch(`${API_URL}/student/profile`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify(patchPayload, (_, v) => (v === '' ? null : v)),
+            });
+            if (patchRes.ok) {
+              const patchedData: ProfileData & { journeyStatus?: string } = await patchRes.json();
+              setProfileData(patchedData);
+              if (patchedData.journeyStatus === 'profile_completed') {
+                setJustCompleted(true);
+              }
+              return;
+            }
+          } catch (syncErr) {
+            console.error('Silent degree normalization error:', syncErr);
+          }
+        }
+
+        data.educationRecords = normalizedRecords;
         setProfileData(data);
       }
     } catch (err) {
@@ -49,12 +88,20 @@ export default function CompleteProfilePage() {
     setIsSaving(true);
     setSaveMessage('');
     try {
+      const payload = {
+        ...profileData,
+        educationRecords: profileData.educationRecords?.map((edu) => ({
+          ...edu,
+          degreeType: normalizeDegreeType(edu.degreeType, edu.educationLevel),
+        })),
+      };
+
       const res = await fetch(`${API_URL}/student/profile`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         // Convert empty strings to null so validators pass
-        body: JSON.stringify(profileData, (_, v) => (v === '' ? null : v)),
+        body: JSON.stringify(payload, (_, v) => (v === '' ? null : v)),
       });
 
       if (res.ok) {
@@ -124,15 +171,15 @@ export default function CompleteProfilePage() {
       </h1>
 
       {justCompleted && (
-        <div className="mb-6 flex items-center gap-3 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-green-800 shadow-sm">
+        <div className="mb-6 flex items-center gap-3 rounded-2xl border border-green-200 dark:border-emerald-500/30 bg-green-50 dark:bg-emerald-950/40 px-5 py-4 text-green-800 dark:text-emerald-200 shadow-sm dark:shadow-[0_4px_20px_rgba(16,185,129,0.12)]">
           <span className="text-2xl">🎉</span>
           <div>
-            <p className="font-bold">Profile complete!</p>
-            <p className="text-sm">Your application journey has started. We&apos;ll be in touch soon.</p>
+            <p className="font-bold text-green-900 dark:text-emerald-200">Profile complete!</p>
+            <p className="text-sm text-green-800 dark:text-emerald-300 font-medium">Your application journey has started. We&apos;ll be in touch soon.</p>
           </div>
           <button
             onClick={() => setJustCompleted(false)}
-            className="ml-auto text-green-600 hover:text-green-800 text-lg font-bold leading-none cursor-pointer"
+            className="ml-auto text-green-600 dark:text-emerald-400 hover:text-green-800 dark:hover:text-emerald-100 text-lg font-bold leading-none cursor-pointer p-1 rounded-lg hover:bg-green-100 dark:hover:bg-emerald-900/40 transition-colors"
             aria-label="Dismiss"
           >✕</button>
         </div>

@@ -218,16 +218,16 @@ export function StudentDetailModal({
   if (!student) {
     if (summaryLoading) {
       return (
-        <div className="relative w-full neu-card bg-[#FDFBF7] p-12 overflow-hidden shadow-[4px_4px_16px_rgba(210,205,195,0.4)] border border-gray-200/80 rounded-3xl flex flex-col items-center justify-center gap-3">
+        <div className="relative w-full neu-card bg-[#FDFBF7] dark:bg-[#111622] p-12 overflow-hidden shadow-[4px_4px_16px_rgba(210,205,195,0.4)] dark:shadow-none border border-gray-200/80 dark:border-gray-800/80 rounded-3xl flex flex-col items-center justify-center gap-3">
           <Loader2 className="w-8 h-8 animate-spin text-germany-red" />
-          <p className="text-xs font-bold text-gray-500">Loading student details...</p>
+          <p className="text-xs font-bold text-gray-500 dark:text-gray-400">Loading student details...</p>
         </div>
       );
     }
     if (summaryError) {
       return (
-        <div className="relative w-full neu-card bg-[#FDFBF7] p-8 overflow-hidden shadow-[4px_4px_16px_rgba(210,205,195,0.4)] border border-gray-200/80 rounded-3xl text-center space-y-4">
-          <div className="p-6 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-red-500 text-xs font-bold bg-red-50">
+        <div className="relative w-full neu-card bg-[#FDFBF7] dark:bg-[#111622] p-8 overflow-hidden shadow-[4px_4px_16px_rgba(210,205,195,0.4)] dark:shadow-none border border-gray-200/80 dark:border-gray-800/80 rounded-3xl text-center space-y-4">
+          <div className="p-6 border-2 border-dashed border-[#EBE7E0] dark:border-red-900/40 rounded-2xl text-red-500 dark:text-red-400 text-xs font-bold bg-red-50 dark:bg-red-950/20">
             {summaryError}
           </div>
           {isPage && (
@@ -636,8 +636,8 @@ export function StudentDetailModal({
                 onClick={() => setActiveTab('overview')}
                 className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${
                   activeTab === 'overview'
-                    ? 'bg-germany-black text-white shadow-md'
-                    : 'bg-white text-gray-600 hover:bg-[#EBE7E0] hover:text-germany-black'
+                    ? 'bg-germany-red text-white shadow-md'
+                    : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
                 }`}
               >
                 <User className="w-3.5 h-3.5" />
@@ -648,14 +648,14 @@ export function StudentDetailModal({
                 onClick={() => setActiveTab('documents')}
                 className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${
                   activeTab === 'documents'
-                    ? 'bg-germany-black text-white shadow-md'
-                    : 'bg-white text-gray-600 hover:bg-[#EBE7E0] hover:text-germany-black'
+                    ? 'bg-germany-red text-white shadow-md'
+                    : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
                 }`}
               >
                 <FileText className="w-3.5 h-3.5" />
                 <span>Uploaded Documents</span>
                 {pendingDocsCount > 0 && (
-                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-amber-400 text-germany-black">
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-amber-400 text-slate-900">
                     {pendingDocsCount}
                   </span>
                 )}
@@ -665,8 +665,8 @@ export function StudentDetailModal({
                 onClick={() => setActiveTab('universities')}
                 className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${
                   activeTab === 'universities'
-                    ? 'bg-germany-black text-white shadow-md'
-                    : 'bg-white text-gray-600 hover:bg-[#EBE7E0] hover:text-germany-black'
+                    ? 'bg-germany-red text-white shadow-md'
+                    : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
                 }`}
               >
                 <Building2 className="w-3.5 h-3.5" />
@@ -680,8 +680,8 @@ export function StudentDetailModal({
                 onClick={() => setActiveTab('notes')}
                 className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${
                   activeTab === 'notes'
-                    ? 'bg-germany-black text-white shadow-md'
-                    : 'bg-white text-gray-600 hover:bg-[#EBE7E0] hover:text-germany-black'
+                    ? 'bg-germany-red text-white shadow-md'
+                    : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
                 }`}
               >
                 <Save className="w-3.5 h-3.5" />
@@ -710,7 +710,7 @@ export function StudentDetailModal({
                     <div className="flex justify-end">
                       <button 
                         onClick={() => setShowFullProfile(true)}
-                        className="py-2 px-4 text-xs font-extrabold flex items-center gap-1.5 bg-white text-germany-black hover:text-germany-red border border-gray-200/80 rounded-xl shadow-xs transition-colors cursor-pointer"
+                        className="py-2 px-4 text-xs font-extrabold flex items-center gap-1.5 bg-white dark:bg-[#151B27] text-germany-black dark:text-white hover:text-germany-red border border-gray-200/80 dark:border-gray-800/80 rounded-xl shadow-xs transition-colors cursor-pointer"
                       >
                         <User className="w-4 h-4" />
                         <span>View Student Profile</span>
@@ -719,26 +719,26 @@ export function StudentDetailModal({
 
                     {/* Profile Snapshot Grid */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <div className="p-3.5 bg-white rounded-xl border border-gray-200/80 shadow-xs space-y-1">
+                      <div className="p-3.5 bg-white dark:bg-[#0E121A] rounded-xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-1">
                         <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">German Bavarian GPA</span>
-                        <div className="text-sm font-display text-germany-black flex items-center gap-1.5">
-                          <span className="text-germany-black font-black">{summaryData?.summary?.gpa || 'NA'}</span>
+                        <div className="text-sm font-display text-germany-black dark:text-white flex items-center gap-1.5">
+                          <span className="text-germany-black dark:text-white font-black">{summaryData?.summary?.gpa || 'NA'}</span>
                         </div>
                       </div>
 
-                      <div className="p-3.5 bg-white rounded-xl border border-gray-200/80 shadow-xs space-y-1">
+                      <div className="p-3.5 bg-white dark:bg-[#0E121A] rounded-xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-1">
                         <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Language Scores</span>
-                        <div className="text-sm font-display text-germany-black">
+                        <div className="text-sm font-display text-germany-black dark:text-white">
                           {summaryData?.summary?.languageScore || 'NA'}
                         </div>
                       </div>
 
-                      <div className="p-3.5 bg-white rounded-xl border border-gray-200/80 shadow-xs space-y-1">
+                      <div className="p-3.5 bg-white dark:bg-[#0E121A] rounded-xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-1">
                         <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Target Intake</span>
-                        <div className="text-sm font-display text-germany-black">{summaryData?.summary?.targetIntake || 'NA'}</div>
+                        <div className="text-sm font-display text-germany-black dark:text-white">{summaryData?.summary?.targetIntake || 'NA'}</div>
                       </div>
 
-                      <div className="p-3.5 bg-white rounded-xl border border-gray-200/80 shadow-xs space-y-1">
+                      <div className="p-3.5 bg-white dark:bg-[#0E121A] rounded-xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-1">
                         <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Readiness Score</span>
                         <div className="text-sm font-display text-germany-red font-black flex items-center gap-1.5">
                           <span>{summaryData?.summary?.readinessScore || 'NA'}</span>
@@ -747,11 +747,11 @@ export function StudentDetailModal({
                     </div>
 
                     {/* Advising Roadmap */}
-                    <div className="p-5 bg-white rounded-2xl border border-gray-200/80 shadow-xs space-y-3">
+                    <div className="p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Compass className="w-4 h-4 text-germany-red" />
-                          <h3 className="text-xs sm:text-sm font-extrabold text-germany-black uppercase tracking-wider">
+                          <h3 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white uppercase tracking-wider">
                             Study in Germany Admission Milestone Track
                           </h3>
                         </div>
@@ -786,10 +786,10 @@ export function StudentDetailModal({
                             key={step.title}
                             className={`p-3 rounded-xl border flex flex-col justify-between gap-1 text-xs ${
                               status === 'Completed'
-                                ? 'bg-emerald-50/60 border-emerald-200'
+                                ? 'bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60'
                                 : status === 'Current'
-                                ? 'bg-amber-50/60 border-amber-200'
-                                : 'bg-[#F4F1EA]/60 border-[#EBE7E0]'
+                                ? 'bg-amber-50/60 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/60'
+                                : 'bg-[#F4F1EA]/60 dark:bg-[#151B27] border-[#EBE7E0] dark:border-white/5'
                             }`}
                           >
                             <div className="flex items-center justify-between">
@@ -797,16 +797,16 @@ export function StudentDetailModal({
                               <span
                                 className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
                                   status === 'Completed'
-                                    ? 'bg-emerald-100 text-emerald-800'
+                                    ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300'
                                     : status === 'Current'
-                                    ? 'bg-amber-100 text-amber-800'
-                                    : 'bg-gray-200/80 text-gray-600'
+                                    ? 'bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300'
+                                    : 'bg-gray-200/80 dark:bg-white/10 text-gray-600 dark:text-gray-300'
                                 }`}
                               >
                                 {status}
                               </span>
                             </div>
-                            <div className="font-extrabold text-germany-black text-xs leading-tight">{step.title}</div>
+                            <div className="font-extrabold text-germany-black dark:text-white text-xs leading-tight">{step.title}</div>
                           </div>
                         )})}
                       </div>
@@ -815,9 +815,9 @@ export function StudentDetailModal({
                 )}
 
                 {/* Quick Consultation Jumpstart */}
-                <div className="p-4 sm:p-5 bg-white rounded-2xl border border-gray-200/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="space-y-1 text-center sm:text-left">
-                    <h4 className="text-xs sm:text-sm font-extrabold text-germany-black">
+                    <h4 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white">
                       Action Required: {pendingDocsCount} Student Documents Pending Verification
                     </h4>
                     <p className="text-xs font-bold text-gray-500">
@@ -840,9 +840,9 @@ export function StudentDetailModal({
             {activeTab === 'documents' && (
               <div className="space-y-4">
                 {/* Header & Filter Bar */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white rounded-2xl border border-gray-200/80 shadow-xs p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs p-4">
                   <div>
-                    <h3 className="font-display text-base text-germany-black">Uploaded Documents Verification Hub</h3>
+                    <h3 className="font-display text-base text-germany-black dark:text-white">Uploaded Documents Verification Hub</h3>
                     <p className="text-xs font-bold text-gray-500">
                       Review, verify, accept, or reject each document with custom feedback.
                     </p>
@@ -857,8 +857,8 @@ export function StudentDetailModal({
                         onClick={() => setDocFilter(filter)}
                         className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold capitalize cursor-pointer transition-colors ${
                           docFilter === filter
-                            ? 'bg-germany-black text-white'
-                            : 'bg-[#EBE7E0] text-gray-700 hover:bg-[#DDD8CF]'
+                            ? 'bg-germany-red text-white shadow-xs'
+                            : 'bg-[#EBE7E0] dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
                         }`}
                       >
                         {filter} {filter === 'all' ? `(${documents.length})` : `(${documents.filter((d) => d.status === filter).length})`}
@@ -868,13 +868,13 @@ export function StudentDetailModal({
                 </div>
 
                 {/* Documents List */}
-                <div className="p-4 sm:p-5 bg-white rounded-2xl border border-gray-200/80 shadow-xs space-y-3">
+                <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
                   {filteredDocs.length === 0 ? (
-                    <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-gray-400 text-xs font-bold">
+                    <div className="p-8 border-2 border-dashed border-[#EBE7E0] dark:border-gray-800 rounded-2xl text-center text-gray-400 text-xs font-bold">
                       No documents found for this filter.
                     </div>
                   ) : (
-                    <div className="divide-y divide-[#EBE7E0]">
+                    <div className="divide-y divide-[#EBE7E0] dark:divide-gray-800/80">
                       {filteredDocs.map((doc) => {
                         const isVerified = doc.status === 'verified';
                         const isPending = doc.status === 'pending';
@@ -899,7 +899,7 @@ export function StudentDetailModal({
 
                                 <div>
                                   <div className="flex items-center gap-2 flex-wrap">
-                                    <h4 className="text-xs sm:text-sm font-extrabold text-germany-black">
+                                    <h4 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white">
                                       {doc.name}
                                     </h4>
                                     <span
@@ -927,7 +927,7 @@ export function StudentDetailModal({
                                 {/* Preview Button */}
                                 <button
                                   onClick={() => setPreviewDoc(doc)}
-                                  className="py-1.5 px-3 text-xs font-extrabold text-gray-700 hover:text-germany-black bg-white border border-gray-200/80 rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                                  className="py-1.5 px-3 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:text-germany-black dark:hover:text-white bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
                                   title="Preview document contents"
                                 >
                                   <Eye className="w-3.5 h-3.5" />
@@ -940,7 +940,7 @@ export function StudentDetailModal({
                                   className={`py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer ${
                                     isVerified
                                       ? 'bg-emerald-700 text-white shadow-xs'
-                                      : 'bg-white border border-gray-200/80 text-emerald-700 hover:bg-emerald-50 shadow-xs'
+                                      : 'bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 shadow-xs'
                                   }`}
                                   title="Accept and verify document"
                                 >
@@ -954,7 +954,7 @@ export function StudentDetailModal({
                                   className={`py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer ${
                                     isRejected
                                       ? 'bg-red-700 text-white shadow-xs'
-                                      : 'bg-white border border-gray-200/80 text-red-600 hover:bg-red-50 shadow-xs'
+                                      : 'bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 shadow-xs'
                                   }`}
                                   title="Reject document and request revision"
                                 >
@@ -989,9 +989,9 @@ export function StudentDetailModal({
             {activeTab === 'universities' && (
               <div className="space-y-4">
                 {/* Header with Add University Recommendation */}
-                <div className="p-4 sm:p-5 bg-white rounded-2xl border border-gray-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <h3 className="font-display text-base text-germany-black">University Eligibility &amp; Recommendations</h3>
+                    <h3 className="font-display text-base text-germany-black dark:text-white">University Eligibility &amp; Recommendations</h3>
                     <p className="text-xs font-bold text-gray-500">
                       Top programs matched against student's Bavarian GPA (1.33) and language scores.
                     </p>
@@ -1008,8 +1008,8 @@ export function StudentDetailModal({
 
                 {/* Add University Form Drawer */}
                 {showAddUni && (
-                  <form onSubmit={handleAddUniversity} className="p-4 bg-white rounded-2xl border border-gray-200/80 shadow-xs space-y-3">
-                    <h4 className="text-xs font-extrabold text-germany-black uppercase tracking-wider">
+                  <form onSubmit={handleAddUniversity} className="p-4 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
+                    <h4 className="text-xs font-extrabold text-germany-black dark:text-white uppercase tracking-wider">
                       Add New University Recommendation
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1018,7 +1018,7 @@ export function StudentDetailModal({
                         placeholder="University (e.g. TU Darmstadt)"
                         value={newUniName}
                         onChange={(e) => setNewUniName(e.target.value)}
-                        className="p-2.5 bg-white border border-gray-200/80 rounded-xl text-xs font-bold text-germany-black placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
+                        className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
                         required
                       />
                       <input
@@ -1026,7 +1026,7 @@ export function StudentDetailModal({
                         placeholder="Program (e.g. M.Sc. Distributed Systems)"
                         value={newUniProgram}
                         onChange={(e) => setNewUniProgram(e.target.value)}
-                        className="p-2.5 bg-white border border-gray-200/80 rounded-xl text-xs font-bold text-germany-black placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
+                        className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
                         required
                       />
                       <input
@@ -1034,14 +1034,14 @@ export function StudentDetailModal({
                         placeholder="City / State (e.g. Darmstadt, Hesse)"
                         value={newUniLocation}
                         onChange={(e) => setNewUniLocation(e.target.value)}
-                        className="p-2.5 bg-white border border-gray-200/80 rounded-xl text-xs font-bold text-germany-black placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
+                        className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
                       />
                     </div>
                     <div className="flex items-center justify-end gap-2 pt-1">
                       <button
                         type="button"
                         onClick={() => setShowAddUni(false)}
-                        className="py-1.5 px-3 text-xs font-extrabold bg-white border border-gray-200/80 rounded-xl hover:bg-gray-100 shadow-xs"
+                        className="py-1.5 px-3 text-xs font-extrabold bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-[#1E2638] shadow-xs"
                       >
                         Cancel
                       </button>
@@ -1059,47 +1059,47 @@ export function StudentDetailModal({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {universities.map((uni) => {
                     const statusColors = {
-                      recommended: 'bg-germany-gold/20 text-germany-black border-germany-gold/40',
-                      shortlisted: 'bg-blue-100 text-blue-800 border-blue-200',
-                      applied: 'bg-purple-100 text-purple-800 border-purple-200',
-                      offer_received: 'bg-emerald-100 text-emerald-800 border-emerald-300 font-black',
-                      waitlisted: 'bg-amber-100 text-amber-800 border-amber-200',
+                      recommended: 'bg-germany-gold/20 text-germany-black dark:text-[#FDE68A] border-germany-gold/40',
+                      shortlisted: 'bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800/60',
+                      applied: 'bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-800/60',
+                      offer_received: 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/60 font-black',
+                      waitlisted: 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/60',
                     };
 
                     return (
-                      <div key={uni.id} className="p-4 sm:p-5 bg-white rounded-2xl border border-gray-200/80 shadow-xs hover:border-germany-red/30 space-y-3.5 transition-colors">
+                      <div key={uni.id} className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs hover:border-germany-red/30 space-y-3.5 transition-colors">
                         {/* Top: University, Type & Match Score */}
                         <div className="flex items-start justify-between gap-2">
                           <div className="space-y-0.5">
                             <span className="text-[10px] font-black uppercase tracking-wider text-germany-red">
                               {uni.type}
                             </span>
-                            <h4 className="font-display text-sm sm:text-base text-germany-black leading-tight">
+                            <h4 className="font-display text-sm sm:text-base text-germany-black dark:text-white leading-tight">
                               {uni.name}
                             </h4>
-                            <p className="text-xs font-extrabold text-gray-600">{uni.program}</p>
+                            <p className="text-xs font-extrabold text-gray-600 dark:text-gray-300">{uni.program}</p>
                           </div>
 
                           <div className="text-right shrink-0">
-                            <span className="text-xs font-black text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full inline-flex items-center gap-1">
-                              <Target className="w-3 h-3 text-emerald-600" />
+                            <span className="text-xs font-black text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full inline-flex items-center gap-1">
+                              <Target className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                               {uni.matchScore}% Match
                             </span>
                           </div>
                         </div>
 
                         {/* Middle: Eligibility Details */}
-                        <div className="grid grid-cols-2 gap-2 text-[11px] p-2.5 rounded-xl bg-[#F4F1EA]/70 border border-[#EBE7E0]">
+                        <div className="grid grid-cols-2 gap-2 text-[11px] p-2.5 rounded-xl bg-[#F4F1EA]/70 dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800/80">
                           <div>
                             <span className="text-gray-400 font-extrabold block text-[10px] uppercase">GPA Eligibility</span>
-                            <span className="font-extrabold text-emerald-700 flex items-center gap-1">
+                            <span className="font-extrabold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
                               <CheckCircle2 className="w-3 h-3" />
                               Passed (Req {uni.bavarianGpaReq})
                             </span>
                           </div>
                           <div>
                             <span className="text-gray-400 font-extrabold block text-[10px] uppercase">English Score</span>
-                            <span className="font-extrabold text-emerald-700 flex items-center gap-1">
+                            <span className="font-extrabold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
                               <CheckCircle2 className="w-3 h-3" />
                               Passed ({uni.ieltsReq})
                             </span>
@@ -1109,11 +1109,11 @@ export function StudentDetailModal({
                         {/* Location, Tuition & Deadline */}
                         <div className="flex items-center justify-between text-xs font-bold text-gray-500 pt-1">
                           <span>📍 {uni.location}</span>
-                          <span className="text-germany-black font-extrabold">{uni.tuition}</span>
+                          <span className="text-germany-black dark:text-white font-extrabold">{uni.tuition}</span>
                         </div>
 
                         {/* Bottom: Counsellor Status Management */}
-                        <div className="pt-2 border-t border-[#EBE7E0] flex items-center justify-between gap-2">
+                        <div className="pt-2 border-t border-[#EBE7E0] dark:border-gray-800/80 flex items-center justify-between gap-2">
                           <div className="flex items-center gap-1.5">
                             <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Status:</span>
                             <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${statusColors[uni.status]}`}>
@@ -1125,7 +1125,7 @@ export function StudentDetailModal({
                           <select
                             value={uni.status}
                             onChange={(e) => handleUpdateUniStatus(uni.id, e.target.value as UniversityMatch['status'])}
-                            className="text-[11px] font-extrabold py-1 px-2.5 text-germany-black cursor-pointer bg-white border border-gray-200/80 rounded-xl shadow-xs"
+                            className="text-[11px] font-extrabold py-1 px-2.5 text-germany-black dark:text-white cursor-pointer bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl shadow-xs"
                           >
                             <option value="recommended">Recommended</option>
                             <option value="shortlisted">Shortlisted</option>
@@ -1144,19 +1144,22 @@ export function StudentDetailModal({
             {/* ========================================================
                 TAB 4: STRATEGY NOTES & TASKS
             ======================================================== */}
+            {/* ========================================================
+                TAB 4: STRATEGY NOTES & TASKS
+            ======================================================== */}
             {activeTab === 'notes' && (
               <div className="space-y-4">
                 {/* Notes Editor */}
-                <div className="p-5 bg-white rounded-2xl border border-gray-200/80 shadow-xs space-y-3">
+                <div className="p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-germany-black" />
-                      <h3 className="text-xs sm:text-sm font-extrabold text-germany-black uppercase tracking-wider">
+                      <FileText className="w-4 h-4 text-germany-black dark:text-white" />
+                      <h3 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white uppercase tracking-wider">
                         Private Counsellor Remarks &amp; Strategy
                       </h3>
                     </div>
                     {noteSaved && (
-                      <span className="text-[11px] font-extrabold text-emerald-600 flex items-center gap-1 animate-in fade-in">
+                      <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 animate-in fade-in">
                         <Check className="w-3.5 h-3.5" />
                         Saved to browser!
                       </span>
@@ -1168,7 +1171,7 @@ export function StudentDetailModal({
                     onChange={(e) => setNote(e.target.value)}
                     placeholder="Document consultation takeaways (e.g. Target TUM Data Engineering, advised to re-take German A2 Goethe exam in October, notarization complete for APS Delhi)..."
                     rows={4}
-                    className="w-full p-3 bg-white border border-gray-200/80 rounded-xl text-xs font-bold placeholder:text-gray-400 placeholder:font-normal resize-none focus:outline-none focus:border-germany-red shadow-xs"
+                    className="w-full p-3 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-900 dark:text-white placeholder:text-gray-400 placeholder:font-normal resize-none focus:outline-none focus:border-germany-red shadow-xs"
                   />
 
                   <div className="flex items-center justify-between pt-1">
@@ -1178,7 +1181,7 @@ export function StudentDetailModal({
                     <button
                       type="button"
                       onClick={handleSaveNote}
-                      className="py-1.5 px-3.5 text-xs font-extrabold flex items-center gap-1.5 text-germany-black hover:text-germany-red bg-white border border-gray-200/80 rounded-xl cursor-pointer shadow-xs transition-colors"
+                      className="py-1.5 px-3.5 text-xs font-extrabold flex items-center gap-1.5 text-germany-black dark:text-white hover:text-germany-red dark:hover:text-germany-red bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl cursor-pointer shadow-xs transition-colors"
                     >
                       <Save className="w-3.5 h-3.5" />
                       <span>Save Notes</span>
@@ -1187,8 +1190,8 @@ export function StudentDetailModal({
                 </div>
 
                 {/* Consultation Follow-Up Checklist */}
-                <div className="p-5 bg-white rounded-2xl border border-gray-200/80 shadow-xs space-y-3">
-                  <h3 className="text-xs sm:text-sm font-extrabold text-germany-black uppercase tracking-wider">
+                <div className="p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
+                  <h3 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white uppercase tracking-wider">
                     Advising Checklist &amp; Action Items
                   </h3>
 
@@ -1198,12 +1201,14 @@ export function StudentDetailModal({
                         key={t.id}
                         onClick={() => handleToggleTask(t.id)}
                         className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 text-xs font-bold cursor-pointer transition-colors ${
-                          t.completed ? 'bg-emerald-50/50 border-emerald-200 text-gray-500 line-through' : 'bg-[#FDFBF7] border-[#EBE7E0] text-germany-black hover:bg-white'
+                          t.completed 
+                            ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/40 text-gray-500 dark:text-gray-400 line-through' 
+                            : 'bg-[#FDFBF7] dark:bg-[#151B27] border-[#EBE7E0] dark:border-gray-800/80 text-germany-black dark:text-white hover:bg-white dark:hover:bg-[#1A2130]'
                         }`}
                       >
                         <div className="flex items-center gap-2.5">
                           {t.completed ? (
-                            <CheckSquare className="w-4 h-4 text-emerald-600 shrink-0" />
+                            <CheckSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                           ) : (
                             <Square className="w-4 h-4 text-gray-400 shrink-0" />
                           )}
@@ -1220,11 +1225,11 @@ export function StudentDetailModal({
                       placeholder="Add an advising follow-up item..."
                       value={newTaskText}
                       onChange={(e) => setNewTaskText(e.target.value)}
-                      className="flex-1 p-2 bg-white border border-gray-200/80 rounded-xl text-xs font-bold focus:outline-none focus:border-germany-red shadow-xs"
+                      className="flex-1 p-2 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:border-germany-red shadow-xs"
                     />
                     <button
                       type="submit"
-                      className="py-2 px-3 text-xs font-extrabold flex items-center gap-1 shrink-0 bg-white border border-gray-200/80 rounded-xl hover:bg-gray-100 shadow-xs"
+                      className="py-2 px-3 text-xs font-extrabold flex items-center gap-1 shrink-0 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-germany-black dark:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-[#1A2130] shadow-xs cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Add Task</span>
@@ -1236,7 +1241,7 @@ export function StudentDetailModal({
           </div>
 
           {/* Footer Bar (Strictly no delete student button) */}
-          <div className="pt-3 border-t border-[#EBE7E0] flex items-center justify-between shrink-0">
+          <div className="pt-3 border-t border-[#EBE7E0] dark:border-gray-800/80 flex items-center justify-between shrink-0">
             <div className="text-[11px] font-bold text-gray-400 flex items-center gap-1.5">
               <span>EuropeBridge Counsellor CRM</span>
               <span>•</span>
@@ -1247,7 +1252,7 @@ export function StudentDetailModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="py-2 px-6 text-xs font-extrabold text-gray-700 hover:text-germany-black bg-white border border-gray-200/80 rounded-xl cursor-pointer shadow-xs"
+                className="py-2 px-6 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:text-germany-black dark:hover:text-white bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl cursor-pointer shadow-xs"
               >
                 Close
               </button>
@@ -1259,7 +1264,7 @@ export function StudentDetailModal({
   return (
     <>
       {isPage ? (
-        <div className="relative w-full bg-white p-5 sm:p-7 overflow-hidden border border-gray-200/80 rounded-2xl sm:rounded-3xl shadow-xs flex flex-col">
+        <div className="relative w-full bg-white dark:bg-[#111622] p-5 sm:p-7 overflow-hidden border border-gray-200/80 dark:border-gray-800/80 rounded-2xl sm:rounded-3xl shadow-xs flex flex-col">
           {/* German Tricolor Accent Bar */}
           <div className="absolute top-0 left-0 w-full h-[3px] flex">
             <div className="flex-1 bg-germany-black"></div>
@@ -1278,7 +1283,7 @@ export function StudentDetailModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
           />
 
           {/* Modal Window */}
@@ -1287,7 +1292,7 @@ export function StudentDetailModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-            className="relative w-full max-w-4xl bg-white p-5 sm:p-7 overflow-hidden shadow-2xl border border-gray-200/80 rounded-2xl sm:rounded-3xl z-10 my-auto max-h-[92vh] flex flex-col"
+            className="relative w-full max-w-4xl bg-white dark:bg-[#111622] p-5 sm:p-7 overflow-hidden shadow-2xl border border-gray-200/80 dark:border-gray-800/80 rounded-2xl sm:rounded-3xl z-10 my-auto max-h-[92vh] flex flex-col"
           >
             {/* German Tricolor Accent Bar */}
             <div className="absolute top-0 left-0 w-full h-2 flex">
@@ -1300,7 +1305,7 @@ export function StudentDetailModal({
             {onClose && (
               <button
                 onClick={onClose}
-                className="absolute top-3.5 right-3.5 p-2 rounded-full text-gray-400 hover:text-germany-black hover:bg-gray-100 transition-colors cursor-pointer"
+                className="absolute top-3.5 right-3.5 p-2 rounded-full text-gray-400 hover:text-germany-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
                 aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
@@ -1326,27 +1331,27 @@ export function StudentDetailModal({
       ======================================================== */}
       <AnimatePresence>
         {previewDoc && (
-          <div key="preview-doc-wrapper" className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div key="preview-doc-wrapper" className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
             <motion.div
               key="preview-doc-content"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-2xl max-w-xl w-full p-6 space-y-4 relative border border-gray-200/80 shadow-2xl"
+              className="bg-white dark:bg-[#111622] rounded-2xl max-w-xl w-full p-6 space-y-4 relative border border-gray-200/80 dark:border-gray-800/80 shadow-2xl"
             >
               <button
                 onClick={() => setPreviewDoc(null)}
-                className="absolute top-4 right-4 p-1.5 rounded-full text-gray-400 hover:text-germany-black hover:bg-gray-100 cursor-pointer transition-colors"
+                className="absolute top-4 right-4 p-1.5 rounded-full text-gray-400 hover:text-germany-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
 
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-germany-gold/20 text-germany-black">
+                <div className="p-2.5 rounded-xl bg-germany-gold/20 text-germany-black dark:text-white">
                   <FileText className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-display text-base text-germany-black">{previewDoc.name}</h3>
+                  <h3 className="font-display text-base text-germany-black dark:text-white">{previewDoc.name}</h3>
                   <p className="text-xs font-bold text-gray-400">
                     {previewDoc.category} • {previewDoc.size} • Uploaded {previewDoc.uploadDate}
                   </p>
@@ -1354,15 +1359,15 @@ export function StudentDetailModal({
               </div>
 
               {/* Simulated Document Preview Viewer */}
-              <div className="p-4 rounded-xl bg-[#FAF8F5] border border-gray-200/70 space-y-3 font-mono text-xs text-gray-700">
-                <div className="flex items-center justify-between border-b border-gray-200/60 pb-2 text-[11px] font-sans font-extrabold text-gray-400">
+              <div className="p-4 rounded-xl bg-[#FAF8F5] dark:bg-[#0A0D14] border border-gray-200/70 dark:border-gray-800/80 space-y-3 font-mono text-xs text-gray-700 dark:text-gray-300">
+                <div className="flex items-center justify-between border-b border-gray-200/60 dark:border-gray-800/80 pb-2 text-[11px] font-sans font-extrabold text-gray-400">
                   <span>SIMULATED DOCUMENT PREVIEW</span>
-                  <span className="text-emerald-700">AUTHENTICATED PDF SCAN</span>
+                  <span className="text-emerald-700 dark:text-emerald-400">AUTHENTICATED PDF SCAN</span>
                 </div>
-                <p className="leading-relaxed whitespace-pre-wrap font-sans text-xs text-gray-700">
+                <p className="leading-relaxed whitespace-pre-wrap font-sans text-xs text-gray-700 dark:text-gray-300">
                   {previewDoc.previewSnippet || 'Document content certified for German Higher Education and APS verification.'}
                 </p>
-                <div className="pt-2 text-[10px] text-gray-400 font-sans flex items-center justify-between border-t border-gray-200/60">
+                <div className="pt-2 text-[10px] text-gray-400 font-sans flex items-center justify-between border-t border-gray-200/60 dark:border-gray-800/80">
                   <span>Verification Hash: SHA256-EB981247</span>
                   <span>Page 1 of 2</span>
                 </div>
@@ -1370,15 +1375,15 @@ export function StudentDetailModal({
 
               {/* Status & Quick Verification from Preview */}
               <div className="flex items-center justify-between pt-2">
-                <div className="text-xs font-extrabold">
+                <div className="text-xs font-extrabold text-gray-800 dark:text-gray-200">
                   Current Status:{' '}
                   <span
                     className={`capitalize ${
                       previewDoc.status === 'verified'
-                        ? 'text-emerald-700'
+                        ? 'text-emerald-700 dark:text-emerald-400'
                         : previewDoc.status === 'pending'
-                        ? 'text-amber-700'
-                        : 'text-red-700'
+                        ? 'text-amber-700 dark:text-amber-400'
+                        : 'text-red-700 dark:text-red-400'
                     }`}
                   >
                     {previewDoc.status}
@@ -1397,7 +1402,7 @@ export function StudentDetailModal({
                     onClick={() => {
                       handleOpenRejectModal(previewDoc);
                     }}
-                    className="py-1.5 px-3 text-xs font-extrabold text-red-600 hover:bg-red-50 bg-white border border-gray-200/80 rounded-xl flex items-center gap-1 shadow-xs cursor-pointer"
+                    className="py-1.5 px-3 text-xs font-extrabold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl flex items-center gap-1 shadow-xs cursor-pointer"
                   >
                     <AlertTriangle className="w-3.5 h-3.5" />
                     <span>Reject</span>
@@ -1414,21 +1419,21 @@ export function StudentDetailModal({
       ======================================================== */}
       <AnimatePresence>
         {rejectingDoc && (
-          <div key="reject-doc-wrapper" className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div key="reject-doc-wrapper" className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
             <motion.div
               key="reject-doc-content"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 relative border border-gray-200/80 shadow-2xl"
+              className="bg-white dark:bg-[#111622] rounded-2xl max-w-md w-full p-6 space-y-4 relative border border-gray-200/80 dark:border-gray-800/80 shadow-2xl"
             >
-              <div className="flex items-center gap-2 text-red-600 font-display text-base">
+              <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-display text-base">
                 <AlertTriangle className="w-5 h-5" />
                 <h3>Request Document Revision</h3>
               </div>
 
-              <p className="text-xs font-bold text-gray-500">
-                Provide specific feedback for <span className="text-germany-black font-extrabold">{rejectingDoc.name}</span> so the student knows what to re-upload.
+              <p className="text-xs font-bold text-gray-500 dark:text-gray-400">
+                Provide specific feedback for <span className="text-germany-black dark:text-white font-extrabold">{rejectingDoc.name}</span> so the student knows what to re-upload.
               </p>
 
               <textarea
@@ -1436,7 +1441,7 @@ export function StudentDetailModal({
                 onChange={(e) => setRejectionReasonInput(e.target.value)}
                 placeholder="e.g. Official semester marksheet lacks college registrar stamp. Please re-scan in high resolution (300 DPI)."
                 rows={3}
-                className="w-full p-3 bg-white border border-gray-200/80 rounded-xl text-xs font-bold resize-none focus:outline-none focus:border-red-500 shadow-xs"
+                className="w-full p-3 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-900 dark:text-white resize-none focus:outline-none focus:border-red-500 shadow-xs"
                 autoFocus
               />
 
@@ -1444,7 +1449,7 @@ export function StudentDetailModal({
                 <button
                   type="button"
                   onClick={() => setRejectingDoc(null)}
-                  className="py-1.5 px-3 text-xs font-extrabold text-gray-600 bg-white border border-gray-200/80 rounded-xl hover:bg-gray-100 shadow-xs cursor-pointer"
+                  className="py-1.5 px-3 text-xs font-extrabold text-gray-600 dark:text-gray-300 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl hover:bg-gray-100 dark:hover:bg-[#1A2130] shadow-xs cursor-pointer"
                 >
                   Cancel
                 </button>

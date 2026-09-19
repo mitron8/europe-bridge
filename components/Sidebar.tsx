@@ -11,7 +11,9 @@ import {
   Briefcase,
   X,
   ChevronsLeft,
-  ChevronsRight
+  ChevronsRight,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -26,6 +28,8 @@ export function Sidebar({ role, isOpen = false, onClose }: SidebarProps) {
   const roleName = role.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   const isCollapsed = useAppStore((state) => state.isSidebarCollapsed);
   const toggleCollapse = useAppStore((state) => state.toggleSidebarCollapsed);
+  const isDarkMode = useAppStore((state) => state.isDarkMode);
+  const toggleDarkMode = useAppStore((state) => state.toggleDarkMode);
 
   return (
     <aside className={`
@@ -45,12 +49,8 @@ export function Sidebar({ role, isOpen = false, onClose }: SidebarProps) {
       {/* Brand Header */}
       <div className={`p-4 pb-3 border-b border-gray-200/80 flex items-center ${isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'}`}>
         <Link href="/" className="flex items-center gap-3 group" title={`EuropeBridge ${roleName}`}>
-          <div className="w-9 h-9 rounded-xl bg-gray-50 border border-gray-200/80 flex items-center justify-center shadow-xs group-hover:border-germany-red/40 transition-colors shrink-0">
-            <img 
-              src="/doodles/happy.png" 
-              alt="Logo" 
-              className="w-6 h-6 object-contain" 
-            />
+          <div className="w-9 h-9 rounded-xl bg-germany-red text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-all shrink-0 font-extrabold text-xs tracking-wider">
+            EB
           </div>
           {!isCollapsed && (
             <div className="flex flex-col min-w-0">
@@ -116,9 +116,9 @@ export function Sidebar({ role, isOpen = false, onClose }: SidebarProps) {
       </nav>
 
       {/* User Profile Card & Logout */}
-      <div className="p-3 border-t border-gray-200/80 bg-white">
+      <div className="p-3 border-t border-gray-200/80 dark:border-gray-800/80 bg-white dark:bg-[#111622]">
         {!isCollapsed ? (
-          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50 border border-gray-200/80 mb-2">
+          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50 dark:bg-[#0E121A] border border-gray-200/80 dark:border-gray-800/80 mb-2">
             <div className="w-8 h-8 rounded-full bg-germany-gold/20 border border-germany-gold/40 flex items-center justify-center text-germany-black font-extrabold text-xs shrink-0">
               <Briefcase className="w-4 h-4" />
             </div>
@@ -136,9 +136,25 @@ export function Sidebar({ role, isOpen = false, onClose }: SidebarProps) {
         )}
 
         <button
+          onClick={toggleDarkMode}
+          title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          className="w-full mb-2 py-1.5 px-3 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-germany-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl flex items-center justify-between cursor-pointer transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            {isDarkMode ? <Sun className="w-3.5 h-3.5 text-germany-gold" /> : <Moon className="w-3.5 h-3.5 text-gray-500" />}
+            {!isCollapsed && <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>}
+          </div>
+          {!isCollapsed && (
+            <div className={`w-7 h-4 rounded-full p-0.5 transition-colors ${isDarkMode ? 'bg-germany-gold' : 'bg-gray-200 dark:bg-gray-700'}`}>
+              <div className={`w-3 h-3 rounded-full bg-white transition-transform ${isDarkMode ? 'translate-x-3' : 'translate-x-0'}`} />
+            </div>
+          )}
+        </button>
+
+        <button
           onClick={() => logout()}
           title="Sign Out"
-          className={`w-full py-2 px-3 text-xs font-bold text-gray-600 hover:text-germany-red hover:bg-red-50 border border-gray-200/80 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-xs`}
+          className="w-full py-2 px-3 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-germany-red dark:hover:text-[#FF6B7A] hover:bg-red-50 dark:hover:bg-red-500/15 border border-gray-200/80 dark:border-gray-700/70 dark:hover:border-red-500/40 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-xs"
         >
           <LogOut className="w-3.5 h-3.5 shrink-0" />
           {!isCollapsed && <span>Sign Out</span>}

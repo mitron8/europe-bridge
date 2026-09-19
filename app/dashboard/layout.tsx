@@ -40,7 +40,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="dashboard-container min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased">
+    <div className="dashboard-container min-h-screen bg-dashboard-bg text-slate-900 font-sans antialiased">
       {children}
     </div>
   );

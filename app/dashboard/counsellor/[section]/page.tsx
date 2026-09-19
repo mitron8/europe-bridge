@@ -7,7 +7,7 @@ import { CounsellorLeads } from '@/components/CounsellorLeads';
 import { CounsellorStudents } from '@/components/CounsellorStudents';
 
 const VALID_SECTIONS = [
-  'leads', 'students', 'deadlines', 'notices', 'account'
+  'leads', 'students', 'deadlines', 'notices', 'account', 'help'
 ];
 
 export default function CounsellorSectionPage({ params }: { params: Promise<{ section: string }> }) {

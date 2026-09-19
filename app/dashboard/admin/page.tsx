@@ -126,21 +126,21 @@ export default function AdminDashboard() {
                 { name: 'Rohan Gupta', intake: 'Summer 2027', uni: 'TU Berlin • Data Science', gpa: '2.0', aps: 'Pending' },
                 { name: 'Ananya Deshmukh', intake: 'Winter 2026', uni: 'Uni Stuttgart • Automotive', gpa: '1.5', aps: 'Verified' },
               ].map((s) => (
-                <tr key={s.name} className="hover:bg-gray-50 transition-colors">
+                <tr key={s.name} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                   <td className="py-3.5 font-bold">{s.name}</td>
-                  <td className="py-3.5 text-gray-500 font-medium">{s.intake}</td>
+                  <td className="py-3.5 text-gray-500 dark:text-gray-400 font-medium">{s.intake}</td>
                   <td className="py-3.5">{s.uni}</td>
                   <td className="py-3.5 font-black">{s.gpa}</td>
                   <td className="py-3.5">
                     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                      s.aps === 'Verified' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
-                      s.aps === 'In Review' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-gray-100 text-gray-600'
+                      s.aps === 'Verified' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-500/30' :
+                      s.aps === 'In Review' ? 'bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500/30' : 'bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300'
                     }`}>
                       {s.aps}
                     </span>
                   </td>
                   <td className="py-3.5">
-                    <button className="py-1 px-3 text-xs font-bold text-gray-700 hover:text-germany-red hover:bg-gray-50 bg-white border border-gray-200/80 rounded-lg shadow-xs transition-colors cursor-pointer">
+                    <button className="py-1 px-3 text-xs font-bold text-gray-700 dark:text-gray-200 hover:text-germany-red dark:hover:text-germany-red hover:bg-gray-50 dark:hover:bg-white/10 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800/80 rounded-lg shadow-xs transition-colors cursor-pointer">
                       Inspect
                     </button>
                   </td>

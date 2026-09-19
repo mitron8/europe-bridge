@@ -13,7 +13,8 @@ import {
   Building2,
   Calendar,
   ChevronRight,
-  TrendingUp
+  TrendingUp,
+  Lightbulb
 } from 'lucide-react';
 
 export default function StudentDashboard() {
@@ -96,7 +97,7 @@ export default function StudentDashboard() {
                       ? 'bg-emerald-500 text-white'
                       : isCurrent
                       ? 'bg-germany-red text-white'
-                      : 'bg-gray-300 text-gray-700'
+                      : 'bg-gray-300 dark:bg-[#1A2130] text-gray-700 dark:text-gray-200'
                   }`}>
                     {isCompleted ? '✓' : idx + 1}
                   </span>
@@ -215,7 +216,7 @@ export default function StudentDashboard() {
                       <span className="font-extrabold text-xs text-germany-black group-hover:text-germany-red transition-colors">
                         {item.uni}
                       </span>
-                      <span className="text-[10px] font-extrabold bg-[#EBE7E0] text-gray-600 px-2 py-0.5 rounded-md">
+                      <span className="text-[10px] font-extrabold bg-[#EBE7E0] dark:bg-white/5 text-gray-600 dark:text-gray-300 border border-transparent dark:border-white/10 px-2 py-0.5 rounded-md">
                         {item.badge}
                       </span>
                     </div>
@@ -282,20 +283,18 @@ export default function StudentDashboard() {
 
         {/* Right 1 Col: Mascot Tip & Counsellor Quick Connect */}
         <div className="space-y-6">
-          {/* Peer the Penguin Guide Card */}
+          {/* Germany Admissions Insight Card */}
           <div className="neu-card p-6 bg-white relative overflow-hidden">
             <div className="flex items-center gap-3 mb-3">
-              <img
-                src="/doodles/university.png"
-                alt="Peer Penguin"
-                className="w-14 h-14 object-contain drop-shadow"
-              />
+              <div className="w-10 h-10 rounded-xl bg-germany-gold/20 border border-germany-gold/40 flex items-center justify-center text-germany-gold shrink-0">
+                <Lightbulb className="w-5 h-5" />
+              </div>
               <div>
-                <h4 className="font-extrabold text-sm text-germany-black">Peer's Germany Tip</h4>
-                <p className="text-[10px] font-bold text-germany-red">Alumni Advice</p>
+                <h4 className="font-extrabold text-sm text-germany-black">German Admissions Tip</h4>
+                <p className="text-[10px] font-bold text-germany-red">Alumni Recommendation</p>
               </div>
             </div>
-            <p className="text-xs font-bold text-gray-600 leading-relaxed bg-[#FDFBF7] p-3 rounded-2xl border border-[#EBE7E0]">
+            <p className="text-xs font-bold text-gray-600 dark:text-gray-300 leading-relaxed bg-[#FDFBF7] dark:bg-[#0E121A] p-3 rounded-2xl border border-[#EBE7E0] dark:border-gray-800/80">
               "Ensure your module course descriptions match at least 80% of the target university's curriculum. German admissions committees evaluate ECTS alignment meticulously!"
             </p>
           </div>
@@ -314,9 +313,9 @@ export default function StudentDashboard() {
               </div>
             </div>
 
-            <div className="p-3 bg-[#EBE7E0]/50 rounded-2xl text-[11px] font-bold text-gray-600 space-y-1">
-              <div>Next Available Slot: <strong className="text-germany-black">Tomorrow, 4:00 PM CEST</strong></div>
-              <div>Topic: <strong className="text-germany-black">APS & Shortlist Review</strong></div>
+            <div className="p-3 bg-[#EBE7E0]/50 dark:bg-white/5 rounded-2xl text-[11px] font-bold text-gray-600 dark:text-gray-300 border border-transparent dark:border-white/5 space-y-1">
+              <div>Next Available Slot: <strong className="text-germany-black dark:text-white">Tomorrow, 4:00 PM CEST</strong></div>
+              <div>Topic: <strong className="text-germany-black dark:text-white">APS & Shortlist Review</strong></div>
             </div>
 
             <button
@@ -335,14 +334,14 @@ export default function StudentDashboard() {
             <div className="space-y-2">
               <Link
                 href="/#hero"
-                className="flex items-center justify-between p-2.5 rounded-xl bg-[#EBE7E0]/40 hover:bg-[#EBE7E0] text-xs font-extrabold text-germany-black transition-colors"
+                className="flex items-center justify-between p-2.5 rounded-xl bg-[#EBE7E0]/40 dark:bg-white/5 hover:bg-[#EBE7E0] dark:hover:bg-white/10 text-xs font-extrabold text-germany-black dark:text-white border border-transparent dark:border-white/5 transition-colors"
               >
                 <span>German GPA Calculator</span>
                 <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
               </Link>
               <Link
                 href="/dashboard/student/matching"
-                className="flex items-center justify-between p-2.5 rounded-xl bg-[#EBE7E0]/40 hover:bg-[#EBE7E0] text-xs font-extrabold text-germany-black transition-colors"
+                className="flex items-center justify-between p-2.5 rounded-xl bg-[#EBE7E0]/40 dark:bg-white/5 hover:bg-[#EBE7E0] dark:hover:bg-white/10 text-xs font-extrabold text-germany-black dark:text-white border border-transparent dark:border-white/5 transition-colors"
               >
                 <span>ECTS Credit Evaluator</span>
                 <ChevronRight className="w-3.5 h-3.5 text-gray-400" />

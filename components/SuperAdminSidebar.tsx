@@ -15,11 +15,14 @@ import {
   BarChart3,
   GraduationCap,
   Bell,
+  HelpCircle,
   LogOut,
   ChevronRight,
   X,
   ChevronsLeft,
-  ChevronsRight
+  ChevronsRight,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
@@ -29,6 +32,7 @@ const navItems = [
   { name: 'Students', path: '/dashboard/super-admin/students', icon: Users },
   { name: 'Counsellors', path: '/dashboard/super-admin/counsellors', icon: UserCheck },
   { name: 'Admins', path: '/dashboard/super-admin/admins', icon: Building },
+  { name: 'Help & Issue Audit', path: '/dashboard/super-admin/help', icon: HelpCircle },
   { name: 'Marketing', path: '/dashboard/super-admin/marketing', icon: TrendingUp },
   { name: 'Finance', path: '/dashboard/super-admin/finance', icon: CreditCard },
   { name: 'Content', path: '/dashboard/super-admin/content', icon: FileEdit },
@@ -47,6 +51,8 @@ export function SuperAdminSidebar({ isOpen = false, onClose }: SuperAdminSidebar
   const [user, setUser] = useState<{ firstName?: string; lastName?: string; role?: string } | null>(null);
   const isCollapsed = useAppStore((state) => state.isSidebarCollapsed);
   const toggleCollapse = useAppStore((state) => state.toggleSidebarCollapsed);
+  const isDarkMode = useAppStore((state) => state.isDarkMode);
+  const toggleDarkMode = useAppStore((state) => state.toggleDarkMode);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -94,12 +100,8 @@ export function SuperAdminSidebar({ isOpen = false, onClose }: SuperAdminSidebar
       {/* Brand Header */}
       <div className={`p-4 pb-3 border-b border-gray-200/80 flex items-center ${isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'}`}>
         <Link href="/" className="flex items-center gap-3 group" title="EuropeBridge Super Admin">
-          <div className="w-9 h-9 rounded-xl bg-gray-50 border border-gray-200/80 flex items-center justify-center shadow-xs group-hover:border-germany-red/40 transition-colors shrink-0">
-            <img 
-              src="/doodles/happy.png" 
-              alt="Logo" 
-              className="w-6 h-6 object-contain" 
-            />
+          <div className="w-9 h-9 rounded-xl bg-germany-red text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-all shrink-0 font-extrabold text-xs tracking-wider">
+            EB
           </div>
           {!isCollapsed && (
             <div className="flex flex-col min-w-0">
@@ -172,15 +174,15 @@ export function SuperAdminSidebar({ isOpen = false, onClose }: SuperAdminSidebar
       </nav>
 
       {/* User Profile Card & Logout */}
-      <div className="p-3 border-t border-gray-200/80 bg-white">
+      <div className="p-3 border-t border-gray-200/80 dark:border-gray-800/80 bg-white dark:bg-[#111622]">
         {!isCollapsed ? (
-          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50 border border-gray-200/80 mb-2">
-            <div className="w-8 h-8 rounded-full bg-germany-black text-white flex items-center justify-center font-extrabold text-xs shrink-0">
-              {initials ? <span>{initials}</span> : <ShieldAlert className="w-4 h-4 text-germany-gold" />}
+          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50 dark:bg-[#0E121A] border border-gray-200/80 dark:border-gray-800/80 mb-2">
+            <div className="w-8 h-8 rounded-full bg-germany-red/10 border border-germany-red/30 text-germany-red flex items-center justify-center font-extrabold text-xs shrink-0">
+              {initials ? <span>{initials}</span> : <ShieldAlert className="w-4 h-4 text-germany-red" />}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-xs text-germany-black truncate">{fullName}</p>
-              <p className="text-[10px] font-medium text-gray-500 truncate">{displayRole}</p>
+              <p className="font-bold text-xs text-germany-black dark:text-white truncate">{fullName}</p>
+              <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 truncate">{displayRole}</p>
               <Link href="/dashboard/super-admin/account" className="text-[10px] font-bold text-germany-red hover:underline block truncate mt-0.5">
                 Security & Setup →
               </Link>
@@ -188,16 +190,32 @@ export function SuperAdminSidebar({ isOpen = false, onClose }: SuperAdminSidebar
           </div>
         ) : (
           <div className="flex justify-center mb-2" title={`${fullName} (${displayRole})`}>
-            <div className="w-8 h-8 rounded-full bg-germany-black text-white flex items-center justify-center font-extrabold text-xs shrink-0">
-              {initials ? <span>{initials}</span> : <ShieldAlert className="w-4 h-4 text-germany-gold" />}
+            <div className="w-8 h-8 rounded-full bg-germany-red/10 border border-germany-red/30 text-germany-red flex items-center justify-center font-extrabold text-xs shrink-0">
+              {initials ? <span>{initials}</span> : <ShieldAlert className="w-4 h-4 text-germany-red" />}
             </div>
           </div>
         )}
 
         <button
+          onClick={toggleDarkMode}
+          title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          className="w-full mb-2 py-1.5 px-3 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-germany-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl flex items-center justify-between cursor-pointer transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            {isDarkMode ? <Sun className="w-3.5 h-3.5 text-germany-gold" /> : <Moon className="w-3.5 h-3.5 text-gray-500" />}
+            {!isCollapsed && <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>}
+          </div>
+          {!isCollapsed && (
+            <div className={`w-7 h-4 rounded-full p-0.5 transition-colors ${isDarkMode ? 'bg-germany-gold' : 'bg-gray-200 dark:bg-gray-700'}`}>
+              <div className={`w-3 h-3 rounded-full bg-white transition-transform ${isDarkMode ? 'translate-x-3' : 'translate-x-0'}`} />
+            </div>
+          )}
+        </button>
+
+        <button
           onClick={() => logout()}
           title="Sign Out"
-          className={`w-full py-2 px-3 text-xs font-bold text-gray-600 hover:text-germany-red hover:bg-red-50 border border-gray-200/80 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-xs`}
+          className="w-full py-2 px-3 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-germany-red dark:hover:text-[#FF6B7A] hover:bg-red-50 dark:hover:bg-red-500/15 border border-gray-200/80 dark:border-gray-700/70 dark:hover:border-red-500/40 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-xs"
         >
           <LogOut className="w-3.5 h-3.5 shrink-0" />
           {!isCollapsed && <span>Sign Out</span>}

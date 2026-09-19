@@ -53,11 +53,9 @@ export default function ProfileCompletionGate({
           </div>
 
           <div className="shrink-0">
-            <img
-              src="/doodles/curious (2).png"
-              alt="EuropeBridge Mascot"
-              className="w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-md"
-            />
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-germany-red/10 border border-germany-red/30 flex items-center justify-center text-germany-red shadow-sm">
+              <ShieldCheck className="w-8 h-8 sm:w-10 sm:h-10" />
+            </div>
           </div>
         </div>
 

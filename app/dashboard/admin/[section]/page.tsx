@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { ShieldCheck, Search, Filter } from 'lucide-react';
 
 const VALID_SECTIONS = [
-  'students', 'counsellors', 'universities', 'reports', 'notices', 'account'
+  'students', 'counsellors', 'universities', 'reports', 'notices', 'account', 'help'
 ];
 
 export default function AdminSectionPage({ params }: { params: Promise<{ section: string }> }) {

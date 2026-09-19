@@ -334,9 +334,9 @@ export default function AdminStudentsPage() {
                         <td className="py-3.5 text-gray-500">{student.whatsapp || 'NA'}</td>
                         <td className="py-3.5">
                           {counsellorName ? (
-                            <span className="font-bold text-germany-black">{counsellorName}</span>
+                            <span className="font-bold text-germany-black dark:text-white">{counsellorName}</span>
                           ) : (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] bg-gray-100 text-gray-500 font-bold">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-300 font-bold">
                               Unassigned
                             </span>
                           )}

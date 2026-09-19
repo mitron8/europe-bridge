@@ -6,7 +6,7 @@ import { ShieldAlert, Search } from 'lucide-react';
 
 const VALID_SECTIONS = [
   'students', 'counsellors', 'admins', 'marketing', 'finance', 
-  'content', 'reports', 'universities', 'notices', 'account'
+  'content', 'reports', 'universities', 'notices', 'account', 'help'
 ];
 
 export default function SuperAdminSectionPage({ params }: { params: Promise<{ section: string }> }) {

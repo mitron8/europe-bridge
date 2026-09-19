@@ -4,6 +4,7 @@ import React, { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProfileCompletionGate from '@/components/ProfileCompletionGate';
+import { normalizeDegreeType } from '@/lib/profileHelpers';
 import {
   Compass,
   Bookmark,
@@ -26,7 +27,7 @@ import {
 
 const VALID_SECTIONS = [
   'matching', 'shortlist', 'documents', 
-  'aps', 'applications', 'visa', 'account'
+  'aps', 'applications', 'visa', 'account', 'help'
 ];
 
 const RESTRICTED_SECTIONS = [
@@ -37,7 +38,6 @@ const RESTRICTED_SECTIONS = [
 interface SectionConfig {
   title: string;
   subtitle: string;
-  doodle: string;
   icon: any;
 }
 
@@ -45,43 +45,36 @@ const SECTION_CONFIGS: Record<string, SectionConfig> = {
   matching: {
     title: 'AI Matching Engine',
     subtitle: 'Find German universities matching your exact academic profile and career goals.',
-    doodle: '/doodles/match.png',
     icon: Compass,
   },
   documents: {
     title: 'Document Hub',
     subtitle: 'Upload, manage, and verify all essential admission and visa documents.',
-    doodle: '/doodles/CV.png',
     icon: FileText,
   },
   aps: {
     title: 'APS India Checklist',
     subtitle: 'Step-by-step verification checklist for the mandatory APS Certificate.',
-    doodle: '/doodles/sucesss.png',
     icon: CheckCircle2,
   },
   shortlist: {
     title: 'My Shortlist',
     subtitle: 'Your selected universities and programs ready for application.',
-    doodle: '/doodles/university.png',
     icon: Bookmark,
   },
   applications: {
     title: 'College Applications',
     subtitle: 'Track your Uni-Assist and direct university submissions in real-time.',
-    doodle: '/doodles/laptop.png',
     icon: Send,
   },
   visa: {
     title: 'Visa & Relocation Support',
     subtitle: 'Blocked account setup, health insurance, and embassy appointment assistance.',
-    doodle: '/doodles/visa approved.png',
     icon: Plane,
   },
   account: {
     title: 'Account Settings',
     subtitle: 'Manage your credentials, notification preferences, and assigned counsellor.',
-    doodle: '/doodles/happy.png',
     icon: Settings,
   },
 };
@@ -97,7 +90,6 @@ export default function StudentSectionPage({ params }: { params: Promise<{ secti
   const config = SECTION_CONFIGS[section] || {
     title: section.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
     subtitle: `Manage your ${section}`,
-    doodle: '/doodles/university.png',
     icon: Compass,
   };
 
@@ -116,7 +108,42 @@ export default function StudentSectionPage({ params }: { params: Promise<{ secti
         const res = await fetch(`${API_URL}/student/profile`, { credentials: 'include' });
         if (res.ok) {
           const data = await res.json();
-          setCompletionPercentage(typeof data.completionPercentage === 'number' ? data.completionPercentage : 0);
+          let pct = typeof data.completionPercentage === 'number' ? data.completionPercentage : 0;
+
+          // If profile is stuck at 83% because bachelor degreeType did not contain the word 'bachelor'
+          if (
+            pct === 83 &&
+            data.educationRecords?.some(
+              (edu: any) =>
+                (edu.educationLevel === "Bachelor's" || edu.educationLevel?.toLowerCase().includes('bachelor')) &&
+                edu.degreeType &&
+                !edu.degreeType.toLowerCase().includes('bachelor')
+            )
+          ) {
+            try {
+              const patchedRecords = data.educationRecords.map((edu: any) => ({
+                ...edu,
+                degreeType: normalizeDegreeType(edu.degreeType, edu.educationLevel),
+              }));
+              const patchRes = await fetch(`${API_URL}/student/profile`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ ...data, educationRecords: patchedRecords }, (_, v) => (v === '' ? null : v)),
+              });
+              if (patchRes.ok) {
+                const patchedData = await patchRes.json();
+                pct = typeof patchedData.completionPercentage === 'number' ? patchedData.completionPercentage : 100;
+                setCompletionPercentage(pct);
+                if (patchedData.firstName) setUserName(patchedData.firstName);
+                return;
+              }
+            } catch (patchErr) {
+              console.error('Failed auto-sync for bachelor degree:', patchErr);
+            }
+          }
+
+          setCompletionPercentage(pct);
           if (data.firstName) setUserName(data.firstName);
         } else {
           setCompletionPercentage(0);

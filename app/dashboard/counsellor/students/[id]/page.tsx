@@ -19,14 +19,14 @@ export default function CounsellorStudentDetailPage({
       <div className="flex items-center justify-between gap-3">
         <Link
           href="/dashboard/counsellor/students"
-          className="inline-flex items-center gap-2 text-xs font-bold text-gray-600 hover:text-germany-red transition-colors px-3 py-1.5 rounded-xl bg-white border border-gray-200/70 shadow-xs hover:border-germany-red/30 cursor-pointer"
+          className="inline-flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-germany-red dark:hover:text-white transition-colors px-3 py-1.5 rounded-xl bg-white dark:bg-[#111622] border border-gray-200/70 dark:border-gray-800/80 shadow-xs hover:border-germany-red/30 cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Assigned Students</span>
         </Link>
 
-        <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200/60 rounded-full font-extrabold text-[11px]">
-          <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
+        <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 rounded-full font-extrabold text-[11px]">
+          <UserCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
           <span>Student Consultation Hub</span>
         </div>
       </div>
