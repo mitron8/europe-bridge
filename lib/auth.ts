@@ -1,4 +1,4 @@
-const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://europebridge.onrender.com';
 
 export async function login(email: string, password: string) {
   const response = await fetch(`${NEXT_PUBLIC_API_URL}/auth/login`, {

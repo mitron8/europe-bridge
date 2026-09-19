@@ -19,7 +19,7 @@ function formatValue(value: any): string {
   return String(value);
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://europebridge.onrender.com';
 
 export function StudentFullProfileView({ studentId, onClose }: StudentFullProfileViewProps) {
   const [profile, setProfile] = useState<any>(null);

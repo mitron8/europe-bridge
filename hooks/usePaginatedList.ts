@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useDeferredValue } from 'react';
 
-const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://europebridge.onrender.com';
 
 interface PaginationResult<T> {
   data: T[];

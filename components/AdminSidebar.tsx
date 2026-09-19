@@ -50,7 +50,7 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://europebridge.onrender.com';
         const res = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
         if (res.ok) {
           const data = await res.json();

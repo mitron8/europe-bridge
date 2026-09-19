@@ -6,7 +6,7 @@ export default async function SignupLayout({ children }: { children: React.React
   const token = cookieStore.get('accessToken')?.value;
 
   if (token) {
-    const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'https://europebridge.onrender.com';
     let userRole: string | null = null;
 
     // nextjs implements redirect() by throwing NEXT_REDIRECT, so we cant

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { ShieldAlert, Search, Plus, X, UserCheck, AlertCircle, Loader2 } from 'lucide-react';
 import { usePaginatedList } from '../../../../hooks/usePaginatedList';
 
-const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://europebridge.onrender.com';
 
 type ContentUser = {
   id: string;

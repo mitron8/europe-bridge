@@ -21,7 +21,7 @@ type StudentNotification = {
   created_at: string;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://europebridge.onrender.com';
 
 // shape we get from checklist api, basically what backend spits out
 type ChecklistItem = {
