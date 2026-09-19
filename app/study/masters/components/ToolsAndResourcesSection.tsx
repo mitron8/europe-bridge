@@ -113,29 +113,29 @@ export const ToolsAndResourcesSection = () => {
   ];
 
   return (
-    <section id="tools" className="py-12 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto space-y-10">
+    <section id="tools" className="py-8 sm:py-12 px-3.5 sm:px-6 lg:px-12 max-w-7xl mx-auto space-y-8 sm:space-y-10">
       {/* Header */}
-      <div className="space-y-3 text-center max-w-3xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100/80 text-amber-900 text-xs font-black uppercase tracking-wider">
+      <div className="space-y-2.5 sm:space-y-3 text-center max-w-3xl mx-auto">
+        <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-amber-100/80 text-amber-900 text-[11px] sm:text-xs font-black uppercase tracking-wider">
           <Sparkles className="w-3.5 h-3.5 text-germany-gold" />
           <span>EuropeBridge Toolkit</span>
         </div>
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display text-germany-black">
           Essential Tools &amp; Resources for Your <span className="text-germany-red">Master&apos;s Application</span>
         </h2>
-        <p className="text-sm sm:text-base text-gray-600 font-medium leading-relaxed">
+        <p className="text-xs sm:text-base text-gray-600 font-medium leading-relaxed">
           Everything you need to shortlist public universities, verify prerequisites, secure funding, and ace consular visas without agency commissions.
         </p>
       </div>
 
       {/* Grid of Tools */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5">
         {tools.map((tool, idx) => {
           const Icon = tool.icon;
           return (
             <div
               key={idx}
-              className="neu-card p-5 bg-white flex flex-col justify-between hover:-translate-y-1.5 transition-all duration-300 group border border-gray-100"
+              className="neu-card p-4 sm:p-5 bg-white flex flex-col justify-between hover:-translate-y-1.5 transition-all duration-300 group border border-gray-100"
             >
               <div className="space-y-3.5">
                 <div className="flex items-center justify-between">
@@ -176,31 +176,31 @@ export const ToolsAndResourcesSection = () => {
       </div>
 
       {/* Profile Evaluation Banner */}
-      <div className="neu-card p-6 sm:p-8 bg-gradient-to-r from-amber-500/10 via-red-500/5 to-transparent border border-amber-200/70 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="space-y-2 text-center md:text-left">
-          <div className="inline-flex items-center gap-2 text-xs font-black text-amber-800 uppercase tracking-wider">
-            <ShieldCheck className="w-4 h-4 text-germany-red" />
+      <div className="neu-card p-4 sm:p-8 bg-gradient-to-r from-amber-500/10 via-red-500/5 to-transparent border border-amber-200/70 flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
+        <div className="space-y-1.5 sm:space-y-2 text-center md:text-left">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-black text-amber-800 uppercase tracking-wider">
+            <ShieldCheck className="w-4 h-4 text-germany-red shrink-0" />
             <span>Personalized Shortlisting Assistance</span>
           </div>
-          <h3 className="font-display text-xl sm:text-2xl font-bold text-germany-black">
+          <h3 className="font-display text-lg sm:text-2xl font-bold text-germany-black">
             Unsure if your 3-year bachelor&apos;s or GPA matches TU9 requirements?
           </h3>
-          <p className="text-xs sm:text-sm text-gray-600 font-medium max-w-2xl">
+          <p className="text-xs sm:text-sm text-gray-600 font-medium max-w-2xl leading-relaxed">
             Get an in-depth profile audit from EuropeBridge mentors who evaluated 1,000+ curricula against anabin, Uni-Assist criteria, and faculty module catalogs.
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+        <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 w-full md:w-auto shrink-0">
           <Link
             href="/tools/admission-chance"
-            className="neu-btn px-6 py-3 rounded-full bg-germany-red text-white text-xs font-black text-center hover:bg-red-700 transition-all flex items-center justify-center gap-2"
+            className="neu-btn px-5 sm:px-6 py-3 rounded-full bg-germany-red text-white text-xs font-black text-center hover:bg-red-700 transition-all flex items-center justify-center gap-2"
           >
             <span>Evaluate Profile Free</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
             href="/signup"
-            className="neu-btn-outline px-6 py-3 rounded-full bg-white text-germany-black border border-gray-300 text-xs font-black text-center hover:bg-gray-50 transition-all"
+            className="neu-btn-outline px-5 sm:px-6 py-3 rounded-full bg-white text-germany-black border border-gray-300 text-xs font-black text-center hover:bg-gray-50 transition-all"
           >
             <span>Create Free Account</span>
           </Link>

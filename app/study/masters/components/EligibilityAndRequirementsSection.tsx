@@ -8,26 +8,26 @@ export const EligibilityAndRequirementsSection = () => {
   const [activeTab, setActiveTab] = useState<'academic' | 'language' | 'aps' | 'tests'>('academic');
 
   return (
-    <section id="requirements" className="py-12 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto space-y-10">
+    <section id="requirements" className="py-8 sm:py-12 px-3.5 sm:px-6 lg:px-12 max-w-7xl mx-auto space-y-8 sm:space-y-10">
       {/* Header */}
-      <div className="space-y-3 text-center max-w-3xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100/80 text-germany-red text-xs font-black uppercase tracking-wider">
+      <div className="space-y-2.5 sm:space-y-3 text-center max-w-3xl mx-auto">
+        <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-red-100/80 text-germany-red text-[11px] sm:text-xs font-black uppercase tracking-wider">
           <ClipboardCheck className="w-3.5 h-3.5" />
           <span>Eligibility Blueprint</span>
         </div>
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display text-germany-black">
           Master&apos;s Admission Requirements <span className="text-germany-red">in Germany</span>
         </h2>
-        <p className="text-sm sm:text-base text-gray-600 font-medium leading-relaxed">
+        <p className="text-xs sm:text-base text-gray-600 font-medium leading-relaxed">
           German admissions committees do not evaluate candidates on hollow personal essays. Admissions are strictly criteria-driven based on academic credit alignment, German GPA, and certified credentials.
         </p>
       </div>
 
       {/* Tab Switcher */}
-      <div className="flex items-center justify-center gap-2 overflow-x-auto pb-2">
+      <div className="flex items-center justify-start md:justify-center gap-2 overflow-x-auto pb-2 no-scrollbar px-1 -mx-2 sm:mx-0">
         <button
           onClick={() => setActiveTab('academic')}
-          className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
+          className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-extrabold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
             activeTab === 'academic'
               ? 'bg-germany-black text-white shadow-sm'
               : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
@@ -37,7 +37,7 @@ export const EligibilityAndRequirementsSection = () => {
         </button>
         <button
           onClick={() => setActiveTab('language')}
-          className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
+          className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-extrabold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
             activeTab === 'language'
               ? 'bg-germany-black text-white shadow-sm'
               : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
@@ -47,7 +47,7 @@ export const EligibilityAndRequirementsSection = () => {
         </button>
         <button
           onClick={() => setActiveTab('aps')}
-          className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
+          className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-extrabold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
             activeTab === 'aps'
               ? 'bg-germany-black text-white shadow-sm'
               : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
@@ -57,7 +57,7 @@ export const EligibilityAndRequirementsSection = () => {
         </button>
         <button
           onClick={() => setActiveTab('tests')}
-          className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
+          className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-extrabold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
             activeTab === 'tests'
               ? 'bg-germany-black text-white shadow-sm'
               : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
@@ -68,7 +68,7 @@ export const EligibilityAndRequirementsSection = () => {
       </div>
 
       {/* Tab Content Cards */}
-      <div className="neu-card p-6 sm:p-8 bg-white space-y-6">
+      <div className="neu-card p-4 sm:p-8 bg-white space-y-4 sm:space-y-6">
         {activeTab === 'academic' && (
           <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#EBE7E0] pb-4">
@@ -117,7 +117,7 @@ export const EligibilityAndRequirementsSection = () => {
                 <p className="text-gray-600 font-medium leading-relaxed">
                   German universities rank grades from <strong>1.0 (Best)</strong> to <strong>4.0 (Minimum Pass)</strong>, with 5.0 indicating fail.
                 </p>
-                <div className="p-3 bg-white rounded-xl border border-gray-200 text-xs text-gray-700 font-mono">
+                <div className="p-3 bg-white rounded-xl border border-gray-200 text-xs text-gray-700 font-mono overflow-x-auto whitespace-nowrap">
                   German Grade = 1 + 3 &times; [(Nmax - N) / (Nmax - Nmin)]
                 </div>
                 <ul className="space-y-1.5 text-gray-700">

@@ -52,41 +52,41 @@ export const MastersOverviewSection = () => {
   ];
 
   return (
-    <section id="overview" className="py-12 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto space-y-12">
+    <section id="overview" className="py-8 sm:py-12 px-3.5 sm:px-6 lg:px-12 max-w-7xl mx-auto space-y-8 sm:space-y-12">
       {/* Section Header */}
-      <div className="space-y-3 text-center max-w-3xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100/80 text-germany-red text-xs font-black uppercase tracking-wider">
+      <div className="space-y-2.5 sm:space-y-3 text-center max-w-3xl mx-auto">
+        <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-red-100/80 text-germany-red text-[11px] sm:text-xs font-black uppercase tracking-wider">
           <Sparkles className="w-3.5 h-3.5" />
           <span>Why Germany?</span>
         </div>
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display text-germany-black">
           The 4 Pillars of a German <span className="text-germany-red">Master&apos;s Degree</span>
         </h2>
-        <p className="text-sm sm:text-base text-gray-600 font-medium leading-relaxed">
+        <p className="text-xs sm:text-base text-gray-600 font-medium leading-relaxed">
           Germany has become the top destination worldwide for international postgraduate studies outside the Anglophone sphere. Here is what makes the system distinct.
         </p>
       </div>
 
       {/* 4 Pillars Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {pillars.map((pillar, idx) => {
           const Icon = pillar.icon;
           return (
             <div 
               key={pillar.title} 
-              className="neu-card p-6 sm:p-7 bg-white flex flex-col justify-between space-y-4 hover:shadow-[14px_14px_32px_rgba(210,205,195,0.7)] transition-all"
+              className="neu-card p-4 sm:p-7 bg-white flex flex-col justify-between space-y-3.5 sm:space-y-4 hover:shadow-[14px_14px_32px_rgba(210,205,195,0.7)] transition-all"
             >
-              <div className="space-y-3.5">
+              <div className="space-y-2.5 sm:space-y-3.5">
                 <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 rounded-2xl bg-red-50 border border-red-200/80 flex items-center justify-center text-germany-red">
-                    <Icon className="w-6 h-6" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-red-50 border border-red-200/80 flex items-center justify-center text-germany-red">
+                    <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
-                  <span className="px-3 py-1 rounded-full bg-[#FAF8F5] border border-[#EBE7E0] text-[11px] font-extrabold text-germany-black">
+                  <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-[#FAF8F5] border border-[#EBE7E0] text-[10px] sm:text-[11px] font-extrabold text-germany-black">
                     {pillar.badge}
                   </span>
                 </div>
 
-                <h3 className="font-display text-xl font-bold text-germany-black">
+                <h3 className="font-display text-lg sm:text-xl font-bold text-germany-black">
                   {pillar.title}
                 </h3>
 
@@ -95,8 +95,8 @@ export const MastersOverviewSection = () => {
                 </p>
               </div>
 
-              <div className="pt-3 border-t border-[#EBE7E0] flex items-center gap-2 text-xs font-extrabold text-emerald-700 bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-200/60">
-                <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="pt-3 border-t border-[#EBE7E0] flex items-start sm:items-center gap-2 text-[11px] sm:text-xs font-extrabold text-emerald-700 bg-emerald-50/50 p-2 sm:p-2.5 rounded-xl border border-emerald-200/60">
+                <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 shrink-0 mt-0.5 sm:mt-0" />
                 <span>{pillar.highlight}</span>
               </div>
             </div>
@@ -105,27 +105,27 @@ export const MastersOverviewSection = () => {
       </div>
 
       {/* ECTS Credit Structure Breakdown */}
-      <div className="neu-card p-6 sm:p-8 bg-white space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#EBE7E0] pb-4">
+      <div className="neu-card p-4 sm:p-8 bg-white space-y-4 sm:space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5 sm:gap-4 border-b border-[#EBE7E0] pb-3 sm:pb-4">
           <div>
-            <h3 className="font-display text-xl sm:text-2xl font-black text-germany-black">
+            <h3 className="font-display text-lg sm:text-2xl font-black text-germany-black">
               Understanding the 120 ECTS Degree Architecture
             </h3>
-            <p className="text-xs sm:text-sm text-gray-500 font-medium mt-1">
+            <p className="text-xs sm:text-sm text-gray-500 font-medium mt-0.5 sm:mt-1">
               German Master&apos;s degrees adhere strictly to the European Credit Transfer and Accumulation System (ECTS).
             </p>
           </div>
-          <span className="px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-extrabold shrink-0 w-fit">
+          <span className="px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[11px] sm:text-xs font-extrabold shrink-0 w-fit">
             1 ECTS = ~30 Academic Hours
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {ectsBreakdown.map((item, idx) => (
-            <div key={item.semester} className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#EBE7E0] space-y-2 relative overflow-hidden">
+            <div key={item.semester} className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#FAF8F5] border border-[#EBE7E0] space-y-1.5 sm:space-y-2 relative overflow-hidden">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-extrabold text-germany-red">{item.semester}</span>
-                <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-white border border-gray-200 text-germany-black">
+                <span className="text-[11px] sm:text-xs font-black px-2 py-0.5 rounded-full bg-white border border-gray-200 text-germany-black">
                   {item.credits}
                 </span>
               </div>
@@ -137,7 +137,7 @@ export const MastersOverviewSection = () => {
       </div>
 
       {/* Flagship Research Hubs & TU9 Showcase */}
-      <div className="neu-card p-6 sm:p-8 bg-white space-y-6">
+      <div className="neu-card p-4 sm:p-8 bg-white space-y-4 sm:space-y-6">
         <div className="space-y-1 border-b border-[#EBE7E0] pb-4">
           <div className="inline-flex items-center gap-2 text-xs font-black uppercase text-germany-gold tracking-wider">
             <TrendingUp className="w-4 h-4" />

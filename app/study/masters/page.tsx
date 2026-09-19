@@ -43,7 +43,7 @@ export const metadata: Metadata = {
 
 export default function MastersGuidePage() {
   return (
-    <main className="min-h-screen neu-bg">
+    <main className="min-h-screen neu-bg overflow-x-hidden w-full">
       <Navbar />
       <MastersHeroHeader />
       <MastersSectionNav />

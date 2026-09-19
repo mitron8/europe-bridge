@@ -78,23 +78,23 @@ export const MastersFAQ = () => {
   };
 
   return (
-    <section id="faqs" className="py-12 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto space-y-10">
+    <section id="faqs" className="py-8 sm:py-12 px-3.5 sm:px-6 lg:px-12 max-w-7xl mx-auto space-y-8 sm:space-y-10">
       {/* Header */}
-      <div className="space-y-3 text-center max-w-3xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100/80 text-blue-800 text-xs font-black uppercase tracking-wider">
+      <div className="space-y-2.5 sm:space-y-3 text-center max-w-3xl mx-auto">
+        <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-blue-100/80 text-blue-800 text-[11px] sm:text-xs font-black uppercase tracking-wider">
           <HelpCircle className="w-3.5 h-3.5 text-blue-600" />
           <span>Clear &amp; Transparent Guidance</span>
         </div>
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display text-germany-black">
           Frequently Asked Questions About <span className="text-germany-red">Master&apos;s in Germany</span>
         </h2>
-        <p className="text-sm sm:text-base text-gray-600 font-medium leading-relaxed">
+        <p className="text-xs sm:text-base text-gray-600 font-medium leading-relaxed">
           Answers backed by German federal legislation, Hochschulrahmengesetz, and EuropeBridge mentor insights.
         </p>
       </div>
 
       {/* Category Pills */}
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex items-center justify-start sm:justify-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 no-scrollbar px-1 -mx-2 sm:mx-0">
         {categories.map((cat) => (
           <button
             key={cat}
@@ -102,7 +102,7 @@ export const MastersFAQ = () => {
               setSelectedCategory(cat);
               setOpenIdx(0);
             }}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+            className={`px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
               selectedCategory === cat
                 ? 'bg-germany-black text-white shadow-sm'
                 : 'bg-white border border-gray-200/80 text-gray-600 hover:bg-gray-100'
@@ -114,7 +114,7 @@ export const MastersFAQ = () => {
       </div>
 
       {/* FAQ Accordion */}
-      <div className="max-w-4xl mx-auto space-y-3.5">
+      <div className="max-w-4xl mx-auto space-y-3">
         {filteredFaqs.map((faq, idx) => {
           const isOpen = openIdx === idx;
           return (
@@ -126,35 +126,35 @@ export const MastersFAQ = () => {
             >
               <button
                 onClick={() => toggleAccordion(idx)}
-                className="w-full p-5 sm:p-6 text-left flex items-start justify-between gap-4 cursor-pointer"
+                className="w-full p-3.5 sm:p-6 text-left flex items-start justify-between gap-3 sm:gap-4 cursor-pointer"
                 aria-expanded={isOpen}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-2.5 sm:gap-3">
                   <div className={`mt-0.5 w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
                     isOpen ? 'bg-red-50 text-germany-red' : 'bg-gray-100 text-gray-400'
                   }`}>
                     <MessageCircleQuestion className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400 block mb-1">
+                    <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-gray-400 block mb-0.5 sm:mb-1">
                       {faq.category}
                     </span>
-                    <h3 className="font-display font-bold text-base sm:text-lg text-germany-black">
+                    <h3 className="font-display font-bold text-sm sm:text-lg text-germany-black leading-snug">
                       {faq.question}
                     </h3>
                   </div>
                 </div>
 
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
+                <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
                   isOpen ? 'bg-germany-red text-white rotate-180' : 'bg-gray-100 text-gray-600'
                 }`}>
-                  <ChevronDown className="w-4 h-4" />
+                  <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
               </button>
 
               {isOpen && (
-                <div className="px-5 pb-6 sm:px-6 pt-0 text-sm text-gray-600 font-medium leading-relaxed border-t border-gray-100 mt-1 pl-14">
-                  <div className="pt-4">
+                <div className="px-3.5 pb-4 sm:px-6 sm:pb-6 pt-0 text-xs sm:text-sm text-gray-600 font-medium leading-relaxed border-t border-gray-100 mt-1 pl-4 sm:pl-14">
+                  <div className="pt-3 sm:pt-4">
                     {faq.answer}
                   </div>
                 </div>

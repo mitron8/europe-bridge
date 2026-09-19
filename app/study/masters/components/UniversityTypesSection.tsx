@@ -17,17 +17,17 @@ export const UniversityTypesSection = () => {
   ];
 
   return (
-    <section id="university-types" className="py-12 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto space-y-10">
+    <section id="university-types" className="py-8 sm:py-12 px-3.5 sm:px-6 lg:px-12 max-w-7xl mx-auto space-y-8 sm:space-y-10">
       {/* Header */}
-      <div className="space-y-3 text-center max-w-3xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100/80 text-germany-red text-xs font-black uppercase tracking-wider">
+      <div className="space-y-2.5 sm:space-y-3 text-center max-w-3xl mx-auto">
+        <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-red-100/80 text-germany-red text-[11px] sm:text-xs font-black uppercase tracking-wider">
           <Building2 className="w-3.5 h-3.5" />
           <span>Institutional Landscape</span>
         </div>
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display text-germany-black">
           TU9 Universities vs. <span className="text-germany-red">Universities of Applied Sciences (UAS / HAW)</span>
         </h2>
-        <p className="text-sm sm:text-base text-gray-600 font-medium leading-relaxed">
+        <p className="text-xs sm:text-base text-gray-600 font-medium leading-relaxed">
           Germany differentiates between classic research universities and practice-oriented universities of applied sciences. Both issue globally recognized Master of Science (M.Sc.) or Master of Engineering (M.Eng.) degrees.
         </p>
       </div>
@@ -162,37 +162,42 @@ export const UniversityTypesSection = () => {
       </div>
 
       {/* Comprehensive Comparative Matrix Table */}
-      <div className="neu-card p-6 sm:p-8 bg-white space-y-4">
-        <h3 className="font-display text-xl font-bold text-germany-black mb-2">
-          Side-by-Side Comparison Matrix
-        </h3>
+      <div className="neu-card p-4 sm:p-8 bg-white space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#EBE7E0] pb-3">
+          <h3 className="font-display text-lg sm:text-xl font-bold text-germany-black">
+            Side-by-Side Comparison Matrix
+          </h3>
+          <span className="text-[11px] font-bold text-gray-500 block sm:hidden">
+            👈 Swipe horizontally to compare 👉
+          </span>
+        </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs sm:text-sm">
+        <div className="overflow-x-auto no-scrollbar sm:overflow-visible -mx-2 sm:mx-0 px-2 sm:px-0">
+          <table className="w-full text-left text-xs sm:text-sm min-w-[640px]">
             <thead>
-              <tr className="border-b-2 border-gray-200 text-gray-500 uppercase tracking-wider text-[11px] font-black">
-                <th className="py-3 pr-4">Feature / Dimension</th>
-                <th className="py-3 px-4 text-germany-red font-black">Technical University (TU / Uni)</th>
-                <th className="py-3 px-4 text-amber-700 font-black">Applied Sciences (HAW / FH)</th>
-                <th className="py-3 pl-4 text-gray-700 font-black">Private Universities</th>
+              <tr className="border-b-2 border-gray-200 text-gray-500 uppercase tracking-wider text-[10px] sm:text-[11px] font-black">
+                <th className="py-2.5 sm:py-3 pr-3 sm:pr-4">Feature / Dimension</th>
+                <th className="py-2.5 sm:py-3 px-3 sm:px-4 text-germany-red font-black">Technical University (TU / Uni)</th>
+                <th className="py-2.5 sm:py-3 px-3 sm:px-4 text-amber-700 font-black">Applied Sciences (HAW / FH)</th>
+                <th className="py-2.5 sm:py-3 pl-3 sm:pl-4 text-gray-700 font-black">Private Universities</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 font-medium text-gray-700">
               {comparisonRows.map((row, idx) => (
                 <tr key={row.feature} className="hover:bg-[#FAF8F5] transition-colors">
-                  <td className="py-3.5 pr-4 font-bold text-germany-black whitespace-nowrap">{row.feature}</td>
-                  <td className="py-3.5 px-4 leading-relaxed">{row.tu}</td>
-                  <td className="py-3.5 px-4 leading-relaxed">{row.haw}</td>
-                  <td className="py-3.5 pl-4 leading-relaxed">{row.private}</td>
+                  <td className="py-3 pr-3 sm:pr-4 font-bold text-germany-black whitespace-nowrap text-xs">{row.feature}</td>
+                  <td className="py-3 px-3 sm:px-4 leading-relaxed text-xs">{row.tu}</td>
+                  <td className="py-3 px-3 sm:px-4 leading-relaxed text-xs">{row.haw}</td>
+                  <td className="py-3 pl-3 sm:pl-4 leading-relaxed text-xs">{row.private}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
 
-        <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-950 font-medium flex items-start gap-3 mt-4">
-          <HelpCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-          <p>
+        <div className="p-3.5 sm:p-4 rounded-xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-950 font-medium flex items-start gap-2.5 sm:gap-3 mt-4">
+          <HelpCircle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 shrink-0 mt-0.5" />
+          <p className="text-[11px] sm:text-xs leading-relaxed">
             <strong>Industry Perception Myth:</strong> German employers (including BMW, Bosch, and SAP) value graduates from both TUs and HAWs equally for engineering, data, and software positions. For R&amp;D laboratories and algorithm engineering, TUs carry higher weight; for plant operations, production, and deployment engineering, HAW alumni are frequently preferred for their practical readiness.
           </p>
         </div>

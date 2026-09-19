@@ -47,8 +47,8 @@ export const MastersSectionNav = () => {
   };
 
   return (
-    <div className="sticky top-20 z-30 py-3.5 px-4 bg-white/80 backdrop-blur-md border-y border-gray-200/80 shadow-xs mb-10">
-      <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth">
+    <div className="sticky top-16 sm:top-20 z-30 py-2.5 sm:py-3.5 px-3 sm:px-4 bg-white/85 backdrop-blur-md border-y border-gray-200/80 shadow-xs mb-6 sm:mb-10">
+      <div className="max-w-7xl mx-auto flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar scroll-smooth px-1">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeSection === item.id;
@@ -56,7 +56,7 @@ export const MastersSectionNav = () => {
             <button
               key={item.id}
               onClick={() => scrollToSection(item.id)}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-extrabold whitespace-nowrap transition-all duration-200 cursor-pointer ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-extrabold whitespace-nowrap shrink-0 transition-all duration-200 cursor-pointer ${
                 isActive
                   ? 'bg-germany-black text-white shadow-sm scale-105'
                   : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
