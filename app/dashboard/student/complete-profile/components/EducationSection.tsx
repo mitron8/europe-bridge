@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { ProfileData, EducationRecord } from '../types';
 import { ClaySelect } from '@/components/ClaySelect';
-import { DEGREE_TYPE_OPTIONS, normalizeDegreeType } from '@/lib/profileHelpers';
+import { DEGREE_TYPE_OPTIONS, FIELD_OF_STUDY_OPTIONS } from '@/lib/education-constants';
 import Select from 'react-select';
 import { Country } from 'country-state-city';
 
@@ -75,6 +75,15 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
     onChange({ educationRecords: data.educationRecords.filter((record) => record.id !== id) });
   };
 
+  const getFilteredFields = (degreeId?: string) => {
+    if (!degreeId) return FIELD_OF_STUDY_OPTIONS;
+    const degree = DEGREE_TYPE_OPTIONS.find(d => d.id === degreeId);
+    if (!degree || !degree.allowedFieldCategories) return FIELD_OF_STUDY_OPTIONS;
+    return FIELD_OF_STUDY_OPTIONS.filter(f => 
+      f.category && degree.allowedFieldCategories!.includes(f.category)
+    );
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -116,10 +125,24 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Degree Type *</label>
                   <ClaySelect 
-                    value={normalizeDegreeType(record.degreeType, record.educationLevel)} 
-                    onChange={(val) => updateEducation(record.id, 'degreeType', val)} 
+                    value={record.degreeType} 
+                    onChange={(val) => {
+                      // Reset field of study when degree type changes by applying both at once
+                      const updatedRecords = data.educationRecords.map((r) => {
+                        if (r.id === record.id) {
+                          return { ...r, degreeType: val, fieldOfStudy: '' };
+                        }
+                        return r;
+                      });
+                      onChange({ educationRecords: updatedRecords });
+                    }} 
                     placeholder="Select Type"
-                    options={DEGREE_TYPE_OPTIONS}
+                    searchable={true}
+                    options={DEGREE_TYPE_OPTIONS.map(opt => ({
+                      value: opt.id,
+                      label: opt.label,
+                      searchTerms: opt.aliases
+                    }))}
                   />
                 </div>
                 <div>
@@ -127,17 +150,14 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                   <ClaySelect 
                     value={record.fieldOfStudy} 
                     onChange={(val) => updateEducation(record.id, 'fieldOfStudy', val)} 
-                    placeholder="Select Field"
-                    options={[
-                      "Computer Science",
-                      "Information Technology",
-                      "Mechanical Engineering",
-                      "Civil Engineering",
-                      "Electrical Engineering",
-                      "Business Administration",
-                      "Economics",
-                      "Other"
-                    ]}
+                    placeholder={record.degreeType ? "Select Field" : "Select Degree Type First"}
+                    disabled={!record.degreeType}
+                    searchable={true}
+                    options={getFilteredFields(record.degreeType).map(opt => ({
+                      value: opt.id,
+                      label: opt.label,
+                      searchTerms: opt.aliases
+                    }))}
                   />
                 </div>
               </div>

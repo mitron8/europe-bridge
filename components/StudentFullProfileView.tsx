@@ -180,17 +180,29 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
             
             {profile.englishTests && profile.englishTests.length > 0 && (
               <div className="mb-8">
-                <h4 className="font-bold text-sm mb-4 text-gray-800 dark:text-gray-300 uppercase tracking-widest text-[10px]">English Tests</h4>
+                <h4 className="font-bold text-sm mb-4 text-gray-800 dark:text-gray-300 uppercase tracking-widest text-[10px]">Language Tests</h4>
                 {profile.englishTests.map((test: any, idx: number) => (
                   <div key={idx} className="border border-gray-200 dark:border-gray-800/80 dark:bg-[#0E121A] rounded-xl p-5 mb-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-6">
                       <Field label="Test Type" value={test.testType} />
                       <Field label="Test Date" value={test.testDate} />
-                      <Field label="Overall Score" value={test.overallScore} className="md:col-span-2" />
-                      <Field label="Reading" value={test.readingScore} />
-                      <Field label="Listening" value={test.listeningScore} />
-                      <Field label="Speaking" value={test.speakingScore} />
-                      <Field label="Writing" value={test.writingScore} />
+                      {test.testType === 'TOEFL' && test.scoreScale === '0_120' ? (
+                        <>
+                          <Field label="Legacy Total" value={test.scores?.toeflLegacyTotal} className="md:col-span-2" />
+                          <Field label="Reading" value={test.scores?.reading} />
+                          <Field label="Listening" value={test.scores?.listening} />
+                          <Field label="Speaking" value={test.scores?.speaking} />
+                          <Field label="Writing" value={test.scores?.writing} />
+                        </>
+                      ) : (
+                        <>
+                          <Field label="Overall Score" value={test.scores?.overall} className="md:col-span-2" />
+                          <Field label="Reading" value={test.scores?.reading} />
+                          <Field label="Listening" value={test.scores?.listening} />
+                          <Field label="Speaking" value={test.scores?.speaking} />
+                          <Field label="Writing" value={test.scores?.writing} />
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}

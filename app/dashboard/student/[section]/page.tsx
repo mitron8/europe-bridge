@@ -4,7 +4,6 @@ import React, { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProfileCompletionGate from '@/components/ProfileCompletionGate';
-import { normalizeDegreeType } from '@/lib/profileHelpers';
 import {
   Compass,
   Bookmark,
@@ -110,38 +109,7 @@ export default function StudentSectionPage({ params }: { params: Promise<{ secti
           const data = await res.json();
           let pct = typeof data.completionPercentage === 'number' ? data.completionPercentage : 0;
 
-          // If profile is stuck at 83% because bachelor degreeType did not contain the word 'bachelor'
-          if (
-            pct === 83 &&
-            data.educationRecords?.some(
-              (edu: any) =>
-                (edu.educationLevel === "Bachelor's" || edu.educationLevel?.toLowerCase().includes('bachelor')) &&
-                edu.degreeType &&
-                !edu.degreeType.toLowerCase().includes('bachelor')
-            )
-          ) {
-            try {
-              const patchedRecords = data.educationRecords.map((edu: any) => ({
-                ...edu,
-                degreeType: normalizeDegreeType(edu.degreeType, edu.educationLevel),
-              }));
-              const patchRes = await fetch(`${API_URL}/student/profile`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ ...data, educationRecords: patchedRecords }, (_, v) => (v === '' ? null : v)),
-              });
-              if (patchRes.ok) {
-                const patchedData = await patchRes.json();
-                pct = typeof patchedData.completionPercentage === 'number' ? patchedData.completionPercentage : 100;
-                setCompletionPercentage(pct);
-                if (patchedData.firstName) setUserName(patchedData.firstName);
-                return;
-              }
-            } catch (patchErr) {
-              console.error('Failed auto-sync for bachelor degree:', patchErr);
-            }
-          }
+          // Auto-sync for bachelor degree has been removed due to canonical degree IDs.
 
           setCompletionPercentage(pct);
           if (data.firstName) setUserName(data.firstName);

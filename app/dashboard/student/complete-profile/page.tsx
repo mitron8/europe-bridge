@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ProfileSection, ProfileData, emptyProfile } from './types';
 import ProfileNavigation from './components/ProfileNavigation';
-import { normalizeDegreeType } from '@/lib/profileHelpers';
 import PersonalSection from './components/PersonalSection';
 import EducationSection from './components/EducationSection';
 import TestsSection from './components/TestsSection';
@@ -30,43 +29,7 @@ export default function CompleteProfilePage() {
       if (res.ok) {
         const data: ProfileData = await res.json();
 
-        // Check if education section was marked incomplete purely because degreeType missed 'bachelor'
-        let needsSync = false;
-        const normalizedRecords = data.educationRecords?.map((edu) => {
-          const normalized = normalizeDegreeType(edu.degreeType, edu.educationLevel);
-          if (normalized !== edu.degreeType) {
-            needsSync = true;
-          }
-          return { ...edu, degreeType: normalized };
-        }) || [];
-
-        // If records needed normalization and education is not marked complete, auto-patch immediately
-        if (needsSync && data.educationRecords && data.educationRecords.length > 0 && !data.sectionCompletion?.education) {
-          try {
-            const patchPayload = {
-              ...data,
-              educationRecords: normalizedRecords,
-            };
-            const patchRes = await fetch(`${API_URL}/student/profile`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify(patchPayload, (_, v) => (v === '' ? null : v)),
-            });
-            if (patchRes.ok) {
-              const patchedData: ProfileData & { journeyStatus?: string } = await patchRes.json();
-              setProfileData(patchedData);
-              if (patchedData.journeyStatus === 'profile_completed') {
-                setJustCompleted(true);
-              }
-              return;
-            }
-          } catch (syncErr) {
-            console.error('Silent degree normalization error:', syncErr);
-          }
-        }
-
-        data.educationRecords = normalizedRecords;
+        // Removed auto-normalization because canonical IDs are now used natively.
         setProfileData(data);
       }
     } catch (err) {
@@ -88,13 +51,7 @@ export default function CompleteProfilePage() {
     setIsSaving(true);
     setSaveMessage('');
     try {
-      const payload = {
-        ...profileData,
-        educationRecords: profileData.educationRecords?.map((edu) => ({
-          ...edu,
-          degreeType: normalizeDegreeType(edu.degreeType, edu.educationLevel),
-        })),
-      };
+      const payload = { ...profileData };
 
       const res = await fetch(`${API_URL}/student/profile`, {
         method: 'PATCH',

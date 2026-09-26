@@ -11,23 +11,47 @@ interface Props {
 
 export default function TestsSection({ data, onChange, onNext, onPrev }: Props) {
   
-  // English Tests
+  // Language Tests
   const addEnglishTest = () => {
     const newRecord: EnglishTest = {
       id: crypto.randomUUID(),
       testType: '',
       testDate: '',
-      overallScore: '',
-      readingScore: '',
-      listeningScore: '',
-      speakingScore: '',
-      writingScore: ''
+      scoreScale: '',
+      scores: {
+        overall: '',
+        reading: '',
+        listening: '',
+        speaking: '',
+        writing: '',
+        toeflLegacyTotal: ''
+      }
     };
     onChange({ englishTests: [...data.englishTests, newRecord] });
   };
 
   const updateEnglishTest = (id: string, field: keyof EnglishTest, value: any) => {
-    const updated = data.englishTests.map(record => record.id === id ? { ...record, [field]: value } : record);
+    const updated = data.englishTests.map(record => {
+      if (record.id === id) {
+        const newRecord = { ...record, [field]: value };
+        if (field === 'testType') {
+           newRecord.scoreScale = value === 'IELTS' ? '9_BAND' : '';
+           newRecord.scores = { overall: '', reading: '', listening: '', speaking: '', writing: '', toeflLegacyTotal: '' };
+        }
+        if (field === 'scoreScale') {
+           newRecord.scores = { overall: '', reading: '', listening: '', speaking: '', writing: '', toeflLegacyTotal: '' };
+        }
+        return newRecord;
+      }
+      return record;
+    });
+    onChange({ englishTests: updated });
+  };
+
+  const updateEnglishScore = (id: string, field: keyof EnglishTest['scores'], value: any) => {
+    const updated = data.englishTests.map(record => 
+      record.id === id ? { ...record, scores: { ...record.scores, [field]: value } } : record
+    );
     onChange({ englishTests: updated });
   };
 
@@ -62,7 +86,7 @@ export default function TestsSection({ data, onChange, onNext, onPrev }: Props) 
     <div>
       <h3 className="text-xl font-extrabold text-germany-black font-display mb-6">Language & Standardized Tests</h3>
 
-      {/* ENGLISH TESTS */}
+      {/* LANGUAGE TESTS */}
       <div className="mb-10">
         <h4 className="text-md font-extrabold text-germany-black font-display mb-4">English Proficiency</h4>
         
@@ -109,7 +133,7 @@ export default function TestsSection({ data, onChange, onNext, onPrev }: Props) 
                           value={test.testType} 
                           onChange={(val) => updateEnglishTest(test.id, 'testType', val)} 
                           placeholder="Select Test"
-                          options={["IELTS", "TOEFL", "PTE", "Duolingo", "Other"]}
+                          options={["IELTS", "TOEFL"]}
                         />
                       </div>
                       <div>
@@ -117,32 +141,73 @@ export default function TestsSection({ data, onChange, onNext, onPrev }: Props) 
                         <input type="date" value={test.testDate} onChange={(e) => updateEnglishTest(test.id, 'testDate', e.target.value)} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                      <div>
-                        <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Overall *</label>
-                        <input type="number" step="0.5" value={test.overallScore} onChange={(e) => updateEnglishTest(test.id, 'overallScore', e.target.value ? parseFloat(e.target.value) : '')} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
+
+                    {test.testType === 'TOEFL' && (
+                      <div className="mb-4">
+                        <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Score Scale *</label>
+                        <ClaySelect 
+                          value={test.scoreScale} 
+                          onChange={(val) => updateEnglishTest(test.id, 'scoreScale', val)} 
+                          placeholder="Select Scale"
+                          options={[
+                            { value: '0_120', label: '120 Total (0-30 per section)' },
+                            { value: '1_6', label: 'Legacy (1-6 scale)' }
+                          ]}
+                        />
                       </div>
-                      {['IELTS', 'TOEFL'].includes(test.testType) && (
-                        <>
-                          <div>
-                            <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Reading *</label>
-                            <input type="number" step="0.5" value={test.readingScore} onChange={(e) => updateEnglishTest(test.id, 'readingScore', e.target.value ? parseFloat(e.target.value) : '')} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Listening *</label>
-                            <input type="number" step="0.5" value={test.listeningScore} onChange={(e) => updateEnglishTest(test.id, 'listeningScore', e.target.value ? parseFloat(e.target.value) : '')} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Speaking *</label>
-                            <input type="number" step="0.5" value={test.speakingScore} onChange={(e) => updateEnglishTest(test.id, 'speakingScore', e.target.value ? parseFloat(e.target.value) : '')} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Writing *</label>
-                            <input type="number" step="0.5" value={test.writingScore} onChange={(e) => updateEnglishTest(test.id, 'writingScore', e.target.value ? parseFloat(e.target.value) : '')} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
-                          </div>
-                        </>
-                      )}
-                    </div>
+                    )}
+                    
+                    {test.testType && test.scoreScale && (
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        {test.scoreScale === '0_120' ? (
+                          <>
+                            <div>
+                              <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Legacy Total *</label>
+                              <input type="number" value={test.scores.toeflLegacyTotal} onChange={(e) => updateEnglishScore(test.id, 'toeflLegacyTotal', e.target.value !== '' ? parseInt(e.target.value) : '')} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Reading *</label>
+                              <input type="number" value={test.scores.reading} onChange={(e) => updateEnglishScore(test.id, 'reading', e.target.value !== '' ? parseInt(e.target.value) : '')} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Listening *</label>
+                              <input type="number" value={test.scores.listening} onChange={(e) => updateEnglishScore(test.id, 'listening', e.target.value !== '' ? parseInt(e.target.value) : '')} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Speaking *</label>
+                              <input type="number" value={test.scores.speaking} onChange={(e) => updateEnglishScore(test.id, 'speaking', e.target.value !== '' ? parseInt(e.target.value) : '')} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Writing *</label>
+                              <input type="number" value={test.scores.writing} onChange={(e) => updateEnglishScore(test.id, 'writing', e.target.value !== '' ? parseInt(e.target.value) : '')} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div>
+                              <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Overall *</label>
+                              <input type="number" step="0.5" value={test.scores.overall} onChange={(e) => updateEnglishScore(test.id, 'overall', e.target.value !== '' ? parseFloat(e.target.value) : '')} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Reading *</label>
+                              <input type="number" step="0.5" value={test.scores.reading} onChange={(e) => updateEnglishScore(test.id, 'reading', e.target.value !== '' ? parseFloat(e.target.value) : '')} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Listening *</label>
+                              <input type="number" step="0.5" value={test.scores.listening} onChange={(e) => updateEnglishScore(test.id, 'listening', e.target.value !== '' ? parseFloat(e.target.value) : '')} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Speaking *</label>
+                              <input type="number" step="0.5" value={test.scores.speaking} onChange={(e) => updateEnglishScore(test.id, 'speaking', e.target.value !== '' ? parseFloat(e.target.value) : '')} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Writing *</label>
+                              <input type="number" step="0.5" value={test.scores.writing} onChange={(e) => updateEnglishScore(test.id, 'writing', e.target.value !== '' ? parseFloat(e.target.value) : '')} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
