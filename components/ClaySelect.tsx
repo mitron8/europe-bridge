@@ -8,6 +8,7 @@ export interface ClaySelectOption<T extends string = string> {
   value: T;
   label: string;
   sublabel?: string;
+  searchTerms?: string[];
 }
 
 export interface ClaySelectProps<T extends string = string> {
@@ -61,10 +62,18 @@ export function ClaySelect<T extends string = string>({
     };
   }, [isOpen]);
 
-  const filteredOptions = normalizedOptions.filter((opt) =>
-    opt.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (opt.sublabel && opt.sublabel.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredOptions = normalizedOptions.filter((opt) => {
+    const normalizedSearch = searchQuery.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (!normalizedSearch) return true;
+    
+    const searchString = [
+      opt.label,
+      opt.sublabel,
+      ...(opt.searchTerms || [])
+    ].filter(Boolean).join(' ').toLowerCase().replace(/[^a-z0-9\s]/g, '');
+    
+    return searchString.includes(normalizedSearch);
+  });
 
   const handleSelect = (val: T) => {
     onChange(val, name);

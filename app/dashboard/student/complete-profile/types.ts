@@ -24,15 +24,21 @@ export interface EducationRecord {
   backlogs: number | '';
 }
 
+export interface EnglishTestScores {
+  overall: number | '';
+  reading: number | '';
+  listening: number | '';
+  speaking: number | '';
+  writing: number | '';
+  toeflLegacyTotal?: number | '';
+}
+
 export interface EnglishTest {
   id: string;
-  testType: 'IELTS' | 'TOEFL' | 'PTE' | 'Duolingo' | 'Other' | '';
+  testType: 'IELTS' | 'TOEFL' | '';
   testDate: string;
-  overallScore: number | '';
-  readingScore: number | '';
-  listeningScore: number | '';
-  speakingScore: number | '';
-  writingScore: number | '';
+  scoreScale: '9_BAND' | '1_6' | '0_120' | '';
+  scores: EnglishTestScores;
 }
 
 export interface StandardizedTest {

@@ -9,9 +9,7 @@ export const LanguageRequirements = () => {
   const englishExams = [
     { test: "IELTS Academic", minScore: "6.0 – 6.5", competitiveScore: "7.0+", notes: "Overall band score required. No band below 6.0 in most cases." },
     { test: "TOEFL iBT", minScore: "80 – 90", competitiveScore: "100+", notes: "Subscores usually 20+ in each section (Reading, Writing, Listening, Speaking)." },
-    { test: "Duolingo English Test (DET)", minScore: "105 – 115", competitiveScore: "125+", notes: "Accepted by select universities & private institutions." },
     { test: "Cambridge C1 Advanced", minScore: "Grade C (180+)", competitiveScore: "Grade B (193+)", notes: "Lifetime validity, accepted across Germany." },
-    { test: "PTE Academic", minScore: "58 – 65", competitiveScore: "73+", notes: "Accepted by many technical universities." },
   ];
 
   const germanExams = [

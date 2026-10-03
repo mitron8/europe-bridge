@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ProfileData, EducationRecord } from '../types';
 import { ClaySelect } from '@/components/ClaySelect';
-import { DEGREE_TYPE_OPTIONS, normalizeDegreeType } from '@/lib/profileHelpers';
+import { DEGREE_TYPE_OPTIONS, FIELD_OF_STUDY_OPTIONS } from '@/lib/education-constants';
+import Select from 'react-select';
+import { Country } from 'country-state-city';
 
 interface Props {
   data: ProfileData;
@@ -10,7 +12,34 @@ interface Props {
   onPrev: () => void;
 }
 
+const customStyles = {
+  control: (provided: any, state: any) => ({
+    ...provided,
+    borderRadius: '0.75rem', 
+    border: '2px solid #EBE7E0',
+    boxShadow: state.isFocused ? 'none' : '4px 4px 0px 0px rgba(0,0,0,0.1)', 
+    padding: '0.15rem', 
+    fontSize: '0.75rem', 
+    fontWeight: '700', 
+    backgroundColor: '#ffffff',
+    cursor: 'pointer'
+  }),
+  option: (provided: any, state: any) => ({
+      ...provided,
+      fontSize: '0.75rem',
+      fontWeight: '700',
+      cursor: 'pointer',
+      backgroundColor: state.isSelected ? '#FF4F4F' : state.isFocused ? '#fde8e8' : 'white',
+      color: state.isSelected ? 'white' : '#1e1e1e'
+  })
+};
+
 export default function EducationSection({ data, onChange, onNext, onPrev }: Props) {
+  const countries = useMemo(() => Country.getAllCountries().map(c => ({
+    label: c.name,
+    value: c.name
+  })), []);
+
   const addEducation = () => {
     const newRecord: EducationRecord = {
       id: crypto.randomUUID(),
@@ -44,6 +73,15 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
 
   const removeEducation = (id: string) => {
     onChange({ educationRecords: data.educationRecords.filter((record) => record.id !== id) });
+  };
+
+  const getFilteredFields = (degreeId?: string) => {
+    if (!degreeId) return FIELD_OF_STUDY_OPTIONS;
+    const degree = DEGREE_TYPE_OPTIONS.find(d => d.id === degreeId);
+    if (!degree || !degree.allowedFieldCategories) return FIELD_OF_STUDY_OPTIONS;
+    return FIELD_OF_STUDY_OPTIONS.filter(f => 
+      f.category && degree.allowedFieldCategories!.includes(f.category)
+    );
   };
 
   return (
@@ -87,10 +125,24 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Degree Type *</label>
                   <ClaySelect 
-                    value={normalizeDegreeType(record.degreeType, record.educationLevel)} 
-                    onChange={(val) => updateEducation(record.id, 'degreeType', val)} 
+                    value={record.degreeType} 
+                    onChange={(val) => {
+                      // Reset field of study when degree type changes by applying both at once
+                      const updatedRecords = data.educationRecords.map((r) => {
+                        if (r.id === record.id) {
+                          return { ...r, degreeType: val, fieldOfStudy: '' };
+                        }
+                        return r;
+                      });
+                      onChange({ educationRecords: updatedRecords });
+                    }} 
                     placeholder="Select Type"
-                    options={DEGREE_TYPE_OPTIONS}
+                    searchable={true}
+                    options={DEGREE_TYPE_OPTIONS.map(opt => ({
+                      value: opt.id,
+                      label: opt.label,
+                      searchTerms: opt.aliases
+                    }))}
                   />
                 </div>
                 <div>
@@ -98,17 +150,14 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                   <ClaySelect 
                     value={record.fieldOfStudy} 
                     onChange={(val) => updateEducation(record.id, 'fieldOfStudy', val)} 
-                    placeholder="Select Field"
-                    options={[
-                      "Computer Science",
-                      "Information Technology",
-                      "Mechanical Engineering",
-                      "Civil Engineering",
-                      "Electrical Engineering",
-                      "Business Administration",
-                      "Economics",
-                      "Other"
-                    ]}
+                    placeholder={record.degreeType ? "Select Field" : "Select Degree Type First"}
+                    disabled={!record.degreeType}
+                    searchable={true}
+                    options={getFilteredFields(record.degreeType).map(opt => ({
+                      value: opt.id,
+                      label: opt.label,
+                      searchTerms: opt.aliases
+                    }))}
                   />
                 </div>
               </div>
@@ -136,11 +185,13 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                 </div>
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Institution Country *</label>
-                  <input 
-                    type="text" 
-                    value={record.institutionCountry} 
-                    onChange={(e) => updateEducation(record.id, 'institutionCountry', e.target.value)} 
-                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" 
+                  <Select 
+                    options={countries}
+                    value={countries.find(c => c.value === record.institutionCountry) || null}
+                    onChange={(option) => updateEducation(record.id, 'institutionCountry', option?.value || '')}
+                    isSearchable
+                    styles={customStyles}
+                    placeholder="Select Country"
                   />
                 </div>
               </div>
@@ -148,22 +199,24 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Start Year *</label>
-                  <input 
-                    type="number" 
-                    value={record.startYear} 
-                    onChange={(e) => updateEducation(record.id, 'startYear', e.target.value ? parseInt(e.target.value) : '')} 
-                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" 
-                    placeholder="e.g. 2019"
+                  <Select 
+                    options={Array.from({ length: 60 }, (_, i) => new Date().getFullYear() + 10 - i).map(y => ({ label: y.toString(), value: y }))}
+                    value={record.startYear ? { label: record.startYear.toString(), value: record.startYear as number } : null}
+                    onChange={(option) => updateEducation(record.id, 'startYear', option?.value || '')}
+                    isSearchable
+                    styles={customStyles}
+                    placeholder="Select Year"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">End Year</label>
-                  <input 
-                    type="number" 
-                    value={record.endYear} 
-                    onChange={(e) => updateEducation(record.id, 'endYear', e.target.value ? parseInt(e.target.value) : '')} 
-                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" 
-                    placeholder="e.g. 2023"
+                  <Select 
+                    options={Array.from({ length: 60 }, (_, i) => new Date().getFullYear() + 10 - i).map(y => ({ label: y.toString(), value: y }))}
+                    value={record.endYear ? { label: record.endYear.toString(), value: record.endYear as number } : null}
+                    onChange={(option) => updateEducation(record.id, 'endYear', option?.value || '')}
+                    isSearchable
+                    styles={customStyles}
+                    placeholder="Select Year"
                   />
                 </div>
                 <div>

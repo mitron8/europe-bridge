@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ProfileData } from '../types';
 import { ClaySelect } from '@/components/ClaySelect';
+import Select from 'react-select';
+import { Country, State, City } from 'country-state-city';
 
 interface Props {
   data: ProfileData;
@@ -8,12 +10,61 @@ interface Props {
   onNext: () => void;
 }
 
+const customStyles = {
+  control: (provided: any, state: any) => ({
+    ...provided,
+    borderRadius: '0.75rem', // rounded-xl like neu-input
+    border: '2px solid #EBE7E0',
+    boxShadow: state.isFocused ? 'none' : '4px 4px 0px 0px rgba(0,0,0,0.1)', 
+    padding: '0.15rem', 
+    fontSize: '0.75rem', // text-xs
+    fontWeight: '700', // font-bold
+    backgroundColor: '#ffffff',
+    cursor: 'pointer'
+  }),
+  option: (provided: any, state: any) => ({
+      ...provided,
+      fontSize: '0.75rem',
+      fontWeight: '700',
+      cursor: 'pointer',
+      backgroundColor: state.isSelected ? '#FF4F4F' : state.isFocused ? '#fde8e8' : 'white',
+      color: state.isSelected ? 'white' : '#1e1e1e'
+  })
+};
+
 export default function PersonalSection({ data, onChange, onNext }: Props) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     // grab the checked state for checkboxes, otherwise standard value
     const value = e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value;
     onChange({ [e.target.name]: value });
   };
+
+  const countries = useMemo(() => Country.getAllCountries().map(c => ({
+    label: c.name,
+    value: c.name,
+    isoCode: c.isoCode
+  })), []);
+
+  const selectedCountry = useMemo(() => countries.find(c => c.value === data.country), [countries, data.country]);
+  
+  const states = useMemo(() => {
+    if (!selectedCountry) return [];
+    return State.getStatesOfCountry(selectedCountry.isoCode).map(s => ({
+      label: s.name,
+      value: s.name,
+      isoCode: s.isoCode
+    }));
+  }, [selectedCountry]);
+
+  const selectedState = useMemo(() => states.find(s => s.value === data.stateProvince), [states, data.stateProvince]);
+
+  const cities = useMemo(() => {
+    if (!selectedCountry || !selectedState) return [];
+    return City.getCitiesOfState(selectedCountry.isoCode, selectedState.isoCode).map(c => ({
+      label: c.name,
+      value: c.name
+    }));
+  }, [selectedCountry, selectedState]);
 
   return (
     <div>
@@ -48,7 +99,14 @@ export default function PersonalSection({ data, onChange, onNext }: Props) {
         </div>
         <div>
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Nationality *</label>
-          <input type="text" name="nationality" value={data.nationality} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold" placeholder="e.g. India" />
+          <Select 
+             options={countries}
+             value={countries.find(c => c.value === data.nationality) || null}
+             onChange={(option) => onChange({ nationality: option?.value || '' })}
+             isSearchable
+             styles={customStyles}
+             placeholder="Select Nationality"
+          />
         </div>
       </div>
 
@@ -74,18 +132,59 @@ export default function PersonalSection({ data, onChange, onNext }: Props) {
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Address Line *</label>
           <input type="text" name="addressLine" value={data.addressLine} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold" />
         </div>
-        <div>
-          <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">City *</label>
-          <input type="text" name="city" value={data.city} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold" />
-        </div>
-        <div>
-          <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">State / Province</label>
-          <input type="text" name="stateProvince" value={data.stateProvince} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold" />
-        </div>
+        
         <div>
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Country *</label>
-          <input type="text" name="country" value={data.country} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold" />
+          <Select 
+             options={countries}
+             value={countries.find(c => c.value === data.country) || null}
+             onChange={(option) => {
+                 onChange({ country: option?.value || '', stateProvince: '', city: '' });
+             }}
+             isSearchable
+             styles={customStyles}
+             placeholder="Select Country"
+          />
         </div>
+
+        <div>
+          <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5 flex items-center gap-2">
+            <span>State / Province</span>
+            {!data.country && <em className="text-gray-400 font-normal normal-case lowercase text-[10px] italic">*(choose a country first)</em>}
+          </label>
+          <Select 
+             options={states}
+             value={states.find(s => s.value === data.stateProvince) || null}
+             onChange={(option) => {
+                 onChange({ stateProvince: option?.value || '', city: '' });
+             }}
+             isDisabled={!data.country || states.length === 0}
+             isSearchable
+             styles={customStyles}
+             placeholder={states.length === 0 && data.country ? "No states available" : "Select State"}
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5 flex items-center gap-2">
+            <span>City *</span>
+            {!data.stateProvince && data.country && <em className="text-gray-400 font-normal normal-case lowercase text-[10px] italic">*(choose a state first)</em>}
+          </label>
+          { data.stateProvince && cities.length === 0 ? (
+             <input type="text" name="city" value={data.city} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold" placeholder="Type city name" />
+          ) : (
+            <Select 
+                options={cities}
+                value={cities.find(c => c.value === data.city) || null}
+                onChange={(option) => onChange({ city: option?.value || '' })}
+                isDisabled={!data.stateProvince}
+                isSearchable
+                styles={customStyles}
+                placeholder="Select City"
+            />
+          )}
+        </div>
+
         <div>
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Postal Code *</label>
           <input type="text" name="postalCode" value={data.postalCode} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold" />
