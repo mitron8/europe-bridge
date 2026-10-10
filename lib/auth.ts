@@ -1,3 +1,5 @@
+import { useAppStore } from '@/store/useAppStore';
+
 const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
 export async function login(email: string, password: string) {
@@ -11,6 +13,9 @@ export async function login(email: string, password: string) {
   const data = await response.json();
   if (!response.ok) {
     throw new Error(data.message || 'Login failed');
+  }
+  if (data.user) {
+    useAppStore.getState().setUser(data.user);
   }
   return data; // { message, user } — token is in the cookie not here
 }
@@ -26,6 +31,9 @@ export async function googleAuth(idToken: string) {
   const data = await response.json();
   if (!response.ok) {
     throw new Error(data.message || 'Google authentication failed');
+  }
+  if (data.user) {
+    useAppStore.getState().setUser(data.user);
   }
   return data;
 }
@@ -51,10 +59,17 @@ export async function signup(firstName: string, lastName: string, email: string,
 }
 
 export async function logout() {
-  // backend clears the cookie, we cant do it from js since its httponly
-  await fetch(`${NEXT_PUBLIC_API_URL}/auth/logout`, {
-    method: 'POST',
-    credentials: 'include',
-  });
+  try {
+    useAppStore.getState().setUser(null);
+  } catch {}
+  
+  try {
+    // backend clears the cookie, we cant do it from js since its httponly
+    await fetch(`${NEXT_PUBLIC_API_URL}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+  } catch {}
+  
   window.location.href = '/login';
 }

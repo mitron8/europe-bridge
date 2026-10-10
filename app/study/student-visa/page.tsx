@@ -10,6 +10,7 @@ import { VisaInterviewPrep } from './components/VisaInterviewPrep';
 import { VisaSupportPlans } from './components/VisaSupportPlans';
 import { VisaFAQ } from './components/VisaFAQ';
 import { VisaCTA } from './components/VisaCTA';
+import { StudyContentGate } from '@/components/StudyContentGate';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -27,11 +28,16 @@ export default function StudentVisaPage() {
       <div className="space-y-4">
         <CSPAndVidexSection />
         <VisaDocumentsChecklist />
-        <VisaProcessTimeline />
-        <VisaInterviewPrep />
-        <VisaSupportPlans />
-        <VisaFAQ />
-        <VisaCTA />
+
+        <StudyContentGate guideTitle="German Student Visa Guide">
+          <div className="space-y-4">
+            <VisaProcessTimeline />
+            <VisaInterviewPrep />
+            <VisaSupportPlans />
+            <VisaFAQ />
+            <VisaCTA />
+          </div>
+        </StudyContentGate>
       </div>
 
       <Footer />

@@ -10,6 +10,7 @@ import { InsuranceProcess } from './components/InsuranceProcess';
 import { InsuranceBookingForm } from './components/InsuranceBookingForm';
 import { InsuranceFAQ } from './components/InsuranceFAQ';
 import { InsuranceCTA } from './components/InsuranceCTA';
+import { StudyContentGate } from '@/components/StudyContentGate';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -100,11 +101,16 @@ export default function HealthInsurancePage() {
       <div className="space-y-4">
         <InsuranceFeatures />
         <PublicVsPrivateSection />
-        <InsuranceProviders />
-        <InsuranceProcess />
-        <InsuranceBookingForm />
-        <InsuranceFAQ />
-        <InsuranceCTA />
+
+        <StudyContentGate guideTitle="Health Insurance Guide">
+          <div className="space-y-4">
+            <InsuranceProviders />
+            <InsuranceProcess />
+            <InsuranceBookingForm />
+            <InsuranceFAQ />
+            <InsuranceCTA />
+          </div>
+        </StudyContentGate>
       </div>
 
       <Footer />

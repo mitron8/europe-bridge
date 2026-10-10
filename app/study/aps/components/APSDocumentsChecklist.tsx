@@ -43,13 +43,6 @@ export const APSDocumentsChecklist = () => {
               </p>
             </div>
           </div>
-          <motion.img 
-            src="/doodles/CV.png" 
-            alt="APS Document Doodle"
-            className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-sm shrink-0 hidden md:block"
-            whileHover={{ scale: 1.1, rotate: -6 }}
-            transition={{ duration: 0.3 }}
-          />
         </div>
 
         {/* Interactive Checklist Card */}

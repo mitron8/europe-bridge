@@ -1,14 +1,43 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Menu, X } from 'lucide-react';
+import { ChevronDown, Menu, X, User, LayoutDashboard, LogOut } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
+import { logout } from '@/lib/auth';
 
 const Navbar = () => {
+  const [scrolled, setScrolled] = useState(false);
   const isMobileOpen = useAppStore((state) => state.isMobileMenuOpen);
   const setIsMobileOpen = useAppStore((state) => state.setIsMobileMenuOpen);
   const toggleMobileOpen = useAppStore((state) => state.toggleMobileMenu);
+  const user = useAppStore((state) => state.user);
+  const checkAuth = useAppStore((state) => state.checkAuth);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 15);
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const initials = user
+    ? `${user.firstName?.[0] || user.name?.[0] || user.email[0] || 'U'}${user.lastName?.[0] || ''}`.toUpperCase()
+    : 'U';
+
+  const displayName = user
+    ? user.firstName || user.name?.split(' ')[0] || user.email.split('@')[0]
+    : '';
+
+  const dashboardRoute = user
+    ? `/dashboard/${user.role === 'superadmin' ? 'super-admin' : (user.role || 'student')}`
+    : '/dashboard/student';
 
   type NavItem = {
     label: string;
@@ -59,7 +88,7 @@ const Navbar = () => {
           items: [
             { title: "Master's guide", desc: "Everything, start to finish", href: "/study/masters" },
             { title: "Application process", desc: "Step by step, in order", href: "/study/application-process" },
-            { title: "Life after the offer", desc: "Arriving and settling in" }
+            { title: "Life after the offer", desc: "Arriving, careers & Blue Card", href: "/study/life-after-offer" }
           ]
         }
       ]
@@ -71,41 +100,45 @@ const Navbar = () => {
     },
     {
       label: "Free tools",
-      href: "/#free-tools",
+      href: "/tools",
       groups: [
         {
           title: "Most used",
           items: [
-            { title: "German grade calculator", desc: "Convert your grade to the German 1.0 to 4.0 scale in seconds." }
+            { 
+              title: "German grade calculator", 
+              desc: "Convert your grade to the German 1.0 to 4.0 scale in seconds.",
+              href: "/tools/german-grade-calculator"
+            }
           ],
-          action: { label: "Open the calculator", href: "/#hero" }
+          action: { label: "Open Grade Calculator", href: "/tools/german-grade-calculator" }
         },
         {
-          title: "Check yourself",
+          title: "Study & Admissions",
           items: [
-            { title: "Admission chance" },
-            { title: "APS eligibility quiz" },
-            { title: "Anabin uni checker" }
+            { title: "German grade calculator", desc: "Bavarian formula", href: "/tools/german-grade-calculator" },
+            { title: "ECTS credit calculator", desc: "Convert course credits", href: "/tools/ects-credit-calculator" },
+            { title: "Admission chance", desc: "Profile evaluation", href: "/tools/admission-chance" }
           ]
         },
         {
-          title: "Money",
+          title: "Finance & Living",
           items: [
-            { title: "Blocked account calculator", href: "/services/blocked-account" },
-            { title: "Cost of living estimator", href: "/study/cost-of-living" },
-            { title: "Loan EMI calculator" }
+            { title: "Blocked account calculator", desc: "Official €992/mo rate", href: "/tools/blocked-account-calculator" },
+            { title: "Cost of living estimator", desc: "City-by-city budgets", href: "/tools/cost-of-living-estimator" },
+            { title: "Net salary & Blue Card", desc: "Take-home pay & visa", href: "/tools/net-salary-calculator" }
           ]
         },
         {
-          title: "Apply",
+          title: "Career & Visa",
           items: [
-            { title: "ECTS credit calculator" },
-            { title: "Uni-Assist VPD cost" },
-            { title: "Course finder" }
+            { title: "Net salary & Blue Card", desc: "2026 thresholds", href: "/tools/net-salary-calculator" },
+            { title: "APS verification guide", desc: "Mandatory cert", href: "/study/aps" },
+            { title: "Post-study work guide", desc: "18-month visa", href: "/study/life-after-offer" }
           ]
         }
       ],
-      footerLink: { label: "All free tools", href: "/#free-tools" }
+      footerLink: { label: "Browse all tools →", href: "/tools" }
     },
     {
       label: "Services",
@@ -114,30 +147,30 @@ const Navbar = () => {
         {
           title: "Before you apply",
           items: [
-            { title: "University shortlisting" },
-            { title: "dMAT + APS Fast-Track", desc: "Registration before the deadline, or full refund." },
-            { title: "SOP writing" },
-            { title: "LOR writing" },
-            { title: "CV and Lebenslauf" }
+            { title: "University shortlisting", href: "/services/university-shortlisting" },
+            { title: "dMAT + APS Fast-Track", desc: "Registration before the deadline, or full refund.", href: "/services/dmat-aps-fast-track" },
+            { title: "SOP writing", href: "/services/sop-writing" },
+            { title: "LOR writing", href: "/services/lor-writing" },
+            { title: "CV and Lebenslauf", href: "/services/cv-preparation" }
           ]
         },
         {
           title: "Applying and visa",
           items: [
-            { title: "Student visa" },
-            { title: "Motivation letter" },
-            { title: "Cover letter" },
-            { title: "Document bundle" }
+            { title: "Student visa", href: "/services/german-student-visa-application" },
+            { title: "Motivation letter", href: "/services/letter-of-motivation-for-german-student-visa" },
+            { title: "Cover letter", href: "/services/cover-letter" },
+            { title: "Document bundle", href: "/services/document-preparation-bundle" }
           ]
         },
         {
           title: "After admission",
           items: [
             { title: "Blocked account", href: "/services/blocked-account" },
-            { title: "Health insurance" },
+            { title: "Health insurance", href: "/services/health-insurance" },
             { title: "Education loan", href: "/services/education-loan" },
-            { title: "Money transfer" },
-            { title: "DHL Express" }
+            { title: "Money transfer", href: "/services/outward-remittance" },
+            { title: "DHL Express", href: "/services/dhl-express" }
           ]
         },
         {
@@ -185,31 +218,31 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 px-6 lg:px-8 py-3 flex justify-between items-center neu-bg transition-all duration-300">
+    <nav className={`fixed top-0 left-0 right-0 z-50 px-6 sm:px-8 lg:px-12 flex justify-between items-center transition-all duration-300 ${
+      scrolled 
+        ? 'py-3 bg-[#F4F1EA]/95 backdrop-blur-md border-b border-[#E2DDD3]/90 shadow-[0_4px_16px_rgba(210,205,195,0.35)]' 
+        : 'py-3.5 sm:py-4 bg-[#F4F1EA]/55 backdrop-blur-md border-b border-[#E2DDD3]/40'
+    }`}>
       {/* Left: Logo */}
       <div className="flex-1">
-        <Link href="/" className="font-display text-lg lg:text-xl text-germany-black no-underline inline-flex items-center gap-2 drop-shadow-sm tracking-wide">
-          <motion.img
-            src="/doodles/happy.png"
-            alt="Europe Bridge Logo"
-            className="w-9 h-9 lg:w-10 lg:h-10 object-contain drop-shadow-md"
-            whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.1 }}
-            transition={{ duration: 0.5 }}
-          />
-          <span>Europe <span className="text-germany-red">Bridge</span></span>
+        <Link href="/" className="font-display text-xl lg:text-2xl font-black text-germany-black no-underline inline-flex items-center gap-2 drop-shadow-sm tracking-tight group">
+          <span>Europe <span className="text-germany-red group-hover:opacity-90 transition-opacity">Bridge</span></span>
         </Link>
       </div>
 
       {/* Center: Navigation Links */}
-      <div className="hidden lg:flex gap-5 lg:gap-7 items-center justify-center">
+      <div className="hidden lg:flex gap-1 xl:gap-2 items-center justify-center">
         {navItems.map((item, index) => (
           (item.dropdown || item.groups) ? (
-            <div key={index} className="relative flex items-center gap-1 group cursor-pointer h-full">
-              <Link href={item.href} className="text-gray-700 font-semibold text-sm lg:text-[15px] transition-colors group-hover:text-germany-red">
-                {item.label}
+            <div key={index} className="relative flex items-center group cursor-pointer h-full">
+              <Link 
+                href={item.href} 
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-gray-700 font-bold text-sm lg:text-[15px] transition-all hover:bg-black/[0.04] hover:text-germany-red"
+              >
+                <span>{item.label}</span>
+                <ChevronDown size={14} className="text-gray-400 group-hover:text-germany-red transition-transform duration-200 group-hover:rotate-180" />
               </Link>
-              <ChevronDown size={14} className="text-gray-400 group-hover:text-germany-red transition-colors" />
-              <div className={`absolute top-full left-1/2 -translate-x-1/2 neu-card opacity-0 invisible translate-y-4 transition-all duration-300 mt-4 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 z-50 ${item.groups ? (item.customWidth || 'w-[800px]') + ' p-6' : 'min-w-[200px] py-3'}`}>
+              <div className={`absolute top-full left-1/2 -translate-x-1/2 neu-card opacity-0 invisible translate-y-3 transition-all duration-300 mt-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 z-50 ${item.groups ? (item.customWidth || 'w-[800px]') + ' p-6' : 'min-w-[200px] py-3'}`}>
                 {item.groups ? (
                   <div>
                     <div className={`grid ${item.groups.length === 3 ? 'grid-cols-3' : 'grid-cols-4'} gap-6`}>
@@ -257,7 +290,11 @@ const Navbar = () => {
               </div>
             </div>
           ) : (
-            <Link key={index} href={item.href} className="text-gray-700 font-semibold text-sm lg:text-[15px] transition-colors hover:text-germany-red">
+            <Link 
+              key={index} 
+              href={item.href} 
+              className="px-3.5 py-2 rounded-xl text-gray-700 font-bold text-sm lg:text-[15px] transition-all hover:bg-black/[0.04] hover:text-germany-red"
+            >
               {item.label}
             </Link>
           )
@@ -265,11 +302,60 @@ const Navbar = () => {
       </div>
 
       {/* Right: Auth & Primary Action */}
-      <div className="hidden lg:flex flex-1 justify-end items-center gap-5">
-        <Link href="/login" className="text-gray-700 font-semibold text-sm hover:text-germany-red transition-colors whitespace-nowrap">
-          Login
-        </Link>
-        <Link href="/#hero" className="neu-btn-primary px-5 py-2 text-sm tracking-wide cursor-pointer inline-flex items-center justify-center whitespace-nowrap font-semibold">
+      <div className="hidden lg:flex flex-1 justify-end items-center gap-3">
+        {user ? (
+          <div className="relative group">
+            <Link
+              href={dashboardRoute}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/90 border border-gray-200/90 shadow-[2px_2px_8px_rgba(210,205,195,0.4)] hover:shadow-md transition-all group-hover:border-germany-red/40"
+              title="Go to Dashboard"
+            >
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-germany-red to-rose-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                {initials}
+              </div>
+              <span className="text-xs font-bold text-gray-800 max-w-[110px] truncate">
+                {displayName}
+              </span>
+              <ChevronDown size={13} className="text-gray-400 group-hover:text-germany-red transition-colors" />
+            </Link>
+
+            {/* Dropdown Menu on hover/focus */}
+            <div className="absolute right-0 top-full mt-2 w-56 neu-card bg-white p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div className="px-3 py-2 border-b border-gray-100">
+                <div className="font-bold text-sm text-germany-black truncate">
+                  {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : (user.name || displayName)}
+                </div>
+                <div className="text-[11px] text-gray-500 truncate">{user.email}</div>
+                <span className="inline-block mt-1 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">
+                  {user.role || 'Student'}
+                </span>
+              </div>
+              <div className="py-1">
+                <Link
+                  href={dashboardRoute}
+                  className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-gray-700 hover:text-germany-red hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  <LayoutDashboard size={14} />
+                  <span>My Dashboard</span>
+                </Link>
+              </div>
+              <div className="pt-1 border-t border-gray-100">
+                <button
+                  onClick={() => logout()}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg transition-colors text-left"
+                >
+                  <LogOut size={14} />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <Link href="/login" className="px-3.5 py-2 text-sm font-bold text-gray-700 hover:text-germany-red hover:bg-black/[0.04] rounded-xl transition-all whitespace-nowrap">
+            Login
+          </Link>
+        )}
+        <Link href="/#hero" className="neu-btn-primary px-6 py-2.5 text-sm font-extrabold tracking-wide cursor-pointer inline-flex items-center justify-center whitespace-nowrap shadow-md hover:shadow-lg transition-all">
           Consult Now
         </Link>
       </div>
@@ -335,9 +421,39 @@ const Navbar = () => {
             ))}
 
             <div className="mt-6 flex flex-col gap-3 border-t border-gray-300/50 pt-4">
-              <Link href="/login" onClick={() => setIsMobileOpen(false)} className="block text-base font-semibold text-gray-700 hover:text-germany-red text-center py-1">
-                Login
-              </Link>
+              {user ? (
+                <>
+                  <div className="flex items-center gap-3 px-3 py-2 bg-gray-50 rounded-2xl">
+                    <div className="w-10 h-10 rounded-full bg-germany-red text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                      {initials}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-sm text-gray-800 truncate">
+                        {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : (user.name || displayName)}
+                      </div>
+                      <div className="text-xs text-gray-500 truncate">{user.email}</div>
+                    </div>
+                  </div>
+                  <Link
+                    href={dashboardRoute}
+                    onClick={() => setIsMobileOpen(false)}
+                    className="neu-btn px-4 py-2.5 w-full text-center font-bold text-sm text-gray-800 flex items-center justify-center gap-2"
+                  >
+                    <LayoutDashboard size={16} />
+                    <span>Go to Dashboard</span>
+                  </Link>
+                  <button
+                    onClick={() => { setIsMobileOpen(false); logout(); }}
+                    className="px-4 py-1.5 text-xs font-bold text-red-600 hover:underline text-center"
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <Link href="/login" onClick={() => setIsMobileOpen(false)} className="block text-base font-semibold text-gray-700 hover:text-germany-red text-center py-1">
+                  Login
+                </Link>
+              )}
               <Link href="/#hero" onClick={() => setIsMobileOpen(false)} className="neu-btn-primary px-5 py-2.5 w-full cursor-pointer text-center font-semibold text-sm">
                 Consult Now
               </Link>

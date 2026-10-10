@@ -42,8 +42,7 @@ const Footer = () => {
           
           {/* Brand Info */}
           <div className="space-y-6">
-            <Link href="/" className="flex items-center gap-3">
-              <img src="/doodles/university.png" alt="EuropeBridge Mascot" className="w-14 h-14 object-contain drop-shadow-md" />
+            <Link href="/" className="inline-block">
               <h2 className="font-display text-3xl text-white">
                 Europe<span className="text-germany-red">Bridge</span>
               </h2>
@@ -63,11 +62,11 @@ const Footer = () => {
           <div className="space-y-6">
             <h3 className="font-display text-xl text-white">Platform</h3>
             <ul className="space-y-3 font-bold text-sm text-gray-400">
-              <li><Link href="/#free-tools" className="hover:text-germany-gold transition-colors">University Matcher</Link></li>
+              <li><Link href="/services/university-shortlisting" className="hover:text-germany-gold transition-colors">University Shortlisting</Link></li>
               <li><Link href="/#free-tools" className="hover:text-germany-gold transition-colors">AI SOP Builder</Link></li>
-              <li><Link href="/#free-tools" className="hover:text-germany-gold transition-colors">APS Tracker</Link></li>
-              <li><Link href="/#free-tools" className="hover:text-germany-gold transition-colors">Visa Checklist</Link></li>
-              <li><Link href="/#free-tools" className="hover:text-germany-gold transition-colors">Blocked Account Setup</Link></li>
+              <li><Link href="/study/aps" className="hover:text-germany-gold transition-colors">APS Tracker</Link></li>
+              <li><Link href="/study/student-visa" className="hover:text-germany-gold transition-colors">Visa Checklist</Link></li>
+              <li><Link href="/services/blocked-account" className="hover:text-germany-gold transition-colors">Blocked Account Setup</Link></li>
             </ul>
           </div>
 

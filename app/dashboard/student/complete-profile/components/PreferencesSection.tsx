@@ -4,6 +4,8 @@ import { ProfileData } from '../types';
 import { ClaySelect } from '@/components/ClaySelect';
 import Select from 'react-select';
 import { PROGRAMME_SUBJECTS, PROGRAMME_SPECIALIZATIONS } from '@/lib/programme-constants';
+import { useAppStore } from '@/store/useAppStore';
+import { getReactSelectStyles } from '@/lib/selectTheme';
 
 interface Props {
   data: ProfileData;
@@ -12,29 +14,9 @@ interface Props {
   onPrev: () => void;
 }
 
-const customStyles = {
-  control: (provided: any, state: any) => ({
-    ...provided,
-    borderRadius: '0.75rem', 
-    border: '2px solid #EBE7E0',
-    boxShadow: state.isFocused ? 'none' : '4px 4px 0px 0px rgba(0,0,0,0.1)', 
-    padding: '0.15rem', 
-    fontSize: '0.75rem', 
-    fontWeight: '700', 
-    backgroundColor: '#ffffff',
-    cursor: 'pointer'
-  }),
-  option: (provided: any, state: any) => ({
-      ...provided,
-      fontSize: '0.75rem',
-      fontWeight: '700',
-      cursor: 'pointer',
-      backgroundColor: state.isSelected ? '#FF4F4F' : state.isFocused ? '#fde8e8' : 'white',
-      color: state.isSelected ? 'white' : '#1e1e1e'
-  })
-};
-
 export default function PreferencesSection({ data, onChange, onNext, onPrev }: Props) {
+  const isDarkMode = useAppStore((state) => state.isDarkMode);
+  const selectStyles = useMemo(() => getReactSelectStyles(isDarkMode), [isDarkMode]);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     onChange({ [e.target.name]: e.target.value });
   };
@@ -50,8 +32,8 @@ export default function PreferencesSection({ data, onChange, onNext, onPrev }: P
 
   return (
     <div>
-      <h3 className="text-xl font-extrabold text-germany-black font-display mb-6">Study Preferences</h3>
-      <p className="text-gray-500 mb-6 font-medium text-xs">This information helps our matching engine find the best universities for you.</p>
+      <h3 className="text-xl font-extrabold text-germany-black dark:text-white font-display mb-6">Study Preferences</h3>
+      <p className="text-gray-500 dark:text-gray-400 mb-6 font-medium text-xs">This information helps our matching engine find the best universities for you.</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -73,7 +55,8 @@ export default function PreferencesSection({ data, onChange, onNext, onPrev }: P
               onChange={(option) => onChange({ preferredFieldOfStudy: option?.value || '' })}
               isSearchable
               isClearable
-              styles={customStyles}
+              styles={selectStyles}
+              classNamePrefix="neu-select"
               placeholder="Select Subject"
             />
           </div>
@@ -85,15 +68,16 @@ export default function PreferencesSection({ data, onChange, onNext, onPrev }: P
               onChange={(option) => onChange({ preferredSpecialization: option?.value || '' })}
               isSearchable
               isClearable
-              styles={customStyles}
+              styles={selectStyles}
+              classNamePrefix="neu-select"
               placeholder="Select Specialization"
             />
           </div>
         </div>
       </div>
 
-      <h4 className="text-md font-extrabold text-germany-black font-display mb-4">Intake & Timeline</h4>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 p-6 rounded-2xl bg-gray-50 border border-gray-100 shadow-sm">
+      <h4 className="text-md font-extrabold text-germany-black dark:text-white font-display mb-4">Intake & Timeline</h4>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 p-6 rounded-2xl bg-gray-50 dark:bg-[#0E121A] border border-gray-100 dark:border-gray-800 shadow-sm">
         <div>
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Target Intake Season *</label>
           <ClaySelect
@@ -114,13 +98,14 @@ export default function PreferencesSection({ data, onChange, onNext, onPrev }: P
             value={data.intakeYear ? { label: data.intakeYear.toString(), value: data.intakeYear as number } : null}
             onChange={(option) => onChange({ intakeYear: option?.value || '' })}
             isSearchable
-            styles={customStyles}
+            styles={selectStyles}
+            classNamePrefix="neu-select"
             placeholder="Select Year"
           />
         </div>
       </div>
 
-      <h4 className="text-md font-extrabold text-germany-black font-display mb-4">Institution Preferences</h4>
+      <h4 className="text-md font-extrabold text-germany-black dark:text-white font-display mb-4">Institution Preferences</h4>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="md:col-span-2">
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Preferred Universities</label>
@@ -131,7 +116,7 @@ export default function PreferencesSection({ data, onChange, onNext, onPrev }: P
             loadOptions={async (inputValue: string) => {
               if (inputValue.length < 2) return [];
               try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/student/universities/search?q=${encodeURIComponent(inputValue)}`, {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api/backend'}/student/universities/search?q=${encodeURIComponent(inputValue)}`, {
                   credentials: 'include'
                 });
                 if (!res.ok) return [];
@@ -149,7 +134,8 @@ export default function PreferencesSection({ data, onChange, onNext, onPrev }: P
               const values = (selected as any[]).map(option => option.value);
               onChange({ preferredUniversities: values });
             }}
-            styles={customStyles}
+            styles={selectStyles}
+            classNamePrefix="neu-select"
             placeholder="Search and select universities..."
             noOptionsMessage={({ inputValue }) => inputValue.length < 2 ? "Type at least 2 characters to search..." : "No universities found"}
           />
@@ -187,7 +173,7 @@ export default function PreferencesSection({ data, onChange, onNext, onPrev }: P
       </div>
 
       <div className="flex justify-between mt-8">
-        <button onClick={onPrev} className="px-5 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-100 transition-all font-bold text-xs cursor-pointer text-gray-700 bg-white">Back</button>
+        <button onClick={onPrev} className="px-5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all font-bold text-xs cursor-pointer text-gray-700 dark:text-gray-200 bg-white dark:bg-[#0E121A]">Back</button>
         <button onClick={onNext} className="neu-btn-primary px-6 py-2.5 text-xs font-bold cursor-pointer">Save & Continue</button>
       </div>
     </div>

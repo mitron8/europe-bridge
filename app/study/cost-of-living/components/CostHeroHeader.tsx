@@ -61,13 +61,6 @@ export const CostHeroHeader = () => {
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-germany-black leading-tight tracking-tight font-display flex-1">
                 Cost of Living in Germany <span className="text-germany-red">for Students</span>
               </h1>
-              <motion.img 
-                src="/doodles/travel.png" 
-                alt="Travel & Living Doodle"
-                className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-md shrink-0 hidden sm:block"
-                whileHover={{ rotate: [0, -8, 8, 0], scale: 1.08 }}
-                transition={{ duration: 0.4 }}
-              />
             </div>
 
             <p className="text-base sm:text-lg text-gray-700 font-medium leading-relaxed">

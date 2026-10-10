@@ -22,8 +22,10 @@ export default function Login() {
 
     try {
       const data = await login(email, password);
-      // route them to their specific dashboard based on what the db says
-      if (data.user.role === 'student') {
+      const redirectUrl = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('redirect') : null;
+      if (redirectUrl && redirectUrl.startsWith('/')) {
+        router.push(redirectUrl);
+      } else if (data.user.role === 'student') {
         router.push('/dashboard/student');
       } else {
         // the db role is 'superadmin' but the url is 'super-admin'
@@ -46,7 +48,10 @@ export default function Login() {
     
     try {
       const data = await googleAuth(credentialResponse.credential);
-      if (data.user.role === 'student') {
+      const redirectUrl = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('redirect') : null;
+      if (redirectUrl && redirectUrl.startsWith('/')) {
+        router.push(redirectUrl);
+      } else if (data.user.role === 'student') {
         router.push('/dashboard/student');
       } else {
         const targetDashboard = data.user.role === 'superadmin' ? 'super-admin' : data.user.role;
@@ -75,7 +80,6 @@ export default function Login() {
           <span>Back to Home</span>
         </Link>
         <Link href="/" className="inline-flex items-center gap-2 font-display text-xl text-germany-black">
-          <img src="/doodles/happy.png" alt="Logo" className="w-8 h-8 object-contain" />
           <span>Europe<span className="text-germany-red">Bridge</span></span>
         </Link>
       </div>

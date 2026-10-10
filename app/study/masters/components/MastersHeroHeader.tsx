@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { GraduationCap, ArrowRight, ShieldCheck, Sparkles, CheckCircle2, Clock, Euro, BookOpen, Briefcase } from 'lucide-react';
+import { GraduationCap, ArrowRight, ShieldCheck, Award, CheckCircle2, Clock, Euro, BookOpen, Briefcase } from 'lucide-react';
 
 export const MastersHeroHeader = () => {
   return (
@@ -26,7 +26,7 @@ export const MastersHeroHeader = () => {
           {/* Main Hero Left Content */}
           <div className="lg:col-span-7 space-y-4 sm:space-y-6">
             <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-red-100/80 border border-red-200 text-germany-red text-[11px] sm:text-xs font-black uppercase tracking-wider shadow-xs">
-              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-germany-red shrink-0" />
+              <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-germany-red shrink-0" />
               <span>Complete 2026 Master&apos;s Strategy Guide</span>
             </div>
 
@@ -34,13 +34,6 @@ export const MastersHeroHeader = () => {
               <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-germany-black leading-tight tracking-tight font-display flex-1 break-words">
                 Master&apos;s Degree in <span className="text-germany-red">Germany</span>
               </h1>
-              <motion.img 
-                src="/doodles/graduation.png" 
-                alt="Graduation Mascot"
-                className="w-14 h-14 sm:w-24 sm:h-24 object-contain drop-shadow-md shrink-0 block"
-                whileHover={{ rotate: [0, -8, 8, 0], scale: 1.08 }}
-                transition={{ duration: 0.4 }}
-              />
             </div>
 
             <p className="text-sm sm:text-base lg:text-lg text-gray-700 font-medium leading-relaxed max-w-2xl">

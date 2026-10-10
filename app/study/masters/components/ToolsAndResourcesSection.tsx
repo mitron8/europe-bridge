@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  Sparkles,
+  Wrench,
   Calculator,
   FileCheck2,
   Lock,
@@ -117,7 +117,7 @@ export const ToolsAndResourcesSection = () => {
       {/* Header */}
       <div className="space-y-2.5 sm:space-y-3 text-center max-w-3xl mx-auto">
         <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-amber-100/80 text-amber-900 text-[11px] sm:text-xs font-black uppercase tracking-wider">
-          <Sparkles className="w-3.5 h-3.5 text-germany-gold" />
+          <Wrench className="w-3.5 h-3.5 text-germany-gold" />
           <span>EuropeBridge Toolkit</span>
         </div>
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display text-germany-black">

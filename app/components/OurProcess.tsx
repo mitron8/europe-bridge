@@ -9,11 +9,11 @@ if (typeof window !== 'undefined') {
 }
 
 const steps = [
-  { title: "Make an Account", desc: "Sign up in seconds and get access.", pos: { left: "15%", top: "10%" }, image: "/doodles/laptop.png", imagePosition: { desktop: "-top-20 md:-top-24 -right-6 md:-right-10", mobile: "-top-16 -right-2" } },
-  { title: "Upload Documents", desc: "Our AI evaluates your profile instantly.", pos: { left: "75%", top: "28%" }, image: "/doodles/CV.png", imagePosition: { desktop: "-top-20 md:-top-24 -left-6 md:-left-10", mobile: "-top-16 -right-2" } },
-  { title: "Talk to Your Guide", desc: "Match with an expert for your strategy.", pos: { left: "50%", top: "50%" }, image: "/doodles/contact us.png", imagePosition: { desktop: "-top-20 md:-top-24 -right-6 md:-right-10", mobile: "-top-16 -right-2" } },
-  { title: "Choose Your Plan", desc: "Select a tier that fits your needs.", pos: { left: "25%", top: "72%" }, image: "/doodles/thinking.png", imagePosition: { desktop: "-top-24 md:-top-32 -left-8 md:-left-12", mobile: "-top-20 -right-4" } },
-  { title: "Journey to Germany", desc: "We handle visa and admission!", pos: { left: "85%", top: "70%" }, image: "/doodles/visa approved.png", imagePosition: { desktop: "-top-20 md:-top-24 -right-6 md:-right-10", mobile: "-top-16 -right-2" } },
+  { title: "Make an Account", desc: "Sign up in seconds and get access.", pos: { left: "15%", top: "10%" } },
+  { title: "Upload Documents", desc: "Our AI evaluates your profile instantly.", pos: { left: "75%", top: "28%" } },
+  { title: "Talk to Your Guide", desc: "Match with an expert for your strategy.", pos: { left: "50%", top: "50%" } },
+  { title: "Choose Your Plan", desc: "Select a tier that fits your needs.", pos: { left: "25%", top: "72%" } },
+  { title: "Journey to Germany", desc: "We handle visa and admission!", pos: { left: "85%", top: "70%" } },
 ];
 
 const OurProcess = () => {
@@ -170,22 +170,13 @@ const OurProcess = () => {
                 <span className="w-5 h-5 bg-germany-gold rounded-full shadow-inner animate-pulse"></span>
               </div>
               
-              {/* Card & Doodle Wrapper */}
-              <div className={`relative mt-16 ${index % 2 === 0 ? 'ml-12' : '-ml-12'}`}>
-                
-                {/* Emotion Doodle Peeking Out */}
-                <img 
-                  src={step.image} 
-                  alt="Emotion Doodle" 
-                  className={`absolute ${step.imagePosition.desktop} w-28 h-28 md:w-36 md:h-36 object-contain drop-shadow-xl z-30 transition-transform hover:scale-110 transform ${index % 2 === 0 ? 'rotate-6' : '-rotate-6'}`} 
-                />
-
+              {/* Card Wrapper */}
+              <div className={`relative mt-8 ${index % 2 === 0 ? 'ml-12' : '-ml-12'}`}>
                 {/* Clay Card Body */}
                 <div className="neu-card p-5 bg-white relative z-20">
                   <h3 className="text-lg font-display text-germany-black leading-tight mb-1">{step.title}</h3>
                   <p className="text-gray-500 text-xs font-bold">{step.desc}</p>
                 </div>
-
               </div>
             </div>
           ))}
@@ -222,14 +213,7 @@ const OurProcess = () => {
                   ref={el => { if(el) mobileCardsRef.current[index] = el; }}
                   className="w-full pl-14"
                 >
-                  <div className="relative mt-12">
-                    {/* Emotion Doodle Peeking Out (Mobile) */}
-                    <img 
-                      src={step.image} 
-                      alt="Emotion Doodle" 
-                      className={`absolute ${step.imagePosition.mobile} w-28 h-28 object-contain drop-shadow-xl z-30 transform rotate-6`} 
-                    />
-
+                  <div className="relative">
                     <div className="neu-card p-6 bg-white relative z-20">
                       <h3 className="text-lg font-display text-germany-black mb-1">{step.title}</h3>
                       <p className="text-gray-500 text-xs font-bold leading-relaxed">{step.desc}</p>

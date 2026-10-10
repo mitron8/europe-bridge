@@ -1,6 +1,16 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+export interface UserProfile {
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+  email: string;
+  role?: string;
+  avatarUrl?: string;
+}
+
 interface AppState {
   // Global UI State
   isMobileMenuOpen: boolean;
@@ -21,8 +31,10 @@ interface AppState {
   toggleDarkMode: () => void;
 
   // Session State
-  user: null | { name: string; email: string; role?: string };
-  setUser: (user: { name: string; email: string; role?: string } | null) => void;
+  user: UserProfile | null;
+  setUser: (user: UserProfile | null) => void;
+  isLoadingAuth: boolean;
+  checkAuth: () => Promise<UserProfile | null>;
 }
 
 export const useAppStore = create<AppState>()(
@@ -34,6 +46,7 @@ export const useAppStore = create<AppState>()(
       isSidebarCollapsed: false,
       isDarkMode: false,
       user: null,
+      isLoadingAuth: false,
 
       // Actions
       setIsMobileMenuOpen: (isOpen) => set({ isMobileMenuOpen: isOpen }),
@@ -61,12 +74,33 @@ export const useAppStore = create<AppState>()(
       },
 
       setUser: (user) => set({ user }),
+
+      checkAuth: async () => {
+        try {
+          set({ isLoadingAuth: true });
+          const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+          const res = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+          if (res.ok) {
+            const data = await res.json();
+            const fetchedUser = data.user || null;
+            set({ user: fetchedUser, isLoadingAuth: false });
+            return fetchedUser;
+          } else {
+            set({ user: null, isLoadingAuth: false });
+            return null;
+          }
+        } catch {
+          set({ isLoadingAuth: false });
+          return null;
+        }
+      },
     }),
     {
       name: 'europebridge-app-store',
       partialize: (state) => ({
         isSidebarCollapsed: state.isSidebarCollapsed,
         isDarkMode: state.isDarkMode,
+        user: state.user,
       }),
       onRehydrateStorage: () => (state) => {
         if (typeof document !== 'undefined') {

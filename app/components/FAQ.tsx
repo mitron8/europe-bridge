@@ -47,11 +47,6 @@ const FAQ = () => {
             Asked <br className="hidden md:block" />
             Questions
           </h2>
-          <img 
-            src="/doodles/thinking.png" 
-            alt="Thinking Penguin" 
-            className="w-32 h-32 md:w-48 md:h-48 object-contain drop-shadow-xl transform -rotate-6"
-          />
         </div>
 
         {/* Right Side: Accordion */}

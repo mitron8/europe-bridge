@@ -32,6 +32,8 @@ export const metadata: Metadata = {
   }
 };
 
+import { StudyContentGate } from '@/components/StudyContentGate';
+
 export default function ScholarshipsPage() {
   return (
     <main className="min-h-screen neu-bg">
@@ -42,11 +44,16 @@ export default function ScholarshipsPage() {
       <div className="space-y-4">
         <MajorScholarshipsSection />
         <DeutschlandstipendiumDeepDive />
-        <FoundationsAndUniversityGrants />
-        <ScholarshipApplicationRoadmap />
-        <AlternativeFundingSection />
-        <ScholarshipsFAQ />
-        <ScholarshipsCTA />
+
+        <StudyContentGate guideTitle="Scholarships & Funding Guide">
+          <div className="space-y-4">
+            <FoundationsAndUniversityGrants />
+            <ScholarshipApplicationRoadmap />
+            <AlternativeFundingSection />
+            <ScholarshipsFAQ />
+            <ScholarshipsCTA />
+          </div>
+        </StudyContentGate>
       </div>
 
       <Footer />

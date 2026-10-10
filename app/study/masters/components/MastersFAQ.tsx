@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { HelpCircle, ChevronDown, Sparkles, MessageCircleQuestion, CheckCircle2 } from 'lucide-react';
+import { HelpCircle, ChevronDown, MessageCircleQuestion, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 
 interface FAQItem {

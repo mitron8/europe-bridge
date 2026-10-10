@@ -11,6 +11,7 @@ import { GradeConversionSection } from './components/GradeConversionSection';
 import { CountrySpecificInfo } from './components/CountrySpecificInfo';
 import { RequirementsFAQ } from './components/RequirementsFAQ';
 import { RequirementsCTA } from './components/RequirementsCTA';
+import { StudyContentGate } from '@/components/StudyContentGate';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -28,12 +29,17 @@ export default function RequirementsPage() {
       <div className="space-y-4">
         <AcademicRequirements />
         <LanguageRequirements />
-        <RequiredDocuments />
-        <DeadlinesTimeline />
-        <GradeConversionSection />
-        <CountrySpecificInfo />
-        <RequirementsFAQ />
-        <RequirementsCTA />
+
+        <StudyContentGate guideTitle="Admission Requirements Guide">
+          <div className="space-y-4">
+            <RequiredDocuments />
+            <DeadlinesTimeline />
+            <GradeConversionSection />
+            <CountrySpecificInfo />
+            <RequirementsFAQ />
+            <RequirementsCTA />
+          </div>
+        </StudyContentGate>
       </div>
 
       <Footer />

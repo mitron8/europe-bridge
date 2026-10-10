@@ -31,8 +31,8 @@ export default function Signup() {
       // fire off the signup request
       await signup(firstName, lastName, email, password);
       
-      // we could log them straight in, but sending them to the login page is safer and simpler for now
-      router.push('/login');
+      const redirectUrl = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('redirect') : null;
+      router.push(redirectUrl ? `/login?redirect=${encodeURIComponent(redirectUrl)}` : '/login');
     } catch (err: any) {
       // just echo whatever the backend complained about
       setError(err.message || 'Signup failed. Please try again.');
@@ -49,7 +49,10 @@ export default function Signup() {
     
     try {
       const data = await googleAuth(credentialResponse.credential);
-      if (data.user.role === 'student') {
+      const redirectUrl = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('redirect') : null;
+      if (redirectUrl && redirectUrl.startsWith('/')) {
+        router.push(redirectUrl);
+      } else if (data.user.role === 'student') {
         router.push('/dashboard/student');
       } else {
         const targetDashboard = data.user.role === 'superadmin' ? 'super-admin' : data.user.role;
@@ -78,7 +81,6 @@ export default function Signup() {
           <span>Back to Home</span>
         </Link>
         <Link href="/" className="inline-flex items-center gap-2 font-display text-xl text-germany-black">
-          <img src="/doodles/happy.png" alt="Logo" className="w-8 h-8 object-contain" />
           <span>Europe<span className="text-germany-red">Bridge</span></span>
         </Link>
       </div>

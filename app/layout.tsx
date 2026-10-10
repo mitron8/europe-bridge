@@ -17,9 +17,91 @@ const geist = Geist({
   display: "swap",
 });
 
-const celinda = localFont({
-  src: "../public/fonts/CelindaRegular-DY8ZD.otf",
-  variable: "--font-celinda",
+const ibmPlexSans = localFont({
+  src: [
+    {
+      path: "../public/fonts/ibm-plex-sans/IBMPlexSans-Thin.ttf",
+      weight: "100",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/ibm-plex-sans/IBMPlexSans-ThinItalic.ttf",
+      weight: "100",
+      style: "italic",
+    },
+    {
+      path: "../public/fonts/ibm-plex-sans/IBMPlexSans-ExtraLight.ttf",
+      weight: "200",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/ibm-plex-sans/IBMPlexSans-ExtraLightItalic.ttf",
+      weight: "200",
+      style: "italic",
+    },
+    {
+      path: "../public/fonts/ibm-plex-sans/IBMPlexSans-Light.ttf",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/ibm-plex-sans/IBMPlexSans-LightItalic.ttf",
+      weight: "300",
+      style: "italic",
+    },
+    {
+      path: "../public/fonts/ibm-plex-sans/IBMPlexSans-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/ibm-plex-sans/IBMPlexSans-Italic.ttf",
+      weight: "400",
+      style: "italic",
+    },
+    {
+      path: "../public/fonts/ibm-plex-sans/IBMPlexSans-Medium.ttf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/ibm-plex-sans/IBMPlexSans-MediumItalic.ttf",
+      weight: "500",
+      style: "italic",
+    },
+    {
+      path: "../public/fonts/ibm-plex-sans/IBMPlexSans-SemiBold.ttf",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/ibm-plex-sans/IBMPlexSans-SemiBoldItalic.ttf",
+      weight: "600",
+      style: "italic",
+    },
+    {
+      path: "../public/fonts/ibm-plex-sans/IBMPlexSans-Bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/ibm-plex-sans/IBMPlexSans-BoldItalic.ttf",
+      weight: "700",
+      style: "italic",
+    },
+    {
+      path: "../public/fonts/ibm-plex-sans/IBMPlexSans-Bold.ttf",
+      weight: "800",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/ibm-plex-sans/IBMPlexSans-Bold.ttf",
+      weight: "900",
+      style: "normal",
+    },
+  ],
+  variable: "--font-ibm-plex-sans",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -33,7 +115,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${nunito.variable} ${celinda.variable} ${geist.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${nunito.variable} ${ibmPlexSans.variable} ${geist.variable}`}>
       <head>
         <script
           dangerouslySetInnerHTML={{

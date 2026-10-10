@@ -4,6 +4,8 @@ import { ClaySelect } from '@/components/ClaySelect';
 import { DEGREE_TYPE_OPTIONS, FIELD_OF_STUDY_OPTIONS } from '@/lib/education-constants';
 import Select from 'react-select';
 import { Country } from 'country-state-city';
+import { useAppStore } from '@/store/useAppStore';
+import { getReactSelectStyles } from '@/lib/selectTheme';
 
 interface Props {
   data: ProfileData;
@@ -12,29 +14,9 @@ interface Props {
   onPrev: () => void;
 }
 
-const customStyles = {
-  control: (provided: any, state: any) => ({
-    ...provided,
-    borderRadius: '0.75rem', 
-    border: '2px solid #EBE7E0',
-    boxShadow: state.isFocused ? 'none' : '4px 4px 0px 0px rgba(0,0,0,0.1)', 
-    padding: '0.15rem', 
-    fontSize: '0.75rem', 
-    fontWeight: '700', 
-    backgroundColor: '#ffffff',
-    cursor: 'pointer'
-  }),
-  option: (provided: any, state: any) => ({
-      ...provided,
-      fontSize: '0.75rem',
-      fontWeight: '700',
-      cursor: 'pointer',
-      backgroundColor: state.isSelected ? '#FF4F4F' : state.isFocused ? '#fde8e8' : 'white',
-      color: state.isSelected ? 'white' : '#1e1e1e'
-  })
-};
-
 export default function EducationSection({ data, onChange, onNext, onPrev }: Props) {
+  const isDarkMode = useAppStore((state) => state.isDarkMode);
+  const selectStyles = useMemo(() => getReactSelectStyles(isDarkMode), [isDarkMode]);
   const countries = useMemo(() => Country.getAllCountries().map(c => ({
     label: c.name,
     value: c.name
@@ -88,10 +70,10 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h3 className="text-xl font-extrabold text-germany-black font-display">Academic History</h3>
-          <p className="text-xs font-bold text-gray-500 mt-1">A completed <strong className="text-germany-red">Bachelor&apos;s</strong> degree is required to complete this section.</p>
+          <h3 className="text-xl font-extrabold text-germany-black dark:text-white font-display">Academic History</h3>
+          <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mt-1">A completed <strong className="text-germany-red dark:text-[#FF6B7A]">Bachelor&apos;s</strong> degree is required to complete this section.</p>
         </div>
-        <button onClick={addEducation} className="px-4 py-2 rounded-xl bg-[#EBE7E0] hover:bg-germany-black hover:text-white font-extrabold text-xs transition-all text-germany-black cursor-pointer">
+        <button onClick={addEducation} className="px-4 py-2 rounded-xl bg-[#EBE7E0] dark:bg-gray-800 hover:bg-germany-black dark:hover:bg-gray-700 hover:text-white font-extrabold text-xs transition-all text-germany-black dark:text-gray-100 cursor-pointer">
           + Add Education Record
         </button>
       </div>
@@ -103,14 +85,14 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
       ) : (
         <div className="space-y-8 mb-8">
           {data.educationRecords.map((record, index) => (
-            <div key={record.id} className="border border-gray-150 rounded-2xl p-6 bg-gray-50/50 relative shadow-sm">
+            <div key={record.id} className="border border-gray-150 dark:border-gray-800 rounded-2xl p-6 bg-gray-50/50 dark:bg-[#0E121A] relative shadow-sm">
               <button 
                 onClick={() => removeEducation(record.id)}
-                className="absolute top-4 right-4 text-germany-red hover:underline text-xs font-bold cursor-pointer"
+                className="absolute top-4 right-4 text-germany-red dark:text-[#FF6B7A] hover:underline text-xs font-bold cursor-pointer"
               >
                 Remove
               </button>
-              <h4 className="font-extrabold text-md text-germany-black font-display mb-4 border-b border-gray-200/60 pb-2">Education Record {index + 1}</h4>
+              <h4 className="font-extrabold text-md text-germany-black dark:text-white font-display mb-4 border-b border-gray-200/60 dark:border-gray-800 pb-2">Education Record {index + 1}</h4>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                 <div>
@@ -190,7 +172,8 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                     value={countries.find(c => c.value === record.institutionCountry) || null}
                     onChange={(option) => updateEducation(record.id, 'institutionCountry', option?.value || '')}
                     isSearchable
-                    styles={customStyles}
+                    styles={selectStyles}
+                    classNamePrefix="neu-select"
                     placeholder="Select Country"
                   />
                 </div>
@@ -204,7 +187,8 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                     value={record.startYear ? { label: record.startYear.toString(), value: record.startYear as number } : null}
                     onChange={(option) => updateEducation(record.id, 'startYear', option?.value || '')}
                     isSearchable
-                    styles={customStyles}
+                    styles={selectStyles}
+                    classNamePrefix="neu-select"
                     placeholder="Select Year"
                   />
                 </div>
@@ -215,7 +199,8 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                     value={record.endYear ? { label: record.endYear.toString(), value: record.endYear as number } : null}
                     onChange={(option) => updateEducation(record.id, 'endYear', option?.value || '')}
                     isSearchable
-                    styles={customStyles}
+                    styles={selectStyles}
+                    classNamePrefix="neu-select"
                     placeholder="Select Year"
                   />
                 </div>
@@ -234,7 +219,7 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                     type="number" 
                     value={record.currentSemester} 
                     onChange={(e) => updateEducation(record.id, 'currentSemester', e.target.value ? parseInt(e.target.value) : '')} 
-                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" 
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white dark:bg-[#111622]" 
                     placeholder="e.g. 6"
                   />
                 </div>
@@ -263,27 +248,27 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                     step="0.01"
                     value={record.score} 
                     onChange={(e) => updateEducation(record.id, 'score', e.target.value ? parseFloat(e.target.value) : '')} 
-                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" 
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white dark:bg-[#111622]" 
                     placeholder="e.g. 8.5"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Scale Max</label>
+                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Scale Max</label>
                   <input 
                     type="number" 
                     value={record.scale} 
                     onChange={(e) => updateEducation(record.id, 'scale', e.target.value ? parseFloat(e.target.value) : '')} 
-                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" 
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white dark:bg-[#111622]" 
                     placeholder="e.g. 10"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Backlogs *</label>
+                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Backlogs *</label>
                   <input 
                     type="number" 
                     value={record.backlogs} 
                     onChange={(e) => updateEducation(record.id, 'backlogs', e.target.value ? parseInt(e.target.value) : '')} 
-                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" 
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white dark:bg-[#111622]" 
                     placeholder="e.g. 0"
                   />
                 </div>
@@ -295,7 +280,7 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
       )}
 
       <div className="flex justify-between mt-8">
-        <button onClick={onPrev} className="px-5 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-100 transition-all font-bold text-xs cursor-pointer text-gray-700 bg-white">Back</button>
+        <button onClick={onPrev} className="px-5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all font-bold text-xs cursor-pointer text-gray-700 dark:text-gray-200 bg-white dark:bg-[#0E121A]">Back</button>
         <button onClick={onNext} className="neu-btn-primary px-6 py-2.5 text-xs font-bold cursor-pointer">Save & Continue</button>
       </div>
     </div>

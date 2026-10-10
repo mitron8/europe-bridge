@@ -11,6 +11,7 @@ import { CityCostComparison } from './components/CityCostComparison';
 import { EarningAndBudgetingTips } from './components/EarningAndBudgetingTips';
 import { CostOfLivingFAQ } from './components/CostOfLivingFAQ';
 import { CostCTA } from './components/CostCTA';
+import { StudyContentGate } from '@/components/StudyContentGate';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -28,12 +29,17 @@ export default function CostOfLivingPage() {
       <div className="space-y-4">
         <MonthlyBudgetBreakdown />
         <HousingAndRentSection />
-        <FoodAndGroceriesSection />
-        <TransportSection />
-        <CityCostComparison />
-        <EarningAndBudgetingTips />
-        <CostOfLivingFAQ />
-        <CostCTA />
+
+        <StudyContentGate guideTitle="Cost of Living Guide">
+          <div className="space-y-4">
+            <FoodAndGroceriesSection />
+            <TransportSection />
+            <CityCostComparison />
+            <EarningAndBudgetingTips />
+            <CostOfLivingFAQ />
+            <CostCTA />
+          </div>
+        </StudyContentGate>
       </div>
 
       <Footer />

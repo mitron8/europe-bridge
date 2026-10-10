@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ClipboardCheck, CheckCircle2, AlertTriangle, FileText, Globe, Award, Sparkles, BookCheck, ShieldAlert } from 'lucide-react';
+import { ClipboardCheck, CheckCircle2, AlertTriangle, FileText, Globe, Award, BookCheck, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 
 export const EligibilityAndRequirementsSection = () => {
@@ -174,7 +174,7 @@ export const EligibilityAndRequirementsSection = () => {
 
               <div className="p-4 sm:p-5 rounded-2xl bg-[#FAF8F5] border border-[#EBE7E0] space-y-3">
                 <h4 className="font-display text-base font-bold text-germany-black flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-germany-gold" />
+                  <Globe className="w-5 h-5 text-germany-gold" />
                   <span>German Language: When Do You Need It?</span>
                 </h4>
                 <div className="space-y-3 text-gray-700">

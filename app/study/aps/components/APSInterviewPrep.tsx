@@ -21,13 +21,6 @@ export const APSInterviewPrep = () => {
               </p>
             </div>
           </div>
-          <motion.img 
-            src="/doodles/german cutie.png" 
-            alt="APS Interview Prep Doodle"
-            className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-sm shrink-0 hidden md:block"
-            whileHover={{ scale: 1.1, rotate: -5 }}
-            transition={{ duration: 0.3 }}
-          />
         </div>
 
         {/* Question Categories Grid */}

@@ -84,7 +84,7 @@
 }
 
 /* ==============================================================================
-   DASHBOARD HEADING TYPOGRAPHY (GEIST FONT - DASHBOARD ONLY, NEVER THIN)
+   DASHBOARD HEADING TYPOGRAPHY (GEIST FONT - DASHBOARD ONLY, NEVER WEBSITE HEADING FONTS)
    ============================================================================== */
 .dashboard-container h1,
 .dashboard-container h2,
@@ -93,10 +93,19 @@
 .dashboard-container h5,
 .dashboard-container h6,
 .dashboard-container .font-display,
-.dashboard-container [class*="font-display"] {
+.dashboard-container [class*="font-display"],
+.dashboard-container [class*="font-ibm-plex-sans"],
+.dashboard-container [class*="font-agerlas"],
+.dashboard-container [class*="font-celinda"] {
   font-family: var(--font-geist), 'Geist', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
   font-weight: 700 !important; /* Never thin - always strong, bold, and distinct */
   letter-spacing: -0.015em;
+}
+
+.dashboard-container p,
+.dashboard-container p.font-display,
+.dashboard-container p [class*="font-display"] {
+  font-family: var(--font-sans) !important;
 }
 
 .dashboard-container h1 {
@@ -571,5 +580,91 @@
 
 .dark .custom-scrollbar::-webkit-scrollbar-track {
   background-color: #0B0E14;
+}
+
+/* ==============================================================================
+   REACT-SELECT DARK MODE SUPPORT (COMPLETE COMPATIBILITY)
+   ============================================================================== */
+.dark .dashboard-container .neu-select__control,
+.dark .dashboard-container [class*="-control"] {
+  background-color: #0A0D14 !important;
+  border-color: #1A2130 !important;
+  color: #F8FAFC !important;
+  box-shadow: none !important;
+}
+
+.dark .dashboard-container .neu-select__control:hover,
+.dark .dashboard-container [class*="-control"]:hover {
+  border-color: #2E3A50 !important;
+}
+
+.dark .dashboard-container .neu-select__single-value,
+.dark .dashboard-container [class*="-singleValue"] {
+  color: #F8FAFC !important;
+}
+
+.dark .dashboard-container .neu-select__input-container,
+.dark .dashboard-container .neu-select__input,
+.dark .dashboard-container [class*="-Input"] input {
+  color: #FFFFFF !important;
+}
+
+.dark .dashboard-container .neu-select__placeholder,
+.dark .dashboard-container [class*="-placeholder"] {
+  color: #94A3B8 !important;
+}
+
+.dark .dashboard-container .neu-select__menu,
+.dark .dashboard-container [class*="-menu"] {
+  background-color: #111622 !important;
+  border: 1px solid #1A2130 !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.75), 0 4px 10px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .dashboard-container .neu-select__menu-list,
+.dark .dashboard-container [class*="-MenuList"] {
+  background-color: #111622 !important;
+}
+
+.dark .dashboard-container .neu-select__option,
+.dark .dashboard-container [class*="-option"] {
+  background-color: transparent !important;
+  color: #F8FAFC !important;
+}
+
+.dark .dashboard-container .neu-select__option:hover,
+.dark .dashboard-container .neu-select__option--is-focused,
+.dark .dashboard-container [class*="-option"]:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #FFFFFF !important;
+}
+
+.dark .dashboard-container .neu-select__option--is-selected {
+  background-color: #E25260 !important;
+  color: #FFFFFF !important;
+}
+
+.dark .dashboard-container .neu-select__multi-value {
+  background-color: #1A2130 !important;
+  border-color: #222B3D !important;
+}
+
+.dark .dashboard-container .neu-select__multi-value__label {
+  color: #F8FAFC !important;
+}
+
+.dark .dashboard-container .neu-select__multi-value__remove:hover {
+  background-color: rgba(226, 82, 96, 0.25) !important;
+  color: #FF6B7A !important;
+}
+
+.dark .dashboard-container .neu-select__indicator,
+.dark .dashboard-container [class*="-indicatorContainer"] svg {
+  color: #94A3B8 !important;
+}
+
+.dark .dashboard-container .neu-select__indicator-separator,
+.dark .dashboard-container [class*="-indicatorSeparator"] {
+  background-color: #1A2130 !important;
 }
 

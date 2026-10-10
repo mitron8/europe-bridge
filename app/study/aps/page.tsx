@@ -11,6 +11,7 @@ import { APSFailureHandling } from './components/APSFailureHandling';
 import { PostAPSSteps } from './components/PostAPSSteps';
 import { APSFAQ } from './components/APSFAQ';
 import { APSCTA } from './components/APSCTA';
+import { StudyContentGate } from '@/components/StudyContentGate';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -28,12 +29,17 @@ export default function APSPage() {
       <div className="space-y-4">
         <WhatIsAPS />
         <APSDocumentsChecklist />
-        <APSProcessSteps />
-        <APSInterviewPrep />
-        <APSFailureHandling />
-        <PostAPSSteps />
-        <APSFAQ />
-        <APSCTA />
+
+        <StudyContentGate guideTitle="APS Verification Guide">
+          <div className="space-y-4">
+            <APSProcessSteps />
+            <APSInterviewPrep />
+            <APSFailureHandling />
+            <PostAPSSteps />
+            <APSFAQ />
+            <APSCTA />
+          </div>
+        </StudyContentGate>
       </div>
 
       <Footer />

@@ -41,6 +41,8 @@ export const metadata: Metadata = {
   }
 };
 
+import { StudyContentGate } from '@/components/StudyContentGate';
+
 export default function MastersGuidePage() {
   return (
     <main className="min-h-screen neu-bg">
@@ -51,14 +53,19 @@ export default function MastersGuidePage() {
       <div className="space-y-6 sm:space-y-10 pb-12">
         <MastersOverviewSection />
         <UniversityTypesSection />
-        <EligibilityAndRequirementsSection />
-        <DeadlinesAndSemestersSection />
-        <CostsAndFundingSection />
-        <WorkingWhileStudyingSection />
-        <CareerAndBlueCardSection />
-        <ToolsAndResourcesSection />
-        <MastersFAQ />
-        <MastersCTA />
+
+        <StudyContentGate guideTitle="Master's in Germany Guide">
+          <div className="space-y-6 sm:space-y-10">
+            <EligibilityAndRequirementsSection />
+            <DeadlinesAndSemestersSection />
+            <CostsAndFundingSection />
+            <WorkingWhileStudyingSection />
+            <CareerAndBlueCardSection />
+            <ToolsAndResourcesSection />
+            <MastersFAQ />
+            <MastersCTA />
+          </div>
+        </StudyContentGate>
       </div>
 
       <Footer />

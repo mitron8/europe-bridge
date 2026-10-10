@@ -15,6 +15,7 @@ import {
   ExternalLink,
   ChevronRight
 } from 'lucide-react';
+import { StudyContentGate } from '@/components/StudyContentGate';
 
 export const ProcessContent = () => {
   return (
@@ -120,7 +121,9 @@ export const ProcessContent = () => {
             </div>
           </div>
 
-          {/* Step 3 */}
+          <StudyContentGate>
+            <div className="space-y-12">
+              {/* Step 3 */}
           <div id="section-channels" className="scroll-mt-36 neu-card p-6 md:p-8 bg-white relative">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-2xl bg-[#EBE7E0]/50 flex items-center justify-center text-germany-red font-display text-xl font-bold shrink-0 shadow-inner">
@@ -319,6 +322,8 @@ export const ProcessContent = () => {
               </div>
             </div>
           </div>
+            </div>
+          </StudyContentGate>
         </div>
 
         {/* Right Column - Sticky Sidebar */}

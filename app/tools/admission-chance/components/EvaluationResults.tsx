@@ -164,17 +164,7 @@ export const EvaluationResults: React.FC<EvaluationResultsProps> = ({ data, onRe
                 </div>
               </div>
 
-              {/* Floating Success Doodle */}
-              <div className="flex justify-center">
-                <motion.img 
-                  src="/doodles/sucesss.png" 
-                  alt="Success Doodle"
-                  className="w-24 h-24 object-contain drop-shadow-md"
-                  whileHover={{ scale: 1.1, rotate: 6 }}
-                  transition={{ duration: 0.3 }}
-                />
               </div>
-            </div>
           </div>
 
           {/* Single Easiest Profile Upgrade Recommendation */}

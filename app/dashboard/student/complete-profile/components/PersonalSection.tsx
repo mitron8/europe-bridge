@@ -3,6 +3,8 @@ import { ProfileData } from '../types';
 import { ClaySelect } from '@/components/ClaySelect';
 import Select from 'react-select';
 import { Country, State, City } from 'country-state-city';
+import { useAppStore } from '@/store/useAppStore';
+import { getReactSelectStyles } from '@/lib/selectTheme';
 
 interface Props {
   data: ProfileData;
@@ -10,29 +12,9 @@ interface Props {
   onNext: () => void;
 }
 
-const customStyles = {
-  control: (provided: any, state: any) => ({
-    ...provided,
-    borderRadius: '0.75rem', // rounded-xl like neu-input
-    border: '2px solid #EBE7E0',
-    boxShadow: state.isFocused ? 'none' : '4px 4px 0px 0px rgba(0,0,0,0.1)', 
-    padding: '0.15rem', 
-    fontSize: '0.75rem', // text-xs
-    fontWeight: '700', // font-bold
-    backgroundColor: '#ffffff',
-    cursor: 'pointer'
-  }),
-  option: (provided: any, state: any) => ({
-      ...provided,
-      fontSize: '0.75rem',
-      fontWeight: '700',
-      cursor: 'pointer',
-      backgroundColor: state.isSelected ? '#FF4F4F' : state.isFocused ? '#fde8e8' : 'white',
-      color: state.isSelected ? 'white' : '#1e1e1e'
-  })
-};
-
 export default function PersonalSection({ data, onChange, onNext }: Props) {
+  const isDarkMode = useAppStore((state) => state.isDarkMode);
+  const selectStyles = useMemo(() => getReactSelectStyles(isDarkMode), [isDarkMode]);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     // grab the checked state for checkboxes, otherwise standard value
     const value = e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value;
@@ -68,7 +50,7 @@ export default function PersonalSection({ data, onChange, onNext }: Props) {
 
   return (
     <div>
-      <h3 className="text-xl font-extrabold text-germany-black font-display mb-6">Personal & Contact Information</h3>
+      <h3 className="text-xl font-extrabold text-germany-black dark:text-white font-display mb-6">Personal & Contact Information</h3>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div>
@@ -104,13 +86,14 @@ export default function PersonalSection({ data, onChange, onNext }: Props) {
              value={countries.find(c => c.value === data.nationality) || null}
              onChange={(option) => onChange({ nationality: option?.value || '' })}
              isSearchable
-             styles={customStyles}
+             styles={selectStyles}
+             classNamePrefix="neu-select"
              placeholder="Select Nationality"
           />
         </div>
       </div>
 
-      <h4 className="text-lg font-extrabold text-germany-black font-display mb-4">Contact Information</h4>
+      <h4 className="text-lg font-extrabold text-germany-black dark:text-white font-display mb-4">Contact Information</h4>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div>
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Email *</label>
@@ -126,7 +109,7 @@ export default function PersonalSection({ data, onChange, onNext }: Props) {
         </div>
       </div>
 
-      <h4 className="text-lg font-extrabold text-germany-black font-display mb-4">Address</h4>
+      <h4 className="text-lg font-extrabold text-germany-black dark:text-white font-display mb-4">Address</h4>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="md:col-span-2">
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Address Line *</label>
@@ -142,7 +125,8 @@ export default function PersonalSection({ data, onChange, onNext }: Props) {
                  onChange({ country: option?.value || '', stateProvince: '', city: '' });
              }}
              isSearchable
-             styles={customStyles}
+             styles={selectStyles}
+             classNamePrefix="neu-select"
              placeholder="Select Country"
           />
         </div>
@@ -160,7 +144,8 @@ export default function PersonalSection({ data, onChange, onNext }: Props) {
              }}
              isDisabled={!data.country || states.length === 0}
              isSearchable
-             styles={customStyles}
+             styles={selectStyles}
+             classNamePrefix="neu-select"
              placeholder={states.length === 0 && data.country ? "No states available" : "Select State"}
           />
         </div>
@@ -179,7 +164,8 @@ export default function PersonalSection({ data, onChange, onNext }: Props) {
                 onChange={(option) => onChange({ city: option?.value || '' })}
                 isDisabled={!data.stateProvince}
                 isSearchable
-                styles={customStyles}
+                styles={selectStyles}
+                classNamePrefix="neu-select"
                 placeholder="Select City"
             />
           )}
@@ -191,31 +177,31 @@ export default function PersonalSection({ data, onChange, onNext }: Props) {
         </div>
       </div>
 
-      <h4 className="text-lg font-extrabold text-germany-black font-display mb-4">Passport & Identity</h4>
+      <h4 className="text-lg font-extrabold text-germany-black dark:text-white font-display mb-4">Passport & Identity</h4>
       <div className="mb-6">
-        <label className="flex items-center space-x-2 text-xs font-bold text-gray-600 cursor-pointer select-none">
+        <label className="flex items-center space-x-2 text-xs font-bold text-gray-600 dark:text-gray-300 cursor-pointer select-none">
           <input type="checkbox" name="passportAvailable" checked={data.passportAvailable} onChange={handleChange} className="rounded text-germany-red focus:ring-germany-red w-4 h-4 accent-germany-red cursor-pointer" />
           <span>I have a valid passport</span>
         </label>
       </div>
 
       {data.passportAvailable && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 p-6 rounded-2xl bg-gray-50 border border-gray-100 shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 p-6 rounded-2xl bg-gray-50 dark:bg-[#0E121A] border border-gray-100 dark:border-gray-800 shadow-sm">
           <div>
-            <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Passport Number</label>
-            <input type="text" name="passportNumber" value={data.passportNumber} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
+            <label className="block text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Passport Number</label>
+            <input type="text" name="passportNumber" value={data.passportNumber} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white dark:bg-[#111622]" />
           </div>
           <div>
-            <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Issuing Country</label>
-            <input type="text" name="passportIssuingCountry" value={data.passportIssuingCountry} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
+            <label className="block text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Issuing Country</label>
+            <input type="text" name="passportIssuingCountry" value={data.passportIssuingCountry} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white dark:bg-[#111622]" />
           </div>
           <div>
-            <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Issue Date</label>
-            <input type="date" name="passportIssueDate" value={data.passportIssueDate} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
+            <label className="block text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Issue Date</label>
+            <input type="date" name="passportIssueDate" value={data.passportIssueDate} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white dark:bg-[#111622]" />
           </div>
           <div>
-            <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Expiry Date</label>
-            <input type="date" name="passportExpiryDate" value={data.passportExpiryDate} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" />
+            <label className="block text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Expiry Date</label>
+            <input type="date" name="passportExpiryDate" value={data.passportExpiryDate} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white dark:bg-[#111622]" />
           </div>
         </div>
       )}

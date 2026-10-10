@@ -36,22 +36,8 @@ const About = () => {
             transition={{ duration: 0.6 }}
             className="relative mt-12 md:mt-0 group flex flex-col"
           >
-            {/* Peek Doodle (Left side - Desktop Only) */}
-            <div className="absolute top-12 -left-40 w-40 h-48 overflow-hidden z-0 pointer-events-none hidden md:block">
-              <img 
-                src="/doodles/thinking.png" 
-                alt="Stressed" 
-                className="absolute top-8 right-0 w-32 h-32 object-contain drop-shadow-lg transition-all duration-1000 ease-out translate-x-full opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-x-6 group-hover:-rotate-12" 
-              />
-            </div>
-
             {/* The Card */}
             <div className="neu-card p-8 bg-[#f8fafc] flex flex-col relative z-10 h-full">
-              {/* Static Doodle (Mobile Only) */}
-              <div className="absolute -top-12 -right-4 z-30 md:hidden">
-                <img src="/doodles/error.png" alt="Stressed" className="w-24 h-24 object-contain drop-shadow-lg transform -rotate-6" />
-              </div>
-
               <div className="mb-8 relative z-20">
                 <h3 className="font-display text-2xl text-slate-500 mb-2">Traditional Agencies</h3>
                 <p className="text-gray-400 font-bold text-sm">Slow, manual, and stressful.</p>
@@ -84,22 +70,8 @@ const About = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="relative mt-12 md:mt-0 group flex flex-col"
           >
-            {/* Peek Doodle (Right side - Desktop Only) */}
-            <div className="absolute top-10 -right-48 w-58 h-56 overflow-hidden z-0 pointer-events-none hidden md:flex items-center">
-              <img 
-                src="/doodles/sucesss.png" 
-                alt="Happy" 
-                className="absolute top-10 left-0 w-40 h-40 object-contain drop-shadow-lg transition-all duration-1000 ease-out -translate-x-full opacity-0 scale-75 origin-bottom-left group-hover:opacity-100 group-hover:scale-100 group-hover:-translate-x-6 group-hover:rotate-[25deg]" 
-              />
-            </div>
-
             {/* The Card */}
             <div className="neu-card p-8 bg-white flex flex-col relative border-2 border-germany-red/10 z-10 h-full">
-              {/* Static Doodle (Mobile Only) */}
-              <div className="absolute -top-12 -left-4 z-30 md:hidden">
-                <img src="/doodles/sucesss.png" alt="Happy" className="w-24 h-24 object-contain drop-shadow-lg transform rotate-6" />
-              </div>
-
               <div className="mb-8 relative z-20">
                 <h3 className="font-display text-2xl text-germany-black mb-2">EuropeBridge</h3>
                 <p className="text-germany-red font-bold text-sm">Fast, transparent, and AI-powered.</p>

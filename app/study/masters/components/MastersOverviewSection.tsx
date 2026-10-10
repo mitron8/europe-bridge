@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Award, CheckCircle, Euro, Globe2, Layers, Lightbulb, MapPin, Sparkles, TrendingUp } from 'lucide-react';
+import { Award, CheckCircle, Euro, Globe2, Layers, Lightbulb, MapPin, TrendingUp } from 'lucide-react';
 
 export const MastersOverviewSection = () => {
   const pillars = [
@@ -56,7 +56,7 @@ export const MastersOverviewSection = () => {
       {/* Section Header */}
       <div className="space-y-2.5 sm:space-y-3 text-center max-w-3xl mx-auto">
         <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-red-100/80 text-germany-red text-[11px] sm:text-xs font-black uppercase tracking-wider">
-          <Sparkles className="w-3.5 h-3.5" />
+          <Lightbulb className="w-3.5 h-3.5" />
           <span>Why Germany?</span>
         </div>
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display text-germany-black">

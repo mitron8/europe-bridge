@@ -34,13 +34,6 @@ export const InsuranceHero = () => {
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-germany-black leading-tight tracking-tight font-display flex-1">
                 German Health Insurance <span className="text-germany-red">Setup &amp; Support</span>
               </h1>
-              <motion.img 
-                src="/doodles/travel.png" 
-                alt="Travel and Relocation Doodle"
-                className="w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-lg shrink-0 hidden sm:block"
-                whileHover={{ rotate: [0, -5, 5, 0], scale: 1.08 }}
-                transition={{ duration: 0.4 }}
-              />
             </div>
 
             <p className="text-base sm:text-lg text-gray-700 font-medium leading-relaxed">

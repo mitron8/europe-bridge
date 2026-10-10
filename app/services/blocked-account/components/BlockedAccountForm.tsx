@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Send, CheckCircle2, ShieldCheck, Clock, PhoneCall } from 'lucide-react';
+import { Send, CheckCircle2, ShieldCheck, Clock, PhoneCall, HelpCircle, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const BlockedAccountForm = () => {
@@ -9,6 +9,10 @@ export const BlockedAccountForm = () => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [countryCode, setCountryCode] = useState('+91');
+  const [targetDegree, setTargetDegree] = useState("Master's Degree");
+  const [intake, setIntake] = useState('Winter Semester 2026');
+  const [preferredProvider, setPreferredProvider] = useState('Expatrio (Recommended)');
+  const [appointmentUrgency, setAppointmentUrgency] = useState('Booked in 2-4 Weeks');
   const [consent, setConsent] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,7 +29,7 @@ export const BlockedAccountForm = () => {
   };
 
   return (
-    <section id="booking" className="py-12 px-6 lg:px-12 max-w-4xl mx-auto scroll-mt-28">
+    <section id="booking" className="py-12 px-4 sm:px-6 lg:px-12 max-w-4xl mx-auto scroll-mt-28">
       <div className="neu-card p-6 sm:p-12 border-2 border-germany-red/30 relative overflow-hidden space-y-8">
         {/* Header */}
         <div className="text-center space-y-2 max-w-2xl mx-auto">
@@ -37,7 +41,7 @@ export const BlockedAccountForm = () => {
             Apply for Your Blocked Account
           </h2>
           <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
-            Submit your contact details below. Our senior advisor will call you within <strong className="text-germany-black">60 minutes</strong> (working hours) to assist with account setup and 24h blocking confirmation.
+            Submit your details below. A dedicated EuropeBridge senior finance counselor will call you within <strong className="text-germany-black font-extrabold">60 minutes</strong> (working hours) to finalize your setup, unlock health insurance cashback, and expedite your 24h blocking confirmation.
           </p>
         </div>
 
@@ -45,31 +49,51 @@ export const BlockedAccountForm = () => {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="p-8 bg-green-50 border-2 border-green-300 rounded-3xl text-center space-y-4"
+            className="p-8 bg-green-50 border-2 border-green-300 rounded-3xl text-center space-y-5"
           >
-            <div className="w-16 h-16 rounded-full bg-green-100 text-green-700 flex items-center justify-center mx-auto font-bold">
+            <div className="w-16 h-16 rounded-full bg-green-100 text-green-700 flex items-center justify-center mx-auto font-bold shadow-sm">
               <CheckCircle2 className="w-10 h-10" />
             </div>
-            <h3 className="text-2xl font-black text-green-900 font-display">Application Received!</h3>
+            <h3 className="text-2xl font-black text-green-900 font-display">Application Received Successfully!</h3>
             <p className="text-sm text-green-800 font-medium max-w-lg mx-auto leading-relaxed">
-              Thank you, <strong>{firstName}</strong>. A senior EuropeBridge finance advisor will reach out to you at <strong>{countryCode} {phone}</strong> within 60 minutes.
+              Thank you, <strong>{firstName}</strong>. A EuropeBridge senior finance advisor has been assigned to your case and will call you at <strong>{countryCode} {phone}</strong> within 60 minutes.
             </p>
-            <button 
-              onClick={() => setIsSubmitted(false)}
-              className="neu-btn px-6 py-2.5 text-xs font-extrabold text-germany-black bg-white border border-gray-200 mt-2"
-            >
-              Submit Another Request
-            </button>
+
+            <div className="p-4 rounded-2xl bg-white/80 border border-green-200 text-xs text-green-900 font-semibold max-w-md mx-auto space-y-1">
+              <div>Selected Plan: <strong>{preferredProvider}</strong></div>
+              <div>Target Intake: <strong>{intake}</strong></div>
+              <div>Visa Appointment: <strong>{appointmentUrgency}</strong></div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <a
+                href={`https://wa.me/4915212345678?text=Hi%20EuropeBridge%20team,%20I%20just%20submitted%20my%20blocked%20account%20request%20for%20${encodeURIComponent(firstName)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-600 text-white font-extrabold text-xs flex items-center justify-center gap-2 hover:bg-emerald-700 shadow-sm"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>Need Urgent Callback on WhatsApp?</span>
+              </a>
+
+              <button 
+                onClick={() => setIsSubmitted(false)}
+                className="w-full sm:w-auto neu-btn px-6 py-3 text-xs font-extrabold text-germany-black bg-white border border-gray-200"
+              >
+                Submit Another Request
+              </button>
+            </div>
           </motion.div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto">
+            {/* Name Fields */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">First Name *</label>
                 <input 
                   type="text" 
                   required
-                  placeholder="First name"
+                  placeholder="e.g. Rahul"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm focus:border-germany-red focus:ring-1 focus:ring-germany-red outline-none bg-white"
@@ -80,7 +104,7 @@ export const BlockedAccountForm = () => {
                 <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">Last Name</label>
                 <input 
                   type="text" 
-                  placeholder="Last name"
+                  placeholder="e.g. Sharma"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm focus:border-germany-red focus:ring-1 focus:ring-germany-red outline-none bg-white"
@@ -88,43 +112,110 @@ export const BlockedAccountForm = () => {
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">Email Address *</label>
-              <input 
-                type="email" 
-                required
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm focus:border-germany-red focus:ring-1 focus:ring-germany-red outline-none bg-white"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">Phone Number *</label>
-              <div className="flex gap-2">
-                <select 
-                  value={countryCode} 
-                  onChange={(e) => setCountryCode(e.target.value)}
-                  className="px-3 py-3 rounded-xl border border-gray-300 font-bold text-xs bg-gray-50 focus:border-germany-red outline-none"
-                >
-                  <option value="+91">🇮🇳 +91</option>
-                  <option value="+49">🇩🇪 +49</option>
-                  <option value="+1">🇺🇸 +1</option>
-                  <option value="+44">🇬🇧 +44</option>
-                  <option value="+971">🇦🇪 +971</option>
-                </select>
+            {/* Email and Phone */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">Email Address *</label>
                 <input 
-                  type="tel" 
+                  type="email" 
                   required
-                  placeholder="Phone number"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="flex-1 px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm focus:border-germany-red focus:ring-1 focus:ring-germany-red outline-none bg-white"
+                  placeholder="rahul@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm focus:border-germany-red focus:ring-1 focus:ring-germany-red outline-none bg-white"
                 />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">Phone Number (WhatsApp) *</label>
+                <div className="flex gap-2">
+                  <select 
+                    value={countryCode} 
+                    onChange={(e) => setCountryCode(e.target.value)}
+                    className="px-3 py-3 rounded-xl border border-gray-300 font-bold text-xs bg-gray-50 focus:border-germany-red outline-none"
+                  >
+                    <option value="+91">🇮🇳 +91</option>
+                    <option value="+49">🇩🇪 +49</option>
+                    <option value="+1">🇺🇸 +1</option>
+                    <option value="+44">🇬🇧 +44</option>
+                    <option value="+971">🇦🇪 +971</option>
+                  </select>
+                  <input 
+                    type="tel" 
+                    required
+                    placeholder="9876543210"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="flex-1 px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm focus:border-germany-red focus:ring-1 focus:ring-germany-red outline-none bg-white"
+                  />
+                </div>
               </div>
             </div>
 
+            {/* Target Intake and Degree */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">Target Intake</label>
+                <select
+                  value={intake}
+                  onChange={(e) => setIntake(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm bg-white focus:border-germany-red outline-none"
+                >
+                  <option value="Winter Semester 2026">Winter Semester 2026 (Sep/Oct)</option>
+                  <option value="Summer Semester 2027">Summer Semester 2027 (Mar/Apr)</option>
+                  <option value="Winter Semester 2027">Winter Semester 2027</option>
+                  <option value="Urgent / Immediate Intake">Urgent / Immediate Intake</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">Degree / Visa Type</label>
+                <select
+                  value={targetDegree}
+                  onChange={(e) => setTargetDegree(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm bg-white focus:border-germany-red outline-none"
+                >
+                  <option value="Master's Degree">Master&apos;s Degree (€11,904)</option>
+                  <option value="Bachelor's Degree">Bachelor&apos;s Degree (€11,904)</option>
+                  <option value="Language Course / Studienkolleg">Language Course / Studienkolleg</option>
+                  <option value="Chancenkarte (Opportunity Card)">Chancenkarte (Opportunity Card - €1,027/mo)</option>
+                  <option value="Jobseeker / Exchange Student">Jobseeker / Exchange Student</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Preferred Provider & Visa Urgency */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">Preferred Provider</label>
+                <select
+                  value={preferredProvider}
+                  onChange={(e) => setPreferredProvider(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm bg-white focus:border-germany-red outline-none"
+                >
+                  <option value="Expatrio (Recommended)">Expatrio (Recommended - Highest Cashback)</option>
+                  <option value="Coracle (Zero Monthly Fee)">Coracle (Zero Monthly Maintenance)</option>
+                  <option value="Fintiba (Sutor Bank)">Fintiba (Traditional Sutor Bank)</option>
+                  <option value="Need Counselor Advice">Help Me Choose (Need Counselor Advice)</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">Visa Appointment Status</label>
+                <select
+                  value={appointmentUrgency}
+                  onChange={(e) => setAppointmentUrgency(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm bg-white focus:border-germany-red outline-none"
+                >
+                  <option value="Booked in < 7 Days (URGENT)">Booked in &lt; 7 Days (URGENT)</option>
+                  <option value="Booked in 2-4 Weeks">Booked in 2-4 Weeks</option>
+                  <option value="Waiting for VFS Slot">Waiting for VFS Slot Opening</option>
+                  <option value="Planning Ahead / Not Booked">Planning Ahead / Not Booked</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Consent Checkbox */}
             <div className="flex items-start gap-3 pt-2">
               <input 
                 type="checkbox" 
@@ -135,10 +226,11 @@ export const BlockedAccountForm = () => {
                 className="w-5 h-5 rounded text-germany-red focus:ring-germany-red accent-germany-red mt-0.5 cursor-pointer shrink-0"
               />
               <label htmlFor="consent" className="text-xs text-gray-600 font-medium leading-relaxed cursor-pointer select-none">
-                I agree that EuropeBridge may store my details and contact me via phone or email regarding blocked account services. I can request data deletion at any time.
+                I agree that EuropeBridge may store my details and contact me via phone or WhatsApp regarding German blocked account services. EuropeBridge does not charge any student agency markup.
               </label>
             </div>
 
+            {/* Submit Button */}
             <button 
               type="submit" 
               disabled={isSubmitting}
@@ -148,7 +240,7 @@ export const BlockedAccountForm = () => {
                 <span>Submitting Request...</span>
               ) : (
                 <>
-                  <span>Submit Request</span>
+                  <span>Request 60-Minute Callback &amp; Setup</span>
                   <Send className="w-4 h-4" />
                 </>
               )}

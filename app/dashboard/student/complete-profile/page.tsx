@@ -123,7 +123,7 @@ export default function CompleteProfilePage() {
 
   return (
     <div className="max-w-5xl mx-auto py-8 px-4">
-      <h1 className="text-3xl md:text-4xl font-display font-extrabold text-germany-black mb-6">
+      <h1 className="text-3xl md:text-4xl font-display font-extrabold text-germany-black dark:text-white mb-6">
         Complete My Profile
       </h1>
 
@@ -142,7 +142,7 @@ export default function CompleteProfilePage() {
         </div>
       )}
 
-      <div className="neu-card p-6 sm:p-10 relative overflow-hidden bg-white">
+      <div className="neu-card p-6 sm:p-10 relative overflow-hidden bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800/80">
         {/* Tricolor Header Strip */}
         <div className="absolute top-0 left-0 w-full h-2 flex">
           <div className="flex-1 bg-germany-black"></div>
@@ -159,7 +159,7 @@ export default function CompleteProfilePage() {
 
         <div className="mt-8">{renderSection()}</div>
 
-        <div className="mt-8 pt-6 border-t border-gray-100 flex justify-between items-center">
+        <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
           <span className={`text-sm font-bold ${saveMessage.toLowerCase().includes('fail') ? 'text-red-600' : 'text-green-600'}`}>
             {saveMessage}
           </span>

@@ -9,6 +9,7 @@ import { MotivationProcess } from './components/MotivationProcess';
 import { MotivationPricing } from './components/MotivationPricing';
 import { MotivationFAQ } from './components/MotivationFAQ';
 import { MotivationCTA } from './components/MotivationCTA';
+import { StudyContentGate } from '@/components/StudyContentGate';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -106,10 +107,15 @@ export default function MotivationLetterPage() {
       <div className="space-y-4">
         <MotivationFeatures />
         <LOMStructureSection />
-        <MotivationProcess />
-        <MotivationPricing />
-        <MotivationFAQ />
-        <MotivationCTA />
+
+        <StudyContentGate guideTitle="Motivation Letter (LOM) Guide">
+          <div className="space-y-4">
+            <MotivationProcess />
+            <MotivationPricing />
+            <MotivationFAQ />
+            <MotivationCTA />
+          </div>
+        </StudyContentGate>
       </div>
 
       <Footer />

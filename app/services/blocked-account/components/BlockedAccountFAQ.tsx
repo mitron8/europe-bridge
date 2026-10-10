@@ -8,29 +8,45 @@ export const BlockedAccountFAQ = () => {
 
   const faqs = [
     {
-      question: "What is a German blocked account?",
-      answer: "A blocked account is a mandatory financial proof required by German immigration law for international student visas. It proves that you have sufficient funds to cover your living expenses in Germany for one academic year (€11,904 total / €992 per month)."
+      question: "What is a German blocked account (Sperrkonto)?",
+      answer: "A German blocked account (Sperrkonto) is a legally required proof of financial resources (Finanzierungsnachweis) under Section 16b of the German Residence Act (AufenthG). It demonstrates to the German Embassy, VFS Global, and German Foreigners' Registration Office (Ausländerbehörde) that you have adequate funds to support your living costs in Germany for one full academic year without relying on state benefits."
+    },
+    {
+      question: "What is the official statutory blocked amount for 2026/2027?",
+      answer: "The statutory minimum required by the German Federal Foreign Office (Auswärtiges Amt) for university students is €11,904 per year (€992 per month). For Opportunity Card (Chancenkarte) applicants, the monthly baseline is €1,027 per month."
     },
     {
       question: "Can I use the blocked account directly to pay monthly rent or buy groceries?",
-      answer: "No. You cannot pay expenses directly from the blocked account itself. Once you arrive in Germany and complete your city address registration, your blocked account automatically transfers your €992 monthly allowance into your local personal German checking account, from which you pay rent and daily bills."
+      answer: "No. The blocked account is a specialized fiduciary escrow account that does not support direct debit, card swipes, or merchant transfers. Once you arrive in Germany and register your city residence (Anmeldung), your blocked account automatically transfers your €992 monthly allowance into your local personal German checking account (Girokonto, such as N26, DKB, or Aion Bank), which comes with a standard debit card for rent and daily expenses."
     },
     {
-      question: "Do I have to pay administration banking fees separately?",
-      answer: "No. All official account setup and administrative service fees are transparently included in the total upfront transfer calculation. There are no additional or hidden transfers required."
+      question: "What happens to my deposited funds if my visa application is declined?",
+      answer: "Your money is 100% safe and protected under German banking regulations. In the unfortunate event of a visa rejection or university admission withdrawal, you simply upload the official rejection letter from the German Embassy or VFS. The provider will promptly refund the entire deposited capital back to the originating bank account in India."
     },
     {
-      question: "What happens to my money if my visa application is delayed or rejected?",
-      answer: "Your money is 100% safe. In the unlikely event of a visa rejection or enrollment cancellation, submitting an official embassy rejection letter or university withdrawal notice triggers a full 100% refund of your deposited funds back to your original bank account."
+      question: "Which provider is best: Expatrio, Coracle, or Fintiba?",
+      answer: "Expatrio is currently the most popular choice for Indian students due to its Value Package (which waives the €49 setup fee and offers up to €247 cashback with Techniker Krankenkasse health insurance). Coracle is ideal for students who want zero monthly fees (€0/month). Fintiba is backed by traditional German private bank Sutor Bank in Hamburg. EuropeBridge counselors help you choose the best provider based on your specific intake timeline and financial setup."
+    },
+    {
+      question: "What is the €100 buffer amount (Sicherheitspolster) and is it refunded?",
+      answer: "When transferring money internationally via SWIFT, intermediary correspondent banks frequently deduct processing wire fees ($15-$30). To prevent your transferred balance from falling even €1 short of the mandatory €11,904 threshold (which would prevent the issuance of your Sperrbestätigung), German banks mandate a €100 safety buffer. Any remaining buffer is either disbursed in your final monthly payment or refunded upon closing the account."
+    },
+    {
+      question: "How does the health insurance bundle cashback work?",
+      answer: "Both Expatrio and Coracle partner with top German statutory public health insurance funds like Techniker Krankenkasse (TK) and Barmer. By bundling your blocked account with free incoming travel insurance and statutory student health insurance, the provider refunds your setup fee and issues up to €247 in welcome bonuses once your health coverage begins in Germany."
+    },
+    {
+      question: "How long does international wire transfer take to reach Germany?",
+      answer: "Using domestic INR transfer options or optimized student remittance gateways (like Flywire or partner bank wires), funds typically reach Germany within 1 to 3 business days. Once the funds reflect in your German IBAN, your official blocking confirmation (Sperrbestätigung) PDF is issued automatically within 24 hours."
     }
   ];
 
   return (
-    <section className="py-10 px-6 lg:px-12 max-w-4xl mx-auto">
+    <section className="py-10 px-4 sm:px-6 lg:px-12 max-w-4xl mx-auto">
       <div className="neu-card p-6 sm:p-10 space-y-8">
         {/* Section Header */}
         <div className="flex items-center gap-3 border-b border-gray-100 pb-6">
-          <div className="w-10 h-10 rounded-xl bg-red-100 text-germany-red flex items-center justify-center font-black shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-red-100 text-germany-red flex items-center justify-center font-black shrink-0 shadow-inner">
             <HelpCircle className="w-5 h-5" />
           </div>
           <div>
@@ -65,7 +81,7 @@ export const BlockedAccountFAQ = () => {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.25 }}
                     >
-                      <div className="px-5 pb-5 pt-1 text-sm text-gray-700 font-medium leading-relaxed border-t border-gray-100 bg-red-50/20">
+                      <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-gray-700 font-medium leading-relaxed border-t border-gray-100 bg-red-50/20">
                         {faq.answer}
                       </div>
                     </motion.div>

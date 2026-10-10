@@ -21,13 +21,6 @@ export const PostAPSSteps = () => {
               </p>
             </div>
           </div>
-          <motion.img 
-            src="/doodles/university.png" 
-            alt="Post APS University Doodle"
-            className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-sm shrink-0 hidden md:block"
-            whileHover={{ scale: 1.1, rotate: 6 }}
-            transition={{ duration: 0.3 }}
-          />
         </div>
 
         {/* Post-APS Step Grid */}

@@ -2,7 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, ShieldCheck } from 'lucide-react';
 
 const CTA = () => {
   return (
@@ -22,7 +22,7 @@ const CTA = () => {
           {/* Left Side Content */}
           <div className="relative z-10 space-y-2.5 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full font-bold text-germany-gold text-xs shadow-inner cursor-default">
-              <Sparkles className="w-3.5 h-3.5 text-germany-gold" />
+              <ShieldCheck className="w-3.5 h-3.5 text-germany-gold" />
               <span>Start Your Free Evaluation</span>
             </div>
 

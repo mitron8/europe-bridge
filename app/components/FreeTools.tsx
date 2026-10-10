@@ -7,12 +7,12 @@ import { Calculator, Plane, Briefcase, GraduationCap, Building } from 'lucide-re
 const categories = ["All", "Education", "Finance", "Career", "Visa"];
 
 const tools = [
-  { id: 1, title: "Blocked Account Calculator", category: "Finance", desc: "Calculate the exact amount needed for your German blocked account.", icon: <Calculator className="w-6 h-6 text-germany-red" />, image: "/doodles/laptop.png" },
-  { id: 2, title: "APS Eligibility Checker", category: "Education", desc: "Check if your degree is recognized by the APS India requirements.", icon: <GraduationCap className="w-6 h-6 text-germany-red" />, image: "/doodles/CV.png" },
-  { id: 3, title: "University Matcher", category: "Education", desc: "Find your perfect German university based on your grades.", icon: <Building className="w-6 h-6 text-germany-red" />, image: "/doodles/university.png" },
-  { id: 4, title: "Visa Processing Estimator", category: "Visa", desc: "Get an estimated timeline for your student visa approval.", icon: <Plane className="w-6 h-6 text-germany-red" />, image: "/doodles/travel.png" },
-  { id: 5, title: "Blue Card Eligibility", category: "Career", desc: "See if you qualify for the EU Blue Card after graduation.", icon: <Briefcase className="w-6 h-6 text-germany-red" />, image: "/doodles/thinking.png" },
-  { id: 6, title: "Living Cost Calculator", category: "Finance", desc: "Estimate your monthly expenses based on the city you choose.", icon: <Calculator className="w-6 h-6 text-germany-red" />, image: "/doodles/cup-Photoroom.png" },
+  { id: 1, title: "Blocked Account Calculator", category: "Finance", desc: "Calculate the exact amount needed for your German blocked account.", icon: <Calculator className="w-6 h-6 text-germany-red" /> },
+  { id: 2, title: "APS Eligibility Checker", category: "Education", desc: "Check if your degree is recognized by the APS India requirements.", icon: <GraduationCap className="w-6 h-6 text-germany-red" /> },
+  { id: 3, title: "University Matcher", category: "Education", desc: "Find your perfect German university based on your grades.", icon: <Building className="w-6 h-6 text-germany-red" /> },
+  { id: 4, title: "Visa Processing Estimator", category: "Visa", desc: "Get an estimated timeline for your student visa approval.", icon: <Plane className="w-6 h-6 text-germany-red" /> },
+  { id: 5, title: "Blue Card Eligibility", category: "Career", desc: "See if you qualify for the EU Blue Card after graduation.", icon: <Briefcase className="w-6 h-6 text-germany-red" /> },
+  { id: 6, title: "Living Cost Calculator", category: "Finance", desc: "Estimate your monthly expenses based on the city you choose.", icon: <Calculator className="w-6 h-6 text-germany-red" /> },
 ];
 
 const FreeTools = () => {
@@ -78,7 +78,6 @@ const FreeTools = () => {
                   <div className="p-4 bg-[#F9FAFB] rounded-2xl shadow-[inset_2px_2px_5px_rgba(71,85,105,0.5),inset_-2px_-2px_5px_rgba(255,255,255,1)]">
                     {tool.icon}
                   </div>
-                  <img src={tool.image} alt={tool.title} className="w-20 h-20 object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-300 transform rotate-3" />
                 </div>
                 
                 <div className="inline-block px-3 py-1 bg-[#F9FAFB] rounded-lg text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 self-start shadow-inner">

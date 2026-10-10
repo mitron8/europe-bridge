@@ -22,22 +22,8 @@ const LanguagePartner = () => {
           <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-germany-red/10 rounded-full blur-2xl pointer-events-none" />
 
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
-            
-            {/* Left: Penguin */}
-            <motion.div 
-              animate={{ y: [0, -6, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="shrink-0 flex flex-col items-center"
-            >
-              <img 
-                src="/doodles/german cutie.png" 
-                alt="Peer the Penguin" 
-                className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain drop-shadow-md"
-              />
-              <span className="text-[11px] font-black text-gray-500 mt-1">Peer (EuropeBridge)</span>
-            </motion.div>
 
-            {/* Center: Message & Discount */}
+            {/* Left: Message & Discount */}
             <div className="flex-1 text-center md:text-left space-y-3">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white rounded-full font-bold text-germany-red shadow-[2px_2px_6px_rgba(71,85,105,0.2),inset_-1px_-1px_3px_rgba(71,85,105,0.15),inset_1px_1px_3px_rgba(255,255,255,1)] text-[11px] tracking-wide">
                 <Languages className="w-3.5 h-3.5 text-germany-red" />
@@ -75,7 +61,7 @@ const LanguagePartner = () => {
               </div>
             </div>
 
-            {/* Right: Dino (Mirrored) */}
+            {/* Right: Dino */}
             <motion.div 
               animate={{ y: [0, -6, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
@@ -83,9 +69,8 @@ const LanguagePartner = () => {
             >
               <img 
                 src={dinoImgSrc} 
-                onError={() => setDinoImgSrc("/doodles/german cutie.png")}
                 alt="Eurolingo Dino Mascot" 
-                className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain drop-shadow-md -scale-x-100"
+                className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain drop-shadow-md"
               />
               <span className="text-[11px] font-black text-gray-500 mt-1">Dino (Eurolingo Academy)</span>
             </motion.div>

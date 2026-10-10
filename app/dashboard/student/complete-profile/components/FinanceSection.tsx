@@ -17,8 +17,8 @@ export default function FinanceSection({ data, onChange, onNext, onPrev }: Props
 
   return (
     <div>
-      <h3 className="text-xl font-extrabold text-germany-black font-display mb-6">Financial Preferences</h3>
-      <p className="text-gray-500 mb-8 font-medium text-xs">This helps us match you with suitable programs, scholarships, and plan your blocked account requirements.</p>
+      <h3 className="text-xl font-extrabold text-germany-black dark:text-white font-display mb-6">Financial Preferences</h3>
+      <p className="text-gray-500 dark:text-gray-400 mb-8 font-medium text-xs">This helps us match you with suitable programs, scholarships, and plan your blocked account requirements.</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div>
@@ -45,18 +45,18 @@ export default function FinanceSection({ data, onChange, onNext, onPrev }: Props
             name="maxTuitionBudget" 
             value={data.maxTuitionBudget} 
             onChange={(e) => onChange({ maxTuitionBudget: e.target.value ? parseInt(e.target.value) : '' })} 
-            className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" 
+            className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white dark:bg-[#111622]" 
             placeholder="e.g. 5000 (Leave empty if no limit)" 
           />
         </div>
       </div>
 
-      <div className="mb-8 p-6 rounded-2xl bg-gray-50 border border-gray-100 shadow-sm animate-fade-in">
-        <h4 className="text-md font-extrabold text-germany-black font-display mb-2">Blocked Account Requirement</h4>
-        <p className="text-xs text-gray-500 mb-4 font-bold">
+      <div className="mb-8 p-6 rounded-2xl bg-gray-50 dark:bg-[#0E121A] border border-gray-100 dark:border-gray-800 shadow-sm animate-fade-in">
+        <h4 className="text-md font-extrabold text-germany-black dark:text-white font-display mb-2">Blocked Account Requirement</h4>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 font-bold">
           Germany requires an official blocked account for the student visa, currently around €11,904 per year to cover living expenses.
         </p>
-        <label className="flex items-center space-x-2 text-xs font-bold text-gray-600 cursor-pointer select-none">
+        <label className="flex items-center space-x-2 text-xs font-bold text-gray-600 dark:text-gray-300 cursor-pointer select-none">
           <input 
             type="checkbox" 
             name="blockedAccountReady" 
@@ -69,7 +69,7 @@ export default function FinanceSection({ data, onChange, onNext, onPrev }: Props
       </div>
 
       <div className="flex justify-between mt-8">
-        <button onClick={onPrev} className="px-5 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-100 transition-all font-bold text-xs cursor-pointer text-gray-700 bg-white">Back</button>
+        <button onClick={onPrev} className="px-5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all font-bold text-xs cursor-pointer text-gray-700 dark:text-gray-200 bg-white dark:bg-[#0E121A]">Back</button>
         <button onClick={onNext} className="neu-btn-primary px-6 py-2.5 text-xs font-bold cursor-pointer">Save & Finish</button>
       </div>
     </div>

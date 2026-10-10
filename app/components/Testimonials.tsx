@@ -9,8 +9,6 @@ const testimonials = [
     name: "Aarav S.",
     university: "TU Munich",
     text: "The AI SOP builder is insane. I had no idea how to structure my motivation letter for Germany. EuropeBridge drafted a perfect version that my guide just tweaked a little. Got admitted in 3 weeks!",
-    doodle: "/doodles/laptop.png",
-    doodleClasses: "-top-12 -right-6 w-24 h-24 transform rotate-6",
     delay: 0
   },
   {
@@ -18,8 +16,6 @@ const testimonials = [
     name: "Priya M.",
     university: "RWTH Aachen",
     text: "I was super stressed about the Blocked Account and APS. Their tracker literally walked me through every single document I needed. Zero confusion. I recommend this to everyone going to Germany.",
-    doodle: "/doodles/sucesss.png",
-    doodleClasses: "-bottom-10 -right-6 w-28 h-28 transform -rotate-12",
     delay: 0.2
   },
   {
@@ -27,8 +23,6 @@ const testimonials = [
     name: "Rohan K.",
     university: "HU Berlin",
     text: "I thought my GPA was too low for a public uni. The calculator showed me 15 programs I was eligible for, and my counselor got my visa approved flawlessly. They handle everything.",
-    doodle: "/doodles/visa approved.png",
-    doodleClasses: "-top-14 -left-8 w-28 h-28 transform -rotate-6",
     delay: 0.4
   }
 ];
@@ -61,12 +55,6 @@ const Testimonials = () => {
               transition={{ duration: 0.6, delay: t.delay }}
               className="neu-card p-8 bg-white relative flex flex-col"
             >
-              {/* Decorative Doodle */}
-              <img 
-                src={t.doodle} 
-                alt="Student Doodle" 
-                className={`absolute z-30 object-contain drop-shadow-xl pointer-events-none ${t.doodleClasses}`} 
-              />
 
               {/* Stars */}
               <div className="flex gap-1 mb-6">

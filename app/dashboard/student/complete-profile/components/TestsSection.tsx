@@ -84,21 +84,21 @@ export default function TestsSection({ data, onChange, onNext, onPrev }: Props) 
 
   return (
     <div>
-      <h3 className="text-xl font-extrabold text-germany-black font-display mb-6">Language & Standardized Tests</h3>
+      <h3 className="text-xl font-extrabold text-germany-black dark:text-white font-display mb-6">Language & Standardized Tests</h3>
 
       {/* LANGUAGE TESTS */}
       <div className="mb-10">
-        <h4 className="text-md font-extrabold text-germany-black font-display mb-4">English Proficiency</h4>
+        <h4 className="text-md font-extrabold text-germany-black dark:text-white font-display mb-4">English Proficiency</h4>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <label className={`cursor-pointer p-4 rounded-xl border-2 flex items-center transition-all ${data.englishProficiencyState === 'NO' ? 'border-germany-red bg-red-50' : 'border-gray-200 bg-white hover:bg-gray-50'}`}>
+          <label className={`cursor-pointer p-4 rounded-xl border-2 flex items-center transition-all ${data.englishProficiencyState === 'NO' ? 'border-germany-red bg-red-50 dark:bg-red-950/20' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111622] hover:bg-gray-50 dark:hover:bg-gray-800/40'}`}>
             <input type="radio" name="englishProficiencyState" value="NO" className="mr-3 w-4 h-4 text-germany-red"
               checked={data.englishProficiencyState === 'NO'} 
               onChange={() => onChange({ englishProficiencyState: 'NO' })} 
             />
-            <span className="font-bold text-sm text-germany-black">Not applicable / No test</span>
+            <span className="font-bold text-sm text-germany-black dark:text-white">Not applicable / No test</span>
           </label>
-          <label className={`cursor-pointer p-4 rounded-xl border-2 flex items-center transition-all ${data.englishProficiencyState === 'LEVEL' ? 'border-germany-red bg-red-50' : 'border-gray-200 bg-white hover:bg-gray-50'}`}>
+          <label className={`cursor-pointer p-4 rounded-xl border-2 flex items-center transition-all ${data.englishProficiencyState === 'LEVEL' ? 'border-germany-red bg-red-50 dark:bg-red-950/20' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111622] hover:bg-gray-50 dark:hover:bg-gray-800/40'}`}>
             <input type="radio" name="englishProficiencyState" value="LEVEL" className="mr-3 w-4 h-4 text-germany-red"
               checked={data.englishProficiencyState === 'LEVEL'} 
               onChange={() => {
@@ -106,15 +106,15 @@ export default function TestsSection({ data, onChange, onNext, onPrev }: Props) 
                 if (data.englishTests.length === 0) addEnglishTest();
               }} 
             />
-            <span className="font-bold text-sm text-germany-black">Level / Has proficiency</span>
+            <span className="font-bold text-sm text-germany-black dark:text-white">Level / Has proficiency</span>
           </label>
         </div>
 
         {data.englishProficiencyState === 'LEVEL' && (
           <div className="animate-fade-in">
             <div className="flex justify-between items-center mb-4">
-              <h5 className="text-sm font-bold text-gray-700">Test Details</h5>
-              <button onClick={addEnglishTest} className="px-3 py-1.5 rounded-xl bg-[#EBE7E0] hover:bg-germany-black hover:text-white font-extrabold text-xs transition-all text-germany-black cursor-pointer">
+              <h5 className="text-sm font-bold text-gray-700 dark:text-gray-300">Test Details</h5>
+              <button onClick={addEnglishTest} className="px-3 py-1.5 rounded-xl bg-[#EBE7E0] dark:bg-gray-800 hover:bg-germany-black dark:hover:bg-gray-700 hover:text-white font-extrabold text-xs transition-all text-germany-black dark:text-gray-100 cursor-pointer">
                 + Add Test
               </button>
             </div>
@@ -124,8 +124,8 @@ export default function TestsSection({ data, onChange, onNext, onPrev }: Props) 
             ) : (
               <div className="space-y-6">
                 {data.englishTests.map((test) => (
-                  <div key={test.id} className="border border-gray-150 rounded-2xl p-6 bg-gray-50/50 relative shadow-sm">
-                    <button onClick={() => removeEnglishTest(test.id)} className="absolute top-4 right-4 text-germany-red hover:underline text-xs font-bold cursor-pointer">Remove</button>
+                  <div key={test.id} className="border border-gray-150 dark:border-gray-800 rounded-2xl p-6 bg-gray-50/50 dark:bg-[#0E121A] relative shadow-sm">
+                    <button onClick={() => removeEnglishTest(test.id)} className="absolute top-4 right-4 text-germany-red dark:text-[#FF6B7A] hover:underline text-xs font-bold cursor-pointer">Remove</button>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
                         <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Test Type *</label>
@@ -218,27 +218,27 @@ export default function TestsSection({ data, onChange, onNext, onPrev }: Props) 
 
       {/* GERMAN LANGUAGE */}
       <div className="mb-10">
-        <h4 className="text-md font-extrabold text-germany-black font-display mb-4">German Proficiency</h4>
+        <h4 className="text-md font-extrabold text-germany-black dark:text-white font-display mb-4">German Proficiency</h4>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <label className={`cursor-pointer p-4 rounded-xl border-2 flex items-center transition-all ${data.germanProficiencyState === 'NO' ? 'border-germany-red bg-red-50' : 'border-gray-200 bg-white hover:bg-gray-50'}`}>
+          <label className={`cursor-pointer p-4 rounded-xl border-2 flex items-center transition-all ${data.germanProficiencyState === 'NO' ? 'border-germany-red bg-red-50 dark:bg-red-950/20' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111622] hover:bg-gray-50 dark:hover:bg-gray-800/40'}`}>
             <input type="radio" name="germanProficiencyState" value="NO" className="mr-3 w-4 h-4 text-germany-red"
               checked={data.germanProficiencyState === 'NO'} 
               onChange={() => onChange({ germanProficiencyState: 'NO' })} 
             />
-            <span className="font-bold text-sm text-germany-black">Not applicable / No test</span>
+            <span className="font-bold text-sm text-germany-black dark:text-white">Not applicable / No test</span>
           </label>
-          <label className={`cursor-pointer p-4 rounded-xl border-2 flex items-center transition-all ${data.germanProficiencyState === 'LEVEL' ? 'border-germany-red bg-red-50' : 'border-gray-200 bg-white hover:bg-gray-50'}`}>
+          <label className={`cursor-pointer p-4 rounded-xl border-2 flex items-center transition-all ${data.germanProficiencyState === 'LEVEL' ? 'border-germany-red bg-red-50 dark:bg-red-950/20' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111622] hover:bg-gray-50 dark:hover:bg-gray-800/40'}`}>
             <input type="radio" name="germanProficiencyState" value="LEVEL" className="mr-3 w-4 h-4 text-germany-red"
               checked={data.germanProficiencyState === 'LEVEL'} 
               onChange={() => onChange({ germanProficiencyState: 'LEVEL' })} 
             />
-            <span className="font-bold text-sm text-germany-black">Level / Has proficiency</span>
+            <span className="font-bold text-sm text-germany-black dark:text-white">Level / Has proficiency</span>
           </label>
         </div>
 
         {data.germanProficiencyState === 'LEVEL' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-2xl bg-gray-50 border border-gray-100 shadow-sm animate-fade-in">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-2xl bg-gray-50 dark:bg-[#0E121A] border border-gray-100 dark:border-gray-800 shadow-sm animate-fade-in">
             <div>
               <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Proficiency Level *</label>
               <ClaySelect
@@ -266,8 +266,8 @@ export default function TestsSection({ data, onChange, onNext, onPrev }: Props) 
       {/* STANDARDIZED TESTS */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
-          <h4 className="text-md font-extrabold text-germany-black font-display">Standardized Tests (GRE/GMAT)</h4>
-          <button onClick={addStandardizedTest} className="px-3 py-1.5 rounded-xl bg-[#EBE7E0] hover:bg-germany-black hover:text-white font-extrabold text-xs transition-all text-germany-black cursor-pointer">
+          <h4 className="text-md font-extrabold text-germany-black dark:text-white font-display">Standardized Tests (GRE/GMAT)</h4>
+          <button onClick={addStandardizedTest} className="px-3 py-1.5 rounded-xl bg-[#EBE7E0] dark:bg-gray-800 hover:bg-germany-black dark:hover:bg-gray-700 hover:text-white font-extrabold text-xs transition-all text-germany-black dark:text-gray-100 cursor-pointer">
             + Add Test
           </button>
         </div>
@@ -319,7 +319,7 @@ export default function TestsSection({ data, onChange, onNext, onPrev }: Props) 
       </div>
 
       <div className="flex justify-between mt-8">
-        <button onClick={onPrev} className="px-5 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-100 transition-all font-bold text-xs cursor-pointer text-gray-700 bg-white">Back</button>
+        <button onClick={onPrev} className="px-5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all font-bold text-xs cursor-pointer text-gray-700 dark:text-gray-200 bg-white dark:bg-[#0E121A]">Back</button>
         <button onClick={onNext} className="neu-btn-primary px-6 py-2.5 text-xs font-bold cursor-pointer">Save & Continue</button>
       </div>
     </div>

@@ -1,9 +1,12 @@
 "use client";
+
 import React, { useState, useEffect } from 'react';
-import { Wallet, Home, UtensilsCrossed, TramFront, MapPin, PiggyBank, HelpCircle } from 'lucide-react';
+import { Wallet, Home, UtensilsCrossed, TramFront, MapPin, PiggyBank, HelpCircle, Lock } from 'lucide-react';
+import { useAppStore } from '@/store/useAppStore';
 
 export const CostSectionNav = () => {
   const [activeId, setActiveId] = useState('section-breakdown');
+  const user = useAppStore((state) => state.user);
 
   const sections = [
     { id: 'section-breakdown', label: '1. Monthly Breakdown', icon: Wallet },
@@ -17,51 +20,82 @@ export const CostSectionNav = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY + 180;
+      const detectionLine = 220;
+      const gate = document.getElementById('study-content-gate');
+      let current = sections[0].id;
 
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const el = document.getElementById(sections[i].id);
-        if (el && el.offsetTop <= scrollPosition) {
-          setActiveId(sections[i].id);
-          break;
+      for (const sec of sections) {
+        const el = document.getElementById(sec.id);
+        if (el) {
+          if (!user && gate && gate.contains(el)) {
+            const gateRect = gate.getBoundingClientRect();
+            if (gateRect.top <= detectionLine) {
+              current = sec.id;
+              break;
+            }
+          } else {
+            const rect = el.getBoundingClientRect();
+            if (rect.top <= detectionLine) {
+              current = sec.id;
+            }
+          }
         }
       }
+
+      setActiveId(current);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Initial check
-
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [user]);
 
   const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
+    let targetId = id;
+
+    if (!user) {
+      const gate = document.getElementById('study-content-gate');
+      const element = document.getElementById(targetId);
+      if (gate && element && gate.contains(element)) {
+        targetId = 'study-content-gate';
+      }
+    }
+
+    const element = document.getElementById(targetId);
     if (element) {
-      const yOffset = -110;
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+      const yOffset = -135;
+      const y = element.getBoundingClientRect().top + window.scrollY + yOffset;
+      window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+      setActiveId(id);
     }
   };
 
   return (
-    <div className="hidden md:block sticky top-[60px] lg:top-[64px] z-40 bg-white/95 backdrop-blur-md border-y border-gray-200 shadow-sm py-2.5 px-6 lg:px-12 my-6 transition-all">
-      <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth">
-        <span className="text-xs font-black uppercase text-gray-400 shrink-0 mr-1 hidden sm:inline">Jump to:</span>
+    <div className="sticky top-[64px] sm:top-[68px] z-40 bg-white/95 backdrop-blur-md border-y border-[#EBE7E0] shadow-2xs py-2 px-4 sm:px-8 mb-6 transition-all">
+      <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth py-0.5">
+        <span className="text-[11px] font-black uppercase text-gray-400 shrink-0 mr-1.5 tracking-wider hidden sm:inline">
+          Jump to:
+        </span>
         {sections.map((sec) => {
           const Icon = sec.icon;
           const isActive = activeId === sec.id;
+          const isLocked = !user && ['section-food', 'section-transport', 'section-cities', 'section-budgeting', 'section-faq'].includes(sec.id);
+
           return (
             <button
               key={sec.id}
               onClick={() => scrollToSection(sec.id)}
-              className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-extrabold whitespace-nowrap transition-all duration-200 shrink-0 cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 shrink-0 cursor-pointer ${
                 isActive
-                  ? 'bg-germany-black text-white shadow-md scale-105 ring-2 ring-red-500/20'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-germany-red'
+                  ? 'bg-germany-black text-white shadow-md scale-102 ring-1 ring-black/10'
+                  : 'bg-[#F4F1EA]/80 text-gray-700 hover:bg-[#EBE7E0] hover:text-germany-red'
               }`}
             >
-              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-germany-red' : 'text-gray-500'}`} />
+              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-germany-gold' : 'text-gray-500'}`} />
               <span>{sec.label}</span>
+              {isLocked && (
+                <Lock className="w-3 h-3 text-gray-400 shrink-0 ml-0.5" />
+              )}
             </button>
           );
         })}

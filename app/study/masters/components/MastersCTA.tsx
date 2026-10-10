@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, GraduationCap, Sparkles, CheckCircle2, UserCheck } from 'lucide-react';
+import { ArrowRight, GraduationCap, CheckCircle2, UserCheck } from 'lucide-react';
 
 export const MastersCTA = () => {
   return (
@@ -54,7 +54,7 @@ export const MastersCTA = () => {
               href="/tools/admission-chance"
               className="w-full sm:w-auto px-6 sm:px-7 py-3 sm:py-3.5 rounded-full bg-germany-red hover:bg-rose-600 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(230,57,70,0.4)] whitespace-nowrap transition-all duration-200"
             >
-              <Sparkles className="w-4 h-4 text-germany-gold shrink-0" />
+              <GraduationCap className="w-4 h-4 text-germany-gold shrink-0" />
               <span>Evaluate Admission Odds</span>
               <ArrowRight className="w-4 h-4 shrink-0" />
             </Link>
