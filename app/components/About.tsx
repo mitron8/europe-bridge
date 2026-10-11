@@ -1,100 +1,130 @@
 "use client";
+
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Check, X } from 'lucide-react';
+import { Check, X, Sparkles } from 'lucide-react';
+
+const comparison = [
+  {
+    feature: "University Focus",
+    others: "Pushes paid private colleges for high commissions",
+    europeBridge: "100% focus on €0-tuition public universities (TU9)"
+  },
+  {
+    feature: "SOP & Mentorship",
+    others: "Generic copy-paste templates written by agents",
+    europeBridge: "1-on-1 review by real German university alumni"
+  },
+  {
+    feature: "APS & Visa Success",
+    others: "Slow manual filing with unexpected visa delays",
+    europeBridge: "Expedited APS tracking & 99.2% visa approval rate"
+  },
+  {
+    feature: "On-Ground Support",
+    others: "Support ends at the airport boarding gate",
+    europeBridge: "On-ground help for WG housing & city registration"
+  }
+];
 
 const About = () => {
   return (
-    <section id="about" className="py-24 px-4 neu-bg relative overflow-hidden z-20">
-      
-      {/* Background Decor */}
-      <div className="absolute top-1/4 left-0 w-[500px] h-[500px] bg-germany-red/5 rounded-full blur-[100px] pointer-events-none"></div>
-      <div className="absolute bottom-1/4 right-0 w-[500px] h-[500px] bg-germany-gold/10 rounded-full blur-[100px] pointer-events-none"></div>
-
-      <div className="max-w-6xl mx-auto relative z-10">
+    <section id="about" className="py-20 sm:py-24 px-4 neu-bg relative overflow-hidden z-20">
+      <div className="max-w-5xl mx-auto relative z-10">
         
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#F9FAFB] rounded-full font-bold text-germany-red shadow-[inset_2px_2px_5px_rgba(71,85,105,0.5),inset_-2px_-2px_5px_rgba(255,255,255,1)] text-xs tracking-wide mb-6">
+        {/* Clean, Centered Header */}
+        <div className="text-center mb-12 sm:mb-16">
+          <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 bg-white rounded-full font-bold text-germany-red shadow-xs text-xs tracking-wide mb-4">
             <span className="w-2 h-2 rounded-full bg-germany-gold"></span>
             Why Choose Us
           </div>
-          <h2 className="font-display text-4xl lg:text-5xl text-germany-black mb-4">The Smart Way to Germany</h2>
-          <p className="text-gray-500 max-w-2xl mx-auto font-bold text-sm lg:text-base">
-            We combined advanced AI with expert human guidance to remove the friction, delays, and confusion from the traditional study abroad process.
+          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl text-germany-black mb-3">
+            The Smart Way to Germany
+          </h2>
+          <p className="text-gray-500 max-w-xl mx-auto font-bold text-sm sm:text-base leading-relaxed">
+            See how EuropeBridge compares to traditional study abroad agencies.
           </p>
         </div>
 
-        {/* Comparison Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 items-stretch">
+        {/* 2-Column Side-by-Side Comparison */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-stretch">
           
-          {/* Traditional Agencies (The Bad) */}
-          <motion.div 
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6 }}
-            className="relative mt-12 md:mt-0 group flex flex-col"
-          >
-            {/* The Card */}
-            <div className="neu-card p-8 bg-[#f8fafc] flex flex-col relative z-10 h-full">
-              <div className="mb-8 relative z-20">
-                <h3 className="font-display text-2xl text-slate-500 mb-2">Traditional Agencies</h3>
-                <p className="text-gray-400 font-bold text-sm">Slow, manual, and stressful.</p>
+          {/* Column 1: Traditional Agencies (Muted) */}
+          <div className="neu-card p-6 sm:p-8 bg-white/60 border border-gray-200/70 rounded-3xl flex flex-col justify-between">
+            <div>
+              <div className="pb-5 mb-6 border-b border-gray-200/60">
+                <span className="text-xs font-black uppercase tracking-wider text-gray-400 block mb-1">
+                  The Old Way
+                </span>
+                <h3 className="font-display text-2xl text-gray-500 font-bold">
+                  Traditional Agencies
+                </h3>
+                <p className="text-xs text-gray-400 font-semibold mt-1">
+                  Commission-driven, slow, and manual.
+                </p>
               </div>
 
-              <ul className="space-y-6 flex-grow relative z-20">
-                {[
-                  "Generic SOPs written from templates.",
-                  "Manual document checks that miss errors.",
-                  "Zero visibility into your application status.",
-                  "Weeks of waiting for simple email replies.",
-                  "Pushes you to partnered 'easy' universities."
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-4">
-                    <div className="mt-1 bg-red-100 p-1 rounded-full shrink-0">
-                      <X className="w-4 h-4 text-red-500" />
+              <div className="space-y-4">
+                {comparison.map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full bg-red-50 text-red-500 flex items-center justify-center shrink-0 mt-0.5">
+                      <X className="w-3.5 h-3.5 stroke-[2.5]" />
                     </div>
-                    <span className="text-gray-500 font-bold text-sm">{item}</span>
-                  </li>
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                        {item.feature}
+                      </p>
+                      <p className="text-xs sm:text-sm text-gray-500 font-medium leading-snug">
+                        {item.others}
+                      </p>
+                    </div>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
-          </motion.div>
+          </div>
 
-          {/* EuropeBridge (The Good) */}
-          <motion.div 
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="relative mt-12 md:mt-0 group flex flex-col"
-          >
-            {/* The Card */}
-            <div className="neu-card p-8 bg-white flex flex-col relative border-2 border-germany-red/10 z-10 h-full">
-              <div className="mb-8 relative z-20">
-                <h3 className="font-display text-2xl text-germany-black mb-2">EuropeBridge</h3>
-                <p className="text-germany-red font-bold text-sm">Fast, transparent, and AI-powered.</p>
+          {/* Column 2: EuropeBridge (Highlighted) */}
+          <div className="neu-card p-6 sm:p-8 bg-white border-2 border-germany-red/20 shadow-lg rounded-3xl flex flex-col justify-between relative overflow-hidden">
+            {/* Top Accent Strip */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-germany-red" />
+
+            <div>
+              <div className="pb-5 mb-6 border-b border-gray-100 flex items-start justify-between">
+                <div>
+                  <span className="text-xs font-black uppercase tracking-wider text-germany-red block mb-1">
+                    The Smart Choice
+                  </span>
+                  <h3 className="font-display text-2xl text-germany-black font-extrabold">
+                    EuropeBridge
+                  </h3>
+                  <p className="text-xs text-gray-500 font-bold mt-1">
+                    Direct public admissions &amp; alumni mentorship.
+                  </p>
+                </div>
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-germany-red/10 text-germany-red">
+                  Recommended
+                </span>
               </div>
 
-              <ul className="space-y-6 flex-grow relative z-20">
-                {[
-                  "AI-drafted, human-perfected custom SOPs.",
-                  "Automated APS & VFS checklist validation.",
-                  "Live dashboard for real-time status tracking.",
-                  "Instant AI chat support + human experts.",
-                  "Data-driven matching for the best universities."
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-4">
-                    <div className="mt-1 bg-green-100 p-1 rounded-full shrink-0 shadow-sm">
-                      <Check className="w-4 h-4 text-green-600" />
+              <div className="space-y-4">
+                {comparison.map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
                     </div>
-                    <span className="text-germany-black font-bold text-sm">{item}</span>
-                  </li>
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-[#D4A373]">
+                        {item.feature}
+                      </p>
+                      <p className="text-xs sm:text-sm text-germany-black font-bold leading-snug">
+                        {item.europeBridge}
+                      </p>
+                    </div>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
-          </motion.div>
+          </div>
 
         </div>
 

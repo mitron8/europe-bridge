@@ -608,3 +608,154 @@ body {
   color: #FFFFFF !important;
 }
 
+/* ======================================================== */
+/* GERMANYWALE-INSPIRED MARQUEE & MICRO-ANIMATIONS          */
+/* ======================================================== */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0%); }
+}
+
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-7px); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 38s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+.animate-float {
+  animation: float-gentle 4.5s ease-in-out infinite;
+}
+
+/* ======================================================== */
+/* SVG JOURNEY PATH & RADAR BEACON ANIMATIONS               */
+/* ======================================================== */
+@keyframes svg-flow {
+  from {
+    stroke-dashoffset: 400;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes radar-ripple {
+  0% {
+    r: 6;
+    opacity: 0.9;
+  }
+  100% {
+    r: 26;
+    opacity: 0;
+  }
+}
+
+.animate-svg-flow {
+  stroke-dasharray: 12, 16;
+  animation: svg-flow 10s linear infinite;
+}
+
+.animate-radar-ping {
+  animation: radar-ripple 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
+/* ======================================================== */
+/* FLIGHT OVER GERMANY CITY ANIMATION                       */
+/* ======================================================== */
+@keyframes city-move-left {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes airplane-flight-right {
+  0% {
+    transform: translateX(-240px) translateY(8px) rotate(1deg);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  25% {
+    transform: translateX(25vw) translateY(-14px) rotate(2deg);
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(50vw) translateY(4px) rotate(0deg);
+    opacity: 1;
+  }
+  75% {
+    transform: translateX(75vw) translateY(-10px) rotate(1.5deg);
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  98% {
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(calc(100vw + 240px)) translateY(8px) rotate(1deg);
+    opacity: 0;
+  }
+}
+
+@keyframes city-marquee-track {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-city-track {
+  display: flex;
+  flex-shrink: 0;
+  width: max-content;
+  animation: city-marquee-track 45s linear infinite;
+  will-change: transform;
+}
+
+@keyframes cloud-marquee-track {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-cloud-track {
+  display: flex;
+  flex-shrink: 0;
+  width: max-content;
+  animation: cloud-marquee-track 65s linear infinite;
+  will-change: transform;
+}
+
+.animate-airplane-fly {
+  position: absolute;
+  top: 14%;
+  left: 0;
+  animation: airplane-flight-right 22s linear infinite;
+  will-change: transform;
+}
+
+

@@ -8,7 +8,6 @@ import {
   Compass, 
   ChevronLeft, 
   ChevronRight,
-  Star,
   Check
 } from 'lucide-react';
 
@@ -18,36 +17,21 @@ const slides = [
     number: "01",
     tag: "TU9 Universities",
     title: "World-Class Public Education",
-    subtitle: "Study at Munich, Aachen, Berlin & Karlsruhe with €0 tuition and globally recognized degrees.",
-    stats: [
-      { label: "Tuition Fees", val: "€0 / Semester" },
-      { label: "English Programs", val: "2,000+ Available" },
-      { label: "Top TU9 Match", val: "TUM & RWTH Aachen" }
-    ]
+    subtitle: "Study at Munich, Aachen, Berlin & Karlsruhe with €0 tuition and globally recognized degrees."
   },
   {
     image: "/hero/hero-2.jpg",
     number: "02",
     tag: "Work & Careers",
     title: "18-Month Job Seeker Visa",
-    subtitle: "Direct pathways to the EU Blue Card with average starting salaries of €48,000+ in German tech & engineering.",
-    stats: [
-      { label: "Post-Study Visa", val: "18 Months Guaranteed" },
-      { label: "Avg. Starting Pay", val: "€48,000 - €65,000" },
-      { label: "EU Blue Card", val: "Fast-Track to PR" }
-    ]
+    subtitle: "Direct pathways to the EU Blue Card with average starting salaries of €48,000+ in German tech & engineering."
   },
   {
     image: "/hero/hero-3.jpg",
     number: "03",
     tag: "Alumni Network",
     title: "1-on-1 TU9 Mentorship",
-    subtitle: "Learn directly from Indian students already studying in Germany. From APS certification to blocked accounts and housing.",
-    stats: [
-      { label: "Students Guided", val: "1,500+ Admitted" },
-      { label: "Visa Approval", val: "99.2% Success Rate" },
-      { label: "Dedicated Mentor", val: "Assigned 1-on-1" }
-    ]
+    subtitle: "Learn directly from Indian students already studying in Germany. From APS certification to blocked accounts and housing."
   }
 ];
 
@@ -85,11 +69,11 @@ const Hero = () => {
   return (
     <section 
       id="hero" 
-      className="relative w-full min-h-[92vh] lg:min-h-screen flex flex-col justify-between pt-28 sm:pt-32 lg:pt-36 pb-6 sm:pb-8 px-4 sm:px-6 lg:px-12 overflow-hidden neu-bg"
+      className="relative w-full h-[100vh] min-h-[660px] flex flex-col justify-between pt-16 sm:pt-20 pb-3 sm:pb-5 px-4 sm:px-6 lg:px-12 overflow-hidden neu-bg"
     >
       {/* ======================================================== */}
       {/* CONTINUOUS 10-SECOND BACKGROUND CAROUSEL                  */}
-      {/* Opacity lowered to 0.40 for subtle transparency          */}
+      {/* Opacity set to 0.40 for subtle transparency              */}
       {/* ======================================================== */}
       <div className="absolute inset-0 z-0 overflow-hidden bg-[#F4F1EA]">
         {slides.map((slide, idx) => {
@@ -113,55 +97,32 @@ const Hero = () => {
         })}
 
         {/* Soft, airy warm-clay veil: keep photos transparent, text razor-sharp */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#F4F1EA]/95 via-[#F4F1EA]/75 to-[#F4F1EA]/35 pointer-events-none hidden lg:block" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#F4F1EA]/95 via-[#F4F1EA]/65 to-[#F4F1EA]/95 pointer-events-none lg:hidden" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#F4F1EA]/95 via-[#F4F1EA]/80 to-[#F4F1EA]/25 pointer-events-none hidden lg:block" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#F4F1EA]/95 via-[#F4F1EA]/70 to-[#F4F1EA]/95 pointer-events-none lg:hidden" />
       </div>
 
       {/* ======================================================== */}
-      {/* MAIN HERO CONTENT & ASYMMETRIC MINIMAL LAYOUT            */}
+      {/* MAIN HERO CONTENT (CLEAN LEFT-ALIGNED MINIMAL LAYOUT)    */}
       {/* ======================================================== */}
-      <div className="w-full max-w-7xl mx-auto relative z-10 my-auto py-2 sm:py-4">
-        <div className="max-w-2xl lg:max-w-3xl space-y-6 text-left">
+      <div className="w-full max-w-7xl mx-auto relative z-10 pt-2 sm:pt-4 pb-2 my-auto">
+        <div className="max-w-2xl lg:max-w-3xl space-y-5 text-left">
           
-          {/* Live Trust & Status Pill */}
-          <motion.div 
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="inline-flex items-center flex-wrap gap-2 sm:gap-2.5 px-3.5 py-1.5 bg-white/90 border border-gray-200/80 rounded-full shadow-[2px_2px_6px_rgba(71,85,105,0.06)] text-xs text-gray-700 backdrop-blur-md cursor-default"
-          >
-            <div className="flex items-center gap-1 text-amber-500">
-              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-              <span className="font-extrabold text-germany-black text-xs">4.9/5 Rating</span>
-            </div>
-            <span className="text-gray-300">•</span>
-            <span className="text-gray-600 font-semibold text-xs">1,500+ Indian Students Placed</span>
-            <span className="text-gray-300 hidden sm:inline">•</span>
-            <span className="inline-flex items-center gap-1.5 font-bold text-germany-red text-xs">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-germany-red opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-germany-red"></span>
-              </span>
-              Winter 2026 Open
-            </span>
-          </motion.div>
-
-          {/* Main Headline */}
+          {/* Static Headline */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.08 }}
+            transition={{ duration: 0.5, delay: 0.05 }}
             className="space-y-3"
           >
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-[4rem] font-black text-germany-black tracking-tight leading-[1.1]">
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-[4.2rem] font-black text-germany-black tracking-tight leading-[1.08]">
               Study in Germany.
               <span className="block text-germany-red mt-1">
-                Tuition-Free. Hassle-Free.
+                Direct TU9 Admissions.
               </span>
             </h1>
             
             <p className="text-base sm:text-lg text-gray-700 font-medium leading-relaxed max-w-xl">
-              Unlock direct admissions to TU9 and top German public universities. From program selection and APS fast-tracking to blocked accounts and visa clearance — mentored 1-on-1 by TU9 alumni.
+              Your direct pathway to tuition-free German universities. From profile evaluation and APS fast-tracking to blocked accounts and visa approvals — mentored 1-on-1 by TU9 alumni.
             </p>
           </motion.div>
 

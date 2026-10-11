@@ -20,6 +20,7 @@ const OurProcess = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const desktopWrapperRef = useRef<HTMLDivElement>(null);
   const pathRef = useRef<SVGPathElement>(null);
+  const planeRef = useRef<HTMLDivElement>(null);
   const desktopCardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const mobileLineRef = useRef<HTMLDivElement>(null);
   const mobileCardsRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -33,23 +34,76 @@ const OurProcess = () => {
     mm.add("(min-width: 768px)", () => {
       if (!pathRef.current || !desktopWrapperRef.current) return;
       
-      const pathLength = pathRef.current.getTotalLength();
-      gsap.set(pathRef.current, { strokeDasharray: pathLength, strokeDashoffset: pathLength });
+      const path = pathRef.current;
+      const pathLength = path.getTotalLength();
+      gsap.set(path, { strokeDasharray: pathLength, strokeDashoffset: pathLength });
+
+      // Initialize airplane at starting point
+      const startPoint = path.getPointAtLength(0);
+      const nextStart = path.getPointAtLength(8);
+      const initialAngle = Math.atan2(nextStart.y - startPoint.y, nextStart.x - startPoint.x) * (180 / Math.PI);
+      
+      if (planeRef.current) {
+        planeRef.current.style.left = `${(startPoint.x / 1000) * 100}%`;
+        planeRef.current.style.top = `${(startPoint.y / 950) * 100}%`;
+        planeRef.current.style.transform = `translate(-50%, -50%) rotate(${initialAngle}deg)`;
+      }
 
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: desktopWrapperRef.current,
           start: "top top",
-          end: "+=3000", // 3000px of scrolling to complete the map
+          end: "+=2800", // Smooth scroll distance to complete the map
           scrub: 1,
           pin: true,
         }
       });
 
-      // 1. Draw the main red road
-      tl.to(pathRef.current, { strokeDashoffset: 0, ease: "none", duration: 1 });
+      // 1. Draw the main red road AND fly the aerial airplane along the curve
+      tl.to(path, { 
+        strokeDashoffset: 0, 
+        ease: "none", 
+        duration: 1,
+        onUpdate: function() {
+          if (!path || !planeRef.current) return;
+          const progress = this.progress();
+          const currentLength = progress * pathLength;
+          const point = path.getPointAtLength(currentLength);
+          
+          // Calculate heading angle for 360-degree aerial flight steering
+          let angle = initialAngle;
+          if (currentLength < pathLength - 2) {
+            const nextLength = Math.min(pathLength, currentLength + 8);
+            const nextPoint = path.getPointAtLength(nextLength);
+            angle = Math.atan2(nextPoint.y - point.y, nextPoint.x - point.x) * (180 / Math.PI);
+          } else {
+            const prevLength = Math.max(0, currentLength - 8);
+            const prevPoint = path.getPointAtLength(prevLength);
+            angle = Math.atan2(point.y - prevPoint.y, point.x - prevPoint.x) * (180 / Math.PI);
+          }
 
-      // 2. Pop the cards (and their doodles) as the road reaches them
+          // Smoothly touch down & disappear as the airplane reaches the campus destination
+          let opacity = 1;
+          let scale = 1;
+          if (progress > 0.80) {
+            // Smoothly land and fade out between 80% and 93% progress
+            opacity = Math.max(0, 1 - (progress - 0.80) / 0.13);
+            scale = 0.4 + opacity * 0.6;
+          }
+          if (progress >= 0.93) {
+            opacity = 0;
+            scale = 0.4;
+          }
+
+          planeRef.current.style.opacity = `${opacity}`;
+          planeRef.current.style.visibility = opacity <= 0.01 ? 'hidden' : 'visible';
+          planeRef.current.style.left = `${(point.x / 1000) * 100}%`;
+          planeRef.current.style.top = `${(point.y / 950) * 100}%`;
+          planeRef.current.style.transform = `translate(-50%, -50%) rotate(${angle}deg) scale(${scale})`;
+        }
+      });
+
+      // 2. Pop the cards as the road reaches them
       desktopCardsRef.current.forEach((card, i) => {
         if (!card) return;
         const triggerTime = i * 0.23; 
@@ -103,7 +157,7 @@ const OurProcess = () => {
   }, { scope: containerRef });
 
   return (
-    <section id="our-process" ref={containerRef} className=" relative w-full overflow-hidden z-20">
+    <section id="our-process" ref={containerRef} className="relative w-full overflow-hidden z-20">
       
       {/* 
         ========================================================
@@ -112,6 +166,7 @@ const OurProcess = () => {
       */}
       <div ref={desktopWrapperRef} className="hidden md:flex relative w-full h-screen items-center justify-center pt-[80px]">
         
+        {/* Header */}
         <div className="absolute top-[5%] left-1/2 -translate-x-1/2 text-center z-30 pointer-events-none">
           <div className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-full font-bold text-germany-red shadow-[4px_4px_12px_rgba(71,85,105,0.4),inset_-2px_-2px_6px_rgba(71,85,105,0.4),inset_2px_2px_6px_rgba(255,255,255,1)] text-xs tracking-wide mb-4">
             <span className="w-2 h-2 rounded-full bg-germany-gold"></span>
@@ -122,15 +177,27 @@ const OurProcess = () => {
 
         <div className="relative w-full max-w-[1200px] h-[80vh] mx-auto mt-[5%]">
           
-
-
-          {/* Scenic Environment */}
-          <div className="absolute inset-0 pointer-events-none z-0">
-            {/* End of Main Road Scenery (Tent) */}
-            <img src="/doodles/tent-Photoroom.png" alt="Tent" className="absolute left-[92%] top-[75%] w-28 md:w-36 object-contain opacity-90 drop-shadow-md transform -rotate-3" />
+          {/* Scenic German University Campus Landmark at finish line */}
+          <div className="absolute left-[80%] lg:left-[83%] top-[56%] lg:top-[58%] pointer-events-none z-10">
+            <img 
+              src="/illustrations/german-campus.png" 
+              alt="German University Campus" 
+              className="w-48 sm:w-60 lg:w-72 h-auto object-contain drop-shadow-xl" 
+            />
           </div>
 
-
+          {/* 2D Cartoon Airplane (Upper / Top-Down View) flying along the road */}
+          <div 
+            ref={planeRef}
+            className="absolute pointer-events-none z-30 will-change-transform"
+            style={{ left: "15%", top: "8%" }}
+          >
+            <img 
+              src="/illustrations/airplane-top.png" 
+              alt="Airplane Flying" 
+              className="w-16 sm:w-20 lg:w-24 h-auto object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.18)]" 
+            />
+          </div>
 
           {/* Background SVG Road (Empty Groove) */}
           <svg viewBox="0 0 1000 950" className="absolute inset-0 w-full h-full pointer-events-none z-0" preserveAspectRatio="none">
@@ -223,6 +290,19 @@ const OurProcess = () => {
               </div>
             ))}
           </div>
+
+          {/* Mobile Campus Destination */}
+          <div className="pt-4 flex flex-col items-center text-center relative z-20">
+            <img 
+              src="/illustrations/german-campus.png" 
+              alt="German University Campus" 
+              className="w-48 h-auto object-contain drop-shadow-md mb-2" 
+            />
+            <span className="text-[11px] font-black text-germany-red uppercase tracking-wider">
+              Destination: German University Campus
+            </span>
+          </div>
+
         </div>
       </div>
 
