@@ -45,6 +45,74 @@ export interface StudentDocument {
   rejectionReason?: string;
   verifiedAt?: string;
   previewSnippet?: string;
+  url?: string;
+  mimeType?: string;
+  originalFilename?: string;
+  documentType?: string;
+}
+
+const DOCUMENT_TYPE_LABELS: Record<string, { name: string; category: string }> = {
+  passport: { name: 'Passport', category: 'Identity & Travel' },
+  aadhaar: { name: 'Aadhaar Card', category: 'Identity & Travel' },
+  class10_marksheet: { name: 'Class 10 Marksheet', category: 'Academic Records' },
+  class10_certificate: { name: 'Class 10 Certificate', category: 'Academic Records' },
+  class12_marksheet: { name: 'Class 12 Marksheet', category: 'Academic Records' },
+  class12_certificate: { name: 'Class 12 Certificate', category: 'Academic Records' },
+  bachelors_marksheets: { name: "Bachelor's Marksheets", category: 'Academic Records' },
+  testas_result: { name: 'TestAS Result', category: 'Standardized Tests' },
+  english_certificate: { name: 'English Proficiency Certificate', category: 'Language Proficiency' },
+  german_certificate: { name: 'German Proficiency Certificate', category: 'Language Proficiency' },
+  aps_application: { name: 'APS Application Form', category: 'APS Compliance' },
+  aps_fee_receipt: { name: 'APS Fee Receipt', category: 'APS Compliance' },
+  student_authorization_letter: { name: 'Student Authorization Letter', category: 'Official Letters' },
+  cv: { name: 'Curriculum Vitae (CV)', category: 'Curriculum Vitae' },
+  sop: { name: 'Statement of Purpose (SOP)', category: 'Motivation Letter' },
+  lor: { name: 'Letter of Recommendation (LOR)', category: 'References' },
+};
+
+function formatBytes(bytes: number | string | null | undefined): string {
+  if (!bytes) return 'N/A';
+  const num = typeof bytes === 'string' ? parseInt(bytes, 10) : bytes;
+  if (isNaN(num) || num <= 0) return 'N/A';
+  if (num < 1024) return `${num} B`;
+  if (num < 1024 * 1024) return `${(num / 1024).toFixed(1)} KB`;
+  return `${(num / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function mapDbDocToStudentDocument(row: any): StudentDocument {
+  const meta = DOCUMENT_TYPE_LABELS[row.document_type] || {
+    name: row.original_filename || (row.document_type ? row.document_type.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : 'Document'),
+    category: 'Document',
+  };
+
+  const statusLower = (row.status || '').toLowerCase();
+  let status: 'verified' | 'pending' | 'rejected' = 'pending';
+  if (statusLower === 'verified') status = 'verified';
+  else if (statusLower === 'rejected') status = 'rejected';
+
+  const uploadDate = row.uploaded_at
+    ? new Date(row.uploaded_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : 'Unknown';
+
+  const verifiedAt = row.verified_at
+    ? new Date(row.verified_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : undefined;
+
+  return {
+    id: row.id,
+    documentType: row.document_type,
+    name: meta.name,
+    category: meta.category,
+    size: formatBytes(row.file_size_bytes),
+    uploadDate,
+    status,
+    rejectionReason: row.rejection_note || undefined,
+    verifiedAt,
+    url: row.imagekit_url || undefined,
+    mimeType: row.mime_type || undefined,
+    originalFilename: row.original_filename || undefined,
+    previewSnippet: row.original_filename ? `File: ${row.original_filename}` : undefined,
+  };
 }
 
 export interface UniversityMatch {
@@ -98,6 +166,9 @@ export function StudentDetailModal({
 
   // Document state & sub-modals
   const [documents, setDocuments] = useState<StudentDocument[]>([]);
+  const [docsLoading, setDocsLoading] = useState(true);
+  const [docsError, setDocsError] = useState<string | null>(null);
+  const [docActionLoading, setDocActionLoading] = useState<string | null>(null);
   const [docFilter, setDocFilter] = useState<'all' | 'pending' | 'verified' | 'rejected'>('all');
   const [previewDoc, setPreviewDoc] = useState<StudentDocument | null>(null);
   const [rejectingDoc, setRejectingDoc] = useState<StudentDocument | null>(null);
@@ -168,19 +239,27 @@ export function StudentDetailModal({
     };
     fetchSummary();
 
-    // Load or generate documents
-    const savedDocs = localStorage.getItem(`eb_student_docs_${effectiveStudentId}`);
-    if (savedDocs) {
+    // Fetch real documents from student_documents table via backend API
+    const fetchDocuments = async () => {
       try {
-        setDocuments(JSON.parse(savedDocs));
-      } catch {
-        setDocuments(getDefaultDocuments());
+        setDocsLoading(true);
+        setDocsError(null);
+        const res = await fetch(`${API_URL}/counsellor/students/${effectiveStudentId}/documents`, { credentials: 'include' });
+        if (!res.ok) {
+          if (res.status === 403) throw new Error("Access Denied");
+          throw new Error("Failed to fetch documents");
+        }
+        const data = await res.json();
+        const rows = Array.isArray(data) ? data : (data.items || []);
+        setDocuments(rows.map(mapDbDocToStudentDocument));
+      } catch (err: any) {
+        setDocsError(err.message || 'Error loading student documents');
+        setDocuments([]);
+      } finally {
+        setDocsLoading(false);
       }
-    } else {
-      const defDocs = getDefaultDocuments();
-      setDocuments(defDocs);
-      localStorage.setItem(`eb_student_docs_${effectiveStudentId}`, JSON.stringify(defDocs));
-    }
+    };
+    fetchDocuments();
 
     // Load or generate universities
     const savedUnis = localStorage.getItem(`eb_student_unis_${effectiveStudentId}`);
@@ -244,87 +323,7 @@ export function StudentDetailModal({
     return null;
   }
 
-  // Default Document generator
-  function getDefaultDocuments(): StudentDocument[] {
-    return [
-      {
-        id: 'doc-1',
-        name: 'Official Bachelor Transcripts (Sem 1-8)',
-        category: 'Academic Records',
-        size: '4.2 MB',
-        uploadDate: 'Aug 24, 2026',
-        status: 'pending',
-        previewSnippet: 'Official academic transcript issued by University Examination Board. Cumulative CGPA: 8.85 / 10.0. German Bavarian Formula Conversion: 1.33 (Very Good). Total Credits: 184 ECTS equivalent.'
-      },
-      {
-        id: 'doc-2',
-        name: 'Bachelor of Technology Degree Certificate',
-        category: 'Degree Certificate',
-        size: '2.1 MB',
-        uploadDate: 'Aug 24, 2026',
-        status: 'verified',
-        verifiedAt: 'Aug 25, 2026',
-        previewSnippet: 'Provisional Degree Certificate conferring Bachelor of Technology in Computer Science & Engineering with First Class with Distinction.'
-      },
-      {
-        id: 'doc-3',
-        name: 'IELTS Academic Test Report Form',
-        category: 'Language Proficiency',
-        size: '1.4 MB',
-        uploadDate: 'Aug 20, 2026',
-        status: 'verified',
-        verifiedAt: 'Aug 21, 2026',
-        previewSnippet: 'Overall Band Score: 7.5. Listening: 8.0, Reading: 7.5, Writing: 7.0, Speaking: 7.5. CEFR Level: C1. Test Report Form Number: 26IN004812SHNA.'
-      },
-      {
-        id: 'doc-4',
-        name: 'Statement of Purpose (TUM / M.Sc. Data Engineering)',
-        category: 'Motivation Letter',
-        size: '0.8 MB',
-        uploadDate: 'Aug 28, 2026',
-        status: 'pending',
-        previewSnippet: 'Motivation statement structured for TU Munich Data Engineering & Analytics. Outlines academic research in distributed databases, machine learning, and undergraduate thesis.'
-      },
-      {
-        id: 'doc-5',
-        name: 'Academic Curriculum Vitae (Europass Standard)',
-        category: 'Curriculum Vitae',
-        size: '0.5 MB',
-        uploadDate: 'Aug 26, 2026',
-        status: 'rejected',
-        rejectionReason: 'Format must follow strict reverse chronological order without graphical bars. Please link your project portfolio and clarify course credit equivalencies.',
-        previewSnippet: 'Tabular Curriculum Vitae according to Europass guidelines. Lists internships, technical skills (Python, Go, Docker), and leadership activities.'
-      },
-      {
-        id: 'doc-6',
-        name: 'APS India Verification Token & Fee Slip',
-        category: 'APS Compliance',
-        size: '1.8 MB',
-        uploadDate: 'Aug 27, 2026',
-        status: 'pending',
-        previewSnippet: 'APS India verification paper receipt (₹18,000 paid via HDFC). Tracking ID: APS-ND-2026-8812. Status awaiting university registrar email confirmation.'
-      },
-      {
-        id: 'doc-7',
-        name: 'Valid International Passport (Bio Pages)',
-        category: 'Identity & Travel',
-        size: '3.2 MB',
-        uploadDate: 'Aug 18, 2026',
-        status: 'verified',
-        verifiedAt: 'Aug 19, 2026',
-        previewSnippet: 'Passport of the Republic of India. Valid until November 2034. Clean biometric pages, clear photograph, and signature verified.'
-      },
-      {
-        id: 'doc-8',
-        name: 'Academic Letters of Recommendation (2x Professors)',
-        category: 'References',
-        size: '1.2 MB',
-        uploadDate: 'Aug 25, 2026',
-        status: 'pending',
-        previewSnippet: 'Two confidential letters of recommendation from Head of Department and Associate Professor endorsing analytical aptitude and research potential.'
-      },
-    ];
-  }
+
 
   // Default University matches generator
   function getDefaultUniversities(): UniversityMatch[] {
@@ -425,24 +424,33 @@ export function StudentDetailModal({
     ];
   }
 
-  // Document Handlers
-  const handleVerifyDoc = (docId: string) => {
-    const updated = documents.map((d) => {
-      if (d.id === docId) {
-        return {
-          ...d,
-          status: 'verified' as const,
-          verifiedAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-          rejectionReason: undefined,
-        };
-      }
-      return d;
-    });
-    setDocuments(updated);
-    localStorage.setItem(`eb_student_docs_${student.userId}`, JSON.stringify(updated));
+  // Document Handlers (connected to real backend API)
+  const handleVerifyDoc = async (docId: string) => {
+    const effectiveStudentId = student?.userId || propStudent?.userId || studentId;
+    if (!effectiveStudentId) return;
 
-    if (previewDoc?.id === docId) {
-      setPreviewDoc((prev) => (prev ? { ...prev, status: 'verified', verifiedAt: 'Just now' } : null));
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+    setDocActionLoading(docId);
+    try {
+      const res = await fetch(`${API_URL}/counsellor/students/${effectiveStudentId}/documents/${docId}/verify`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Failed to verify document');
+      }
+      const updatedRow = await res.json();
+      const mapped = mapDbDocToStudentDocument(updatedRow);
+      setDocuments((prev) => prev.map((d) => (d.id === docId ? mapped : d)));
+
+      if (previewDoc?.id === docId) {
+        setPreviewDoc(mapped);
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to verify document');
+    } finally {
+      setDocActionLoading(null);
     }
   };
 
@@ -451,27 +459,45 @@ export function StudentDetailModal({
     setRejectionReasonInput(doc.rejectionReason || '');
   };
 
-  const handleConfirmRejectDoc = () => {
+  const handleConfirmRejectDoc = async () => {
     if (!rejectingDoc) return;
-    const updated = documents.map((d) => {
-      if (d.id === rejectingDoc.id) {
-        return {
-          ...d,
-          status: 'rejected' as const,
-          rejectionReason: rejectionReasonInput.trim() || 'Document requires re-upload or clarification per counsellor review.',
-        };
-      }
-      return d;
-    });
-    setDocuments(updated);
-    localStorage.setItem(`eb_student_docs_${student.userId}`, JSON.stringify(updated));
+    const effectiveStudentId = student?.userId || propStudent?.userId || studentId;
+    if (!effectiveStudentId) return;
 
-    if (previewDoc?.id === rejectingDoc.id) {
-      setPreviewDoc((prev) => (prev ? { ...prev, status: 'rejected', rejectionReason: rejectionReasonInput } : null));
+    const reason = rejectionReasonInput.trim();
+    if (!reason) {
+      alert('Please provide a specific rejection note so the student knows what to correct.');
+      return;
     }
 
-    setRejectingDoc(null);
-    setRejectionReasonInput('');
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+    setDocActionLoading(rejectingDoc.id);
+    try {
+      const res = await fetch(`${API_URL}/counsellor/students/${effectiveStudentId}/documents/${rejectingDoc.id}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ rejectionNote: reason }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Failed to reject document');
+      }
+      const updatedRow = await res.json();
+      const mapped = mapDbDocToStudentDocument(updatedRow);
+      setDocuments((prev) => prev.map((d) => (d.id === mapped.id ? mapped : d)));
+
+      if (previewDoc?.id === mapped.id) {
+        setPreviewDoc(mapped);
+      }
+
+      setRejectingDoc(null);
+      setRejectionReasonInput('');
+    } catch (err: any) {
+      alert(err.message || 'Failed to reject document');
+    } finally {
+      setDocActionLoading(null);
+    }
   };
 
   // University Shortlist Status Update Handler
@@ -869,9 +895,18 @@ export function StudentDetailModal({
 
                 {/* Documents List */}
                 <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
-                  {filteredDocs.length === 0 ? (
+                  {docsLoading ? (
+                    <div className="p-12 flex flex-col items-center justify-center gap-2 text-gray-400 text-xs font-bold">
+                      <Loader2 className="w-6 h-6 animate-spin text-germany-red" />
+                      <span>Loading uploaded documents from student records...</span>
+                    </div>
+                  ) : docsError ? (
+                    <div className="p-6 border-2 border-dashed border-red-200 dark:border-red-900/40 rounded-2xl text-center text-red-500 dark:text-red-400 text-xs font-bold bg-red-50 dark:bg-red-950/20">
+                      {docsError}
+                    </div>
+                  ) : filteredDocs.length === 0 ? (
                     <div className="p-8 border-2 border-dashed border-[#EBE7E0] dark:border-gray-800 rounded-2xl text-center text-gray-400 text-xs font-bold">
-                      No documents found for this filter.
+                      {documents.length === 0 ? 'No documents have been uploaded by this student yet.' : 'No documents found for this filter.'}
                     </div>
                   ) : (
                     <div className="divide-y divide-[#EBE7E0] dark:divide-gray-800/80">
@@ -917,6 +952,7 @@ export function StudentDetailModal({
 
                                   <p className="text-[11px] font-bold text-gray-400 mt-0.5">
                                     {doc.category} • Uploaded {doc.uploadDate} • {doc.size}
+                                    {doc.originalFilename && <span className="font-mono text-[10px] text-gray-500 dark:text-gray-400 ml-1">({doc.originalFilename})</span>}
                                     {doc.verifiedAt && <span className="text-emerald-700 font-extrabold ml-1.5">• Verified {doc.verifiedAt}</span>}
                                   </p>
                                 </div>
@@ -934,9 +970,24 @@ export function StudentDetailModal({
                                   <span>Preview</span>
                                 </button>
 
+                                {/* Direct File Link */}
+                                {doc.url && (
+                                  <a
+                                    href={doc.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="py-1.5 px-3 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:text-germany-black dark:hover:text-white bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                                    title="Open original file in new tab"
+                                  >
+                                    <ExternalLink className="w-3.5 h-3.5" />
+                                    <span>Open</span>
+                                  </a>
+                                )}
+
                                 {/* Accept / Verify Button */}
                                 <button
                                   onClick={() => handleVerifyDoc(doc.id)}
+                                  disabled={docActionLoading === doc.id}
                                   className={`py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer ${
                                     isVerified
                                       ? 'bg-emerald-700 text-white shadow-xs'
@@ -944,13 +995,18 @@ export function StudentDetailModal({
                                   }`}
                                   title="Accept and verify document"
                                 >
-                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                  {docActionLoading === doc.id ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  ) : (
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                  )}
                                   <span>{isVerified ? 'Verified' : 'Accept'}</span>
                                 </button>
 
                                 {/* Reject / Revision Button */}
                                 <button
                                   onClick={() => handleOpenRejectModal(doc)}
+                                  disabled={docActionLoading === doc.id}
                                   className={`py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer ${
                                     isRejected
                                       ? 'bg-red-700 text-white shadow-xs'
@@ -966,8 +1022,8 @@ export function StudentDetailModal({
 
                             {/* Rejection Note Display */}
                             {doc.rejectionReason && (
-                              <div className="ml-10 p-2.5 rounded-xl bg-red-50/80 border border-red-200 text-xs text-red-800 flex items-start gap-2">
-                                <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-red-600" />
+                              <div className="ml-10 p-2.5 rounded-xl bg-red-50/80 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 text-xs text-red-800 dark:text-red-300 flex items-start gap-2">
+                                <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-red-600 dark:text-red-400" />
                                 <div>
                                   <span className="font-extrabold">Counsellor Feedback to Student: </span>
                                   <span>{doc.rejectionReason}</span>
@@ -1358,19 +1414,37 @@ export function StudentDetailModal({
                 </div>
               </div>
 
-              {/* Simulated Document Preview Viewer */}
-              <div className="p-4 rounded-xl bg-[#FAF8F5] dark:bg-[#0A0D14] border border-gray-200/70 dark:border-gray-800/80 space-y-3 font-mono text-xs text-gray-700 dark:text-gray-300">
-                <div className="flex items-center justify-between border-b border-gray-200/60 dark:border-gray-800/80 pb-2 text-[11px] font-sans font-extrabold text-gray-400">
-                  <span>SIMULATED DOCUMENT PREVIEW</span>
-                  <span className="text-emerald-700 dark:text-emerald-400">AUTHENTICATED PDF SCAN</span>
-                </div>
-                <p className="leading-relaxed whitespace-pre-wrap font-sans text-xs text-gray-700 dark:text-gray-300">
-                  {previewDoc.previewSnippet || 'Document content certified for German Higher Education and APS verification.'}
-                </p>
-                <div className="pt-2 text-[10px] text-gray-400 font-sans flex items-center justify-between border-t border-gray-200/60 dark:border-gray-800/80">
-                  <span>Verification Hash: SHA256-EB981247</span>
-                  <span>Page 1 of 2</span>
-                </div>
+              {/* Real Document Preview Viewer */}
+              <div className="rounded-xl overflow-hidden border border-gray-200/70 dark:border-gray-800/80 bg-[#FAF8F5] dark:bg-[#0A0D14]">
+                {previewDoc.url ? (
+                  previewDoc.mimeType?.startsWith('image/') || /\.(jpe?g|png|webp)$/i.test(previewDoc.url) ? (
+                    <div className="p-3 max-h-[50vh] flex items-center justify-center overflow-auto bg-black/5 dark:bg-black/30">
+                      <img src={previewDoc.url} alt={previewDoc.name} className="max-h-[46vh] w-auto object-contain rounded-lg" />
+                    </div>
+                  ) : (
+                    <div className="w-full h-80 bg-white dark:bg-[#0E121A]">
+                      <iframe src={previewDoc.url} title={previewDoc.name} className="w-full h-full border-none" />
+                    </div>
+                  )
+                ) : (
+                  <div className="p-8 text-center text-xs font-bold text-gray-400">
+                    No preview URL available for this file.
+                  </div>
+                )}
+                {previewDoc.url && (
+                  <div className="p-3 bg-white dark:bg-[#111622] border-t border-gray-200/60 dark:border-gray-800/80 flex items-center justify-between text-xs">
+                    <span className="text-gray-500 font-bold truncate max-w-xs">{previewDoc.originalFilename || previewDoc.name}</span>
+                    <a
+                      href={previewDoc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-germany-red font-extrabold hover:underline"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Open full file in new tab</span>
+                    </a>
+                  </div>
+                )}
               </div>
 
               {/* Status & Quick Verification from Preview */}
@@ -1393,15 +1467,21 @@ export function StudentDetailModal({
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleVerifyDoc(previewDoc.id)}
-                    className="neu-btn-primary py-1.5 px-3 text-xs font-extrabold flex items-center gap-1 shadow-xs"
+                    disabled={docActionLoading === previewDoc.id}
+                    className="neu-btn-primary py-1.5 px-3 text-xs font-extrabold flex items-center gap-1 shadow-xs cursor-pointer"
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    {docActionLoading === previewDoc.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    )}
                     <span>Verify / Accept</span>
                   </button>
                   <button
                     onClick={() => {
                       handleOpenRejectModal(previewDoc);
                     }}
+                    disabled={docActionLoading === previewDoc.id}
                     className="py-1.5 px-3 text-xs font-extrabold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl flex items-center gap-1 shadow-xs cursor-pointer"
                   >
                     <AlertTriangle className="w-3.5 h-3.5" />
@@ -1455,10 +1535,12 @@ export function StudentDetailModal({
                 </button>
                 <button
                   type="button"
+                  disabled={docActionLoading === rejectingDoc.id}
                   onClick={handleConfirmRejectDoc}
-                  className="py-1.5 px-4 text-xs font-extrabold bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-xs transition-colors cursor-pointer"
+                  className="py-1.5 px-4 text-xs font-extrabold bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-xl shadow-xs transition-colors cursor-pointer inline-flex items-center gap-1.5"
                 >
-                  Confirm Rejection
+                  {docActionLoading === rejectingDoc.id && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>Confirm Rejection</span>
                 </button>
               </div>
             </motion.div>
