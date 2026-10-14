@@ -56,7 +56,7 @@ const FlightOverCity = () => {
                 key={`city-track1-${idx}`}
                 src="/illustrations/german-city.png"
                 alt="German City Skyline"
-                className="h-[140px] sm:h-[180px] md:h-[220px] w-auto max-w-none object-contain object-bottom shrink-0 drop-shadow-[0_-4px_12px_rgba(0,0,0,0.03)]"
+                className="h-[140px] sm:h-[180px] md:h-[220px] w-auto max-w-none object-contain object-bottom shrink-0 translate-y-[13.4%] drop-shadow-[0_-4px_12px_rgba(0,0,0,0.03)]"
               />
             ))}
           </div>
@@ -67,7 +67,7 @@ const FlightOverCity = () => {
                 key={`city-track2-${idx}`}
                 src="/illustrations/german-city.png"
                 alt="German City Skyline"
-                className="h-[140px] sm:h-[180px] md:h-[220px] w-auto max-w-none object-contain object-bottom shrink-0 drop-shadow-[0_-4px_12px_rgba(0,0,0,0.03)]"
+                className="h-[140px] sm:h-[180px] md:h-[220px] w-auto max-w-none object-contain object-bottom shrink-0 translate-y-[13.4%] drop-shadow-[0_-4px_12px_rgba(0,0,0,0.03)]"
               />
             ))}
           </div>
