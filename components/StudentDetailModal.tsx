@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -30,7 +30,8 @@ import {
   Target,
   Download,
   AlertCircle,
-  Loader2
+  Loader2,
+  Circle
 } from 'lucide-react';
 import { AssignedStudent } from './CounsellorStudents';
 import { StudentFullProfileView } from './StudentFullProfileView';
@@ -39,6 +40,7 @@ export interface StudentDocument {
   id: string;
   name: string;
   category: string;
+  section: 'aps' | 'general' | 'lor_sop_cv';
   size: string;
   uploadDate: string;
   status: 'verified' | 'pending' | 'rejected';
@@ -51,39 +53,44 @@ export interface StudentDocument {
   documentType?: string;
 }
 
-const DOCUMENT_TYPE_LABELS: Record<string, { name: string; category: string }> = {
-  passport: { name: 'Passport', category: 'Identity & Travel' },
-  aadhaar: { name: 'Aadhaar Card', category: 'Identity & Travel' },
-  class10_marksheet: { name: 'Class 10 Marksheet', category: 'Academic Records' },
-  class10_certificate: { name: 'Class 10 Certificate', category: 'Academic Records' },
-  class12_marksheet: { name: 'Class 12 Marksheet', category: 'Academic Records' },
-  class12_certificate: { name: 'Class 12 Certificate', category: 'Academic Records' },
-  bachelors_marksheets: { name: "Bachelor's Marksheets", category: 'Academic Records' },
-  testas_result: { name: 'TestAS Result', category: 'Standardized Tests' },
-  english_certificate: { name: 'English Proficiency Certificate', category: 'Language Proficiency' },
-  german_certificate: { name: 'German Proficiency Certificate', category: 'Language Proficiency' },
-  aps_application: { name: 'APS Application Form', category: 'APS Compliance' },
-  aps_fee_receipt: { name: 'APS Fee Receipt', category: 'APS Compliance' },
-  student_authorization_letter: { name: 'Student Authorization Letter', category: 'Official Letters' },
-  cv: { name: 'Curriculum Vitae (CV)', category: 'Curriculum Vitae' },
-  sop: { name: 'Statement of Purpose (SOP)', category: 'Motivation Letter' },
-  lor: { name: 'Letter of Recommendation (LOR)', category: 'References' },
-};
-
-function formatBytes(bytes: number | string | null | undefined): string {
-  if (!bytes) return 'N/A';
-  const num = typeof bytes === 'string' ? parseInt(bytes, 10) : bytes;
-  if (isNaN(num) || num <= 0) return 'N/A';
-  if (num < 1024) return `${num} B`;
-  if (num < 1024 * 1024) return `${(num / 1024).toFixed(1)} KB`;
-  return `${(num / (1024 * 1024)).toFixed(1)} MB`;
-}
+import {
+  CatalogueDocument,
+  DOCUMENT_CATALOGUE,
+  DOCUMENT_TYPE_LABELS,
+  formatBytes,
+} from '@/lib/documentCatalogue';
 
 function mapDbDocToStudentDocument(row: any): StudentDocument {
-  const meta = DOCUMENT_TYPE_LABELS[row.document_type] || {
-    name: row.original_filename || (row.document_type ? row.document_type.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : 'Document'),
-    category: 'Document',
-  };
+  const catItem = DOCUMENT_CATALOGUE.find((c) => c.type === row.document_type);
+  const meta = catItem
+    ? { name: catItem.name, category: catItem.category }
+    : DOCUMENT_TYPE_LABELS[row.document_type] || {
+        name: row.original_filename || (row.document_type ? row.document_type.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : 'Document'),
+        category: 'General',
+      };
+
+  let section: 'aps' | 'general' | 'lor_sop_cv' = 'general';
+  if (row.section) {
+    section = row.section;
+  } else if ([
+    'passport',
+    'aadhaar',
+    'class10_marksheet',
+    'class10_certificate',
+    'class12_marksheet',
+    'class12_certificate',
+    'bachelors_marksheets',
+    'testas_result',
+    'english_certificate',
+    'german_certificate',
+    'aps_application',
+    'aps_fee_receipt',
+    'student_authorization_letter',
+  ].includes(row.document_type)) {
+    section = 'aps';
+  } else if (['cv', 'sop', 'lor'].includes(row.document_type)) {
+    section = 'lor_sop_cv';
+  }
 
   const statusLower = (row.status || '').toLowerCase();
   let status: 'verified' | 'pending' | 'rejected' = 'pending';
@@ -103,6 +110,7 @@ function mapDbDocToStudentDocument(row: any): StudentDocument {
     documentType: row.document_type,
     name: meta.name,
     category: meta.category,
+    section,
     size: formatBytes(row.file_size_bytes),
     uploadDate,
     status,
@@ -169,7 +177,9 @@ export function StudentDetailModal({
   const [docsLoading, setDocsLoading] = useState(true);
   const [docsError, setDocsError] = useState<string | null>(null);
   const [docActionLoading, setDocActionLoading] = useState<string | null>(null);
-  const [docFilter, setDocFilter] = useState<'all' | 'pending' | 'verified' | 'rejected'>('all');
+  const [docCategory, setDocCategory] = useState<'all' | 'aps' | 'general' | 'lor_sop_cv'>('all');
+  const [docFilter, setDocFilter] = useState<'all' | 'pending' | 'verified' | 'rejected' | 'not_uploaded'>('all');
+  const [docActionFeedback, setDocActionFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [previewDoc, setPreviewDoc] = useState<StudentDocument | null>(null);
   const [rejectingDoc, setRejectingDoc] = useState<StudentDocument | null>(null);
   const [rejectionReasonInput, setRejectionReasonInput] = useState('');
@@ -294,34 +304,7 @@ export function StudentDetailModal({
     }
   }, [propStudent, studentId]);
 
-  if (!student) {
-    if (summaryLoading) {
-      return (
-        <div className="relative w-full neu-card bg-[#FDFBF7] dark:bg-[#111622] p-12 overflow-hidden shadow-[4px_4px_16px_rgba(210,205,195,0.4)] dark:shadow-none border border-gray-200/80 dark:border-gray-800/80 rounded-3xl flex flex-col items-center justify-center gap-3">
-          <Loader2 className="w-8 h-8 animate-spin text-germany-red" />
-          <p className="text-xs font-bold text-gray-500 dark:text-gray-400">Loading student details...</p>
-        </div>
-      );
-    }
-    if (summaryError) {
-      return (
-        <div className="relative w-full neu-card bg-[#FDFBF7] dark:bg-[#111622] p-8 overflow-hidden shadow-[4px_4px_16px_rgba(210,205,195,0.4)] dark:shadow-none border border-gray-200/80 dark:border-gray-800/80 rounded-3xl text-center space-y-4">
-          <div className="p-6 border-2 border-dashed border-[#EBE7E0] dark:border-red-900/40 rounded-2xl text-red-500 dark:text-red-400 text-xs font-bold bg-red-50 dark:bg-red-950/20">
-            {summaryError}
-          </div>
-          {isPage && (
-            <Link
-              href="/dashboard/counsellor/students"
-              className="neu-btn py-2 px-4 text-xs font-bold inline-flex items-center gap-1.5"
-            >
-              <span>Back to Assigned Students</span>
-            </Link>
-          )}
-        </div>
-      );
-    }
-    return null;
-  }
+
 
 
 
@@ -431,6 +414,7 @@ export function StudentDetailModal({
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
     setDocActionLoading(docId);
+    setDocActionFeedback(null);
     try {
       const res = await fetch(`${API_URL}/counsellor/students/${effectiveStudentId}/documents/${docId}/verify`, {
         method: 'POST',
@@ -447,8 +431,16 @@ export function StudentDetailModal({
       if (previewDoc?.id === docId) {
         setPreviewDoc(mapped);
       }
+      setDocActionFeedback({
+        type: 'success',
+        message: `"${mapped.name}" has been verified and marked as accepted.`,
+      });
+      setTimeout(() => setDocActionFeedback(null), 3500);
     } catch (err: any) {
-      alert(err.message || 'Failed to verify document');
+      setDocActionFeedback({
+        type: 'error',
+        message: err.message || 'Failed to verify document',
+      });
     } finally {
       setDocActionLoading(null);
     }
@@ -466,12 +458,16 @@ export function StudentDetailModal({
 
     const reason = rejectionReasonInput.trim();
     if (!reason) {
-      alert('Please provide a specific rejection note so the student knows what to correct.');
+      setDocActionFeedback({
+        type: 'error',
+        message: 'Please provide specific feedback explaining what the student needs to correct.',
+      });
       return;
     }
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
     setDocActionLoading(rejectingDoc.id);
+    setDocActionFeedback(null);
     try {
       const res = await fetch(`${API_URL}/counsellor/students/${effectiveStudentId}/documents/${rejectingDoc.id}/reject`, {
         method: 'POST',
@@ -491,10 +487,18 @@ export function StudentDetailModal({
         setPreviewDoc(mapped);
       }
 
+      setDocActionFeedback({
+        type: 'success',
+        message: `Feedback recorded for "${mapped.name}". The student has been notified to re-upload.`,
+      });
+      setTimeout(() => setDocActionFeedback(null), 3500);
       setRejectingDoc(null);
       setRejectionReasonInput('');
     } catch (err: any) {
-      alert(err.message || 'Failed to reject document');
+      setDocActionFeedback({
+        type: 'error',
+        message: err.message || 'Failed to reject document',
+      });
     } finally {
       setDocActionLoading(null);
     }
@@ -509,7 +513,10 @@ export function StudentDetailModal({
       return u;
     });
     setUniversities(updated);
-    localStorage.setItem(`eb_student_unis_${student.userId}`, JSON.stringify(updated));
+    const effectiveId = student?.userId || propStudent?.userId || studentId;
+    if (effectiveId) {
+      localStorage.setItem(`eb_student_unis_${effectiveId}`, JSON.stringify(updated));
+    }
   };
 
   const handleAddUniversity = (e: React.FormEvent) => {
@@ -533,7 +540,10 @@ export function StudentDetailModal({
 
     const updated = [newUni, ...universities];
     setUniversities(updated);
-    localStorage.setItem(`eb_student_unis_${student.userId}`, JSON.stringify(updated));
+    const effectiveId = student?.userId || propStudent?.userId || studentId;
+    if (effectiveId) {
+      localStorage.setItem(`eb_student_unis_${effectiveId}`, JSON.stringify(updated));
+    }
     setNewUniName('');
     setNewUniProgram('');
     setNewUniLocation('');
@@ -542,7 +552,10 @@ export function StudentDetailModal({
 
   // Notes & Tasks Handlers
   const handleSaveNote = () => {
-    localStorage.setItem(`eb_counsellor_notes_${student.userId}`, note);
+    const effectiveId = student?.userId || propStudent?.userId || studentId;
+    if (effectiveId) {
+      localStorage.setItem(`eb_counsellor_notes_${effectiveId}`, note);
+    }
     setNoteSaved(true);
     setTimeout(() => setNoteSaved(false), 2500);
   };
@@ -550,7 +563,10 @@ export function StudentDetailModal({
   const handleToggleTask = (taskId: string) => {
     const updated = tasks.map((t) => (t.id === taskId ? { ...t, completed: !t.completed } : t));
     setTasks(updated);
-    localStorage.setItem(`eb_student_tasks_${student.userId}`, JSON.stringify(updated));
+    const effectiveId = student?.userId || propStudent?.userId || studentId;
+    if (effectiveId) {
+      localStorage.setItem(`eb_student_tasks_${effectiveId}`, JSON.stringify(updated));
+    }
   };
 
   const handleAddTask = (e: React.FormEvent) => {
@@ -565,18 +581,24 @@ export function StudentDetailModal({
     };
     const updated = [...tasks, newTask];
     setTasks(updated);
-    localStorage.setItem(`eb_student_tasks_${student.userId}`, JSON.stringify(updated));
+    const effectiveId = student?.userId || propStudent?.userId || studentId;
+    if (effectiveId) {
+      localStorage.setItem(`eb_student_tasks_${effectiveId}`, JSON.stringify(updated));
+    }
     setNewTaskText('');
   };
 
   const handleCopyEmail = () => {
+    if (!student?.email) return;
     navigator.clipboard.writeText(student.email);
     setCopiedEmail(true);
     setTimeout(() => setCopiedEmail(false), 2000);
   };
 
   const handleCopyId = () => {
-    navigator.clipboard.writeText(student.userId);
+    const effectiveId = student?.userId || propStudent?.userId || studentId;
+    if (!effectiveId) return;
+    navigator.clipboard.writeText(effectiveId);
     setCopiedId(true);
     setTimeout(() => setCopiedId(false), 2000);
   };
@@ -589,15 +611,94 @@ export function StudentDetailModal({
       .join(' ');
   };
 
-  const initials = `${student.firstName?.[0] || ''}${student.lastName?.[0] || ''}`.toUpperCase() || 'ST';
+  const initials = `${student?.firstName?.[0] || ''}${student?.lastName?.[0] || ''}`.toUpperCase() || 'ST';
 
-  // Metrics
-  const pendingDocsCount = documents.filter((d) => d.status === 'pending').length;
-  const verifiedDocsCount = documents.filter((d) => d.status === 'verified').length;
-  const filteredDocs = documents.filter((d) => {
-    if (docFilter === 'all') return true;
-    return d.status === docFilter;
-  });
+  // Deduplicate documents by documentType so historical replacements or multiple records never inflate counts
+  const distinctUploadedDocs = React.useMemo(() => {
+    const map = new Map<string, StudentDocument>();
+    documents.forEach((doc) => {
+      const key = doc.documentType || doc.id;
+      if (!map.has(key) || doc.status === 'verified') {
+        map.set(key, doc);
+      }
+    });
+    return Array.from(map.values());
+  }, [documents]);
+
+  const allCatalogueDocs = DOCUMENT_CATALOGUE;
+  const apsCatalogueDocs = DOCUMENT_CATALOGUE.filter((d) => d.section === 'aps');
+  const generalCatalogueDocs = DOCUMENT_CATALOGUE.filter((d) => d.section === 'general');
+
+  // Filtered by current category
+  const currentCategoryCatalogue = React.useMemo(() => {
+    if (docCategory === 'aps') return apsCatalogueDocs;
+    if (docCategory === 'general') return generalCatalogueDocs;
+    if (docCategory === 'lor_sop_cv') return [];
+    return allCatalogueDocs;
+  }, [docCategory, allCatalogueDocs, apsCatalogueDocs, generalCatalogueDocs]);
+
+  const currentCategoryUploadedDocs = React.useMemo(() => {
+    if (docCategory === 'aps') return distinctUploadedDocs.filter((d) => d.section === 'aps');
+    if (docCategory === 'general') return distinctUploadedDocs.filter((d) => d.section === 'general');
+    if (docCategory === 'lor_sop_cv') return distinctUploadedDocs.filter((d) => d.section === 'lor_sop_cv');
+    return distinctUploadedDocs;
+  }, [docCategory, distinctUploadedDocs]);
+
+  // Missing / Not-yet-uploaded catalogue items
+  const notUploadedCatalogueItems = React.useMemo(() => {
+    const uploadedTypes = new Set(currentCategoryUploadedDocs.map((d) => d.documentType).filter(Boolean));
+    return currentCategoryCatalogue.filter((item) => !uploadedTypes.has(item.type));
+  }, [currentCategoryCatalogue, currentCategoryUploadedDocs]);
+
+  // Metric counts for current category
+  const statsTotalExpected = Math.max(currentCategoryCatalogue.length, currentCategoryUploadedDocs.length);
+  const statsUploaded = currentCategoryUploadedDocs.length;
+  const statsNotUploaded = notUploadedCatalogueItems.length;
+  const statsPending = currentCategoryUploadedDocs.filter((d) => d.status === 'pending').length;
+  const statsVerified = currentCategoryUploadedDocs.filter((d) => d.status === 'verified').length;
+  const statsRejected = currentCategoryUploadedDocs.filter((d) => d.status === 'rejected').length;
+
+  // Global counts for sub-tabs and top navigation
+  const allUploadedCount = distinctUploadedDocs.length;
+  const apsUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'aps').length;
+  const generalUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'general').length;
+  const pendingDocsCount = distinctUploadedDocs.filter((d) => d.status === 'pending').length;
+
+  // Documents to render based on docFilter
+  const filteredDocs = React.useMemo(() => {
+    if (docFilter === 'not_uploaded') return [];
+    if (docFilter === 'all') return currentCategoryUploadedDocs;
+    return currentCategoryUploadedDocs.filter((d) => d.status === docFilter);
+  }, [docFilter, currentCategoryUploadedDocs]);
+
+  if (!student) {
+    if (summaryLoading) {
+      return (
+        <div className="relative w-full neu-card bg-[#FDFBF7] dark:bg-[#111622] p-12 overflow-hidden shadow-[4px_4px_16px_rgba(210,205,195,0.4)] dark:shadow-none border border-gray-200/80 dark:border-gray-800/80 rounded-3xl flex flex-col items-center justify-center gap-3">
+          <Loader2 className="w-8 h-8 animate-spin text-germany-red" />
+          <p className="text-xs font-bold text-gray-500 dark:text-gray-400">Loading student details...</p>
+        </div>
+      );
+    }
+    if (summaryError) {
+      return (
+        <div className="relative w-full neu-card bg-[#FDFBF7] dark:bg-[#111622] p-8 overflow-hidden shadow-[4px_4px_16px_rgba(210,205,195,0.4)] dark:shadow-none border border-gray-200/80 dark:border-gray-800/80 rounded-3xl text-center space-y-4">
+          <div className="p-6 border-2 border-dashed border-[#EBE7E0] dark:border-red-900/40 rounded-2xl text-red-500 dark:text-red-400 text-xs font-bold bg-red-50 dark:bg-red-950/20">
+            {summaryError}
+          </div>
+          {isPage && (
+            <Link
+              href="/dashboard/counsellor/students"
+              className="neu-btn py-2 px-4 text-xs font-bold inline-flex items-center gap-1.5"
+            >
+              <span>Back to Assigned Students</span>
+            </Link>
+          )}
+        </div>
+      );
+    }
+    return null;
+  }
 
   const bodyContent = (
     <>
@@ -865,177 +966,558 @@ export function StudentDetailModal({
             ======================================================== */}
             {activeTab === 'documents' && (
               <div className="space-y-4">
-                {/* Header & Filter Bar */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs p-4">
-                  <div>
-                    <h3 className="font-display text-base text-germany-black dark:text-white">Uploaded Documents Verification Hub</h3>
-                    <p className="text-xs font-bold text-gray-500">
-                      Review, verify, accept, or reject each document with custom feedback.
-                    </p>
+                {/* Inline Action Feedback Banner */}
+                {docActionFeedback && (
+                  <div
+                    className={`p-3.5 rounded-2xl text-xs font-bold flex items-center justify-between border shadow-xs ${
+                      docActionFeedback.type === 'success'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800/60'
+                        : 'bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800/60'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      {docActionFeedback.type === 'success' ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      ) : (
+                        <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
+                      )}
+                      <span>{docActionFeedback.message}</span>
+                    </div>
+                    <button
+                      onClick={() => setDocActionFeedback(null)}
+                      className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
+                      aria-label="Dismiss notification"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Hub Header & Sub-Category Selector */}
+                <div className="bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs p-4 sm:p-5 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <h3 className="font-display text-base text-germany-black dark:text-white">Uploaded Documents Verification Hub</h3>
+                      <p className="text-xs font-bold text-gray-500">
+                        Review, verify, accept, or request revisions on student documents with real-time feedback.
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Filter Pills */}
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[11px] font-extrabold text-gray-400 mr-1">Filter:</span>
-                    {(['all', 'pending', 'verified', 'rejected'] as const).map((filter) => (
-                      <button
-                        key={filter}
-                        onClick={() => setDocFilter(filter)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold capitalize cursor-pointer transition-colors ${
-                          docFilter === filter
-                            ? 'bg-germany-red text-white shadow-xs'
-                            : 'bg-[#EBE7E0] dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
-                        }`}
-                      >
-                        {filter} {filter === 'all' ? `(${documents.length})` : `(${documents.filter((d) => d.status === filter).length})`}
-                      </button>
-                    ))}
+                  {/* 4 Category Navigation Tabs */}
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-gray-100 dark:border-gray-800/70">
+                    <button
+                      onClick={() => {
+                        setDocCategory('all');
+                        if (docFilter === 'not_uploaded') setDocFilter('all');
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all ${
+                        docCategory === 'all'
+                          ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black shadow-xs'
+                          : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
+                      }`}
+                    >
+                      All Documents ({allUploadedCount})
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setDocCategory('aps');
+                        if (docFilter === 'not_uploaded') setDocFilter('all');
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all ${
+                        docCategory === 'aps'
+                          ? 'bg-germany-red text-white shadow-xs'
+                          : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
+                      }`}
+                    >
+                      APS Documents ({apsUploadedCount})
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setDocCategory('general');
+                        if (docFilter === 'not_uploaded') setDocFilter('all');
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all ${
+                        docCategory === 'general'
+                          ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black shadow-xs'
+                          : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
+                      }`}
+                    >
+                      General Documents ({generalUploadedCount})
+                    </button>
+
+                    <button
+                      onClick={() => setDocCategory('lor_sop_cv')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all inline-flex items-center gap-2 ${
+                        docCategory === 'lor_sop_cv'
+                          ? 'bg-amber-600 text-white shadow-xs'
+                          : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
+                      }`}
+                    >
+                      <span>LOR, SOP &amp; CV</span>
+                      <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-400/30 text-amber-900 dark:text-amber-200">
+                        Coming Soon
+                      </span>
+                    </button>
                   </div>
                 </div>
 
-                {/* Documents List */}
-                <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
-                  {docsLoading ? (
-                    <div className="p-12 flex flex-col items-center justify-center gap-2 text-gray-400 text-xs font-bold">
-                      <Loader2 className="w-6 h-6 animate-spin text-germany-red" />
-                      <span>Loading uploaded documents from student records...</span>
+                {/* If LOR, SOP & CV is selected, show Coming Soon Placeholder */}
+                {docCategory === 'lor_sop_cv' ? (
+                  <div className="p-8 sm:p-12 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs text-center space-y-3">
+                    <div className="w-12 h-12 mx-auto rounded-2xl bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                      <Clock className="w-6 h-6" />
                     </div>
-                  ) : docsError ? (
-                    <div className="p-6 border-2 border-dashed border-red-200 dark:border-red-900/40 rounded-2xl text-center text-red-500 dark:text-red-400 text-xs font-bold bg-red-50 dark:bg-red-950/20">
-                      {docsError}
+                    <h4 className="font-display text-base text-germany-black dark:text-white">
+                      LOR, SOP &amp; CV Workflow — Coming Soon
+                    </h4>
+                    <p className="text-xs font-bold text-gray-500 max-w-md mx-auto">
+                      Dedicated drafting, review, and feedback pipeline for Letters of Recommendation, Statements of Purpose, and Academic CVs will be available in an upcoming release.
+                    </p>
+                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 text-[11px] font-extrabold text-gray-600 dark:text-gray-300">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-germany-gold" />
+                      <span>Standard documents and APS checklist verification are fully active</span>
                     </div>
-                  ) : filteredDocs.length === 0 ? (
-                    <div className="p-8 border-2 border-dashed border-[#EBE7E0] dark:border-gray-800 rounded-2xl text-center text-gray-400 text-xs font-bold">
-                      {documents.length === 0 ? 'No documents have been uploaded by this student yet.' : 'No documents found for this filter.'}
-                    </div>
-                  ) : (
-                    <div className="divide-y divide-[#EBE7E0] dark:divide-gray-800/80">
-                      {filteredDocs.map((doc) => {
-                        const isVerified = doc.status === 'verified';
-                        const isPending = doc.status === 'pending';
-                        const isRejected = doc.status === 'rejected';
+                  </div>
+                ) : (
+                  <>
+                    {/* Completeness & Progress Overview Card */}
+                    <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Target className="w-4 h-4 text-germany-red" />
+                          <h4 className="text-xs font-black uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                            Document Completeness &amp; Progress (
+                            {docCategory === 'all'
+                              ? 'All Categories'
+                              : docCategory === 'aps'
+                              ? 'APS Checklist'
+                              : 'General Documents'}
+                            )
+                          </h4>
+                        </div>
+                        <span className="text-[11px] font-extrabold text-gray-400">
+                          {statsUploaded} of {statsTotalExpected} Expected Uploaded
+                        </span>
+                      </div>
 
-                        return (
-                          <div key={doc.id} className="py-3.5 space-y-2">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                              {/* Left: Document details */}
-                              <div className="flex items-start gap-3">
-                                <div
-                                  className={`p-2.5 rounded-xl shrink-0 ${
-                                    isVerified
-                                      ? 'bg-emerald-100 text-emerald-700'
-                                      : isPending
-                                      ? 'bg-amber-100 text-amber-700'
-                                      : 'bg-red-100 text-red-700'
-                                  }`}
-                                >
-                                  <FileText className="w-4 h-4" />
-                                </div>
+                      {/* 6 Metric Overview Tiles */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                        <button
+                          type="button"
+                          onClick={() => setDocFilter('all')}
+                          className="p-3 rounded-xl bg-gray-50 dark:bg-[#151B27] border border-gray-200/70 dark:border-gray-800/70 text-left hover:border-gray-300 dark:hover:border-gray-700 transition-colors cursor-pointer"
+                        >
+                          <span className="text-[10px] font-extrabold uppercase text-gray-400 block">Total Expected</span>
+                          <span className="text-lg font-black text-germany-black dark:text-white mt-0.5 block">{statsTotalExpected}</span>
+                          <span className="text-[10px] font-bold text-gray-400">Catalogue items</span>
+                        </button>
 
-                                <div>
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <h4 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white">
-                                      {doc.name}
-                                    </h4>
-                                    <span
-                                      className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${
-                                        isVerified
-                                          ? 'bg-emerald-100 text-emerald-800'
-                                          : isPending
-                                          ? 'bg-amber-100 text-amber-800'
-                                          : 'bg-red-100 text-red-800'
-                                      }`}
-                                    >
-                                      {isVerified ? 'Verified & Accepted' : isPending ? 'Pending Verification' : 'Revision Needed'}
-                                    </span>
+                        <button
+                          type="button"
+                          onClick={() => setDocFilter('all')}
+                          className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${
+                            docFilter === 'all'
+                              ? 'bg-blue-50/70 dark:bg-blue-950/30 border-blue-300 dark:border-blue-800'
+                              : 'bg-gray-50 dark:bg-[#151B27] border-gray-200/70 dark:border-gray-800/70 hover:border-blue-200'
+                          }`}
+                        >
+                          <span className="text-[10px] font-extrabold uppercase text-blue-600 dark:text-blue-400 block">Uploaded</span>
+                          <span className="text-lg font-black text-blue-700 dark:text-blue-300 mt-0.5 block">{statsUploaded}</span>
+                          <span className="text-[10px] font-bold text-gray-400">Files received</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setDocFilter('not_uploaded')}
+                          className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${
+                            docFilter === 'not_uploaded'
+                              ? 'bg-purple-50/70 dark:bg-purple-950/30 border-purple-300 dark:border-purple-800'
+                              : 'bg-gray-50 dark:bg-[#151B27] border-gray-200/70 dark:border-gray-800/70 hover:border-purple-200'
+                          }`}
+                        >
+                          <span className="text-[10px] font-extrabold uppercase text-purple-600 dark:text-purple-400 block">Not Uploaded</span>
+                          <span className="text-lg font-black text-purple-700 dark:text-purple-300 mt-0.5 block">{statsNotUploaded}</span>
+                          <span className="text-[10px] font-bold text-gray-400">Awaiting student</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setDocFilter('pending')}
+                          className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${
+                            docFilter === 'pending'
+                              ? 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800'
+                              : 'bg-gray-50 dark:bg-[#151B27] border-gray-200/70 dark:border-gray-800/70 hover:border-amber-200'
+                          }`}
+                        >
+                          <span className="text-[10px] font-extrabold uppercase text-amber-600 dark:text-amber-400 block">Pending Review</span>
+                          <span className="text-lg font-black text-amber-700 dark:text-amber-300 mt-0.5 block">{statsPending}</span>
+                          <span className="text-[10px] font-bold text-gray-400">Action required</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setDocFilter('verified')}
+                          className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${
+                            docFilter === 'verified'
+                              ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800'
+                              : 'bg-gray-50 dark:bg-[#151B27] border-gray-200/70 dark:border-gray-800/70 hover:border-emerald-200'
+                          }`}
+                        >
+                          <span className="text-[10px] font-extrabold uppercase text-emerald-600 dark:text-emerald-400 block">Verified</span>
+                          <span className="text-lg font-black text-emerald-700 dark:text-emerald-300 mt-0.5 block">{statsVerified}</span>
+                          <span className="text-[10px] font-bold text-gray-400">Accepted &amp; ready</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setDocFilter('rejected')}
+                          className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${
+                            docFilter === 'rejected'
+                              ? 'bg-red-50/70 dark:bg-red-950/30 border-red-300 dark:border-red-800'
+                              : 'bg-gray-50 dark:bg-[#151B27] border-gray-200/70 dark:border-gray-800/70 hover:border-red-200'
+                          }`}
+                        >
+                          <span className="text-[10px] font-extrabold uppercase text-red-600 dark:text-red-400 block">Needs Revision</span>
+                          <span className="text-lg font-black text-red-700 dark:text-red-300 mt-0.5 block">{statsRejected}</span>
+                          <span className="text-[10px] font-bold text-gray-400">Rejected / feedback</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Filter Pills Bar */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs p-4">
+                      <div className="text-xs font-bold text-gray-500">
+                        Showing{' '}
+                        <span className="text-germany-black dark:text-white font-extrabold">
+                          {docFilter === 'not_uploaded'
+                            ? `${notUploadedCatalogueItems.length} Not Uploaded Documents`
+                            : `${filteredDocs.length} Uploaded Documents`}
+                        </span>{' '}
+                        in{' '}
+                        <span className="text-germany-black dark:text-white font-extrabold">
+                          {docCategory === 'all'
+                            ? 'All Categories'
+                            : docCategory === 'aps'
+                            ? 'APS Checklist'
+                            : 'General Documents'}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[11px] font-extrabold text-gray-400 mr-1">Filter by status:</span>
+                        {(
+                          [
+                            { id: 'all', label: 'All', count: statsUploaded },
+                            { id: 'pending', label: 'Pending', count: statsPending },
+                            { id: 'verified', label: 'Verified', count: statsVerified },
+                            { id: 'rejected', label: 'Rejected', count: statsRejected },
+                            { id: 'not_uploaded', label: 'Not Uploaded', count: statsNotUploaded },
+                          ] as const
+                        ).map((filter) => (
+                          <button
+                            key={filter.id}
+                            onClick={() => setDocFilter(filter.id)}
+                            className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold capitalize cursor-pointer transition-colors ${
+                              docFilter === filter.id
+                                ? 'bg-germany-red text-white shadow-xs'
+                                : 'bg-[#EBE7E0] dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
+                            }`}
+                          >
+                            {filter.label} ({filter.count})
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Documents List Container */}
+                    <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
+                      {docsLoading ? (
+                        <div className="p-12 flex flex-col items-center justify-center gap-2 text-gray-400 text-xs font-bold">
+                          <Loader2 className="w-6 h-6 animate-spin text-germany-red" />
+                          <span>Loading uploaded documents from student records...</span>
+                        </div>
+                      ) : docsError ? (
+                        <div className="p-6 border-2 border-dashed border-red-200 dark:border-red-900/40 rounded-2xl text-center text-red-500 dark:text-red-400 text-xs font-bold bg-red-50 dark:bg-red-950/20">
+                          {docsError}
+                        </div>
+                      ) : docFilter === 'not_uploaded' ? (
+                        /* Not Uploaded Catalogue Items View */
+                        notUploadedCatalogueItems.length === 0 ? (
+                          <div className="p-8 border-2 border-dashed border-emerald-200 dark:border-emerald-900/40 rounded-2xl text-center text-emerald-700 dark:text-emerald-400 text-xs font-bold bg-emerald-50/50 dark:bg-emerald-950/20">
+                            Great news! All expected documents for this category have been uploaded by the student.
+                          </div>
+                        ) : (
+                          <div className="divide-y divide-[#EBE7E0] dark:divide-gray-800/80">
+                            {notUploadedCatalogueItems.map((item) => (
+                              <div key={item.type} className="py-3.5 space-y-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                  <div className="flex items-start gap-3">
+                                    <div className="p-2.5 rounded-xl shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-700">
+                                      <Clock className="w-4 h-4" />
+                                    </div>
+
+                                    <div>
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <h4 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white">
+                                          {item.name}
+                                        </h4>
+                                        <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                                          Not Uploaded
+                                        </span>
+                                        <span
+                                          className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                                            item.section === 'aps'
+                                              ? 'bg-germany-red/10 text-germany-red border border-germany-red/20'
+                                              : 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+                                          }`}
+                                        >
+                                          {item.section === 'aps' ? 'APS Checklist' : 'General Document'}
+                                        </span>
+                                      </div>
+
+                                      <p className="text-[11px] font-bold text-gray-400 mt-0.5">
+                                        {item.category} • {item.description}
+                                        {item.required && (
+                                          <span className="text-amber-600 dark:text-amber-400 font-extrabold ml-1.5">
+                                            • Mandatory Requirement
+                                          </span>
+                                        )}
+                                      </p>
+                                    </div>
                                   </div>
 
-                                  <p className="text-[11px] font-bold text-gray-400 mt-0.5">
-                                    {doc.category} • Uploaded {doc.uploadDate} • {doc.size}
-                                    {doc.originalFilename && <span className="font-mono text-[10px] text-gray-500 dark:text-gray-400 ml-1">({doc.originalFilename})</span>}
-                                    {doc.verifiedAt && <span className="text-emerald-700 font-extrabold ml-1.5">• Verified {doc.verifiedAt}</span>}
-                                  </p>
+                                  <div className="shrink-0 self-start sm:self-center">
+                                    <span className="text-xs font-bold text-gray-400 italic">
+                                      Awaiting student submission
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
-
-                              {/* Right: Actions */}
-                              <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                                {/* Preview Button */}
-                                <button
-                                  onClick={() => setPreviewDoc(doc)}
-                                  className="py-1.5 px-3 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:text-germany-black dark:hover:text-white bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
-                                  title="Preview document contents"
-                                >
-                                  <Eye className="w-3.5 h-3.5" />
-                                  <span>Preview</span>
-                                </button>
-
-                                {/* Direct File Link */}
-                                {doc.url && (
-                                  <a
-                                    href={doc.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="py-1.5 px-3 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:text-germany-black dark:hover:text-white bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
-                                    title="Open original file in new tab"
-                                  >
-                                    <ExternalLink className="w-3.5 h-3.5" />
-                                    <span>Open</span>
-                                  </a>
-                                )}
-
-                                {/* Accept / Verify Button */}
-                                <button
-                                  onClick={() => handleVerifyDoc(doc.id)}
-                                  disabled={docActionLoading === doc.id}
-                                  className={`py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer ${
-                                    isVerified
-                                      ? 'bg-emerald-700 text-white shadow-xs'
-                                      : 'bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 shadow-xs'
-                                  }`}
-                                  title="Accept and verify document"
-                                >
-                                  {docActionLoading === doc.id ? (
-                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                  ) : (
-                                    <CheckCircle2 className="w-3.5 h-3.5" />
-                                  )}
-                                  <span>{isVerified ? 'Verified' : 'Accept'}</span>
-                                </button>
-
-                                {/* Reject / Revision Button */}
-                                <button
-                                  onClick={() => handleOpenRejectModal(doc)}
-                                  disabled={docActionLoading === doc.id}
-                                  className={`py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer ${
-                                    isRejected
-                                      ? 'bg-red-700 text-white shadow-xs'
-                                      : 'bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 shadow-xs'
-                                  }`}
-                                  title="Reject document and request revision"
-                                >
-                                  <AlertTriangle className="w-3.5 h-3.5" />
-                                  <span>{isRejected ? 'Edit Reason' : 'Reject'}</span>
-                                </button>
-                              </div>
-                            </div>
-
-                            {/* Rejection Note Display */}
-                            {doc.rejectionReason && (
-                              <div className="ml-10 p-2.5 rounded-xl bg-red-50/80 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 text-xs text-red-800 dark:text-red-300 flex items-start gap-2">
-                                <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-red-600 dark:text-red-400" />
-                                <div>
-                                  <span className="font-extrabold">Counsellor Feedback to Student: </span>
-                                  <span>{doc.rejectionReason}</span>
-                                </div>
-                              </div>
-                            )}
+                            ))}
                           </div>
-                        );
-                      })}
+                        )
+                      ) : filteredDocs.length === 0 ? (
+                        /* Empty state when 0 uploaded docs match filter */
+                        <div className="p-8 border-2 border-dashed border-[#EBE7E0] dark:border-gray-800 rounded-2xl text-center space-y-2 text-xs font-bold text-gray-400">
+                          <p>
+                            {currentCategoryUploadedDocs.length === 0
+                              ? `No uploaded documents in this category yet (${statsNotUploaded} expected documents pending submission).`
+                              : `No documents found matching the "${docFilter}" status filter.`}
+                          </p>
+                          {statsNotUploaded > 0 && docFilter !== 'all' && (
+                            <button
+                              onClick={() => setDocFilter('not_uploaded')}
+                              className="text-germany-red font-extrabold hover:underline inline-flex items-center gap-1 cursor-pointer"
+                            >
+                              <span>View {statsNotUploaded} pending documents not uploaded yet &rarr;</span>
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        /* Uploaded Documents List */
+                        <div className="divide-y divide-[#EBE7E0] dark:divide-gray-800/80">
+                          {filteredDocs.map((doc) => {
+                            const isVerified = doc.status === 'verified';
+                            const isPending = doc.status === 'pending';
+                            const isRejected = doc.status === 'rejected';
+
+                            return (
+                              <div key={doc.id} className="py-3.5 space-y-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                  {/* Left: Document details */}
+                                  <div className="flex items-start gap-3">
+                                    <div
+                                      className={`p-2.5 rounded-xl shrink-0 ${
+                                        isVerified
+                                          ? 'bg-emerald-100 text-emerald-700'
+                                          : isPending
+                                          ? 'bg-amber-100 text-amber-700'
+                                          : 'bg-red-100 text-red-700'
+                                      }`}
+                                    >
+                                      <FileText className="w-4 h-4" />
+                                    </div>
+
+                                    <div>
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <h4 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white">
+                                          {doc.name}
+                                        </h4>
+
+                                        {/* Status Badge with both text and color */}
+                                        <span
+                                          className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 ${
+                                            isVerified
+                                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                              : isPending
+                                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                                              : 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300'
+                                          }`}
+                                        >
+                                          {isVerified ? (
+                                            <>
+                                              <CheckCircle2 className="w-3 h-3" />
+                                              <span>Verified</span>
+                                            </>
+                                          ) : isPending ? (
+                                            <>
+                                              <Clock className="w-3 h-3" />
+                                              <span>Pending Verification</span>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <AlertTriangle className="w-3 h-3" />
+                                              <span>Revision Needed</span>
+                                            </>
+                                          )}
+                                        </span>
+
+                                        {/* Category Label Badge */}
+                                        <span
+                                          className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                                            doc.section === 'aps'
+                                              ? 'bg-germany-red/10 text-germany-red border border-germany-red/20'
+                                              : 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+                                          }`}
+                                        >
+                                          {doc.section === 'aps' ? 'APS Checklist' : 'General Document'}
+                                        </span>
+                                      </div>
+
+                                      <p className="text-[11px] font-bold text-gray-400 mt-0.5">
+                                        {doc.category} • Uploaded {doc.uploadDate} • {doc.size}
+                                        {doc.originalFilename && (
+                                          <span className="font-mono text-[10px] text-gray-500 dark:text-gray-400 ml-1">
+                                            ({doc.originalFilename})
+                                          </span>
+                                        )}
+                                        {doc.verifiedAt && (
+                                          <span className="text-emerald-700 dark:text-emerald-400 font-extrabold ml-1.5">
+                                            • Verified {doc.verifiedAt}
+                                          </span>
+                                        )}
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  {/* Right: Actions */}
+                                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-center flex-wrap">
+                                    {/* Preview Button */}
+                                    <button
+                                      onClick={() => setPreviewDoc(doc)}
+                                      className="py-1.5 px-3 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:text-germany-black dark:hover:text-white bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                                      title="Preview document contents"
+                                    >
+                                      <Eye className="w-3.5 h-3.5" />
+                                      <span>Preview</span>
+                                    </button>
+
+                                    {/* Direct File Link */}
+                                    {doc.url && (
+                                      <a
+                                        href={doc.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="py-1.5 px-3 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:text-germany-black dark:hover:text-white bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                                        title="Open original file in new tab"
+                                      >
+                                        <ExternalLink className="w-3.5 h-3.5" />
+                                        <span>Open</span>
+                                      </a>
+                                    )}
+
+                                    {/* Accept / Verify Button */}
+                                    {isVerified ? (
+                                      <div
+                                        className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-emerald-100/70 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60"
+                                        title="Document already verified"
+                                      >
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                        <span>Verified</span>
+                                      </div>
+                                    ) : (
+                                      <button
+                                        onClick={() => handleVerifyDoc(doc.id)}
+                                        disabled={docActionLoading === doc.id}
+                                        className="py-1.5 px-3.5 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                                        title="Accept and verify document"
+                                      >
+                                        {docActionLoading === doc.id ? (
+                                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        ) : (
+                                          <CheckCircle2 className="w-3.5 h-3.5" />
+                                        )}
+                                        <span>Accept</span>
+                                      </button>
+                                    )}
+
+                                    {/* Reject / Edit Reason / Request Re-upload Actions */}
+                                    {isRejected ? (
+                                      <>
+                                        <button
+                                          onClick={() => handleOpenRejectModal(doc)}
+                                          disabled={docActionLoading === doc.id}
+                                          className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-white dark:bg-[#151B27] border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 shadow-xs"
+                                          title="Update rejection feedback"
+                                        >
+                                          <AlertTriangle className="w-3.5 h-3.5" />
+                                          <span>Edit Reason</span>
+                                        </button>
+                                        <button
+                                          onClick={() => handleOpenRejectModal(doc)}
+                                          disabled={docActionLoading === doc.id}
+                                          className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-red-600 hover:bg-red-700 text-white shadow-xs"
+                                          title="Re-request student re-upload"
+                                        >
+                                          <AlertCircle className="w-3.5 h-3.5" />
+                                          <span>Request Re-upload</span>
+                                        </button>
+                                      </>
+                                    ) : (
+                                      <button
+                                        onClick={() => handleOpenRejectModal(doc)}
+                                        disabled={docActionLoading === doc.id}
+                                        className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 shadow-xs"
+                                        title="Reject document and request revision"
+                                      >
+                                        <AlertTriangle className="w-3.5 h-3.5" />
+                                        <span>Reject</span>
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Rejection Note Display - Prominent & Distinguished */}
+                                {doc.rejectionReason && (
+                                  <div className="ml-10 p-3 rounded-xl bg-red-50/90 dark:bg-red-950/40 border-l-4 border-l-red-600 border-y border-r border-red-200/80 dark:border-red-900/40 text-xs text-red-900 dark:text-red-200 flex items-start gap-2.5 shadow-2xs">
+                                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600 dark:text-red-400" />
+                                    <div className="space-y-0.5 flex-1">
+                                      <div className="flex items-center justify-between">
+                                        <span className="font-black uppercase tracking-wider text-[10px] text-red-700 dark:text-red-300">
+                                          Counsellor Feedback &amp; Revision Required:
+                                        </span>
+                                        <button
+                                          onClick={() => handleOpenRejectModal(doc)}
+                                          className="text-[10px] font-extrabold text-red-700 dark:text-red-300 hover:underline cursor-pointer"
+                                        >
+                                          Edit Feedback
+                                        </button>
+                                      </div>
+                                      <p className="font-medium text-gray-800 dark:text-gray-200">{doc.rejectionReason}</p>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  </>
+                )}
               </div>
             )}
 
@@ -1509,11 +1991,19 @@ export function StudentDetailModal({
             >
               <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-display text-base">
                 <AlertTriangle className="w-5 h-5" />
-                <h3>Request Document Revision</h3>
+                <h3>
+                  {rejectingDoc.status === 'rejected'
+                    ? 'Update Feedback & Request Re-upload'
+                    : 'Request Document Revision & Re-upload'}
+                </h3>
               </div>
 
               <p className="text-xs font-bold text-gray-500 dark:text-gray-400">
-                Provide specific feedback for <span className="text-germany-black dark:text-white font-extrabold">{rejectingDoc.name}</span> so the student knows what to re-upload.
+                {rejectingDoc.status === 'rejected'
+                  ? 'Update revision instructions for '
+                  : 'Provide specific feedback for '}
+                <span className="text-germany-black dark:text-white font-extrabold">{rejectingDoc.name}</span>{' '}
+                so the student knows what to correct and re-upload.
               </p>
 
               <textarea
@@ -1540,7 +2030,11 @@ export function StudentDetailModal({
                   className="py-1.5 px-4 text-xs font-extrabold bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-xl shadow-xs transition-colors cursor-pointer inline-flex items-center gap-1.5"
                 >
                   {docActionLoading === rejectingDoc.id && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  <span>Confirm Rejection</span>
+                  <span>
+                    {rejectingDoc.status === 'rejected'
+                      ? 'Update & Request Re-upload'
+                      : 'Confirm Rejection & Notify Student'}
+                  </span>
                 </button>
               </div>
             </motion.div>

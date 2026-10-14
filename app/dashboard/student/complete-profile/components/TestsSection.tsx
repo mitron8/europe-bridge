@@ -82,6 +82,28 @@ export default function TestsSection({ data, onChange, onNext, onPrev }: Props) 
     onChange({ standardizedTests: data.standardizedTests.filter(record => record.id !== id) });
   };
 
+  const [dmatTouched, setDmatTouched] = React.useState(false);
+
+  const getDmatValidationError = () => {
+    if (data.dmatProficiencyState === 'LEVEL') {
+      if (data.dmatScore === '' || data.dmatScore === null || data.dmatScore === undefined) {
+        return 'dMAT score is required.';
+      }
+      const num = Number(data.dmatScore);
+      if (isNaN(num) || num < 0) {
+        return 'dMAT score must be a valid non-negative number.';
+      }
+    }
+    return '';
+  };
+
+  const handleNext = () => {
+    setDmatTouched(true);
+    const dmatErr = getDmatValidationError();
+    if (dmatErr) return;
+    onNext();
+  };
+
   return (
     <div>
       <h3 className="text-xl font-extrabold text-germany-black dark:text-white font-display mb-6">Language & Standardized Tests</h3>
@@ -263,6 +285,52 @@ export default function TestsSection({ data, onChange, onNext, onPrev }: Props) 
         )}
       </div>
 
+      {/* dMAT PROFICIENCY */}
+      <div className="mb-10">
+        <h4 className="text-md font-extrabold text-germany-black dark:text-white font-display mb-4">dMAT Proficiency</h4>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <label className={`cursor-pointer p-4 rounded-xl border-2 flex items-center transition-all ${data.dmatProficiencyState === 'NO' ? 'border-germany-red bg-red-50 dark:bg-red-950/20' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111622] hover:bg-gray-50 dark:hover:bg-gray-800/40'}`}>
+            <input type="radio" name="dmatProficiencyState" value="NO" className="mr-3 w-4 h-4 text-germany-red"
+              checked={data.dmatProficiencyState === 'NO'} 
+              onChange={() => onChange({ dmatProficiencyState: 'NO', dmatScore: '' })} 
+            />
+            <span className="font-bold text-sm text-germany-black dark:text-white">Not applicable / No test</span>
+          </label>
+          <label className={`cursor-pointer p-4 rounded-xl border-2 flex items-center transition-all ${data.dmatProficiencyState === 'LEVEL' ? 'border-germany-red bg-red-50 dark:bg-red-950/20' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111622] hover:bg-gray-50 dark:hover:bg-gray-800/40'}`}>
+            <input type="radio" name="dmatProficiencyState" value="LEVEL" className="mr-3 w-4 h-4 text-germany-red"
+              checked={data.dmatProficiencyState === 'LEVEL'} 
+              onChange={() => onChange({ dmatProficiencyState: 'LEVEL' })} 
+            />
+            <span className="font-bold text-sm text-germany-black dark:text-white">Level / Has proficiency</span>
+          </label>
+        </div>
+
+        {data.dmatProficiencyState === 'LEVEL' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-2xl bg-gray-50 dark:bg-[#0E121A] border border-gray-100 dark:border-gray-800 shadow-sm animate-fade-in">
+            <div>
+              <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">dMAT Score *</label>
+              <input 
+                type="number" 
+                step="any"
+                min="0"
+                placeholder="Enter dMAT score" 
+                value={data.dmatScore ?? ''} 
+                onChange={(e) => {
+                  const val = e.target.value !== '' ? parseFloat(e.target.value) : '';
+                  onChange({ dmatScore: val });
+                }} 
+                onBlur={() => setDmatTouched(true)}
+                className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white" 
+              />
+              {(dmatTouched || data.dmatScore !== '') && getDmatValidationError() && (
+                <p className="mt-1.5 text-xs text-germany-red font-medium">{getDmatValidationError()}</p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* STANDARDIZED TESTS */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
@@ -320,7 +388,7 @@ export default function TestsSection({ data, onChange, onNext, onPrev }: Props) 
 
       <div className="flex justify-between mt-8">
         <button onClick={onPrev} className="px-5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all font-bold text-xs cursor-pointer text-gray-700 dark:text-gray-200 bg-white dark:bg-[#0E121A]">Back</button>
-        <button onClick={onNext} className="neu-btn-primary px-6 py-2.5 text-xs font-bold cursor-pointer">Save & Continue</button>
+        <button onClick={handleNext} className="neu-btn-primary px-6 py-2.5 text-xs font-bold cursor-pointer">Save & Continue</button>
       </div>
     </div>
   );

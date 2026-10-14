@@ -4,6 +4,7 @@ import React, { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProfileCompletionGate from '@/components/ProfileCompletionGate';
+import { StudentDocumentHub } from '@/components/StudentDocumentHub';
 import {
   Compass,
   Bookmark,
@@ -301,52 +302,7 @@ export default function StudentSectionPage({ params }: { params: Promise<{ secti
         </div>
       )}
 
-      {section === 'documents' && (
-        <div className="space-y-6">
-          <div className="neu-card p-6 bg-white space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-display text-lg text-germany-black">Uploaded Documents Repository</h3>
-              <button className="neu-btn-primary py-2 px-4 text-xs font-extrabold flex items-center gap-2 cursor-pointer">
-                <Upload className="w-3.5 h-3.5" />
-                <span>Upload New Document</span>
-              </button>
-            </div>
-
-            <div className="divide-y divide-[#EBE7E0]">
-              {[
-                { name: 'Bachelor Degree Certificate (Provisional)', status: 'Approved', date: 'Aug 24, 2026', size: '2.4 MB' },
-                { name: 'Official Bachelor Transcripts (Sem 1-8)', status: 'Approved', date: 'Aug 24, 2026', size: '4.8 MB' },
-                { name: 'IELTS Academic Test Report (7.5 Band)', status: 'Approved', date: 'Aug 20, 2026', size: '1.1 MB' },
-                { name: 'Statement of Purpose (TUM Draft)', status: 'In Review', date: 'Aug 26, 2026', size: '0.6 MB' },
-                { name: 'Academic Curriculum Vitae (Europass Format)', status: 'Action Needed', date: 'Aug 26, 2026', size: '0.4 MB' },
-              ].map((doc) => (
-                <div key={doc.name} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-germany-gold/20 text-germany-black shrink-0">
-                      <FileText className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-extrabold text-germany-black">{doc.name}</p>
-                      <p className="text-[11px] font-bold text-gray-400">Uploaded {doc.date} • {doc.size}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full ${
-                      doc.status === 'Approved' ? 'bg-emerald-100 text-emerald-800' :
-                      doc.status === 'In Review' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {doc.status}
-                    </span>
-                    <button className="neu-btn px-3 py-1 text-xs font-bold text-gray-600 hover:text-germany-red">
-                      Download
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      {section === 'documents' && <StudentDocumentHub />}
 
       {/* Fallback for other sub-sections */}
       {!['matching', 'documents', 'aps'].includes(section) && (

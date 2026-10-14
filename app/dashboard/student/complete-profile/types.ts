@@ -95,6 +95,8 @@ export interface ProfileData {
 
   englishProficiencyState: 'NO' | 'LEVEL' | '';
   germanProficiencyState: 'NO' | 'LEVEL' | '';
+  dmatProficiencyState: 'NO' | 'LEVEL' | '';
+  dmatScore: number | '';
 
   germanLevel: 'None' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2' | '';
   germanCertificateType: 'Goethe' | 'TELC' | 'TestDaF' | 'DSH' | 'Other' | 'None' | '';
@@ -158,6 +160,8 @@ export const emptyProfile: ProfileData = {
 
   englishProficiencyState: '',
   germanProficiencyState: '',
+  dmatProficiencyState: '',
+  dmatScore: '',
 
   germanLevel: '',
   germanCertificateType: '',
