@@ -80,42 +80,47 @@ export default function Hero() {
 
         <div className="h-[72px] shrink-0" />
 
-        <div className="lp-container relative grid min-h-0 flex-1 items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="lp-container relative z-10 grid min-h-0 flex-1 items-center gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
           {/* copy */}
-          <div className="relative z-10 max-w-[620px]">
+          <div className="relative z-10 max-w-[600px]">
             <div className="hero-fade mb-7 inline-flex items-center gap-2.5 text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--lp-muted)]">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--lp-red)]" />
               Germany admissions consultancy
             </div>
             <h1
-              className="lp-serif leading-[1.04] tracking-[-0.03em]"
-              style={{ fontSize: "clamp(3rem, min(6.6vw, 12vh), 7.6rem)" }}
+              className="lp-serif leading-[1.12] tracking-[-0.025em]"
+              style={{ fontSize: "clamp(2.35rem, min(4.2vw, 6.8vh), 3.85rem)" }}
             >
-              <span className="hero-line lp-line-mask">
-                <span>Study in</span>
+              <span className="hero-line lp-line-mask block">
+                <span className="inline-block">
+                  Study in <span className="inline-block sm:inline">Germany,</span>
+                </span>
               </span>
-              <span className="hero-line lp-line-mask">
-                <span>Germany,</span>
-              </span>
-              <span className="hero-line lp-line-mask">
-                <span>
+              <span className="hero-line lp-line-mask block mt-1 sm:mt-2">
+                <span className="inline-block">
                   <em className="lp-script text-[var(--lp-red)]">with certainty.</em>
                 </span>
               </span>
             </h1>
-            <p className="hero-fade mt-7 max-w-[440px] text-[16px] leading-[1.65] text-[var(--lp-muted)]">
+            <p className="hero-fade mt-6 max-w-[460px] text-[15px] sm:text-[16px] leading-[1.65] text-[var(--lp-muted)]">
               TU9 admissions, APS, blocked account and visa — guided end-to-end by alumni of Germany&apos;s top
               universities.
             </p>
-            <div className="hero-fade mt-9 flex flex-wrap items-center gap-3">
+            <div className="hero-fade mt-8 flex flex-wrap items-center gap-3">
               <Link href="/tools/admission-chance" className="lp-btn lp-btn--dark">
                 Check admission chances <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link href="/#cta" className="lp-btn lp-btn--ghost">
+              <Link
+                href="/#cta"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent("open-offer-modal"));
+                }}
+                className="lp-btn lp-btn--ghost"
+              >
                 Book a consultation
               </Link>
             </div>
-            <div className="hero-fade mt-10 flex items-center gap-4 [@media(max-height:700px)]:hidden">
+            <div className="hero-fade mt-8 flex items-center gap-4 [@media(max-height:700px)]:hidden">
               <div className="flex -space-x-2.5">
                 {["A", "P", "R", "+"].map((c, i) => (
                   <span
@@ -134,30 +139,54 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* card composition — photographed */}
-          <div className="relative hidden h-full min-h-0 items-center justify-center lg:flex">
-            <div className="hero-card relative w-[118%] max-w-[820px] shrink-0 mix-blend-multiply [@media(max-height:720px)]:w-[100%]">
-              <div style={depth(18, 0)}>
-                <div className="animate-[lp-float_7s_ease-in-out_infinite] motion-reduce:animate-none">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/hero/hero-cards.webp"
-                    alt="EuropeBridge boarding pass from New Delhi to Berlin, a letter of admission, an approved student visa and a funded blocked account"
-                    width={1024}
-                    height={712}
-                    fetchPriority="high"
-                    className="h-auto w-full select-none"
-                    draggable={false}
-                  />
-                </div>
-              </div>
+          {/* Spacer for desktop grid balance */}
+          <div className="hidden lg:block min-h-0" />
+        </div>
+
+        {/* Right side Arch Photo Frame — matching mockup */}
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-0 hidden w-[56vw] min-w-[520px] max-w-[960px] lg:block overflow-hidden">
+          {/* Outer decorative concentric arch line */}
+          <div
+            aria-hidden
+            className="absolute -top-16 right-0 h-[calc(100%+64px)] w-[calc(100%+80px)] rounded-tl-[300px] xl:rounded-tl-[380px] border-t border-l border-[var(--lp-rule-strong)]/20 pointer-events-none"
+          />
+          <div
+            aria-hidden
+            className="absolute -top-8 right-0 h-[calc(100%+32px)] w-[calc(100%+40px)] rounded-tl-[250px] xl:rounded-tl-[320px] border-t border-l border-[var(--lp-rule-strong)]/30 pointer-events-none"
+          />
+
+          {/* Main arch container with photo */}
+          <div className="hero-card relative h-full w-full overflow-hidden rounded-tl-[180px] lg:rounded-tl-[240px] xl:rounded-tl-[280px] border-t border-l border-[var(--lp-rule-strong)]/50 shadow-[-16px_0_40px_rgba(20,20,20,0.04)] pointer-events-auto">
+            <div style={depth(12, 0)} className="h-full w-full">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/hero/berlin-hero-banner.webp"
+                alt="Student with backpack overlooking the Berliner Dom and Spree River in Berlin, Germany"
+                width={1024}
+                height={454}
+                fetchPriority="high"
+                className="h-full w-full object-cover object-[24%_center] select-none"
+                draggable={false}
+              />
             </div>
+
+            {/* Left soft horizontal gradient fade into paper background */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-y-0 left-0 w-36 bg-gradient-to-r from-[var(--lp-paper)] via-[var(--lp-paper)]/40 to-transparent"
+            />
+
+            {/* Bottom soft gradient blend for stats legibility */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[var(--lp-paper)]/80 via-[var(--lp-paper)]/25 to-transparent"
+            />
           </div>
         </div>
 
         {/* bottom strip */}
-        <div className="lp-container relative shrink-0 pb-6">
-          <div className="hero-fade flex items-center justify-between border-t border-[var(--lp-rule-strong)] pt-4 text-[12px] text-[var(--lp-muted)]">
+        <div className="lp-container relative z-10 shrink-0 pb-6 pt-2">
+          <div className="hero-fade flex items-center justify-between text-[12px] text-[var(--lp-muted)]">
             <div className="hidden gap-8 sm:flex">
               <span>
                 <b className="font-semibold text-[var(--lp-text)]">€0</b> public tuition
@@ -169,9 +198,12 @@ export default function Hero() {
                 <b className="font-semibold text-[var(--lp-text)]">18-month</b> job seeker visa
               </span>
             </div>
-            <Link href="/#our-process" className="flex items-center gap-2 uppercase tracking-[0.18em] hover:text-[var(--lp-text)]">
+            <Link
+              href="/#our-process"
+              className="flex items-center gap-2.5 uppercase tracking-[0.24em] text-[11px] font-medium text-[var(--lp-muted)] hover:text-[var(--lp-text)] transition-colors"
+            >
               Scroll
-              <span className="relative block h-px w-10 overflow-hidden bg-[var(--lp-rule-strong)]">
+              <span className="relative block h-px w-12 overflow-hidden bg-[var(--lp-rule-strong)]">
                 <span className="absolute inset-y-0 left-0 w-1/2 animate-[lp-scrollx_1.8s_cubic-bezier(0.65,0,0.35,1)_infinite] bg-[var(--lp-ink)] motion-reduce:animate-none" />
               </span>
             </Link>

@@ -7,14 +7,41 @@ import ShaderCanvas from "./ShaderCanvas";
 
 export default function ClosingCTA() {
   return (
-    <section id="cta" data-stack className="relative bg-[var(--lp-paper)] pb-16 sm:pb-24">
+    <section id="cta" className="relative bg-[var(--lp-paper)] pb-16 sm:pb-24">
       <div className="lp-container">
         <div
           data-reveal
           className="lp-grain relative isolate overflow-hidden rounded-[28px] border border-white/10 bg-[#0d0d10] px-6 py-12 text-center text-white shadow-[0_24px_60px_-20px_rgba(13,13,15,0.4)] sm:px-12 sm:py-14 lg:px-16"
         >
+          {/* Background Architectural Outline Illustration - luminous chalk/gold lines */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-0 flex justify-center overflow-hidden opacity-[0.25] select-none"
+            style={{
+              filter: "invert(1) hue-rotate(180deg) brightness(1.25) contrast(1.15)",
+              mixBlendMode: "screen",
+              maskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 55%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 55%, transparent 100%)",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/landing/german-landmarks-outline.jpg"
+              alt=""
+              className="h-[260px] sm:h-[340px] md:h-[400px] w-full max-w-[1280px] object-cover object-bottom"
+              loading="lazy"
+            />
+          </div>
+
+          {/* Warm ambient radial glow behind the landmark skyline */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-[280px] opacity-40 blur-[100px]"
+            style={{ background: "radial-gradient(circle at 50% 100%, rgba(230,57,70,0.22), rgba(201,163,91,0.18), transparent 75%)" }}
+          />
+
           {/* Subtle ambient shader backdrop */}
-          <div className="opacity-45">
+          <div className="opacity-35 pointer-events-none absolute inset-0 z-0">
             <ShaderCanvas
               focus={[0, -0.2]}
               speed={0.6}
@@ -26,7 +53,7 @@ export default function ClosingCTA() {
               ]}
             />
           </div>
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#0d0d10]/70 via-[#0d0d10]/40 to-[#0d0d10]/85" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#0d0d10]/75 via-[#0d0d10]/35 to-[#0d0d10]/80 z-0" />
 
           {/* Content container */}
           <div className="relative mx-auto flex max-w-[720px] flex-col items-center">

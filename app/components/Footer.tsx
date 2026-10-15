@@ -2,6 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Mail, MapPin, Phone } from 'lucide-react';
+import { playfair } from './landing/fonts';
 
 const Instagram = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -42,10 +43,17 @@ const Footer = () => {
           
           {/* Brand Info */}
           <div className="space-y-6">
-            <Link href="/" className="inline-block">
-              <h2 className="font-display text-3xl text-white">
-                Europe<span className="text-germany-red">Bridge</span>
-              </h2>
+            <Link href="/" className="inline-flex items-center gap-2.5 group" aria-label="EuropeBridge Home">
+              <span aria-hidden className="flex h-[18px] w-[5px] flex-col overflow-hidden rounded-[1px] shadow-sm">
+                <span className="flex-1 bg-white" />
+                <span className="flex-1 bg-[#e63946]" />
+                <span className="flex-1 bg-[#c9a35b]" />
+              </span>
+              <span
+                className={`lp-serif ${playfair.className} text-[26px] leading-none tracking-[-0.01em] text-white`}
+              >
+                Europe<span className="italic font-normal">Bridge</span>
+              </span>
             </Link>
             <p className="text-gray-400 font-bold text-sm leading-relaxed max-w-xs">
               The AI-first operating system for study-abroad admissions, visa processing, and career consulting in Germany.

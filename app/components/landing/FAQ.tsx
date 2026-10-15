@@ -27,7 +27,7 @@ export default function FAQ() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="lp-sheet relative bg-[var(--lp-paper)] pb-28 pt-24 sm:pb-36 sm:pt-32">
+    <section id="faq" className="relative bg-[var(--lp-paper)] pb-28 pt-24 sm:pb-36 sm:pt-32 !shadow-none">
       <div className="lp-container grid gap-14 lg:grid-cols-[420px_1fr] lg:gap-24">
         <div className="lg:sticky lg:top-28 lg:self-start">
           <div data-reveal className="lp-eyebrow mb-6">

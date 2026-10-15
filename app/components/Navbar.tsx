@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Menu, X, User, LayoutDashboard, LogOut } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { logout } from '@/lib/auth';
+import { playfair } from './landing/fonts';
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -225,8 +226,17 @@ const Navbar = () => {
     }`}>
       {/* Left: Logo */}
       <div className="flex-1">
-        <Link href="/" className="font-display text-xl lg:text-2xl font-black text-germany-black no-underline inline-flex items-center gap-2 drop-shadow-sm tracking-tight group">
-          <span>Europe <span className="text-germany-red group-hover:opacity-90 transition-opacity">Bridge</span></span>
+        <Link href="/" className="no-underline inline-flex items-center gap-2.5 group" aria-label="EuropeBridge Home">
+          <span aria-hidden className="flex h-[18px] w-[5px] flex-col overflow-hidden rounded-[1px]">
+            <span className="flex-1 bg-[#0d0d0f]" />
+            <span className="flex-1 bg-[#e63946]" />
+            <span className="flex-1 bg-[#c9a35b]" />
+          </span>
+          <span
+            className={`text-[24px] leading-none tracking-[-0.01em] text-[#16161a] ${playfair.className}`}
+          >
+            Europe<span className="italic font-normal">Bridge</span>
+          </span>
         </Link>
       </div>
 

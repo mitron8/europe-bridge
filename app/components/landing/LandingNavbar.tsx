@@ -7,6 +7,7 @@ import { ArrowRight, ArrowUpRight, ChevronDown, LayoutDashboard, LogOut, Menu, P
 import { useAppStore } from "@/store/useAppStore";
 import { logout } from "@/lib/auth";
 import { navItems, type NavItem } from "./navData";
+import { playfair } from "./fonts";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -19,7 +20,7 @@ export function Wordmark({ light = false }: { light?: boolean }) {
         <span className="flex-1 bg-[#c9a35b]" />
       </span>
       <span
-        className={`lp-serif text-[24px] leading-none tracking-[-0.01em] ${light ? "text-white" : "text-[#16161a]"}`}
+        className={`lp-serif ${playfair.className} text-[24px] leading-none tracking-[-0.01em] ${light ? "text-white" : "text-[#16161a]"}`}
       >
         Europe<span className="italic font-normal">Bridge</span>
       </span>
@@ -167,7 +168,7 @@ export default function LandingNavbar() {
     : "/dashboard/student";
 
   return (
-    <>
+    <div id="landing-navbar-root">
       <header
         className={`fixed inset-x-0 top-0 z-50 transition-[transform,background-color,border-color] duration-500 ${
           hidden && open === null && !mobileOpen ? "-translate-y-full" : "translate-y-0"
@@ -266,7 +267,11 @@ export default function LandingNavbar() {
                 Log in
               </Link>
             )}
-            <Link href="/#cta" className={`lp-btn lp-btn--sm ${light ? "lp-btn--light" : "lp-btn--dark"}`}>
+            <Link
+              href="/#cta"
+              onClick={() => window.dispatchEvent(new CustomEvent("open-offer-modal"))}
+              className={`lp-btn lp-btn--sm ${light ? "lp-btn--light" : "lp-btn--dark"}`}
+            >
               Book a consultation
             </Link>
           </div>
@@ -413,7 +418,14 @@ export default function LandingNavbar() {
                     Log in
                   </Link>
                 )}
-                <Link href="/#cta" onClick={() => setMobileOpen(false)} className="lp-btn lp-btn--light w-full">
+                <Link
+                  href="/#cta"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    window.dispatchEvent(new CustomEvent("open-offer-modal"));
+                  }}
+                  className="lp-btn lp-btn--light w-full"
+                >
                   Book a consultation <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -421,6 +433,6 @@ export default function LandingNavbar() {
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 }

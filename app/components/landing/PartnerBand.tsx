@@ -18,7 +18,7 @@ export default function PartnerBand() {
 
   return (
     <section id="language-school" data-stack className="relative bg-[var(--lp-paper)] pb-28 sm:pb-36">
-      <div className="lp-container">
+      <div data-stack-inner className="lp-container">
         <div
           data-reveal
           className="relative grid gap-10 overflow-hidden rounded-[32px] border border-[var(--lp-rule)] bg-[var(--lp-paper-2)] p-8 sm:p-12 lg:grid-cols-[1.2fr_1fr] lg:items-center lg:gap-16 lg:p-16"

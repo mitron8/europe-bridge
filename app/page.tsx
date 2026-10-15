@@ -6,11 +6,11 @@ import Hero from "./components/landing/Hero";
 import UniversityStrip from "./components/landing/UniversityStrip";
 import MapRoadmap from "./components/landing/MapRoadmap";
 import ToolsIndex from "./components/landing/ToolsIndex";
-import PartnerBand from "./components/landing/PartnerBand";
 import Comparison from "./components/landing/Comparison";
 import Testimonials from "./components/landing/Testimonials";
 import ClosingCTA from "./components/landing/ClosingCTA";
 import FAQ from "./components/landing/FAQ";
+import OfferConsultationPopup from "./components/landing/OfferConsultationPopup";
 import SmoothScroll from "./components/landing/SmoothScroll";
 import FlightOverCity from "./components/FlightOverCity";
 import Footer from "./components/Footer";
@@ -24,11 +24,11 @@ export default function Page() {
         <UniversityStrip />
         <MapRoadmap />
         <ToolsIndex />
-        <PartnerBand />
         <Comparison />
         <Testimonials />
         <ClosingCTA />
         <FAQ />
+        <OfferConsultationPopup />
       </div>
       {/* Kept exactly as before — sits flush on the footer */}
       <div className="relative z-[40]">

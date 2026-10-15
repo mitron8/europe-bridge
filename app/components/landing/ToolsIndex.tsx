@@ -79,8 +79,8 @@ export default function ToolsIndex() {
   const list = tools.filter((t) => t.category === tab);
 
   return (
-    <section id="free-tools" className="relative bg-[var(--lp-paper)] pb-20 pt-28 sm:pb-24 sm:pt-36">
-      <div className="lp-container">
+    <section id="free-tools" data-stack className="relative bg-[var(--lp-paper)] pb-24 pt-28 sm:pb-32 sm:pt-36">
+      <div data-stack-inner className="lp-container">
         <div data-parallax="36" className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>
             <div data-reveal className="lp-eyebrow mb-6">

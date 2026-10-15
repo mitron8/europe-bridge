@@ -84,21 +84,22 @@ export default function SmoothScroll() {
     const ctx = gsap.context(() => {
       if (reduce) return;
 
-      // Overlap / stacking: [data-stack] sections hold still and recede while the next one slides over
+      // Overlap / stacking: [data-stack] sections hold still and recede while the next section slides over
       gsap.utils.toArray<HTMLElement>("[data-stack]").forEach((el) => {
         const inner =
           (el.querySelector("[data-stack-inner]") as HTMLElement | null) ||
           (el.firstElementChild as HTMLElement | null) ||
           el;
-        const start = () => (el.offsetHeight > window.innerHeight ? "bottom bottom" : "top top");
-        const end = () => "+=" + Math.min(el.offsetHeight, window.innerHeight);
+        const isTall = el.offsetHeight > window.innerHeight;
+        const start = () => (isTall ? "bottom bottom" : "top top");
+        const end = () => "+=" + Math.min(el.offsetHeight, window.innerHeight * 0.85);
         ScrollTrigger.create({ trigger: el, start, end, pin: true, pinSpacing: false, invalidateOnRefresh: true });
         gsap.fromTo(
           inner,
           { scale: 1, opacity: 1 },
           {
-            scale: 0.92,
-            opacity: 0.25,
+            scale: 0.94,
+            opacity: 0.45,
             transformOrigin: "50% 35%",
             ease: "none",
             scrollTrigger: { trigger: el, start, end, scrub: true, invalidateOnRefresh: true },

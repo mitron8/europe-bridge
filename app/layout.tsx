@@ -5,6 +5,8 @@ import "./globals.css";
 import { PerformanceGuard } from "@/components/PerformanceGuard";
 import { ThemeRouteGuard } from "@/components/ThemeRouteGuard";
 import { Providers } from "./providers";
+import Script from "next/script";
+import { playfair } from "./components/landing/fonts";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -115,9 +117,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${nunito.variable} ${ibmPlexSans.variable} ${geist.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${nunito.variable} ${ibmPlexSans.variable} ${geist.variable} ${playfair.variable}`}>
       <head>
-        <script
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               try {
