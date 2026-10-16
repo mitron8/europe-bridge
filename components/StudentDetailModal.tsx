@@ -31,7 +31,8 @@ import {
   Download,
   AlertCircle,
   Loader2,
-  Circle
+  Circle,
+  RefreshCw,
 } from 'lucide-react';
 import { AssignedStudent } from './CounsellorStudents';
 import { StudentFullProfileView } from './StudentFullProfileView';
@@ -145,6 +146,20 @@ export interface ConsultationTask {
   dueDate: string;
 }
 
+const MATCH_ELIGIBILITY_STYLES: Record<string, string> = {
+  ELIGIBLE: 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60',
+  CONDITIONAL: 'bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/60',
+  NEEDS_REVIEW: 'bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/60',
+  NOT_ELIGIBLE: 'bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800/60',
+};
+
+const MATCH_ELIGIBILITY_LABELS: Record<string, string> = {
+  ELIGIBLE: 'Eligible',
+  CONDITIONAL: 'Conditional',
+  NEEDS_REVIEW: 'Needs Review',
+  NOT_ELIGIBLE: 'Not Eligible',
+};
+
 export interface StudentDetailModalProps {
   student?: AssignedStudent | null;
   studentId?: string;
@@ -190,6 +205,66 @@ export function StudentDetailModal({
   const [newUniName, setNewUniName] = useState('');
   const [newUniProgram, setNewUniProgram] = useState('');
   const [newUniLocation, setNewUniLocation] = useState('');
+
+  // Matching Engine state
+  const [matchingRun, setMatchingRun] = useState<any>(null);
+  const [matchingResults, setMatchingResults] = useState<any[]>([]);
+  const [loadingMatching, setLoadingMatching] = useState(false);
+  const [runningMatching, setRunningMatching] = useState(false);
+  const [matchingError, setMatchingError] = useState<string | null>(null);
+
+  const fetchMatchingResults = async () => {
+    const effectiveStudentId = propStudent?.userId || studentId;
+    if (!effectiveStudentId) return;
+    setLoadingMatching(true);
+    setMatchingError(null);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+      const res = await fetch(`${API_URL}/matching/students/${effectiveStudentId}/results`, {
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message ?? `Server error ${res.status}`);
+      }
+      const data = await res.json();
+      setMatchingRun(data.run ?? null);
+      setMatchingResults(data.results ?? []);
+    } catch (err: any) {
+      setMatchingError(err.message ?? 'Failed to load matching results');
+    } finally {
+      setLoadingMatching(false);
+    }
+  };
+
+  const handleRunMatching = async () => {
+    const effectiveStudentId = propStudent?.userId || studentId;
+    if (!effectiveStudentId) return;
+    setRunningMatching(true);
+    setMatchingError(null);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+      const res = await fetch(`${API_URL}/matching/students/${effectiveStudentId}/run`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.message ?? `Server error ${res.status}`);
+      fetchMatchingResults();
+    } catch (err: any) {
+      setMatchingError(err.message ?? 'Failed to start matching');
+      setRunningMatching(false);
+    } finally {
+      setRunningMatching(false);
+    }
+  };
+
+  // Poll matching results while in progress
+  useEffect(() => {
+    if (!matchingRun || matchingRun.status === 'completed' || matchingRun.status === 'failed') return;
+    const timer = setInterval(fetchMatchingResults, 3000);
+    return () => clearInterval(timer);
+  }, [matchingRun?.status]);
 
   // Consultation tasks
   const [tasks, setTasks] = useState<ConsultationTask[]>([]);
@@ -271,18 +346,19 @@ export function StudentDetailModal({
     };
     fetchDocuments();
 
-    // Load or generate universities
+    // Fetch matching engine results
+    fetchMatchingResults();
+
+    // Load custom manual university recommendations (if any)
     const savedUnis = localStorage.getItem(`eb_student_unis_${effectiveStudentId}`);
     if (savedUnis) {
       try {
         setUniversities(JSON.parse(savedUnis));
       } catch {
-        setUniversities(getDefaultUniversities());
+        setUniversities([]);
       }
     } else {
-      const defUnis = getDefaultUniversities();
-      setUniversities(defUnis);
-      localStorage.setItem(`eb_student_unis_${effectiveStudentId}`, JSON.stringify(defUnis));
+      setUniversities([]);
     }
 
     // Load counsellor notes
@@ -303,100 +379,6 @@ export function StudentDetailModal({
       localStorage.setItem(`eb_student_tasks_${effectiveStudentId}`, JSON.stringify(defTasks));
     }
   }, [propStudent, studentId]);
-
-
-
-
-
-  // Default University matches generator
-  function getDefaultUniversities(): UniversityMatch[] {
-    return [
-      {
-        id: 'uni-1',
-        name: 'Technical University of Munich (TUM)',
-        program: 'M.Sc. Data Engineering and Analytics',
-        degree: 'Master of Science',
-        location: 'Munich, Bavaria',
-        matchScore: 98,
-        bavarianGpaReq: '<= 2.0 (Student: 1.3)',
-        ieltsReq: '>= 6.5 (Student: 7.5)',
-        tuition: '€0 / semester fee only',
-        status: 'recommended',
-        deadline: 'May 31, 2026',
-        type: 'Public / TU9 Excellence',
-      },
-      {
-        id: 'uni-2',
-        name: 'RWTH Aachen University',
-        program: 'M.Sc. Computer Science',
-        degree: 'Master of Science',
-        location: 'Aachen, NRW',
-        matchScore: 95,
-        bavarianGpaReq: '<= 2.2 (Student: 1.3)',
-        ieltsReq: '>= 6.5 (Student: 7.5)',
-        tuition: '€0 / semester fee only',
-        status: 'shortlisted',
-        deadline: 'July 15, 2026',
-        type: 'Public / TU9 Excellence',
-      },
-      {
-        id: 'uni-3',
-        name: 'Heidelberg University',
-        program: 'M.Sc. Scientific Computing',
-        degree: 'Master of Science',
-        location: 'Heidelberg, BW',
-        matchScore: 92,
-        bavarianGpaReq: '<= 2.0 (Student: 1.3)',
-        ieltsReq: '>= 7.0 (Student: 7.5)',
-        tuition: '€1,500 / semester',
-        status: 'shortlisted',
-        deadline: 'June 15, 2026',
-        type: 'Excellence University',
-      },
-      {
-        id: 'uni-4',
-        name: 'Karlsruhe Institute of Technology (KIT)',
-        program: 'M.Sc. Information Technology',
-        degree: 'Master of Science',
-        location: 'Karlsruhe, BW',
-        matchScore: 91,
-        bavarianGpaReq: '<= 2.1 (Student: 1.3)',
-        ieltsReq: '>= 6.5 (Student: 7.5)',
-        tuition: '€1,500 / semester',
-        status: 'recommended',
-        deadline: 'July 15, 2026',
-        type: 'Public / TU9 Excellence',
-      },
-      {
-        id: 'uni-5',
-        name: 'TU Berlin',
-        program: 'M.Sc. Global Production Engineering',
-        degree: 'Master of Science',
-        location: 'Berlin',
-        matchScore: 89,
-        bavarianGpaReq: '<= 2.3 (Student: 1.3)',
-        ieltsReq: '>= 6.5 (Student: 7.5)',
-        tuition: '€0 / semester fee only',
-        status: 'applied',
-        deadline: 'June 30, 2026',
-        type: 'Public / TU9',
-      },
-      {
-        id: 'uni-6',
-        name: 'University of Stuttgart',
-        program: 'M.Sc. Information Technology (INFOTECH)',
-        degree: 'Master of Science',
-        location: 'Stuttgart, BW',
-        matchScore: 87,
-        bavarianGpaReq: '<= 2.5 (Student: 1.3)',
-        ieltsReq: '>= 6.5 (Student: 7.5)',
-        tuition: '€1,500 / semester',
-        status: 'offer_received',
-        deadline: 'July 15, 2026',
-        type: 'Public / TU9',
-      },
-    ];
-  }
 
   function getDefaultTasks(): ConsultationTask[] {
     return [
@@ -1522,33 +1504,209 @@ export function StudentDetailModal({
             )}
 
             {/* ========================================================
-                TAB 3: UNIVERSITY ELIGIBILITY & SHORTLIST
+                TAB 3: UNIVERSITY ELIGIBILITY & RECOMMENDATIONS
             ======================================================== */}
             {activeTab === 'universities' && (
               <div className="space-y-4">
-                {/* Header with Add University Recommendation */}
+                {/* Header with Run Matching & Add Recommendation */}
                 <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <h3 className="font-display text-base text-germany-black dark:text-white">University Eligibility &amp; Recommendations</h3>
                     <p className="text-xs font-bold text-gray-500">
-                      Top programs matched against student's Bavarian GPA (1.33) and language scores.
+                      {matchingRun?.status === 'completed'
+                        ? `Last run: ${new Date(matchingRun.completed_at || matchingRun.created_at).toLocaleDateString()} — ${matchingRun.candidates_evaluated ?? 0} programmes evaluated (${matchingRun.results_generated ?? matchingResults.length} matches found)`
+                        : matchingRun?.status === 'running' || matchingRun?.status === 'pending' || runningMatching
+                        ? 'Matching in progress…'
+                        : 'Run the matching engine to evaluate eligible programmes for this student.'}
                     </p>
+                    {matchingRun?.status === 'failed' && (
+                      <p className="text-[11px] text-red-600 font-medium mt-0.5">Last run failed. You can re-run below.</p>
+                    )}
                   </div>
 
-                  <button
-                    onClick={() => setShowAddUni(!showAddUni)}
-                    className="neu-btn-primary py-2 px-3.5 text-xs font-extrabold inline-flex items-center gap-1.5 cursor-pointer shrink-0 shadow-xs"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Recommend Program</span>
-                  </button>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      id="counsellor-run-matching-btn"
+                      onClick={handleRunMatching}
+                      disabled={runningMatching}
+                      className="flex items-center gap-1.5 bg-germany-red hover:bg-[#D62839] disabled:opacity-60 text-white py-2 px-3.5 text-xs font-extrabold rounded-xl shadow-xs transition-colors cursor-pointer"
+                    >
+                      {runningMatching ? (
+                        <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Starting…</>
+                      ) : matchingRun?.status === 'running' || matchingRun?.status === 'pending' ? (
+                        <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Re-start Matching</>
+                      ) : matchingRun?.status === 'completed' ? (
+                        <><RefreshCw className="w-3.5 h-3.5" /> Re-run Matching</>
+                      ) : (
+                        <><Compass className="w-3.5 h-3.5" /> Run Matching Engine</>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setShowAddUni(!showAddUni)}
+                      className="neu-btn-primary py-2 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Recommend</span>
+                    </button>
+                  </div>
                 </div>
+
+                {/* Error Banner */}
+                {matchingError && (
+                  <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 rounded-xl flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                      <p className="text-xs font-bold text-red-700 dark:text-red-300">{matchingError}</p>
+                    </div>
+                    <button onClick={fetchMatchingResults} className="text-xs font-extrabold text-red-700 dark:text-red-300 underline cursor-pointer">
+                      Retry
+                    </button>
+                  </div>
+                )}
+
+                {/* Loading State */}
+                {(loadingMatching || runningMatching || matchingRun?.status === 'running' || matchingRun?.status === 'pending') && !matchingError && (
+                  <div className="p-8 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-3 animate-pulse">
+                    <Loader2 className="w-7 h-7 text-germany-red mx-auto animate-spin" />
+                    <p className="text-xs font-bold text-gray-400">
+                      {runningMatching || matchingRun?.status === 'running' || matchingRun?.status === 'pending'
+                        ? 'Running matching engine across all programmes for this student…'
+                        : 'Loading matching results…'}
+                    </p>
+                  </div>
+                )}
+
+                {/* No run yet */}
+                {!loadingMatching && !runningMatching && matchingRun?.status !== 'running' && matchingRun?.status !== 'pending' && !matchingError && !matchingRun && (
+                  <div className="p-8 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-2">
+                    <Compass className="w-8 h-8 text-gray-300 mx-auto" />
+                    <h4 className="font-display text-sm text-germany-black dark:text-white">No Matching Run Yet</h4>
+                    <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                      Click &quot;Run Matching Engine&quot; above to evaluate this student&apos;s qualifications against German university programmes.
+                    </p>
+                  </div>
+                )}
+
+                {/* Completed but 0 results */}
+                {!loadingMatching && !runningMatching && matchingRun?.status === 'completed' && matchingResults.length === 0 && !matchingError && (
+                  <div className="p-8 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-2">
+                    <AlertCircle className="w-8 h-8 text-amber-400 mx-auto" />
+                    <h4 className="font-display text-sm text-germany-black dark:text-white">No Matching Programmes Found</h4>
+                    <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                      No programmes met eligibility criteria for this student&apos;s current profile. Check their education, GPA, and test scores.
+                    </p>
+                  </div>
+                )}
+
+                {/* Real Matched Programmes Grid */}
+                {!loadingMatching && !runningMatching && matchingResults.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {matchingResults.map((r: any) => (
+                      <div
+                        key={r.id}
+                        className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs hover:border-germany-red/30 space-y-3 transition-colors"
+                      >
+                        {/* Top: University, Program & Eligibility Status */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="space-y-0.5 min-w-0">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-germany-red">
+                              #{r.rank} • {r.universityType ?? 'University'}
+                            </span>
+                            <h4 className="font-display text-sm sm:text-base text-germany-black dark:text-white leading-tight truncate">
+                              {r.universityName}
+                            </h4>
+                            <p className="text-xs font-extrabold text-gray-600 dark:text-gray-300 leading-snug">{r.programName}</p>
+                            <p className="text-[10px] text-gray-400 font-medium">{r.degree}</p>
+                          </div>
+
+                          <div className="text-right shrink-0 flex flex-col items-end gap-1">
+                            <span
+                              className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                                MATCH_ELIGIBILITY_STYLES[r.eligibilityStatus] ?? 'bg-gray-100 text-gray-600 border-gray-200'
+                              }`}
+                            >
+                              {MATCH_ELIGIBILITY_LABELS[r.eligibilityStatus] ?? r.eligibilityStatus}
+                            </span>
+                            {typeof r.relevanceScore === 'number' && (
+                              <span className="text-[10px] font-black text-gray-400">
+                                Score: {r.relevanceScore}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Location, Tuition, Language & Deadline */}
+                        <div className="grid grid-cols-2 gap-2 text-[11px] p-2.5 rounded-xl bg-[#F4F1EA]/70 dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800/80">
+                          <div>
+                            <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Location</span>
+                            <span className="font-bold text-gray-700 dark:text-gray-300">
+                              📍 {[r.city, r.country].filter(Boolean).join(', ') || 'NA'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Tuition</span>
+                            <span className="font-bold text-gray-700 dark:text-gray-300">{r.tuitionPerSemester ?? 'NA'}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Language</span>
+                            <span className="font-bold text-gray-700 dark:text-gray-300">🌐 {r.language ?? 'NA'}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Deadline</span>
+                            <span className="font-bold text-gray-700 dark:text-gray-300">⏰ {r.nonEuDeadline ?? 'NA'}</span>
+                          </div>
+                        </div>
+
+                        {/* Why it matched */}
+                        {r.matchedReasons?.length > 0 && (
+                          <div className="pt-2 border-t border-[#EBE7E0] dark:border-gray-800/80">
+                            <p className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-400 mb-0.5">✓ Why it matched</p>
+                            <ul className="space-y-0.5">
+                              {r.matchedReasons.slice(0, 2).map((reason: string, i: number) => (
+                                <li key={i} className="text-[10px] text-gray-600 dark:text-gray-300 truncate">• {reason}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Requirement gaps */}
+                        {r.requirementGaps?.length > 0 && (
+                          <div>
+                            <p className="text-[10px] font-extrabold text-amber-700 dark:text-amber-400 mb-0.5">⚠ Requirement Gaps</p>
+                            <ul className="space-y-0.5">
+                              {r.requirementGaps.slice(0, 2).map((gap: string, i: number) => (
+                                <li key={i} className="text-[10px] text-gray-500 dark:text-gray-400 truncate">• {gap}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {r.gpaFallbackUsed && (
+                          <p className="text-[10px] text-gray-400 italic">GPA: platform fallback (≤ 3.0) applied</p>
+                        )}
+
+                        {r.programUrl && (
+                          <div className="pt-1">
+                            <a
+                              href={r.programUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-germany-red hover:underline"
+                            >
+                              <ExternalLink className="w-3 h-3" /> Programme Website
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Add University Form Drawer */}
                 {showAddUni && (
                   <form onSubmit={handleAddUniversity} className="p-4 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
                     <h4 className="text-xs font-extrabold text-germany-black dark:text-white uppercase tracking-wider">
-                      Add New University Recommendation
+                      Add Custom Recommendation
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <input
@@ -1587,95 +1745,73 @@ export function StudentDetailModal({
                         type="submit"
                         className="neu-btn-primary py-1.5 px-4 text-xs font-extrabold"
                       >
-                        Add to Student Shortlist
+                        Save Recommendation
                       </button>
                     </div>
                   </form>
                 )}
 
-                {/* University Match Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {universities.map((uni) => {
-                    const statusColors = {
-                      recommended: 'bg-germany-gold/20 text-germany-black dark:text-[#FDE68A] border-germany-gold/40',
-                      shortlisted: 'bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800/60',
-                      applied: 'bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-800/60',
-                      offer_received: 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/60 font-black',
-                      waitlisted: 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/60',
-                    };
+                {/* Custom Counsellor Recommendations (if any) */}
+                {universities.length > 0 && (
+                  <div className="space-y-3 pt-3">
+                    <h4 className="text-xs font-extrabold text-germany-black dark:text-white uppercase tracking-wider">
+                      Counsellor Manual Recommendations ({universities.length})
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {universities.map((uni) => {
+                        const statusColors = {
+                          recommended: 'bg-germany-gold/20 text-germany-black dark:text-[#FDE68A] border-germany-gold/40',
+                          shortlisted: 'bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800/60',
+                          applied: 'bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-800/60',
+                          offer_received: 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/60 font-black',
+                          waitlisted: 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/60',
+                        };
 
-                    return (
-                      <div key={uni.id} className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs hover:border-germany-red/30 space-y-3.5 transition-colors">
-                        {/* Top: University, Type & Match Score */}
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="space-y-0.5">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-germany-red">
-                              {uni.type}
-                            </span>
-                            <h4 className="font-display text-sm sm:text-base text-germany-black dark:text-white leading-tight">
-                              {uni.name}
-                            </h4>
-                            <p className="text-xs font-extrabold text-gray-600 dark:text-gray-300">{uni.program}</p>
+                        return (
+                          <div key={uni.id} className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs hover:border-germany-red/30 space-y-3.5 transition-colors">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="space-y-0.5">
+                                <span className="text-[10px] font-black uppercase tracking-wider text-germany-red">
+                                  {uni.type}
+                                </span>
+                                <h4 className="font-display text-sm sm:text-base text-germany-black dark:text-white leading-tight">
+                                  {uni.name}
+                                </h4>
+                                <p className="text-xs font-extrabold text-gray-600 dark:text-gray-300">{uni.program}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between text-xs font-bold text-gray-500 pt-1">
+                              <span>📍 {uni.location}</span>
+                              <span className="text-germany-black dark:text-white font-extrabold">{uni.tuition}</span>
+                            </div>
+
+                            <div className="pt-2 border-t border-[#EBE7E0] dark:border-gray-800/80 flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Status:</span>
+                                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${statusColors[uni.status]}`}>
+                                  {uni.status.replace('_', ' ').toUpperCase()}
+                                </span>
+                              </div>
+
+                              <select
+                                value={uni.status}
+                                onChange={(e) => handleUpdateUniStatus(uni.id, e.target.value as UniversityMatch['status'])}
+                                className="text-[11px] font-extrabold py-1 px-2.5 text-germany-black dark:text-white cursor-pointer bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl shadow-xs"
+                              >
+                                <option value="recommended">Recommended</option>
+                                <option value="shortlisted">Shortlisted</option>
+                                <option value="applied">Applied</option>
+                                <option value="offer_received">Offer Letter Received 🎓</option>
+                                <option value="waitlisted">Waitlisted</option>
+                              </select>
+                            </div>
                           </div>
-
-                          <div className="text-right shrink-0">
-                            <span className="text-xs font-black text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full inline-flex items-center gap-1">
-                              <Target className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                              {uni.matchScore}% Match
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Middle: Eligibility Details */}
-                        <div className="grid grid-cols-2 gap-2 text-[11px] p-2.5 rounded-xl bg-[#F4F1EA]/70 dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800/80">
-                          <div>
-                            <span className="text-gray-400 font-extrabold block text-[10px] uppercase">GPA Eligibility</span>
-                            <span className="font-extrabold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3" />
-                              Passed (Req {uni.bavarianGpaReq})
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-gray-400 font-extrabold block text-[10px] uppercase">English Score</span>
-                            <span className="font-extrabold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3" />
-                              Passed ({uni.ieltsReq})
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Location, Tuition & Deadline */}
-                        <div className="flex items-center justify-between text-xs font-bold text-gray-500 pt-1">
-                          <span>📍 {uni.location}</span>
-                          <span className="text-germany-black dark:text-white font-extrabold">{uni.tuition}</span>
-                        </div>
-
-                        {/* Bottom: Counsellor Status Management */}
-                        <div className="pt-2 border-t border-[#EBE7E0] dark:border-gray-800/80 flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Status:</span>
-                            <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${statusColors[uni.status]}`}>
-                              {uni.status.replace('_', ' ').toUpperCase()}
-                            </span>
-                          </div>
-
-                          {/* Quick Status Toggle Dropdown */}
-                          <select
-                            value={uni.status}
-                            onChange={(e) => handleUpdateUniStatus(uni.id, e.target.value as UniversityMatch['status'])}
-                            className="text-[11px] font-extrabold py-1 px-2.5 text-germany-black dark:text-white cursor-pointer bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl shadow-xs"
-                          >
-                            <option value="recommended">Recommended</option>
-                            <option value="shortlisted">Shortlisted</option>
-                            <option value="applied">Applied</option>
-                            <option value="offer_received">Offer Letter Received 🎓</option>
-                            <option value="waitlisted">Waitlisted</option>
-                          </select>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

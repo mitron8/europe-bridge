@@ -8,13 +8,21 @@ interface StudentFullProfileViewProps {
   onClose: () => void;
 }
 
-// Helper to format values correctly
+// Helper to format values consistently, ensuring NA is shown when data is missing
 function formatValue(value: any): string {
   if (value === null || value === undefined || value === '') return 'NA';
   if (typeof value === 'boolean') return value ? 'Yes' : 'No';
   if (Array.isArray(value)) {
     if (value.length === 0) return 'NA';
     return value.join(', ');
+  }
+  return String(value);
+}
+
+function formatDate(value: any): string {
+  if (value === null || value === undefined || value === '') return 'NA';
+  if (typeof value === 'string' && value.includes('T')) {
+    return value.split('T')[0];
   }
   return String(value);
 }
@@ -81,6 +89,14 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
 
   if (!profile) return null;
 
+  const fullName = [profile.firstName, profile.middleName, profile.lastName]
+    .filter(Boolean)
+    .join(' ') || 'NA';
+
+  const targetIntake = (profile.intakeSeason || profile.intakeYear)
+    ? `${profile.intakeSeason || ''} ${profile.intakeYear || ''}`.trim()
+    : 'NA';
+
   return (
     <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm overflow-y-auto p-4 sm:p-10 print:bg-white print:p-0 print:block">
       <div className="relative mx-auto w-full max-w-5xl bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800/80 rounded-xl sm:rounded-2xl p-6 sm:p-12 shadow-2xl print:shadow-none print:border-none print:m-0 print:p-0 print:rounded-none">
@@ -105,9 +121,13 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
 
         {/* Document Header */}
         <div className="mb-10 text-center border-b-2 border-gray-300 dark:border-gray-800 pb-6">
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white mb-2 uppercase">Student Profile</h1>
-          <h2 className="text-xl font-medium text-gray-900 dark:text-gray-200 mb-1">{profile.firstName} {profile.lastName}</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">{profile.email} &bull; ID: {studentId}</p>
+          <div className="inline-block px-3 py-1 mb-2 rounded-full text-[10px] font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+            Student Profile Record
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white mb-2 uppercase">{fullName}</h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {formatValue(profile.email)} &bull; ID: {studentId} &bull; Status: <span className="font-bold text-germany-red">{formatValue(profile.leadStatus)}</span> &bull; Completion: <span className="font-bold">{profile.completionPercentage != null && profile.completionPercentage !== '' ? `${profile.completionPercentage}%` : 'NA'}</span>
+          </p>
         </div>
 
         <div className="space-y-12">
@@ -118,14 +138,9 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
               <Field label="First Name" value={profile.firstName} />
               <Field label="Middle Name" value={profile.middleName} />
               <Field label="Last Name" value={profile.lastName} />
-              <Field label="Date of Birth" value={profile.dateOfBirth} />
+              <Field label="Date of Birth" value={formatDate(profile.dateOfBirth)} />
               <Field label="Gender" value={profile.gender} />
               <Field label="Nationality" value={profile.nationality} />
-              <Field label="Passport Available" value={profile.passportAvailable} />
-              <Field label="Passport Number" value={profile.passportNumber} />
-              <Field label="Passport Issue Date" value={profile.passportIssueDate} />
-              <Field label="Passport Expiry Date" value={profile.passportExpiryDate} />
-              <Field label="Issuing Country" value={profile.passportIssuingCountry} />
             </div>
           </Section>
 
@@ -136,59 +151,94 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
               <Field label="WhatsApp" value={profile.whatsapp} />
               <Field label="Address Line" value={profile.addressLine} className="sm:col-span-2 md:col-span-3" />
               <Field label="City" value={profile.city} />
-              <Field label="State/Province" value={profile.stateProvince} />
+              <Field label="State / Province" value={profile.stateProvince} />
               <Field label="Country" value={profile.country} />
               <Field label="Postal Code" value={profile.postalCode} />
             </div>
           </Section>
 
-          {/* Section 3: Academic Information */}
-          <Section title="Academic Information">
+          {/* Section 3: Passport & Identification */}
+          <Section title="Passport & Identification">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-6">
+              <Field label="Passport Available" value={profile.passportAvailable} />
+              <Field label="Passport Number" value={profile.passportNumber} />
+              <Field label="Passport Issue Date" value={formatDate(profile.passportIssueDate)} />
+              <Field label="Passport Expiry Date" value={formatDate(profile.passportExpiryDate)} />
+              <Field label="Issuing Country" value={profile.passportIssuingCountry} />
+            </div>
+          </Section>
+
+          {/* Section 4: Academic History (Education) */}
+          <Section title="Academic History">
             {profile.educationRecords && profile.educationRecords.length > 0 ? (
               <div className="space-y-8">
-                {profile.educationRecords.map((edu: any, idx: number) => (
-                  <div key={idx} className="border border-gray-200 dark:border-gray-800/80 dark:bg-[#0E121A] rounded-xl p-5">
-                    <h4 className="font-bold text-sm mb-4 text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-800/80 pb-2">{edu.degreeType} - {edu.fieldOfStudy}</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-6">
-                      <Field label="Education Level" value={edu.educationLevel} />
-                      <Field label="Specialization" value={edu.specialization} />
-                      <Field label="Institution Name" value={edu.institutionName} />
-                      <Field label="Country" value={edu.institutionCountry} />
-                      <Field label="Start Year" value={edu.startYear} />
-                      <Field label="End Year" value={edu.endYear} />
-                      <Field label="Academic Status" value={edu.academicStatus} />
-                      <Field label="Current Semester" value={edu.currentSemester} />
-                      <Field label="Grading System" value={edu.gradingSystem} />
-                      <Field label="Score" value={edu.score} />
-                      <Field label="Scale" value={edu.scale} />
-                      <Field label="Backlogs" value={edu.backlogs} />
+                {profile.educationRecords.map((edu: any, idx: number) => {
+                  const germanGradeDisplay = edu.germanGrade != null && edu.germanGrade !== '' 
+                    ? Number(edu.germanGrade).toFixed(2) 
+                    : 'NA';
+                  return (
+                    <div key={edu.id || idx} className="border border-gray-200 dark:border-gray-800/80 dark:bg-[#0E121A] rounded-xl p-5">
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-800/80 pb-2 mb-4">
+                        <h4 className="font-bold text-sm text-gray-900 dark:text-white">
+                          Record {idx + 1}: {edu.degreeType || 'Degree'} - {edu.fieldOfStudy || 'Field of Study'}
+                        </h4>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-bold text-gray-500 uppercase">German Equivalent:</span>
+                          <span className="text-xs font-black px-2.5 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                            {germanGradeDisplay}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-6">
+                        <Field label="Education Level" value={edu.educationLevel} />
+                        <Field label="Degree Type" value={edu.degreeType} />
+                        <Field label="Field of Study" value={edu.fieldOfStudy} />
+                        <Field label="Specialization" value={edu.specialization} />
+                        <Field label="Institution Name" value={edu.institutionName} />
+                        <Field label="Institution Country" value={edu.institutionCountry} />
+                        <Field label="Start Year" value={edu.startYear} />
+                        <Field label="End Year" value={edu.endYear} />
+                        <Field label="Academic Status" value={edu.academicStatus} />
+                        <Field label="Current Semester" value={edu.currentSemester} />
+                        <Field label="Grading System" value={edu.gradingSystem} />
+                        <Field label="Achieved Score" value={edu.score} />
+                        <Field label="Scale Max" value={edu.scale} />
+                        <Field label="Min Passing Grade" value={edu.minPassingScore} />
+                        <Field label="German Equivalent Grade" value={germanGradeDisplay} />
+                        <Field label="Backlogs" value={edu.backlogs} />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
-              <Field label="Education Records" value={null} />
+              <div className="p-4 border border-dashed border-gray-300 dark:border-gray-800 rounded-xl text-xs font-bold text-gray-500">
+                No education records added
+              </div>
             )}
           </Section>
 
-          {/* Section 4: Language / Test Information */}
-          <Section title="Language & Test Information">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-6 mb-8">
-              <Field label="German Level" value={profile.germanLevel} />
-              <Field label="German Certificate" value={profile.germanCertificateType} />
+          {/* Section 5: English Language Tests */}
+          <Section title="English Language Proficiency">
+            <div className="mb-6">
+              <Field label="English Proficiency State" value={profile.englishProficiencyState} />
             </div>
             
-            {profile.englishTests && profile.englishTests.length > 0 && (
-              <div className="mb-8">
-                <h4 className="font-bold text-sm mb-4 text-gray-800 dark:text-gray-300 uppercase tracking-widest text-[10px]">Language Tests</h4>
+            {profile.englishTests && profile.englishTests.length > 0 ? (
+              <div className="space-y-4">
+                <h4 className="font-bold text-xs uppercase tracking-wider text-gray-500">Saved English Tests</h4>
                 {profile.englishTests.map((test: any, idx: number) => (
-                  <div key={idx} className="border border-gray-200 dark:border-gray-800/80 dark:bg-[#0E121A] rounded-xl p-5 mb-4">
+                  <div key={test.id || idx} className="border border-gray-200 dark:border-gray-800/80 dark:bg-[#0E121A] rounded-xl p-5">
+                    <h5 className="font-bold text-xs mb-3 text-gray-800 dark:text-gray-200 border-b border-gray-100 dark:border-gray-800 pb-2">
+                      Test {idx + 1}: {test.testType || 'English Test'}
+                    </h5>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-6">
                       <Field label="Test Type" value={test.testType} />
-                      <Field label="Test Date" value={test.testDate} />
+                      <Field label="Test Date" value={formatDate(test.testDate)} />
+                      <Field label="Score Scale" value={test.scoreScale} />
                       {test.testType === 'TOEFL' && test.scoreScale === '0_120' ? (
                         <>
-                          <Field label="Legacy Total" value={test.scores?.toeflLegacyTotal} className="md:col-span-2" />
+                          <Field label="Legacy Total (0-120)" value={test.scores?.toeflLegacyTotal} />
                           <Field label="Reading" value={test.scores?.reading} />
                           <Field label="Listening" value={test.scores?.listening} />
                           <Field label="Speaking" value={test.scores?.speaking} />
@@ -196,7 +246,7 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
                         </>
                       ) : (
                         <>
-                          <Field label="Overall Score" value={test.scores?.overall} className="md:col-span-2" />
+                          <Field label="Overall Score" value={test.scores?.overall} />
                           <Field label="Reading" value={test.scores?.reading} />
                           <Field label="Listening" value={test.scores?.listening} />
                           <Field label="Speaking" value={test.scores?.speaking} />
@@ -207,65 +257,118 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
                   </div>
                 ))}
               </div>
+            ) : (
+              <div className="p-4 border border-dashed border-gray-300 dark:border-gray-800 rounded-xl text-xs font-bold text-gray-500">
+                No English tests recorded
+              </div>
             )}
-            
-            {profile.standardizedTests && profile.standardizedTests.length > 0 && (
-              <div>
-                <h4 className="font-bold text-sm mb-4 text-gray-800 dark:text-gray-300 uppercase tracking-widest text-[10px]">Standardized Tests</h4>
+          </Section>
+
+          {/* Section 6: German Language Proficiency */}
+          <Section title="German Language Proficiency">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-6">
+              <Field label="Proficiency Status" value={profile.germanProficiencyState} />
+              <Field label="German Level" value={profile.germanLevel} />
+              <Field label="Certificate Type" value={profile.germanCertificateType} />
+            </div>
+          </Section>
+
+          {/* Section 7: dMAT Proficiency */}
+          <Section title="dMAT Proficiency">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-6">
+              <Field label="dMAT Proficiency Status" value={profile.dmatProficiencyState} />
+              <Field label="dMAT Score" value={profile.dmatScore} />
+            </div>
+          </Section>
+
+          {/* Section 8: Standardized Tests */}
+          <Section title="Standardized Tests">
+            {profile.standardizedTests && profile.standardizedTests.length > 0 ? (
+              <div className="space-y-4">
                 {profile.standardizedTests.map((test: any, idx: number) => (
-                  <div key={idx} className="border border-gray-200 dark:border-gray-800/80 dark:bg-[#0E121A] rounded-xl p-5 mb-4">
+                  <div key={test.id || idx} className="border border-gray-200 dark:border-gray-800/80 dark:bg-[#0E121A] rounded-xl p-5">
+                    <h5 className="font-bold text-xs mb-3 text-gray-800 dark:text-gray-200 border-b border-gray-100 dark:border-gray-800 pb-2">
+                      Test {idx + 1}: {test.testType || 'Standardized Test'}
+                    </h5>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-6">
                       <Field label="Test Type" value={test.testType} />
-                      <Field label="Test Date" value={test.testDate} />
+                      <Field label="Test Date" value={formatDate(test.testDate)} />
                       <Field label="Overall Score" value={test.overallScore} />
-                      <Field label="Quantitative" value={test.quantScore} />
-                      <Field label="Verbal" value={test.verbalScore} />
+                      <Field label="Quantitative Score" value={test.quantScore} />
+                      <Field label="Verbal Score" value={test.verbalScore} />
                       <Field label="AWA Score" value={test.awaScore} />
                     </div>
                   </div>
                 ))}
               </div>
+            ) : (
+              <div className="p-4 border border-dashed border-gray-300 dark:border-gray-800 rounded-xl text-xs font-bold text-gray-500">
+                No standardized tests recorded
+              </div>
             )}
           </Section>
 
-          {/* Section 5: Study Preferences */}
-          <Section title="Study Preferences">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-6">
-              <Field label="Intended Degree Level" value={profile.intendedDegreeLevel} />
-              <Field label="Field of Study" value={profile.preferredFieldOfStudy} />
-              <Field label="Specialization" value={profile.preferredSpecialization} />
-              <Field label="Target Intake" value={`${formatValue(profile.intakeSeason)} ${formatValue(profile.intakeYear)}`.trim() === 'NA NA' ? null : `${formatValue(profile.intakeSeason)} ${formatValue(profile.intakeYear)}`} />
-              <Field label="University Type" value={profile.universityType} />
-              <Field label="Study Mode" value={profile.studyMode} />
-              <Field label="Funding Preference" value={profile.fundingPreference} />
-              <Field label="Max Tuition Budget" value={profile.maxTuitionBudget} />
-              <Field label="Blocked Account Ready" value={profile.blockedAccountReady} />
-              <Field label="Preferred Universities" value={profile.preferredUniversities} className="sm:col-span-2 md:col-span-3" />
-              <Field label="Skills" value={profile.skills} className="sm:col-span-2 md:col-span-3" />
-            </div>
-          </Section>
-
-          {/* Section 6: Experience Records */}
-          <Section title="Experience Records">
+          {/* Section 9: Professional Experience */}
+          <Section title="Professional Experience">
             {profile.experienceRecords && profile.experienceRecords.length > 0 ? (
               <div className="space-y-6">
                 {profile.experienceRecords.map((exp: any, idx: number) => (
-                  <div key={idx} className="border border-gray-200 dark:border-gray-800/80 dark:bg-[#0E121A] rounded-xl p-5">
-                    <h4 className="font-bold text-sm mb-4 text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-800/80 pb-2">{exp.jobTitle} at {exp.companyName}</h4>
+                  <div key={exp.id || idx} className="border border-gray-200 dark:border-gray-800/80 dark:bg-[#0E121A] rounded-xl p-5">
+                    <h4 className="font-bold text-sm mb-4 text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-800/80 pb-2">
+                      {exp.jobTitle || 'Role'} at {exp.companyName || 'Company'}
+                    </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-6">
+                      <Field label="Company Name" value={exp.companyName} />
+                      <Field label="Job Title" value={exp.jobTitle} />
                       <Field label="Employment Type" value={exp.employmentType} />
                       <Field label="Industry" value={exp.industry} />
                       <Field label="Current Role" value={exp.isCurrent} />
-                      <Field label="Start Date" value={exp.startDate} />
-                      <Field label="End Date" value={exp.endDate} />
+                      <Field label="Start Date" value={formatDate(exp.startDate)} />
+                      <Field label="End Date" value={formatDate(exp.endDate)} />
                       <Field label="Description" value={exp.description} className="sm:col-span-2 md:col-span-3" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <Field label="Experience Records" value={null} />
+              <div className="p-4 border border-dashed border-gray-300 dark:border-gray-800 rounded-xl text-xs font-bold text-gray-500">
+                No experience records added
+              </div>
             )}
+          </Section>
+
+          {/* Section 10: Study Preferences */}
+          <Section title="Study Preferences">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-6">
+              <Field label="Intended Degree Level" value={profile.intendedDegreeLevel} />
+              <Field label="Field of Study" value={profile.preferredFieldOfStudy} />
+              <Field label="Specialization" value={profile.preferredSpecialization} />
+              <Field label="Target Intake" value={targetIntake} />
+              <Field label="Intake Season" value={profile.intakeSeason} />
+              <Field label="Intake Year" value={profile.intakeYear} />
+              <Field label="University Type" value={profile.universityType} />
+              <Field label="Study Mode" value={profile.studyMode} />
+              <Field label="Preferred Universities" value={profile.preferredUniversities} className="sm:col-span-2 md:col-span-3" />
+            </div>
+          </Section>
+
+          {/* Section 11: Financial Information */}
+          <Section title="Financial Information">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-6">
+              <Field label="Funding Preference" value={profile.fundingPreference} />
+              <Field 
+                label="Max Tuition Budget" 
+                value={profile.maxTuitionBudget != null && profile.maxTuitionBudget !== '' ? `€${profile.maxTuitionBudget}` : 'NA'} 
+              />
+              <Field label="Blocked Account Ready" value={profile.blockedAccountReady} />
+            </div>
+          </Section>
+
+          {/* Section 12: Additional Stored Information */}
+          <Section title="Additional Information">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-6">
+              <Field label="Skills" value={profile.skills} className="sm:col-span-2 md:col-span-3" />
+            </div>
           </Section>
 
         </div>

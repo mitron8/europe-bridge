@@ -38,6 +38,8 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
       gradingSystem: '',
       score: '',
       scale: '',
+      minPassingScore: '',
+      germanGrade: null,
       backlogs: ''
     };
     onChange({ educationRecords: [...data.educationRecords, newRecord] });
@@ -225,7 +227,7 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Grading System *</label>
                   <ClaySelect 
@@ -256,12 +258,28 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Scale Max</label>
                   <input 
                     type="number" 
+                    step="0.01"
                     value={record.scale} 
                     onChange={(e) => updateEducation(record.id, 'scale', e.target.value ? parseFloat(e.target.value) : '')} 
                     className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white dark:bg-[#111622]" 
                     placeholder="e.g. 10"
                   />
                 </div>
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Min Passing Grade</label>
+                  <input 
+                    type="number" 
+                    step="0.01"
+                    value={record.minPassingScore ?? ''} 
+                    onChange={(e) => updateEducation(record.id, 'minPassingScore', e.target.value ? parseFloat(e.target.value) : '')} 
+                    className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white dark:bg-[#111622]" 
+                    placeholder="e.g. 4.0"
+                  />
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">Min score required to pass under your institution&apos;s scale</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Backlogs *</label>
                   <input 
@@ -271,6 +289,24 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                     className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-white dark:bg-[#111622]" 
                     placeholder="e.g. 0"
                   />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">German Equivalent Grade</label>
+                  <div className="flex items-center gap-3">
+                    <input 
+                      type="text" 
+                      readOnly
+                      disabled
+                      value={record.germanGrade != null && record.germanGrade !== ('' as any) ? Number(record.germanGrade).toFixed(2) : 'Not calculated'} 
+                      className="w-40 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800/80 text-xs font-black text-gray-700 dark:text-gray-200 cursor-not-allowed select-none"
+                    />
+                    {record.germanGrade != null && record.germanGrade !== ('' as any) && (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                        Bavarian Formula
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">Calculated authoritatively on the backend upon saving (Modified Bavarian Formula).</p>
                 </div>
               </div>
 

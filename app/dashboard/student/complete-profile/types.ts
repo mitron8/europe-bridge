@@ -21,6 +21,8 @@ export interface EducationRecord {
   gradingSystem: 'CGPA/10' | 'CGPA/4' | 'Percentage' | 'Grade' | 'Other' | '';
   score: number | '';
   scale: number | '';
+  minPassingScore?: number | '';
+  germanGrade?: number | null;
   backlogs: number | '';
 }
 
