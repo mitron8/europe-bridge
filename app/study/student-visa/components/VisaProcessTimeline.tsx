@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Clock, Calendar, CheckCircle2, ArrowRight, AlertCircle, Building, Plane } from 'lucide-react';
+import { Clock, Calendar, ArrowRight, Building, Plane } from 'lucide-react';
 import Link from 'next/link';
 
 export const VisaProcessTimeline = () => {
@@ -9,108 +9,105 @@ export const VisaProcessTimeline = () => {
     {
       step: 1,
       duration: "1–2 Days",
-      title: "Intake & Profile Assessment",
-      desc: "Audit university admission letter, verify APS certificate authenticity, and review financial proof readiness (€11,904 blocked account).",
+      title: "Profile Audit & Setup",
+      desc: "Audit university admission letter, verify APS certificate authenticity, and review blocked account readiness.",
       status: "Start"
     },
     {
       step: 2,
       duration: "3–5 Days",
-      title: "CSP Portal & VIDEX Generation",
-      desc: "Complete CSP entry form, generate machine-readable VIDEX barcode document, format PDFs, and perform digital upload to the consular server.",
-      status: "Digital filing"
+      title: "CSP Portal & VIDEX",
+      desc: "Complete CSP entry form, generate machine-readable VIDEX barcode document, format PDFs, and perform digital upload.",
+      status: "Digital Filing"
     },
     {
       step: 3,
       duration: "1–2 Weeks",
-      title: "VFS Appointment & Biometrics",
-      desc: "Slot booking at VFS Global, document submission, digital fingerprint scan, and physical passport handover at the visa centre.",
-      status: "In-person"
+      title: "VFS Slot & Biometrics",
+      desc: "Slot booking at VFS Global, document submission, biometric scan, and physical passport handover at the visa centre.",
+      status: "In-Person"
     },
     {
       step: 4,
       duration: "4–6 Weeks",
-      title: "Embassy Processing & Ausländerbehörde",
-      desc: "German Consulate evaluates dossier and transmits data electronically to the local immigration authority (Ausländerbehörde) in your study city.",
-      status: "Decision period"
+      title: "Embassy Processing",
+      desc: "German Consulate evaluates dossier and transmits data electronically to the local Ausländerbehörde in your city.",
+      status: "Consular Review"
     },
     {
       step: 5,
       duration: "2–4 Days",
-      title: "Passport Stamping & Delivery",
-      desc: "Receive your National Visa (Type D) sticker valid for 3 to 6 months, allowing official entry into Germany and flight booking.",
-      status: "Final approval"
+      title: "Passport Stamping",
+      desc: "Receive your National Visa (Type D) sticker valid for 3 to 6 months, allowing official entry into Germany.",
+      status: "Final Approval"
     }
   ];
 
   return (
-    <section id="section-timeline" className="scroll-mt-36 py-12 px-6 lg:px-12">
-      <div className="max-w-7xl mx-auto space-y-12">
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-100/80 border border-red-200 text-germany-red text-xs font-black uppercase tracking-wider">
-            <Clock className="w-4 h-4" />
-            <span>Process Roadmap</span>
+    <section id="section-timeline" className="scroll-mt-32 py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" data-reveal>
+      {/* Header */}
+      <div className="space-y-3 text-center max-w-2xl mx-auto">
+        <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--lp-red)]">
+          Process Roadmap
+        </span>
+        <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-ink)] font-normal tracking-tight">
+          How the Visa Timeline <em className="italic text-[var(--lp-red)] font-serif">Really Works</em>
+        </h2>
+        <p className="text-sm sm:text-base text-[var(--lp-muted)] leading-relaxed">
+          Understanding embassy turnaround times prevents missed university orientation dates. Here is the realistic schedule.
+        </p>
+      </div>
+
+      {/* Timeline Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {steps.map((item, idx) => (
+          <div 
+            key={idx}
+            className="bg-[#faf8f3] rounded-2xl p-5 border border-[#e5e0d3] space-y-3 relative flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+          >
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="w-7 h-7 rounded-full bg-[var(--lp-ink)] text-white font-mono text-xs flex items-center justify-center">
+                  {item.step}
+                </span>
+                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-[var(--lp-red)]/10 text-[var(--lp-red)] border border-[var(--lp-red)]/20">
+                  {item.duration}
+                </span>
+              </div>
+              <h3 className="font-serif text-base font-normal text-[var(--lp-ink)] leading-snug">
+                {item.title}
+              </h3>
+              <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
+                {item.desc}
+              </p>
+            </div>
+
+            <div className="pt-2 border-t border-[#e5e0d3] flex items-center justify-between text-[10px] font-mono uppercase text-[var(--lp-muted)]">
+              <span>Phase {idx + 1}</span>
+              <span className="text-[var(--lp-gold)]">{item.status}</span>
+            </div>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-germany-black font-display leading-tight">
-            How the Visa Timeline <span className="text-germany-red">Really Works</span>
-          </h2>
-          <p className="text-base text-gray-700 font-medium leading-relaxed">
-            Understanding embassy turnarounds prevents missed course orientation dates. Here is the realistic timeline from offer letter to landing in Germany.
+        ))}
+      </div>
+
+      {/* Summary Banner */}
+      <div className="bg-[#faf8f3] rounded-2xl p-6 sm:p-8 border border-[#e5e0d3] flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="space-y-1.5 max-w-2xl">
+          <h4 className="font-serif text-lg sm:text-xl font-normal text-[var(--lp-ink)] flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-[var(--lp-red)]" />
+            <span>When Should You Apply?</span>
+          </h4>
+          <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
+            Apply as soon as you have your university admission letter and APS certificate. You can submit your visa application up to 3 months prior to your planned travel date.
           </p>
         </div>
-
-        {/* Timeline Horizontal / Vertical Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {steps.map((item, idx) => (
-            <div 
-              key={idx}
-              className="neu-card p-5 bg-white space-y-3 relative flex flex-col justify-between shadow-xs border border-[#EBE7E0]/80 hover:border-germany-red/30 transition-all"
-            >
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="w-8 h-8 rounded-full bg-germany-black text-white font-display text-sm font-bold flex items-center justify-center">
-                    {item.step}
-                  </span>
-                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-red-100/70 text-germany-red">
-                    {item.duration}
-                  </span>
-                </div>
-                <h3 className="text-sm font-bold text-germany-black font-display leading-snug">
-                  {item.title}
-                </h3>
-                <p className="text-xs text-gray-600 font-medium leading-relaxed">
-                  {item.desc}
-                </p>
-              </div>
-
-              <div className="pt-2 border-t border-[#EBE7E0]/60 flex items-center justify-between text-[10px] font-bold text-gray-400 uppercase">
-                <span>Phase {idx + 1}</span>
-                <span className="text-germany-black">{item.status}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Summary Banner */}
-        <div className="neu-card p-6 sm:p-8 bg-white shadow-[12px_12px_30px_rgba(210,205,195,0.6)] border border-[#EBE7E0]/80 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-2 max-w-2xl">
-            <h4 className="font-display text-lg sm:text-xl text-germany-black font-bold flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-germany-red" />
-              <span>When Should You Apply?</span>
-            </h4>
-            <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
-              Consulates accept visa filings up to <strong>3 to 6 months before</strong> course commencement. For Winter Semester (starting October), begin your CSP registration by <strong>June 1–15</strong> to comfortably beat peak seasonal delays.
-            </p>
-          </div>
-
-          <Link 
-            href="/signup"
-            className="neu-btn-primary px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-md shrink-0 flex items-center gap-2"
-          >
-            <span>Book Timeline Consultation</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
+        <Link
+          href="/signup"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--lp-ink)] text-white hover:bg-[var(--lp-red)] transition-colors text-xs font-semibold shrink-0"
+        >
+          <span>Plan Visa Filing</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
       </div>
     </section>
   );

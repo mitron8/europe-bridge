@@ -6,107 +6,110 @@ import { Calendar, ShieldCheck, FileCheck2, Clock, Banknote } from 'lucide-react
 
 export const APSHeroHeader = () => {
   return (
-    <section className="pt-28 pb-12 px-6 lg:px-12 relative overflow-hidden">
-      {/* Background Decorative Accents */}
-      <div className="absolute top-10 right-10 w-72 h-72 bg-red-200/30 rounded-full blur-3xl -z-10 pointer-events-none" />
-      <div className="absolute bottom-5 left-10 w-80 h-80 bg-amber-200/30 rounded-full blur-3xl -z-10 pointer-events-none" />
+    <section className="pt-32 sm:pt-36 pb-12 px-4 sm:px-6 lg:px-12 relative overflow-hidden">
+      {/* Background Subtle Ambient Accents */}
+      <div 
+        aria-hidden 
+        className="pointer-events-none absolute top-12 right-1/4 w-96 h-96 rounded-full blur-[120px] opacity-25"
+        style={{ background: "radial-gradient(circle, rgba(230,57,70,0.3), rgba(201,163,91,0.2), transparent)" }}
+      />
 
       <div className="max-w-7xl mx-auto">
         {/* Breadcrumb Navigation */}
-        <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs md:text-sm font-semibold text-gray-500">
-          <Link href="/" className="hover:text-germany-red transition-colors">Home</Link>
-          <span>/</span>
-          <Link href="/#our-process" className="hover:text-germany-red transition-colors">Study</Link>
-          <span>/</span>
-          <span className="text-germany-black font-extrabold">APS Verification Guide</span>
+        <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs font-semibold text-[var(--lp-muted)]">
+          <Link href="/" className="hover:text-[var(--lp-red)] transition-colors">Home</Link>
+          <span className="text-[var(--lp-faint)]">/</span>
+          <Link href="/#our-process" className="hover:text-[var(--lp-red)] transition-colors">Study</Link>
+          <span className="text-[var(--lp-faint)]">/</span>
+          <span className="text-[var(--lp-text)] font-bold">APS Verification Guide</span>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           {/* Main Hero Content */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-100/80 border border-red-200 text-germany-red text-xs font-black uppercase tracking-wider">
-              <FileCheck2 className="w-4 h-4" />
+          <div data-reveal className="lg:col-span-7 space-y-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--lp-rule-strong)] bg-white/70 backdrop-blur-sm px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--lp-muted)]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--lp-red)] animate-pulse" />
               <span>Official Verification Guide 2026</span>
             </div>
 
-            <div className="flex items-start gap-4">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-germany-black leading-tight tracking-tight font-display flex-1">
-                APS Verification Guide for <span className="text-germany-red">Germany</span>
-              </h1>
-            </div>
+            <h1 className="lp-serif text-3xl sm:text-4xl lg:text-[52px] font-semibold text-[var(--lp-text)] leading-[1.12] tracking-[-0.015em]">
+              APS Verification Guide for <em className="lp-script text-[var(--lp-red)]">Germany</em>
+            </h1>
 
-            <p className="text-base sm:text-lg text-gray-700 font-medium leading-relaxed">
-              The APS (<em className="italic font-bold">Akademische Prüfstelle</em>) certificate is mandatory for students from India, China, and Vietnam applying to German universities. Learn the step-by-step process, required documents, fee details, and interview preparation.
+            <p className="text-base sm:text-lg text-[var(--lp-muted)] leading-[1.65] font-normal">
+              The APS (<em className="italic font-bold text-[var(--lp-text)]">Akademische Prüfstelle</em>) certificate is mandatory for students from India, China, and Vietnam applying to German universities. Learn the step-by-step process, required documents, fee details, and interview preparation.
             </p>
 
             {/* At a Glance Box */}
-            <div className="neu-card p-6 border-l-4 border-l-germany-red relative overflow-hidden">
+            <div className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-2xl p-6 relative overflow-hidden shadow-[0_4px_20px_rgba(22,22,26,0.03)] border-l-4 border-l-[var(--lp-red)]">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-black uppercase tracking-widest text-germany-red">At a Glance Summary</span>
-                <span className="text-[11px] font-semibold text-gray-400 flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5" /> Updated May 2026
+                <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--lp-red)]">
+                  At a Glance Summary
+                </span>
+                <span className="text-[11.5px] font-medium text-[var(--lp-muted)] flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-[var(--lp-faint)]" /> Updated May 2026
                 </span>
               </div>
-              <p className="text-sm text-gray-700 leading-relaxed font-medium">
-                APS verifies your academic documents before universities or visa officers process your application. Mandatory for students from India, China, and Vietnam. Verification takes <strong className="text-germany-black">2 to 3 months</strong>. The official fee is <strong className="text-germany-red">INR 18,000</strong>. Issued as a digitally-signed PDF certificate. Without APS, no German student visa will be issued.
+              <p className="text-[14px] text-[var(--lp-text)] leading-[1.7] font-normal">
+                APS verifies your academic documents before universities or visa officers process your application. Mandatory for students from India, China, and Vietnam. Verification takes <strong className="font-semibold text-[var(--lp-text)]">2 to 3 months</strong>. The official fee is <strong className="text-[var(--lp-red)] font-semibold">INR 18,000</strong>. Issued as a digitally-signed PDF certificate. Without APS, no German student visa will be issued.
               </p>
             </div>
           </div>
 
           {/* Key Facts Quick Grid */}
-          <div className="lg:col-span-5">
+          <div data-reveal className="lg:col-span-5">
             <motion.div 
-              className="neu-card p-6 sm:p-8 space-y-4 border border-amber-100 relative"
-              whileHover={{ y: -4 }}
+              className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-4 shadow-[0_12px_40px_rgba(22,22,26,0.05)] relative"
+              whileHover={{ y: -3 }}
               transition={{ duration: 0.2 }}
             >
-              <h3 className="font-extrabold text-germany-black text-lg border-b border-gray-200 pb-3">
+              <h3 className="lp-serif text-xl font-semibold text-[var(--lp-text)] border-b border-[var(--lp-rule)] pb-3">
                 APS Snapshot &amp; Quick Facts
               </h3>
 
-              <div className="space-y-3.5">
-                <div className="p-3.5 rounded-2xl bg-red-50/70 border border-red-100 flex items-center justify-between">
+              <div className="space-y-3">
+                <div className="p-3.5 rounded-2xl bg-[#ece7dd]/50 border border-[#e2ddd3] flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Banknote className="w-5 h-5 text-germany-red" />
+                    <Banknote className="w-5 h-5 text-[var(--lp-red)]" />
                     <div>
-                      <span className="text-[11px] font-bold text-gray-500 uppercase">Official Fee</span>
-                      <div className="text-sm font-extrabold text-germany-black">INR 18,000</div>
+                      <span className="text-[10.5px] font-semibold text-[var(--lp-muted)] uppercase">Official Fee</span>
+                      <div className="text-sm font-bold text-[var(--lp-text)]">INR 18,000</div>
                     </div>
                   </div>
-                  <span className="text-[10px] font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded">CCAvenue / Transfer</span>
+                  <span className="text-[10px] font-semibold text-[var(--lp-red)] bg-[var(--lp-red)]/10 px-2 py-0.5 rounded-full">CCAvenue / Transfer</span>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-100 flex items-center justify-between">
+                <div className="p-3.5 rounded-2xl bg-[#ece7dd]/50 border border-[#e2ddd3] flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Clock className="w-5 h-5 text-amber-800" />
+                    <Clock className="w-5 h-5 text-[var(--lp-gold)]" />
                     <div>
-                      <span className="text-[11px] font-bold text-gray-500 uppercase">Processing Time</span>
-                      <div className="text-sm font-extrabold text-germany-black">2 to 3 Months</div>
+                      <span className="text-[10.5px] font-semibold text-[var(--lp-muted)] uppercase">Processing Time</span>
+                      <div className="text-sm font-bold text-[var(--lp-text)]">2 to 3 Months</div>
                     </div>
                   </div>
-                  <span className="text-[10px] font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded">Apply Early</span>
+                  <span className="text-[10px] font-semibold text-[var(--lp-gold)] bg-[var(--lp-gold-soft)]/50 px-2 py-0.5 rounded-full">Apply Early</span>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-100 flex items-center justify-between">
+                <div className="p-3.5 rounded-2xl bg-[#ece7dd]/50 border border-[#e2ddd3] flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <FileCheck2 className="w-5 h-5 text-emerald-700" />
+                    <FileCheck2 className="w-5 h-5 text-[var(--lp-red)]" />
                     <div>
-                      <span className="text-[11px] font-bold text-gray-500 uppercase">Certificate Format</span>
-                      <div className="text-sm font-extrabold text-germany-black">Digital Signed PDF</div>
+                      <span className="text-[10.5px] font-semibold text-[var(--lp-muted)] uppercase">Certificate Format</span>
+                      <div className="text-sm font-bold text-[var(--lp-text)]">Digital Signed PDF</div>
                     </div>
                   </div>
-                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">No Expiry</span>
+                  <span className="text-[10px] font-semibold text-[var(--lp-text)] bg-[#ece7dd] px-2.5 py-1 rounded-full border border-[#e2ddd3]">No Expiry</span>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-100 flex items-center justify-between">
+                <div className="p-3.5 rounded-2xl bg-[#ece7dd]/50 border border-[#e2ddd3] flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <ShieldCheck className="w-5 h-5 text-blue-700" />
+                    <ShieldCheck className="w-5 h-5 text-blue-600" />
                     <div>
-                      <span className="text-[11px] font-bold text-gray-500 uppercase">Interview Duration</span>
-                      <div className="text-sm font-extrabold text-germany-black">15–20 Minutes</div>
+                      <span className="text-[10.5px] font-semibold text-[var(--lp-muted)] uppercase">Interview Duration</span>
+                      <div className="text-sm font-bold text-[var(--lp-text)]">15–20 Minutes</div>
                     </div>
                   </div>
-                  <span className="text-[10px] font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded">Personal / Online</span>
+                  <span className="text-[10px] font-semibold text-blue-800 bg-blue-50 px-2 py-0.5 rounded-full">Personal / Online</span>
                 </div>
               </div>
             </motion.div>

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { ListOrdered, Clock, CheckCircle2, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ListOrdered, Clock, ArrowRight, ChevronDown } from 'lucide-react';
 
 export const APSProcessSteps = () => {
   const [activeStep, setActiveStep] = useState<number>(0);
@@ -52,30 +52,32 @@ export const APSProcessSteps = () => {
   ];
 
   return (
-    <section id="section-process" className="py-12 px-6 lg:px-12 scroll-mt-24 bg-gradient-to-b from-transparent via-amber-50/30 to-transparent">
+    <section id="section-process" className="py-12 px-4 sm:px-6 lg:px-12 scroll-mt-28">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Section Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-100 text-germany-black flex items-center justify-center font-bold shrink-0 shadow-sm">
-              <ListOrdered className="w-6 h-6 text-germany-black" />
+        <div data-reveal className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-[#ece7dd] text-[var(--lp-text)] flex items-center justify-center shrink-0 border border-[#e2ddd3] shadow-xs">
+            <ListOrdered className="w-6 h-6 text-[var(--lp-text)]" />
+          </div>
+          <div>
+            <div className="lp-eyebrow text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--lp-red)]">
+              Section #3
             </div>
-            <div>
-              <span className="text-xs font-black uppercase text-germany-red tracking-wider">Section #3</span>
-              <h2 className="text-2xl sm:text-3xl font-black text-germany-black font-display">The APS Process Step by Step</h2>
-              <p className="text-sm text-gray-600 font-medium mt-1">
-                From initial portal registration to receiving your digitally-signed PDF certificate.
-              </p>
-            </div>
+            <h2 className="lp-serif text-2xl sm:text-3xl lg:text-4xl font-semibold text-[var(--lp-text)] tracking-[-0.015em]">
+              The APS Process <em className="lp-script text-[var(--lp-red)]">Step by Step</em>
+            </h2>
+            <p className="text-sm sm:text-base text-[var(--lp-muted)] font-normal mt-1 max-w-3xl leading-relaxed">
+              From initial portal registration to receiving your digitally-signed PDF certificate.
+            </p>
           </div>
         </div>
 
         {/* Process Timeline Accordion */}
-        <div className="neu-card p-6 sm:p-8 space-y-4">
-          <div className="flex items-center justify-between border-b border-gray-200 pb-4">
-            <h3 className="font-extrabold text-germany-black text-lg">7-Step Verification Workflow</h3>
-            <span className="text-xs font-semibold text-gray-500 flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5" /> Total Timeline: 2–3 Months
+        <div data-reveal className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-6 shadow-[0_8px_30px_rgba(22,22,26,0.03)] hover:shadow-[0_16px_40px_rgba(22,22,26,0.05)] transition-all duration-300">
+          <div className="flex items-center justify-between border-b border-[var(--lp-rule)] pb-4 flex-wrap gap-2">
+            <h3 className="lp-serif text-xl sm:text-2xl font-semibold text-[var(--lp-text)]">7-Step Verification Workflow</h3>
+            <span className="text-xs font-semibold text-[var(--lp-muted)] flex items-center gap-1.5 bg-[#ece7dd] px-3 py-1 rounded-full border border-[#e2ddd3]">
+              <Clock className="w-3.5 h-3.5 text-[var(--lp-gold)]" /> Total Timeline: 2–3 Months
             </span>
           </div>
 
@@ -83,32 +85,43 @@ export const APSProcessSteps = () => {
             {steps.map((item, idx) => (
               <div
                 key={idx}
-                onClick={() => setActiveStep(idx)}
-                className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                onClick={() => setActiveStep(activeStep === idx ? -1 : idx)}
+                className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer ${
                   activeStep === idx
-                    ? 'bg-white border-germany-red shadow-md ring-2 ring-red-100'
-                    : 'bg-gray-50/70 border-gray-200 hover:border-gray-300'
+                    ? 'bg-white border-[var(--lp-ink)] shadow-md'
+                    : 'bg-[#ece7dd]/40 border-[#e2ddd3] hover:border-[#16161a]/30'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black ${
-                      activeStep === idx ? 'bg-germany-red text-white' : 'bg-gray-200 text-gray-700'
+                  <div className="flex items-center gap-3.5">
+                    <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                      activeStep === idx ? 'bg-[var(--lp-ink)] text-white' : 'bg-[#ece7dd] text-[var(--lp-muted)]'
                     }`}>
                       {item.step}
                     </span>
                     <div>
-                      <span className="text-[10px] font-black uppercase text-germany-red tracking-wider">{item.subtitle}</span>
-                      <h4 className="text-sm font-extrabold text-germany-black">{item.title}</h4>
+                      <span className="text-[10.5px] font-semibold uppercase tracking-wider text-[var(--lp-red)]">{item.subtitle}</span>
+                      <h4 className="text-sm sm:text-base font-semibold text-[var(--lp-text)]">{item.title}</h4>
                     </div>
                   </div>
-                  <ArrowRight className={`w-4 h-4 transition-transform ${activeStep === idx ? 'rotate-90 text-germany-red' : 'text-gray-400'}`} />
+                  <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${activeStep === idx ? 'rotate-180 text-[var(--lp-ink)]' : 'text-[var(--lp-faint)]'}`} />
                 </div>
-                {activeStep === idx && (
-                  <p className="text-xs text-gray-600 font-medium mt-3 pl-11 leading-relaxed border-t border-gray-100 pt-2">
-                    {item.desc}
-                  </p>
-                )}
+                
+                <AnimatePresence initial={false}>
+                  {activeStep === idx && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <p className="text-xs sm:text-sm text-[var(--lp-muted)] mt-3 pl-11 leading-relaxed border-t border-[var(--lp-rule)] pt-3">
+                        {item.desc}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ))}
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Send, CheckCircle2, ShieldCheck, Clock, User, Mail, Phone, Building } from 'lucide-react';
+import { Send, Check, ShieldCheck, Clock, User, Mail, Phone, Building } from 'lucide-react';
 
 export const InsuranceBookingForm = () => {
   const [formData, setFormData] = useState({
@@ -27,168 +27,135 @@ export const InsuranceBookingForm = () => {
   };
 
   return (
-    <section id="section-booking" className="py-16 px-6 lg:px-12 bg-white/50 border-t border-gray-200/80 relative">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <section id="booking" className="scroll-mt-32 py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" data-reveal>
+      <div className="max-w-2xl mx-auto">
         {/* Form Container */}
-        <div className="neu-card p-6 sm:p-10 bg-white border-2 border-gray-200 shadow-xl space-y-6">
-          <div className="space-y-2 border-b border-gray-200 pb-5">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100/80 text-emerald-800 text-xs font-black uppercase tracking-wider">
-              <Clock className="w-3.5 h-3.5" />
-              <span>60-Minute Response SLA (Working Hours)</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-germany-black font-display">
-              Apply for Health Insurance for Germany
+        <div className="bg-[#faf8f3] rounded-3xl p-6 sm:p-8 border border-[#e5e0d3] space-y-6 shadow-xs">
+          <div className="space-y-2 border-b border-[#e5e0d3] pb-4">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--lp-gold)] bg-[var(--lp-gold)]/10 px-2.5 py-0.5 rounded-full border border-[var(--lp-gold)]/20 inline-block">
+              Fast-Track Advisory
+            </span>
+            <h2 className="font-serif text-2xl font-normal text-[var(--lp-ink)]">
+              Apply for German Health Insurance
             </h2>
-            <p className="text-xs sm:text-sm text-gray-600 font-medium">
-              Submit your details below. Our European healthcare coordination desk will follow up to assess your eligibility, explain provider differences, and complete your digital enrollment.
+            <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
+              Submit your details below. Our healthcare coordination team will assess your eligibility and transmit your digital M10 notification.
             </p>
           </div>
 
           {submitted ? (
-            <div className="p-8 text-center space-y-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-700 mx-auto">
-                <CheckCircle2 className="w-8 h-8" />
+            <div className="p-8 text-center space-y-4 bg-[#eae5db]/60 border border-[#e5e0d3] rounded-2xl">
+              <div className="w-12 h-12 rounded-full bg-[var(--lp-ink)] text-white flex items-center justify-center mx-auto">
+                <Check className="w-6 h-6 text-[var(--lp-gold)]" />
               </div>
-              <h3 className="text-xl font-extrabold text-emerald-950">Application Received!</h3>
-              <p className="text-sm text-emerald-900 font-medium max-w-lg mx-auto">
-                Thank you, <strong>{formData.firstName || 'Student'}</strong>. Our German healthcare advisor is reviewing your academic status and will contact you via email ({formData.email}) and WhatsApp within 60 minutes.
+              <h3 className="font-serif text-lg font-normal text-[var(--lp-ink)]">Application Received</h3>
+              <p className="text-xs text-[var(--lp-muted)] leading-relaxed max-w-md mx-auto">
+                Thank you, <strong className="text-[var(--lp-text)]">{formData.firstName || 'Student'}</strong>. Our advisor is reviewing your academic details and will follow up via email ({formData.email}) and WhatsApp within 60 minutes.
               </p>
               <button
                 onClick={() => setSubmitted(false)}
-                className="neu-btn px-6 py-2.5 text-xs font-bold text-germany-black bg-white cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold rounded-full bg-[#faf8f3] text-[var(--lp-text)] border border-[#e5e0d3] hover:bg-[#eae5db] cursor-pointer transition-colors"
               >
                 Submit another inquiry
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">First Name *</label>
-                  <div className="relative">
-                    <User className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
-                    <input
-                      required
-                      type="text"
-                      placeholder="e.g. Rahul"
-                      value={formData.firstName}
-                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-germany-red/30 focus:border-germany-red text-sm font-semibold text-gray-800 bg-gray-50/60"
-                    />
-                  </div>
+                  <label className="text-[11px] font-mono uppercase tracking-wider text-[var(--lp-muted)]">First Name *</label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="e.g. Rahul"
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl border border-[#e5e0d3] bg-[#eae5db]/40 text-xs font-medium text-[var(--lp-text)] focus:outline-none focus:border-[var(--lp-red)] transition-colors"
+                  />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">Last Name *</label>
+                  <label className="text-[11px] font-mono uppercase tracking-wider text-[var(--lp-muted)]">Last Name *</label>
                   <input
                     required
                     type="text"
                     placeholder="e.g. Sharma"
                     value={formData.lastName}
                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-germany-red/30 focus:border-germany-red text-sm font-semibold text-gray-800 bg-gray-50/60"
+                    className="w-full px-3.5 py-2 rounded-xl border border-[#e5e0d3] bg-[#eae5db]/40 text-xs font-medium text-[var(--lp-text)] focus:outline-none focus:border-[var(--lp-red)] transition-colors"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">Email Address *</label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
-                    <input
-                      required
-                      type="email"
-                      placeholder="you@example.com"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-germany-red/30 focus:border-germany-red text-sm font-semibold text-gray-800 bg-gray-50/60"
-                    />
-                  </div>
+                  <label className="text-[11px] font-mono uppercase tracking-wider text-[var(--lp-muted)]">Email Address *</label>
+                  <input
+                    required
+                    type="email"
+                    placeholder="name@example.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl border border-[#e5e0d3] bg-[#eae5db]/40 text-xs font-medium text-[var(--lp-text)] focus:outline-none focus:border-[var(--lp-red)] transition-colors"
+                  />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">Phone / WhatsApp *</label>
-                  <div className="relative">
-                    <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
-                    <input
-                      required
-                      type="tel"
-                      placeholder="+91 98765 43210"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-germany-red/30 focus:border-germany-red text-sm font-semibold text-gray-800 bg-gray-50/60"
-                    />
-                  </div>
+                  <label className="text-[11px] font-mono uppercase tracking-wider text-[var(--lp-muted)]">Phone / WhatsApp *</label>
+                  <input
+                    required
+                    type="tel"
+                    placeholder="+91 98765 43210"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl border border-[#e5e0d3] bg-[#eae5db]/40 text-xs font-medium text-[var(--lp-text)] focus:outline-none focus:border-[var(--lp-red)] transition-colors"
+                  />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">Applicant Status *</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-germany-red/30 focus:border-germany-red text-sm font-semibold text-gray-800 bg-gray-50/60 cursor-pointer"
-                  >
-                    <option value="student_under_30">Bachelor / Master Student (Under 30)</option>
-                    <option value="student_over_30">Student Aged 30 or Above</option>
-                    <option value="preparatory">Preparatory Language Course / Studienkolleg</option>
-                    <option value="researcher">PhD Candidate / Guest Researcher</option>
-                    <option value="family">Student Moving with Spouse / Children</option>
-                  </select>
-                </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-mono uppercase tracking-wider text-[var(--lp-muted)]">Student Category *</label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  className="w-full px-3.5 py-2 rounded-xl border border-[#e5e0d3] bg-[#eae5db]/40 text-xs font-medium text-[var(--lp-text)] focus:outline-none focus:border-[var(--lp-red)] transition-colors"
+                >
+                  <option value="student_under_30">Regular Student Under 30 (Bachelor / Master)</option>
+                  <option value="student_over_30">Student Age 30 or Older</option>
+                  <option value="phd_researcher">PhD Candidate / Academic Researcher</option>
+                  <option value="language_studienkolleg">Language School / Studienkolleg Attendee</option>
+                </select>
+              </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">Target University / City</label>
-                  <div className="relative">
-                    <Building className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
-                    <input
-                      type="text"
-                      placeholder="e.g. TU Munich, RWTH Aachen, Berlin"
-                      value={formData.targetUniversity}
-                      onChange={(e) => setFormData({ ...formData, targetUniversity: e.target.value })}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-germany-red/30 focus:border-germany-red text-sm font-semibold text-gray-800 bg-gray-50/60"
-                    />
-                  </div>
-                </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-mono uppercase tracking-wider text-[var(--lp-muted)]">Target University in Germany</label>
+                <input
+                  type="text"
+                  placeholder="e.g. TU Munich, RWTH Aachen, FU Berlin"
+                  value={formData.targetUniversity}
+                  onChange={(e) => setFormData({ ...formData, targetUniversity: e.target.value })}
+                  className="w-full px-3.5 py-2 rounded-xl border border-[#e5e0d3] bg-[#eae5db]/40 text-xs font-medium text-[var(--lp-text)] focus:outline-none focus:border-[var(--lp-red)] transition-colors"
+                />
               </div>
 
               <div className="pt-2">
-                <label className="flex items-start gap-3 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    required
-                    checked={formData.consent}
-                    onChange={(e) => setFormData({ ...formData, consent: e.target.checked })}
-                    className="mt-0.5 rounded border-gray-300 text-germany-red focus:ring-germany-red h-4 w-4 cursor-pointer"
-                  />
-                  <span className="text-xs text-gray-600 font-medium leading-relaxed">
-                    I agree that EuropeBridge may process my contact details to assist with health insurance comparison and consular university registration. See our privacy policy.
-                  </span>
-                </label>
-              </div>
-
-              <div className="pt-3">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full neu-btn-primary py-3.5 px-6 text-xs sm:text-sm font-black uppercase tracking-wider text-white shadow-xl flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                  className="w-full py-3 rounded-full bg-[var(--lp-ink)] text-white hover:bg-[var(--lp-red)] text-xs font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                 >
-                  <Send className="w-4 h-4" />
-                  <span>{loading ? 'Submitting Request...' : 'Submit Health Insurance Request'}</span>
+                  {loading ? (
+                    <span>Processing Submission...</span>
+                  ) : (
+                    <>
+                      <span>Submit Free Health Insurance Application</span>
+                      <Send className="w-3.5 h-3.5" />
+                    </>
+                  )}
                 </button>
               </div>
             </form>
           )}
-
-          <div className="pt-4 border-t border-gray-100 flex flex-wrap items-center justify-between text-xs text-gray-500 font-bold gap-3">
-            <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              100% Free Advisory • Zero Service Charges
-            </span>
-            <span>Official Digital M10 Notification Included</span>
-          </div>
         </div>
       </div>
     </section>

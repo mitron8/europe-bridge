@@ -26,94 +26,123 @@ export const APSDocumentsChecklist = () => {
     { id: 'aps10', title: "Language Certificates (IELTS/TOEFL/TestDaF)", desc: "Copy of language score cards if available at the time of submission." },
   ];
 
+  const readyCount = Object.values(checkedItems).filter(Boolean).length;
+  const progressPct = Math.round((readyCount / apsDocs.length) * 100);
+
   return (
-    <section id="section-documents" className="py-12 px-6 lg:px-12 scroll-mt-24">
+    <section id="section-documents" className="py-12 px-4 sm:px-6 lg:px-12 scroll-mt-28">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Section Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-800 flex items-center justify-center font-bold shrink-0 shadow-sm">
-              <FileText className="w-6 h-6 text-blue-700" />
+        <div data-reveal className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-[#ece7dd] text-[var(--lp-text)] flex items-center justify-center shrink-0 border border-[#e2ddd3] shadow-xs">
+            <FileText className="w-6 h-6 text-[var(--lp-text)]" />
+          </div>
+          <div>
+            <div className="lp-eyebrow text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--lp-red)]">
+              Section #2
             </div>
-            <div>
-              <span className="text-xs font-black uppercase text-germany-red tracking-wider">Section #2</span>
-              <h2 className="text-2xl sm:text-3xl font-black text-germany-black font-display">Required Documents Checklist</h2>
-              <p className="text-sm text-gray-600 font-medium mt-1">
-                Prepare both original documents and certified copies before courier submission to APS India in New Delhi.
-              </p>
-            </div>
+            <h2 className="lp-serif text-2xl sm:text-3xl lg:text-4xl font-semibold text-[var(--lp-text)] tracking-[-0.015em]">
+              Required Documents <em className="lp-script text-[var(--lp-red)]">Checklist</em>
+            </h2>
+            <p className="text-sm sm:text-base text-[var(--lp-muted)] font-normal mt-1 max-w-3xl leading-relaxed">
+              Prepare both original documents and certified copies before courier submission to APS India in New Delhi.
+            </p>
           </div>
         </div>
 
         {/* Interactive Checklist Card */}
-        <div className="neu-card p-6 sm:p-8 space-y-6">
-          <div className="flex items-center justify-between border-b border-gray-200 pb-4">
+        <div data-reveal className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-6 shadow-[0_8px_30px_rgba(22,22,26,0.03)] hover:shadow-[0_16px_40px_rgba(22,22,26,0.05)] transition-all duration-300">
+          <div className="flex items-center justify-between border-b border-[var(--lp-rule)] pb-5 flex-wrap gap-4">
             <div>
-              <h3 className="font-extrabold text-germany-black text-lg">APS Submission Document Bundle</h3>
-              <p className="text-xs text-gray-500 font-medium">Click items to track your document assembly progress</p>
+              <h3 className="lp-serif text-xl sm:text-2xl font-semibold text-[var(--lp-text)]">APS Submission Document Bundle</h3>
+              <p className="text-xs sm:text-sm text-[var(--lp-muted)] mt-0.5">Click items to track your document assembly progress</p>
             </div>
-            <div className="text-xs font-black text-germany-red bg-red-50 px-3 py-1.5 rounded-full border border-red-200">
-              {Object.values(checkedItems).filter(Boolean).length} of {apsDocs.length} Ready
+            <div className="text-xs font-semibold text-[var(--lp-red)] bg-[var(--lp-red)]/10 px-3.5 py-1.5 rounded-full border border-[var(--lp-red)]/20 shadow-xs">
+              {readyCount} of {apsDocs.length} Ready ({progressPct}%)
             </div>
+          </div>
+
+          {/* Animated Progress Bar */}
+          <div className="w-full bg-[#ece7dd] h-2 rounded-full overflow-hidden">
+            <motion.div 
+              className="bg-[var(--lp-red)] h-full rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${progressPct}%` }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {apsDocs.map((doc) => {
               const isChecked = !!checkedItems[doc.id];
               return (
-                <div 
+                <motion.div 
                   key={doc.id}
+                  whileHover={{ y: -2 }}
+                  transition={{ duration: 0.2 }}
                   onClick={() => toggleCheck(doc.id)}
-                  className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-3.5 ${
+                  className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer flex items-start gap-3.5 select-none ${
                     isChecked 
-                      ? 'bg-emerald-50/50 border-emerald-300 shadow-sm' 
-                      : 'bg-gray-50/80 border-gray-200 hover:border-gray-300'
+                      ? 'bg-white border-[var(--lp-text)]/40 shadow-xs' 
+                      : 'bg-[#ece7dd]/40 border-[#e2ddd3] hover:border-[#16161a]/30'
                   }`}
                 >
                   <div className="mt-0.5 shrink-0">
                     {isChecked ? (
-                      <CheckSquare className="w-5 h-5 text-emerald-600" />
+                      <CheckSquare className="w-5 h-5 text-[var(--lp-red)]" />
                     ) : (
-                      <Square className="w-5 h-5 text-gray-400" />
+                      <Square className="w-5 h-5 text-[var(--lp-faint)]" />
                     )}
                   </div>
                   <div>
-                    <h4 className={`text-sm font-extrabold ${isChecked ? 'text-emerald-950 line-through' : 'text-germany-black'}`}>
+                    <h4 className={`text-sm sm:text-[15px] font-semibold ${isChecked ? 'text-[var(--lp-text)] line-through opacity-70' : 'text-[var(--lp-text)]'}`}>
                       {doc.title}
                     </h4>
-                    <p className="text-xs text-gray-500 font-medium mt-1 leading-relaxed">{doc.desc}</p>
+                    <p className="text-xs text-[var(--lp-muted)] mt-1 leading-relaxed">{doc.desc}</p>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
         </div>
 
         {/* Attestation & Formatting Rules */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="neu-card p-5 space-y-2 border border-gray-100">
-            <ShieldCheck className="w-5 h-5 text-germany-red" />
-            <h4 className="text-xs font-black uppercase text-germany-black">Notary / Gazetted Attestation</h4>
-            <p className="text-xs text-gray-600 font-medium leading-relaxed">
+        <div data-reveal className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <motion.div 
+            whileHover={{ y: -2 }}
+            transition={{ duration: 0.2 }}
+            className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-2xl p-5 space-y-2 shadow-xs"
+          >
+            <ShieldCheck className="w-5 h-5 text-[var(--lp-red)]" />
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--lp-text)]">Notary / Gazetted Attestation</h4>
+            <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
               Photocopies of certificates must be attested by a registered notary public or a Class-I gazetted officer.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="neu-card p-5 space-y-2 border border-gray-100">
-            <Download className="w-5 h-5 text-germany-black" />
-            <h4 className="text-xs font-black uppercase text-germany-black">Backlog Mark Sheets</h4>
-            <p className="text-xs text-gray-600 font-medium leading-relaxed">
+          <motion.div 
+            whileHover={{ y: -2 }}
+            transition={{ duration: 0.2 }}
+            className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-2xl p-5 space-y-2 shadow-xs"
+          >
+            <Download className="w-5 h-5 text-[var(--lp-text)]" />
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--lp-text)]">Backlog Mark Sheets</h4>
+            <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
               If you had any re-evaluations or backlogs, include all supplementary exam attempt mark sheets in chronological order.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="neu-card p-5 space-y-2 border border-gray-100">
-            <AlertTriangle className="w-5 h-5 text-amber-600" />
-            <h4 className="text-xs font-black uppercase text-germany-black">Courier Address</h4>
-            <p className="text-xs text-gray-600 font-medium leading-relaxed">
+          <motion.div 
+            whileHover={{ y: -2 }}
+            transition={{ duration: 0.2 }}
+            className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-2xl p-5 space-y-2 shadow-xs"
+          >
+            <AlertTriangle className="w-5 h-5 text-[var(--lp-gold)]" />
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--lp-text)]">Courier Address</h4>
+            <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
               Send hard copies via registered post / Speed Post / Bluedart to the APS India Office in Chanakyapuri, New Delhi.
             </p>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

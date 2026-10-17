@@ -1,11 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
-import { HelpCircle, ChevronDown } from 'lucide-react';
+import React from 'react';
+import { StudyFAQ } from '@/app/study/components/StudyFAQ';
 
 export const LifeAfterOfferFAQ = () => {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
-
   const faqs = [
     {
       q: 'How long can I legally stay in Germany after graduation?',
@@ -41,66 +39,13 @@ export const LifeAfterOfferFAQ = () => {
     }
   ];
 
-  const toggleFAQ = (idx: number) => {
-    setOpenIndex(openIndex === idx ? null : idx);
-  };
-
   return (
-    <section id="section-faq" className="py-12 px-6 lg:px-12 scroll-mt-24">
-      <div className="max-w-7xl mx-auto space-y-8">
-        
-        {/* Section Header */}
-        <div className="flex items-start gap-4">
-          <div className="flex h-14 w-[52px] items-center justify-center rounded-2xl bg-white border border-[#EBE7E0] shadow-sm shrink-0">
-            <HelpCircle className="w-7 h-7 text-germany-red" />
-          </div>
-          <div>
-            <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-germany-red mb-1">
-              <span>Section 07</span>
-              <span>•</span>
-              <span>Common Queries</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-germany-black font-display">
-              Frequently Asked Questions About Post-Study Life
-            </h2>
-          </div>
-        </div>
-
-        {/* FAQ Accordion List */}
-        <div className="neu-card p-6 lg:p-8 bg-white space-y-3">
-          {faqs.map((faq, idx) => {
-            const isOpen = openIndex === idx;
-            return (
-              <div 
-                key={idx}
-                className="border border-[#EBE7E0] rounded-2xl overflow-hidden transition-all duration-200"
-              >
-                <button
-                  onClick={() => toggleFAQ(idx)}
-                  className="w-full text-left p-4 sm:p-5 flex items-center justify-between gap-4 bg-[#FDFBF7] hover:bg-gray-100 transition-colors cursor-pointer"
-                  aria-expanded={isOpen}
-                >
-                  <span className="text-sm sm:text-base font-black text-germany-black font-display">
-                    {faq.q}
-                  </span>
-                  <ChevronDown 
-                    className={`w-5 h-5 text-germany-red shrink-0 transition-transform duration-300 ${
-                      isOpen ? 'rotate-180' : ''
-                    }`} 
-                  />
-                </button>
-
-                {isOpen && (
-                  <div className="p-4 sm:p-5 pt-0 bg-[#FDFBF7] text-xs sm:text-sm text-gray-600 font-medium leading-relaxed border-t border-[#EBE7E0]/60">
-                    <p>{faq.a}</p>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-      </div>
-    </section>
+    <StudyFAQ
+      id="section-faq"
+      badge="Section 07 · Common Queries"
+      title="Frequently Asked Questions About Post-Study Life"
+      subtitle="Everything you need to know about post-study work rights, the EU Blue Card, permanent settlement, and citizenship."
+      faqs={faqs}
+    />
   );
 };

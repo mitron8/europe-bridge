@@ -1,10 +1,10 @@
 "use client";
+
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Award, Search, Filter, CheckCircle2, DollarSign, Calendar, 
-  ExternalLink, Star, Lightbulb, GraduationCap, Clock, AlertCircle, ChevronDown, ChevronUp, BookOpen
+  Award, Search, Check, Calendar, 
+  ExternalLink, Star, ChevronDown, ChevronUp, BookOpen, Clock, Lightbulb 
 } from 'lucide-react';
 
 interface ScholarshipItem {
@@ -55,18 +55,18 @@ const SCHOLARSHIPS_DATA: ScholarshipItem[] = [
   {
     id: 'deutschlandstipendium',
     name: 'Deutschlandstipendium (Germany National Merit Scholarship)',
-    organization: 'Federal Ministry of Education (BMBF) + Private Corporate Donors',
+    organization: 'Federal Ministry of Education (BMBF) + Corporate Donors',
     category: 'partial',
     amount: '€300 / month tax-free',
-    period: '2 Semesters (renewable up to standard study period)',
+    period: '2 Semesters (renewable)',
     degreeLevels: ["Bachelor's", "Master's"],
     gpaRequirement: 'Top 10–20% of department (German GPA ≤ 1.8 preferred)',
-    deadline: 'Varies by university (typically June–August for Winter semester)',
+    deadline: 'Varies by university (typically June–August)',
     highlights: [
       '€150 from federal government matched by €150 from companies (BMW, Siemens, BASF)',
       'Open to all nationalities and degree subjects without quotas',
       'Does not count toward statutory income limits or BAföG',
-      'Direct access to corporate mentorship, internships, and networking galas',
+      'Direct access to corporate mentorship, internships, and networking events',
       'Can be held concurrently with student jobs (research assistant / working student)'
     ],
     eligibility: [
@@ -98,167 +98,93 @@ const SCHOLARSHIPS_DATA: ScholarshipItem[] = [
     eligibility: [
       'Degrees in Social Sciences, Political Science, Economics, Law, or Public Administration',
       'Graduated within the last 6 years with strong grades',
-      'Demonstrated commitment to democracy, social justice, or governance'
+      'Commitment to democratic governance and sustainable public administration'
     ],
-    proTip: 'You can apply to up to two priority Master’s programs under Helmut-Schmidt. Your statement of motivation must rank both and explain specific alignment with public administration.',
+    proTip: 'Focus your motivational essay on governance reforms or policy issues relevant to your country that you plan to address upon graduation.',
     officialUrl: 'https://www.daad.de/en/study-and-research-in-germany/scholarships/helmut-schmidt-programme/',
-    featured: false
+    featured: true
   },
   {
-    id: 'erasmus-plus',
+    id: 'erasmus-mundus',
     name: 'Erasmus Mundus Joint Master Degrees (EMJM)',
-    organization: 'European Commission (EU)',
+    organization: 'European Commission',
     category: 'fully-funded',
-    amount: '€1,400 / month + 100% Tuition Waiver',
-    period: '12 to 24 Months (Multi-country Mobility)',
+    amount: '€1,400 / month + Full Tuition',
+    period: '12 to 24 Months',
     degreeLevels: ["Master's"],
-    gpaRequirement: 'Outstanding academic standing (German equivalent ≤ 1.7)',
-    deadline: 'December – February for following autumn intake',
+    gpaRequirement: 'First-class honours (top 10% preferred)',
+    deadline: 'October – January (annually)',
     highlights: [
-      'Full participation costs (tuition fees, lab fees, insurance) covered 100%',
-      'Monthly subsistence allowance of €1,400 per month throughout the degree',
+      '100% tuition fee waiver covered across European university consortium',
+      'Monthly living allowance of €1,400 for up to 24 months',
       'Full travel and installation allowance included',
-      'Study across at least 2 different European universities with dual/joint degree'
+      'Study across at least 2 different European universities with joint degree'
     ],
     eligibility: [
       'Completed Bachelor’s degree in related field before program start',
       'Proficiency in English (IELTS 7.0+ or TOEFL 95+)',
       'High academic record and strong international adaptability'
     ],
-    proTip: 'Check the Erasmus Mundus Catalogue early. Many consortia partner with premier German TU9 universities (TUM, RWTH Aachen, TU Dresden) alongside other top European institutions.',
+    proTip: 'Check the Erasmus Mundus Catalogue early. Many consortia partner with premier German TU9 universities (TUM, RWTH Aachen, TU Dresden).',
     officialUrl: 'https://erasmus-plus.ec.europa.eu/',
     featured: true
   },
   {
     id: 'heinrich-boell',
     name: 'Heinrich Böll Foundation Scholarships',
-    organization: 'Heinrich-Böll-Stiftung (Green / Ecology Foundation)',
+    organization: 'Heinrich-Böll-Stiftung (Sustainability & Human Rights)',
     category: 'civic',
-    amount: 'Up to €992 / month + €300 book money',
-    period: 'Standard period of study (Regelstudienzeit)',
+    amount: 'Up to €992 / month + €300 book grant',
+    period: 'Standard study period',
     degreeLevels: ["Master's", "PhD"],
-    gpaRequirement: 'Excellent grades + proven social/political engagement',
+    gpaRequirement: 'Excellent grades + proven civic engagement',
     deadline: 'March 1 and September 1 annually',
     highlights: [
       'Basic monthly grant calculated according to BAföG rules (up to €992/mo)',
       'Lump-sum monthly study allowance of €300 for books & materials',
-      'Extensive non-material support: political summer academies, seminars, mentoring',
+      'Extensive non-material support: summer academies, seminars, mentoring',
       'Worldwide alumni network in sustainability, NGOs, and environmental research'
     ],
     eligibility: [
       'International students enrolled or admitted to a German public university',
       'Proof of German language proficiency (minimum B2/C1 for most interviews)',
-      'Demonstrated commitment to ecological sustainability, democracy, and human rights'
+      'Demonstrated commitment to ecological sustainability and democracy'
     ],
-    proTip: 'You must prepare for an in-depth German interview testing your awareness of current European and global environmental policy and democratic issues.',
+    proTip: 'You must prepare for an in-depth German interview testing your awareness of current European and global environmental policy.',
     officialUrl: 'https://www.boell.de/en/scholarships',
     featured: false
   },
   {
     id: 'friedrich-ebert',
     name: 'Friedrich Ebert Foundation (FES) International Grants',
-    organization: 'Friedrich-Ebert-Stiftung (Social Democracy Foundation)',
+    organization: 'Friedrich-Ebert-Stiftung (Social Democracy)',
     category: 'civic',
-    amount: '€992 / month + Health Insurance Support',
+    amount: '€992 / month + Health Insurance',
     period: 'Standard study duration',
     degreeLevels: ["Bachelor's", "Master's", "PhD"],
     gpaRequirement: 'Top 10–15% academic grades',
     deadline: 'Rolling (April 30 for Winter, October 31 for Summer)',
     highlights: [
       'Monthly grant of €992 for Master’s candidates',
-      'Subsidy for statutory health insurance contributions (approx. €145/mo)',
+      'Subsidy for statutory health insurance contributions (~€145/mo)',
       'Individual liaison lecturer support at your specific German university',
       'Comprehensive seminar program on social equality and labor rights'
     ],
     eligibility: [
-      'Admission to a state or state-recognized university in Germany',
+      'Admission to a state-recognized university in Germany',
       'Proficiency in German language (Goethe B2 / TestDaF 4 minimum)',
-      'Active alignment with social democratic values, trade unions, or community volunteerism'
+      'Active alignment with social democratic values or community volunteering'
     ],
-    proTip: 'FES does not accept applications from first-semester students who have not yet arrived in Germany. You can apply once enrolled with at least 1 semester remaining.',
+    proTip: 'FES accepts applications once you are enrolled in Germany with at least 1 semester remaining.',
     officialUrl: 'https://www.fes.de/studienfoerderung',
-    featured: false
-  },
-  {
-    id: 'konrad-adenauer',
-    name: 'Konrad-Adenauer-Stiftung (KAS) Fellowships',
-    organization: 'Konrad-Adenauer-Stiftung (Christian Democratic Foundation)',
-    category: 'civic',
-    amount: '€992 / month + Family & Insurance Allowance',
-    period: 'Up to 24 Months',
-    degreeLevels: ["Master's", "PhD"],
-    gpaRequirement: 'Outstanding grades (top 15%)',
-    deadline: 'July 15 annually (Central international portal)',
-    highlights: [
-      'Financial stipend of €992 per month for Master’s students',
-      'Health and long-term care insurance subsidy',
-      'High-profile alumni network in German industry, politics, and research',
-      'Exclusive leadership seminars in Berlin and Bonn'
-    ],
-    eligibility: [
-      'Undergraduate degree with superior grades',
-      'B2 level German language proficiency certificate',
-      'Active record of civic, voluntary, or religious social responsibility'
-    ],
-    proTip: 'KAS has selection committees active in select international offices (including New Delhi). Applying through local country selection rounds offers significantly higher conversion rates.',
-    officialUrl: 'https://www.kas.de/en/web/begabtenfoerderung',
-    featured: false
-  },
-  {
-    id: 'stibet-grants',
-    name: 'STIBET Graduation & Emergency Grants',
-    organization: 'DAAD funded, administered directly by German Universities',
-    category: 'partial',
-    amount: '€400 to €850 / month',
-    period: '3 to 6 Months (During Final Thesis Period)',
-    degreeLevels: ["Bachelor's", "Master's"],
-    gpaRequirement: 'Good progress toward thesis completion',
-    deadline: 'Rolling deadlines set by your university International Office (Akademisches Auslandsamt)',
-    highlights: [
-      'Direct cash grant during the demanding master’s thesis semester',
-      'Designed to reduce part-time work pressure so you can graduate with top honors',
-      'Simple, localized application process directly with university advisors',
-      'Emergency hardship funds also available for unforeseen financial crunches'
-    ],
-    eligibility: [
-      'Registered international student within 1-2 semesters of graduation',
-      'Registered thesis with university examination board (Prüfungsamt)',
-      'No other full scholarship active concurrently'
-    ],
-    proTip: 'Every German public university gets annual STIBET funding from the DAAD. Contact your International Office (AAA) right when you register your Master’s thesis to apply.',
-    officialUrl: 'https://www.daad.de/en/information-services-for-higher-education-institutions/programmes-for-heis/stibet/',
-    featured: false
-  },
-  {
-    id: 'bavaria-grant',
-    name: 'Bavarian State International Student Grants',
-    organization: 'Bavarian Ministry of Science and the Arts',
-    category: 'partial',
-    amount: '€300 to €600 / month (or one-off grant)',
-    period: '1 to 2 Semesters',
-    degreeLevels: ["Bachelor's", "Master's"],
-    gpaRequirement: 'Satisfactory to good academic standing',
-    deadline: 'Set by Bavarian universities (TUM, LMU, FAU, Uni Passau)',
-    highlights: [
-      'Aimed specifically at international students studying in the State of Bavaria',
-      'Supports high-performing students facing sudden financial distress',
-      'High approval rate for actively enrolled students who submit clear bank statements'
-    ],
-    eligibility: [
-      'Enrolled at a Bavarian public higher education institution',
-      'Completed at least 1 semester in Bavaria with valid credits (ECTS)',
-      'Demonstrated financial need'
-    ],
-    proTip: 'Particularly valuable for students at TUM (Technical University of Munich) and LMU Munich where living costs are higher than other German federal states.',
-    officialUrl: 'https://www.stmwk.bayern.de/',
     featured: false
   }
 ];
 
 export const MajorScholarshipsSection = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [expandedId, setExpandedId] = useState<string | null>('daad-epos');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filteredScholarships = SCHOLARSHIPS_DATA.filter((item) => {
     const matchesCategory =
@@ -282,229 +208,200 @@ export const MajorScholarshipsSection = () => {
   };
 
   return (
-    <section id="major-scholarships" className="py-12 px-6 lg:px-12 relative">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-100/80 border border-red-200 text-germany-red text-xs font-black uppercase tracking-wider">
-            <Award className="w-4 h-4" />
-            <span>Curated Directory</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-germany-black font-display">
-            Major Scholarships for International Students
-          </h2>
-          <p className="text-base text-gray-700 font-medium leading-relaxed">
-            Filter through verified government, national, and foundation grants. Click any scholarship card to inspect exact eligibility rules, financial coverage, and insider application advice.
-          </p>
+    <section id="major-scholarships" className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" data-reveal>
+      {/* Header */}
+      <div className="space-y-3 text-center max-w-2xl mx-auto">
+        <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--lp-red)]">
+          Curated Directory
+        </span>
+        <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-ink)] font-normal tracking-tight">
+          Major Scholarships for <em className="italic text-[var(--lp-red)] font-serif">International Students</em>
+        </h2>
+        <p className="text-sm sm:text-base text-[var(--lp-muted)] leading-relaxed">
+          Filter through verified government, merit, and foundation programs. Expand any card for exact criteria and application strategy.
+        </p>
+      </div>
+
+      {/* Filter Bar & Search */}
+      <div className="bg-[#faf8f3] rounded-2xl p-4 sm:p-5 border border-[#e5e0d3] flex flex-col md:flex-row gap-4 items-center justify-between">
+        {/* Category Tabs */}
+        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto">
+          {[
+            { id: 'all', label: 'All Grants' },
+            { id: 'fully-funded', label: 'Fully Funded (€992+/mo)' },
+            { id: 'partial', label: 'Merit (€300–€600)' },
+            { id: 'civic', label: 'Foundation & Civic' },
+            { id: 'masters', label: "Master's Focus" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setSelectedCategory(tab.id)}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                selectedCategory === tab.id
+                  ? 'bg-[var(--lp-ink)] text-white'
+                  : 'bg-[#eae5db]/60 text-[var(--lp-muted)] hover:bg-[#eae5db] hover:text-[var(--lp-text)] border border-[#e5e0d3]'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        {/* Filter Bar & Search */}
-        <div className="neu-card p-4 sm:p-5 flex flex-col md:flex-row gap-4 items-center justify-between">
-          {/* Category Tabs */}
-          <div className="flex items-center gap-2 flex-wrap w-full md:w-auto">
-            {[
-              { id: 'all', label: 'All Grants' },
-              { id: 'fully-funded', label: 'Fully Funded (€992+/mo)' },
-              { id: 'partial', label: 'Monthly Merit (€300–€600)' },
-              { id: 'civic', label: 'Foundation & Civic' },
-              { id: 'masters', label: "Master's Programs" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setSelectedCategory(tab.id)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  selectedCategory === tab.id
-                    ? 'bg-germany-red text-white shadow-md'
-                    : 'bg-cream text-gray-700 hover:bg-gray-200/60'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Search Box */}
-          <div className="relative w-full md:w-72">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search DAAD, TUM, €992..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="neu-input w-full pl-9 pr-4 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-germany-red/30"
-            />
-          </div>
+        {/* Search Box */}
+        <div className="relative w-full md:w-72">
+          <Search className="w-4 h-4 text-[var(--lp-muted)] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search DAAD, TUM, €992..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 text-xs font-medium bg-[#eae5db]/40 rounded-xl border border-[#e5e0d3] text-[var(--lp-text)] placeholder-[var(--lp-muted)] focus:outline-none focus:border-[var(--lp-red)] transition-colors"
+          />
         </div>
+      </div>
 
-        {/* Results Counter */}
-        <div className="flex items-center justify-between text-xs font-bold text-gray-500 px-1">
-          <span>Showing {filteredScholarships.length} of {SCHOLARSHIPS_DATA.length} major scholarship programs</span>
-          <span className="text-germany-red">Updated for 2026/2027 Academic Cycles</span>
-        </div>
-
-        {/* Scholarships Cards Grid */}
-        <div className="grid grid-cols-1 gap-6">
-          <AnimatePresence>
-            {filteredScholarships.map((scholarship) => {
-              const isExpanded = expandedId === scholarship.id;
-              return (
-                <motion.div
-                  key={scholarship.id}
-                  layout
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  className={`neu-card p-6 sm:p-8 transition-all duration-300 relative ${
-                    scholarship.featured ? 'border-2 border-red-300/80 bg-gradient-to-br from-[#FDFBF7] to-red-50/20' : ''
-                  }`}
-                >
-                  {/* Top Header Row */}
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                    <div className="space-y-1.5 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                          {scholarship.organization}
-                        </span>
-                        {scholarship.featured && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-white bg-germany-red px-2.5 py-0.5 rounded-full shadow-sm">
-                            <Star className="w-3 h-3 fill-current" /> Top Pick
-                          </span>
-                        )}
-                        <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                          scholarship.category === 'fully-funded'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-amber-100 text-amber-900'
-                        }`}>
-                          {scholarship.category === 'fully-funded' ? 'Full Funding' : 'Merit / Partial Aid'}
-                        </span>
-                      </div>
-                      <h3 className="text-xl sm:text-2xl font-black text-germany-black">
-                        {scholarship.name}
-                      </h3>
-                    </div>
-
-                    {/* Amount & Period Pill */}
-                    <div className="sm:text-right shrink-0 bg-emerald-50/80 border border-emerald-200/80 px-4 py-2.5 rounded-2xl shadow-inner">
-                      <div className="text-xs text-emerald-800 font-bold uppercase tracking-wider">Coverage</div>
-                      <div className="text-lg font-black text-emerald-700">{scholarship.amount}</div>
-                      <div className="text-[11px] text-gray-500 font-medium">{scholarship.period}</div>
-                    </div>
+      {/* Scholarships Cards Grid */}
+      <div className="space-y-4">
+        {filteredScholarships.map((scholarship) => {
+          const isExpanded = expandedId === scholarship.id;
+          return (
+            <div
+              key={scholarship.id}
+              className="bg-[#faf8f3] rounded-2xl p-6 sm:p-7 border border-[#e5e0d3] space-y-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+            >
+              {/* Top Row */}
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                <div className="space-y-1 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--lp-muted)]">
+                      {scholarship.organization}
+                    </span>
+                    {scholarship.featured && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-[var(--lp-gold)] bg-[var(--lp-gold)]/10 px-2 py-0.5 rounded-full border border-[var(--lp-gold)]/20">
+                        <Star className="w-3 h-3 fill-current" /> Top Pick
+                      </span>
+                    )}
+                    <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#eae5db] text-[var(--lp-text)] border border-[#e5e0d3]">
+                      {scholarship.category === 'fully-funded' ? 'Full Funding' : 'Merit / Partial Aid'}
+                    </span>
                   </div>
 
-                  {/* Summary Metric Badges */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 my-5 pt-4 border-t border-gray-100">
-                    <div className="flex items-center gap-2 text-xs text-gray-700 font-medium">
-                      <GraduationCap className="w-4 h-4 text-germany-red shrink-0" />
-                      <span><strong>Degrees:</strong> {scholarship.degreeLevels.join(', ')}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-700 font-medium">
-                      <Award className="w-4 h-4 text-amber-600 shrink-0" />
-                      <span><strong>GPA Cutoff:</strong> {scholarship.gpaRequirement}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-700 font-medium">
-                      <Clock className="w-4 h-4 text-blue-600 shrink-0" />
-                      <span><strong>Deadline:</strong> {scholarship.deadline}</span>
-                    </div>
-                  </div>
+                  <h3 className="font-serif text-lg sm:text-xl font-normal text-[var(--lp-ink)] leading-snug">
+                    {scholarship.name}
+                  </h3>
+                </div>
 
-                  {/* Key Highlights Bullet points */}
-                  <div className="space-y-2 mb-4">
-                    <div className="text-xs font-extrabold text-germany-black uppercase tracking-wider">
-                      Financial & Non-Material Perks:
+                <div className="text-left sm:text-right shrink-0">
+                  <div className="font-serif text-xl sm:text-2xl font-normal text-[var(--lp-red)]">
+                    {scholarship.amount}
+                  </div>
+                  <span className="text-[10px] font-mono text-[var(--lp-muted)] block">
+                    Duration: {scholarship.period}
+                  </span>
+                </div>
+              </div>
+
+              {/* Requirement Strip */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-[#e5e0d3] text-xs">
+                <div className="flex items-center gap-2 text-[var(--lp-muted)]">
+                  <Award className="w-3.5 h-3.5 text-[var(--lp-gold)] shrink-0" />
+                  <span><strong className="text-[var(--lp-text)]">Academic Profile:</strong> {scholarship.gpaRequirement}</span>
+                </div>
+                <div className="flex items-center gap-2 text-[var(--lp-muted)]">
+                  <Clock className="w-3.5 h-3.5 text-[var(--lp-gold)] shrink-0" />
+                  <span><strong className="text-[var(--lp-text)]">Deadline:</strong> {scholarship.deadline}</span>
+                </div>
+              </div>
+
+              {/* Key Highlights */}
+              <div className="space-y-2">
+                <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--lp-muted)]">
+                  Key Benefits &amp; Allowances:
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {scholarship.highlights.slice(0, 4).map((highlight, idx) => (
+                    <div key={idx} className="flex items-start gap-2 text-xs text-[var(--lp-text)]">
+                      <Check className="w-3.5 h-3.5 text-[var(--lp-gold)] shrink-0 mt-0.5" />
+                      <span className="text-[11px] text-[var(--lp-muted)] leading-relaxed">{highlight}</span>
                     </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Expandable Accordion */}
+              {isExpanded && (
+                <div className="space-y-4 pt-4 border-t border-[#e5e0d3]">
+                  {/* Eligibility */}
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-semibold text-[var(--lp-text)] uppercase tracking-wider flex items-center gap-1.5">
+                      <BookOpen className="w-3.5 h-3.5 text-[var(--lp-red)]" /> Eligibility Criteria
+                    </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {scholarship.highlights.slice(0, 4).map((highlight, idx) => (
-                        <div key={idx} className="flex items-start gap-2 text-xs text-gray-700 font-medium">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                          <span>{highlight}</span>
+                      {scholarship.eligibility.map((item, idx) => (
+                        <div key={idx} className="p-2.5 rounded-xl bg-[#eae5db]/50 border border-[#e5e0d3] text-xs text-[var(--lp-muted)] flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[var(--lp-red)] shrink-0 mt-1.5" />
+                          <span>{item}</span>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  {/* Expandable Details Accordion */}
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-4 pt-4 border-t border-gray-200/70 overflow-hidden"
-                      >
-                        {/* Eligibility Criteria */}
-                        <div className="space-y-2">
-                          <h4 className="text-xs font-black text-germany-black uppercase tracking-wider flex items-center gap-1.5">
-                            <BookOpen className="w-4 h-4 text-germany-red" /> Eligibility & Prerequisites
-                          </h4>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {scholarship.eligibility.map((item, idx) => (
-                              <div key={idx} className="flex items-start gap-2 text-xs text-gray-600 font-medium bg-cream/70 p-2 rounded-xl">
-                                <span className="w-1.5 h-1.5 rounded-full bg-germany-red shrink-0 mt-1.5" />
-                                <span>{item}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Counselor Pro Tip Box */}
-                        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-xl space-y-1">
-                          <div className="flex items-center gap-1.5 text-xs font-extrabold text-amber-900 uppercase tracking-wider">
-                            <Lightbulb className="w-4 h-4 text-amber-600" /> EuropeBridge Counselor Insight
-                          </div>
-                          <p className="text-xs text-amber-950 font-medium leading-relaxed">
-                            {scholarship.proTip}
-                          </p>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Bottom Action Footer */}
-                  <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <button
-                      type="button"
-                      onClick={() => toggleExpand(scholarship.id)}
-                      className="text-xs font-extrabold text-germany-red hover:text-red-700 flex items-center gap-1 cursor-pointer"
-                    >
-                      {isExpanded ? (
-                        <>
-                          <span>Show Less Details</span>
-                          <ChevronUp className="w-4 h-4" />
-                        </>
-                      ) : (
-                        <>
-                          <span>View Full Eligibility & Counselor Pro-Tip</span>
-                          <ChevronDown className="w-4 h-4" />
-                        </>
-                      )}
-                    </button>
-
-                    <div className="flex items-center gap-3">
-                      {scholarship.officialUrl && (
-                        <a
-                          href={scholarship.officialUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="neu-btn px-4 py-2 text-xs font-bold text-gray-700 hover:text-germany-black inline-flex items-center gap-1.5"
-                        >
-                          <span>Official Portal</span>
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </a>
-                      )}
-                      <Link
-                        href="/#cta"
-                        className="neu-btn-primary px-4 py-2 text-xs font-bold inline-flex items-center gap-1"
-                      >
-                        <span>Check Profile Fit</span>
-                      </Link>
+                  {/* Advisor Pro Tip */}
+                  <div className="bg-[#eae5db]/60 border-l-2 border-[var(--lp-gold)] p-4 rounded-xl space-y-1">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--lp-text)]">
+                      <Lightbulb className="w-3.5 h-3.5 text-[var(--lp-gold)]" /> Advisor Strategy Note
                     </div>
+                    <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
+                      {scholarship.proTip}
+                    </p>
                   </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-        </div>
+                </div>
+              )}
+
+              {/* Bottom Action Footer */}
+              <div className="pt-3 border-t border-[#e5e0d3] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => toggleExpand(scholarship.id)}
+                  className="text-xs font-semibold text-[var(--lp-red)] hover:underline flex items-center gap-1 cursor-pointer self-start sm:self-auto"
+                >
+                  {isExpanded ? (
+                    <>
+                      <span>Show Less Details</span>
+                      <ChevronUp className="w-3.5 h-3.5" />
+                    </>
+                  ) : (
+                    <>
+                      <span>View Full Eligibility &amp; Strategy Note</span>
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    </>
+                  )}
+                </button>
+
+                <div className="flex items-center gap-3">
+                  {scholarship.officialUrl && (
+                    <a
+                      href={scholarship.officialUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-1.5 rounded-full text-xs font-semibold text-[var(--lp-text)] bg-[#eae5db] hover:bg-[#e0dad0] inline-flex items-center gap-1.5 transition-colors"
+                    >
+                      <span>Official Portal</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                  <Link
+                    href="/tools/admission-chance"
+                    className="px-4 py-1.5 rounded-full text-xs font-semibold text-white bg-[var(--lp-ink)] hover:bg-[var(--lp-red)] inline-flex items-center gap-1 transition-colors"
+                  >
+                    <span>Check Profile Fit</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

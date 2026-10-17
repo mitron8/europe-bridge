@@ -3,14 +3,9 @@
 import React, { useState } from 'react';
 import { 
   Calculator, 
-  CheckCircle2, 
-  AlertCircle, 
-  ShieldCheck, 
-  Coins, 
-  Calendar, 
-  Award, 
   TrendingUp,
-  ArrowRight
+  ArrowRight,
+  Check
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -31,7 +26,6 @@ export const BlueCardEligibilityCalculator = () => {
 
   // Approximate Monthly Gross & Estimated Net (Tax Class 1 single, non-church tax)
   const monthlyGross = Math.round(annualSalary / 12);
-  // Net in Germany is roughly 60-63% after health insurance, pension, taxes
   const estimatedMonthlyNet = Math.round(monthlyGross * 0.61);
 
   // PR timeline
@@ -47,24 +41,24 @@ export const BlueCardEligibilityCalculator = () => {
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Section Header */}
-        <div className="flex items-start gap-4">
-          <div className="flex h-14 w-[52px] items-center justify-center rounded-2xl bg-white border border-[#EBE7E0] shadow-sm shrink-0">
-            <Calculator className="w-7 h-7 text-germany-red" />
+        <div data-reveal className="flex items-start gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--lp-paper-2)] border border-[var(--lp-rule)] shrink-0">
+            <Calculator className="w-5 h-5 text-[var(--lp-red)]" />
           </div>
           <div>
-            <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-germany-red mb-1">
+            <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-[var(--lp-red)] mb-1">
               <span>Section 06</span>
               <span>•</span>
               <span>Interactive Decision Tool</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-germany-black font-display">
-              EU Blue Card &amp; PR Eligibility Calculator
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-[var(--lp-ink)] tracking-tight">
+              EU Blue Card & PR Eligibility Calculator
             </h2>
           </div>
         </div>
 
         {/* Calculator Card */}
-        <div className="neu-card p-6 lg:p-8 bg-white space-y-8">
+        <div data-reveal className="bg-[var(--lp-card)] border border-[var(--lp-rule)] rounded-2xl p-6 lg:p-8 space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             {/* Left Column: Interactive Inputs */}
@@ -73,10 +67,10 @@ export const BlueCardEligibilityCalculator = () => {
               {/* Annual Salary Slider & Input */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-black text-germany-black">
+                  <label className="text-sm font-semibold text-[var(--lp-ink)]">
                     Expected / Offered Gross Annual Salary
                   </label>
-                  <span className="text-lg font-black text-germany-red font-display">
+                  <span className="text-lg font-mono font-bold text-[var(--lp-red)]">
                     €{annualSalary.toLocaleString('en-US')} / year
                   </span>
                 </div>
@@ -88,27 +82,27 @@ export const BlueCardEligibilityCalculator = () => {
                   step={1000}
                   value={annualSalary}
                   onChange={(e) => setAnnualSalary(Number(e.target.value))}
-                  className="w-full accent-germany-red cursor-pointer h-2 bg-gray-200 rounded-lg"
+                  className="w-full accent-[var(--lp-red)] cursor-pointer h-2 bg-[var(--lp-paper-2)] rounded-lg"
                 />
 
-                <div className="flex justify-between text-[11px] font-bold text-gray-400">
+                <div className="flex justify-between text-[11px] font-mono text-[var(--lp-muted)]">
                   <span>€35,000</span>
-                  <span className="text-germany-red font-extrabold">€45,934 (2026 Threshold)</span>
+                  <span className="text-[var(--lp-red)] font-semibold">€45,934 (2026 Threshold)</span>
                   <span>€95,000</span>
                 </div>
               </div>
 
               {/* Graduation Status Toggle */}
-              <div className="p-4 rounded-2xl bg-[#FDFBF7] border border-[#EBE7E0] space-y-2">
-                <span className="text-xs font-black text-germany-black block">Graduation Timeline</span>
+              <div className="p-4 rounded-xl bg-[var(--lp-paper)] border border-[var(--lp-rule)] space-y-2">
+                <span className="text-xs font-semibold text-[var(--lp-ink)] block">Graduation Timeline</span>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setIsRecentGrad(true)}
-                    className={`py-2 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                    className={`py-2 px-3 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                       isRecentGrad 
-                        ? 'bg-germany-black text-white shadow-xs' 
-                        : 'bg-white border border-[#EBE7E0] text-gray-700 hover:bg-gray-100'
+                        ? 'bg-[var(--lp-ink)] text-white shadow-xs' 
+                        : 'bg-[var(--lp-card)] border border-[var(--lp-rule)] text-[var(--lp-muted)] hover:text-[var(--lp-ink)]'
                     }`}
                   >
                     Degree &lt; 3 Years Old (Recent Grad)
@@ -116,10 +110,10 @@ export const BlueCardEligibilityCalculator = () => {
                   <button
                     type="button"
                     onClick={() => setIsRecentGrad(false)}
-                    className={`py-2 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                    className={`py-2 px-3 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                       !isRecentGrad 
-                        ? 'bg-germany-black text-white shadow-xs' 
-                        : 'bg-white border border-[#EBE7E0] text-gray-700 hover:bg-gray-100'
+                        ? 'bg-[var(--lp-ink)] text-white shadow-xs' 
+                        : 'bg-[var(--lp-card)] border border-[var(--lp-rule)] text-[var(--lp-muted)] hover:text-[var(--lp-ink)]'
                     }`}
                   >
                     Degree &gt; 3 Years Old
@@ -128,16 +122,16 @@ export const BlueCardEligibilityCalculator = () => {
               </div>
 
               {/* Field Category */}
-              <div className="p-4 rounded-2xl bg-[#FDFBF7] border border-[#EBE7E0] space-y-2">
-                <span className="text-xs font-black text-germany-black block">Occupational Field</span>
+              <div className="p-4 rounded-xl bg-[var(--lp-paper)] border border-[var(--lp-rule)] space-y-2">
+                <span className="text-xs font-semibold text-[var(--lp-ink)] block">Occupational Field</span>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setIsStem(true)}
-                    className={`py-2 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                    className={`py-2 px-3 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                       isStem 
-                        ? 'bg-germany-black text-white shadow-xs' 
-                        : 'bg-white border border-[#EBE7E0] text-gray-700 hover:bg-gray-100'
+                        ? 'bg-[var(--lp-ink)] text-white shadow-xs' 
+                        : 'bg-[var(--lp-card)] border border-[var(--lp-rule)] text-[var(--lp-muted)] hover:text-[var(--lp-ink)]'
                     }`}
                   >
                     STEM / IT / Engineering / Healthcare
@@ -145,10 +139,10 @@ export const BlueCardEligibilityCalculator = () => {
                   <button
                     type="button"
                     onClick={() => setIsStem(false)}
-                    className={`py-2 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                    className={`py-2 px-3 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                       !isStem 
-                        ? 'bg-germany-black text-white shadow-xs' 
-                        : 'bg-white border border-[#EBE7E0] text-gray-700 hover:bg-gray-100'
+                        ? 'bg-[var(--lp-ink)] text-white shadow-xs' 
+                        : 'bg-[var(--lp-card)] border border-[var(--lp-rule)] text-[var(--lp-muted)] hover:text-[var(--lp-ink)]'
                     }`}
                   >
                     Business / Humanities / Other
@@ -157,16 +151,16 @@ export const BlueCardEligibilityCalculator = () => {
               </div>
 
               {/* German Language Proficiency */}
-              <div className="p-4 rounded-2xl bg-[#FDFBF7] border border-[#EBE7E0] space-y-2">
-                <span className="text-xs font-black text-germany-black block">Your German Language Level</span>
+              <div className="p-4 rounded-xl bg-[var(--lp-paper)] border border-[var(--lp-rule)] space-y-2">
+                <span className="text-xs font-semibold text-[var(--lp-ink)] block">Your German Language Level</span>
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setGermanLevel('b1')}
-                    className={`py-2 px-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                    className={`py-2 px-2.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                       germanLevel === 'b1' 
-                        ? 'bg-germany-black text-white shadow-xs' 
-                        : 'bg-white border border-[#EBE7E0] text-gray-700 hover:bg-gray-100'
+                        ? 'bg-[var(--lp-ink)] text-white shadow-xs' 
+                        : 'bg-[var(--lp-card)] border border-[var(--lp-rule)] text-[var(--lp-muted)] hover:text-[var(--lp-ink)]'
                     }`}
                   >
                     B1 / B2 Level
@@ -174,10 +168,10 @@ export const BlueCardEligibilityCalculator = () => {
                   <button
                     type="button"
                     onClick={() => setGermanLevel('a1')}
-                    className={`py-2 px-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                    className={`py-2 px-2.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                       germanLevel === 'a1' 
-                        ? 'bg-germany-black text-white shadow-xs' 
-                        : 'bg-white border border-[#EBE7E0] text-gray-700 hover:bg-gray-100'
+                        ? 'bg-[var(--lp-ink)] text-white shadow-xs' 
+                        : 'bg-[var(--lp-card)] border border-[var(--lp-rule)] text-[var(--lp-muted)] hover:text-[var(--lp-ink)]'
                     }`}
                   >
                     A1 / A2 Level
@@ -185,10 +179,10 @@ export const BlueCardEligibilityCalculator = () => {
                   <button
                     type="button"
                     onClick={() => setGermanLevel('none')}
-                    className={`py-2 px-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                    className={`py-2 px-2.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                       germanLevel === 'none' 
-                        ? 'bg-germany-black text-white shadow-xs' 
-                        : 'bg-white border border-[#EBE7E0] text-gray-700 hover:bg-gray-100'
+                        ? 'bg-[var(--lp-ink)] text-white shadow-xs' 
+                        : 'bg-[var(--lp-card)] border border-[var(--lp-rule)] text-[var(--lp-muted)] hover:text-[var(--lp-ink)]'
                     }`}
                   >
                     English Only
@@ -200,65 +194,61 @@ export const BlueCardEligibilityCalculator = () => {
 
             {/* Right Column: Dynamic Results Card */}
             <div className="lg:col-span-5 space-y-5">
-              <div className={`p-6 rounded-3xl border space-y-4 shadow-sm ${
-                isEligible 
-                  ? 'bg-emerald-50/70 border-emerald-200' 
-                  : 'bg-amber-50/70 border-amber-200'
-              }`}>
+              <div className="p-6 rounded-2xl border border-[var(--lp-rule)] bg-[var(--lp-paper-2)] space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className={`text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full ${
+                  <span className={`text-xs font-mono font-semibold uppercase tracking-wider px-3 py-1 rounded-full border ${
                     isEligible 
-                      ? 'bg-emerald-600 text-white' 
-                      : 'bg-amber-600 text-white'
+                      ? 'bg-[var(--lp-gold)]/10 text-[var(--lp-gold)] border-[var(--lp-gold)]/25' 
+                      : 'bg-[var(--lp-paper)] text-[var(--lp-muted)] border-[var(--lp-rule)]'
                   }`}>
-                    {isEligible ? 'Eligible for EU Blue Card 🎉' : 'Below Blue Card Threshold'}
+                    {isEligible ? 'Eligible for EU Blue Card' : 'Below Blue Card Threshold'}
                   </span>
-                  <span className="text-xs font-bold text-gray-500">2026 Rules</span>
+                  <span className="text-xs font-mono text-[var(--lp-muted)]">2026 Rules</span>
                 </div>
 
                 {isEligible ? (
-                  <p className="text-xs text-emerald-950 font-medium leading-relaxed">
-                    Congratulations! Your proposed salary of <strong>€{annualSalary.toLocaleString()}</strong> exceeds the 2026 requirement of <strong>€{applicableThreshold.toLocaleString()}</strong>. You are qualified to transition directly into an <strong>EU Blue Card (§18g AufenthG)</strong>.
+                  <p className="text-xs text-[var(--lp-text)] leading-relaxed">
+                    Congratulations! Your proposed salary of <strong className="text-[var(--lp-ink)]">€{annualSalary.toLocaleString()}</strong> exceeds the 2026 requirement of <strong className="text-[var(--lp-ink)]">€{applicableThreshold.toLocaleString()}</strong>. You are qualified to transition directly into an <strong className="text-[var(--lp-red)]">EU Blue Card (§18g AufenthG)</strong>.
                   </p>
                 ) : (
-                  <p className="text-xs text-amber-950 font-medium leading-relaxed">
-                    You are currently <strong>€{Math.round(salaryDiff).toLocaleString()}</strong> below the Blue Card threshold of €{applicableThreshold.toLocaleString()}. However, as a German university graduate, you can still obtain a <strong>Skilled Worker Permit (§18b)</strong> with no minimum salary cap as long as the job matches your degree!
+                  <p className="text-xs text-[var(--lp-text)] leading-relaxed">
+                    You are currently <strong className="text-[var(--lp-ink)]">€{Math.round(salaryDiff).toLocaleString()}</strong> below the Blue Card threshold of €{applicableThreshold.toLocaleString()}. However, as a German university graduate, you can still obtain a <strong className="text-[var(--lp-ink)]">Skilled Worker Permit (§18b)</strong> with no minimum salary cap as long as the job matches your degree.
                   </p>
                 )}
 
                 {/* Key Metrics Breakdown */}
-                <div className="space-y-2 pt-2 border-t border-black/10 text-xs font-bold text-gray-800">
+                <div className="space-y-2 pt-2 border-t border-[var(--lp-rule)] text-xs text-[var(--lp-text)]">
                   <div className="flex justify-between items-center py-1">
-                    <span className="text-gray-600">Applicable Threshold:</span>
-                    <span className="font-black text-germany-black">€{applicableThreshold.toLocaleString()}/yr</span>
+                    <span className="text-[var(--lp-muted)]">Applicable Threshold:</span>
+                    <span className="font-mono font-semibold text-[var(--lp-ink)]">€{applicableThreshold.toLocaleString()}/yr</span>
                   </div>
                   <div className="flex justify-between items-center py-1">
-                    <span className="text-gray-600">Estimated Monthly Gross:</span>
-                    <span className="font-black text-germany-black">approx. €{monthlyGross.toLocaleString()}</span>
+                    <span className="text-[var(--lp-muted)]">Estimated Monthly Gross:</span>
+                    <span className="font-mono font-semibold text-[var(--lp-ink)]">approx. €{monthlyGross.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center py-1">
-                    <span className="text-gray-600">Estimated Monthly In-Hand:</span>
-                    <span className="font-black text-emerald-700">approx. €{estimatedMonthlyNet.toLocaleString()} net</span>
+                    <span className="text-[var(--lp-muted)]">Estimated Monthly In-Hand:</span>
+                    <span className="font-mono font-bold text-[var(--lp-gold)]">approx. €{estimatedMonthlyNet.toLocaleString()} net</span>
                   </div>
-                  <div className="flex justify-between items-center py-1 border-t border-black/10 pt-2">
-                    <span className="text-gray-600">Fastest PR Settlement:</span>
-                    <span className="font-black text-germany-red">{getPrTimeline()}</span>
+                  <div className="flex justify-between items-center py-1 border-t border-[var(--lp-rule)] pt-2">
+                    <span className="text-[var(--lp-muted)]">Fastest PR Settlement:</span>
+                    <span className="font-semibold text-[var(--lp-red)]">{getPrTimeline()}</span>
                   </div>
                 </div>
               </div>
 
               {/* EuropeBridge Help CTA */}
-              <div className="p-5 rounded-2xl bg-[#FDFBF7] border border-[#EBE7E0] space-y-2">
-                <span className="text-xs font-black text-germany-black flex items-center gap-1.5">
-                  <TrendingUp className="w-4 h-4 text-germany-red" />
+              <div className="p-5 rounded-xl bg-[var(--lp-paper)] border border-[var(--lp-rule)] space-y-2">
+                <span className="text-xs font-semibold text-[var(--lp-ink)] flex items-center gap-1.5">
+                  <TrendingUp className="w-4 h-4 text-[var(--lp-red)]" />
                   Need Help Planning Your German Career?
                 </span>
-                <p className="text-xs text-gray-600 font-medium leading-relaxed">
+                <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
                   EuropeBridge counsellors guide you from shortlisting programs with high Werkstudent conversion rates to tailoring your German CV and reviewing job offers.
                 </p>
                 <Link
                   href="/profile-evaluation"
-                  className="inline-flex items-center gap-1.5 text-xs font-black text-germany-red hover:underline pt-1"
+                  className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-[var(--lp-red)] hover:underline pt-1"
                 >
                   <span>Book Free 1:1 Career Strategy Call</span>
                   <ArrowRight className="w-3.5 h-3.5" />

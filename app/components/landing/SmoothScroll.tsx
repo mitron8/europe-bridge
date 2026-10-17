@@ -111,14 +111,14 @@ export default function SmoothScroll() {
         const delay = parseFloat(el.dataset.revealDelay || "0");
         gsap.fromTo(
           el,
-          { y: 36, opacity: 0 },
+          { y: 16, opacity: 0 },
           {
             y: 0,
             opacity: 1,
-            duration: 1.1,
-            delay,
-            ease: "expo.out",
-            scrollTrigger: { trigger: el, start: "top 88%", once: true },
+            duration: 0.55,
+            delay: Math.min(delay, 0.2),
+            ease: "power2.out",
+            scrollTrigger: { trigger: el, start: "top 94%", once: true },
           }
         );
       });
@@ -141,14 +141,14 @@ export default function SmoothScroll() {
         const lines = el.querySelectorAll<HTMLElement>(".lp-line-mask > span");
         gsap.fromTo(
           lines,
-          { y: 32, opacity: 0 },
+          { y: 18, opacity: 0 },
           {
             y: 0,
             opacity: 1,
-            duration: 1.1,
-            stagger: 0.1,
-            ease: "expo.out",
-            scrollTrigger: { trigger: el, start: "top 85%", once: true },
+            duration: 0.6,
+            stagger: 0.06,
+            ease: "power2.out",
+            scrollTrigger: { trigger: el, start: "top 92%", once: true },
           }
         );
       });

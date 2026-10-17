@@ -1,88 +1,85 @@
 "use client";
 
 import React from 'react';
-import { Headphones, Scale, FileCheck, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Headphones, Scale, FileCheck, ArrowRight, Check } from 'lucide-react';
 
 export const InsuranceProcess = () => {
   const steps = [
     {
       step: "01",
       icon: Headphones,
-      title: "Personalized Consultation",
-      description: "We assess your profile (enrolled student, preparatory language learner, or researcher), age, family dependents, and university city to identify the ideal insurance structure."
+      title: "Profile Assessment",
+      description: "We assess your degree level, age, family dependents, and university city to identify the legally optimal insurance structure."
     },
     {
       step: "02",
       icon: Scale,
       title: "Provider Comparison",
-      description: "We compare top statutory Krankenkassen (TK, Barmer, AOK) and private alternatives, explaining differences in dental perks, English digital tools, and local clinic access."
+      description: "We compare statutory Krankenkassen (TK, Barmer, AOK) and private alternatives, explaining dental subsidies and English digital tools."
     },
     {
       step: "03",
       icon: FileCheck,
-      title: "Application & M10 Handover",
-      description: "We help finalize your digital application in minutes, issue your embassy certificate for your visa appointment, and transmit the electronic M10 notification directly to your university."
+      title: "M10 & Embassy Certificate",
+      description: "We finalize your application, provide your visa certificate, and transmit the electronic M10 notification directly to your university."
     }
   ];
 
   return (
-    <section id="section-process" className="py-16 px-6 lg:px-12 relative">
-      <div className="max-w-7xl mx-auto space-y-12">
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100/80 border border-red-200 text-germany-red text-xs font-black uppercase tracking-wider">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Effortless Setup</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-germany-black font-display">
-            How It <span className="text-germany-red">Works</span>
-          </h2>
-          <p className="text-sm sm:text-base text-gray-700 font-medium">
-            3 simple steps from initial profile evaluation to full consular and university compliance.
-          </p>
-        </div>
+    <section id="section-process" className="scroll-mt-32 py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" data-reveal>
+      {/* Header */}
+      <div className="space-y-3 text-center max-w-2xl mx-auto">
+        <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--lp-red)]">
+          Effortless Activation
+        </span>
+        <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-ink)] font-normal tracking-tight">
+          How Setup <em className="italic text-[var(--lp-red)] font-serif">Works</em>
+        </h2>
+        <p className="text-sm sm:text-base text-[var(--lp-muted)] leading-relaxed">
+          Three simple steps from initial evaluation to full consular and university compliance.
+        </p>
+      </div>
 
-        {/* Steps Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {steps.map((item, idx) => {
-            const Icon = item.icon;
-            return (
-              <div 
-                key={idx}
-                className="neu-card p-6 bg-white border border-gray-200/80 flex flex-col justify-between relative group hover:shadow-md transition-all space-y-6"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="w-12 h-12 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center text-germany-black font-black group-hover:bg-germany-red group-hover:text-white transition-colors">
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <span className="font-mono text-xs font-black text-gray-400">
-                      STEP {item.step}
-                    </span>
+      {/* Steps Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl mx-auto">
+        {steps.map((item, idx) => {
+          const Icon = item.icon;
+          return (
+            <div 
+              key={idx}
+              className="bg-[#faf8f3] rounded-2xl p-6 border border-[#e5e0d3] flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md space-y-5"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-[#eae5db] flex items-center justify-center text-[var(--lp-ink)]">
+                    <Icon className="w-4 h-4" />
                   </div>
-
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-extrabold text-germany-black group-hover:text-germany-red transition-colors">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
-                      {item.description}
-                    </p>
-                  </div>
+                  <span className="font-mono text-xs text-[var(--lp-gold)]">
+                    STEP {item.step}
+                  </span>
                 </div>
 
-                <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-[11px] font-bold text-gray-400">
-                  <span>Phase {idx + 1} of 3</span>
-                  {idx < 2 ? (
-                    <ArrowRight className="w-3.5 h-3.5 text-gray-300 hidden md:block" />
-                  ) : (
-                    <span className="text-emerald-600 font-black">Visa Ready ✓</span>
-                  )}
+                <div className="space-y-1.5">
+                  <h3 className="font-serif text-base font-normal text-[var(--lp-ink)]">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
+                    {item.description}
+                  </p>
                 </div>
               </div>
-            );
-          })}
-        </div>
+
+              <div className="pt-3 border-t border-[#e5e0d3] flex items-center justify-between text-[11px] font-mono text-[var(--lp-muted)]">
+                <span>Phase {idx + 1} of 3</span>
+                {idx < 2 ? (
+                  <ArrowRight className="w-3.5 h-3.5 text-[var(--lp-muted)]" />
+                ) : (
+                  <span className="text-[var(--lp-gold)]">Visa Ready ✓</span>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

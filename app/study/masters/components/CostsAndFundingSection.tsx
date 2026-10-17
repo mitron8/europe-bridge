@@ -1,17 +1,17 @@
 "use client";
 
 import React from 'react';
-import { DollarSign, Euro, Wallet, PiggyBank, Award, CheckCircle2, ShieldCheck, ArrowRight, Building } from 'lucide-react';
+import { Euro, Wallet, PiggyBank, ArrowRight, Building, Award, Check } from 'lucide-react';
 import Link from 'next/link';
 
 export const CostsAndFundingSection = () => {
   const expenseBreakdown = [
-    { category: "Student Housing (Warmmiete)", cost: "€380 – €650 / month", desc: "Includes heating, electricity, water & internet in student dormitories (Studentenwohnheim) or shared flats (WG)." },
-    { category: "Public Health Insurance", cost: "€130 / month", desc: "Statutory student health coverage (TK, Barmer, AOK) granting free doctor visits and hospital treatment." },
-    { category: "Food & Groceries", cost: "€200 – €260 / month", desc: "Supermarkets (Lidl, Aldi, Rewe) plus subsidized university canteen meals (Mensa) costing €3–€5." },
-    { category: "Mobile, Wi-Fi & GEZ", cost: "€35 – €50 / month", desc: "Unlimited 5G mobile plan + mandatory household broadcasting fee (Rundfunkbeitrag split across WG)." },
+    { category: "Student Housing (Warmmiete)", cost: "€380 – €650 / mo", desc: "Includes heating, electricity, water & internet in student dormitories (Studentenwohnheim) or shared flats (WG)." },
+    { category: "Public Health Insurance", cost: "€130 / mo", desc: "Statutory student health coverage (TK, Barmer, AOK) granting free doctor visits and hospital treatment." },
+    { category: "Food & Groceries", cost: "€200 – €260 / mo", desc: "Supermarkets (Lidl, Aldi, Rewe) plus subsidized university canteen meals (Mensa) costing €3–€5." },
+    { category: "Mobile, Wi-Fi & GEZ", cost: "€35 – €50 / mo", desc: "Unlimited 5G mobile plan + mandatory household broadcasting fee (Rundfunkbeitrag split across WG)." },
     { category: "Semester Ticket (Transit)", cost: "Included in Semesterbeitrag", desc: "Covers free regional buses, trams, U-Bahn, S-Bahn, and regional RE trains throughout the semester." },
-    { category: "Personal & Leisure", cost: "€100 – €150 / month", desc: "Clothing, gym memberships, weekend outings, and European student travel." },
+    { category: "Personal & Leisure", cost: "€100 – €150 / mo", desc: "Clothing, gym memberships, weekend outings, and European student travel." },
   ];
 
   const cityComparison = [
@@ -22,153 +22,157 @@ export const CostsAndFundingSection = () => {
   ];
 
   return (
-    <section id="costs" className="py-8 sm:py-12 px-3.5 sm:px-6 lg:px-12 max-w-7xl mx-auto space-y-8 sm:space-y-10">
+    <section id="costs" className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" data-reveal>
       {/* Header */}
-      <div className="space-y-2.5 sm:space-y-3 text-center max-w-3xl mx-auto">
-        <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-red-100/80 text-germany-red text-[11px] sm:text-xs font-black uppercase tracking-wider">
-          <DollarSign className="w-3.5 h-3.5" />
-          <span>Financial Planning</span>
-        </div>
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display text-germany-black">
-          Tuition, Living Costs &amp; <span className="text-germany-red">Funding Your Degree</span>
+      <div className="space-y-3 text-center max-w-2xl mx-auto">
+        <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--lp-red)]">
+          Financial Planning
+        </span>
+        <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-ink)] font-normal tracking-tight">
+          Tuition, Living Costs &amp; <em className="italic text-[var(--lp-red)] font-serif">Funding</em>
         </h2>
-        <p className="text-xs sm:text-base text-gray-600 font-medium leading-relaxed">
-          Germany is one of the most cost-effective study abroad destinations in the world. Understand the real numbers without hidden agency surprises.
+        <p className="text-sm sm:text-base text-[var(--lp-muted)] leading-relaxed">
+          Germany remains one of the world’s most accessible master&apos;s destinations. Here is the transparent breakdown of actual expenses.
         </p>
       </div>
 
       {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-        <div className="neu-card p-4 sm:p-6 bg-white space-y-2.5 sm:space-y-3 border-t-4 border-germany-red">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="bg-[#faf8f3] rounded-2xl p-6 border border-[#e5e0d3] space-y-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-400">Public Tuition</span>
-            <Euro className="w-5 h-5 text-germany-red" />
+            <span className="text-[11px] font-mono uppercase tracking-wider text-[var(--lp-muted)]">Public Tuition</span>
+            <Euro className="w-4 h-4 text-[var(--lp-red)]" />
           </div>
-          <div className="text-2xl sm:text-3xl font-display font-black text-germany-black">0€ / Year</div>
-          <p className="text-xs text-gray-600 font-medium leading-relaxed">
-            15 out of 16 German federal states charge <strong>zero tuition</strong> for international master&apos;s students. Baden-Württemberg is the single exception charging €1,500/semester.
+          <div className="font-serif text-3xl font-normal text-[var(--lp-ink)]">0€ / Year</div>
+          <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
+            15 out of 16 German federal states charge <strong className="text-[var(--lp-text)]">zero tuition</strong> for international master&apos;s students. Baden-Württemberg charges €1,500/semester.
           </p>
         </div>
 
-        <div className="neu-card p-4 sm:p-6 bg-white space-y-2.5 sm:space-y-3 border-t-4 border-germany-gold">
+        <div className="bg-[#faf8f3] rounded-2xl p-6 border border-[#e5e0d3] space-y-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-400">Blocked Account (2026)</span>
-            <Wallet className="w-5 h-5 text-germany-gold" />
+            <span className="text-[11px] font-mono uppercase tracking-wider text-[var(--lp-muted)]">Blocked Account</span>
+            <Wallet className="w-4 h-4 text-[var(--lp-gold)]" />
           </div>
-          <div className="text-2xl sm:text-3xl font-display font-black text-germany-black">€11,904 / Year</div>
-          <p className="text-xs text-gray-600 font-medium leading-relaxed">
-            Statutory proof of financial resources mandated for the German national student visa. Unlocks <strong>€992/month</strong> directly into your German bank account.
+          <div className="font-serif text-3xl font-normal text-[var(--lp-ink)]">€11,904 / Year</div>
+          <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
+            Statutory financial proof mandated for the German national student visa. Unlocks <strong className="text-[var(--lp-text)]">€992/month</strong> directly to your personal current account.
           </p>
         </div>
 
-        <div className="neu-card p-4 sm:p-6 bg-white space-y-2.5 sm:space-y-3 border-t-4 border-emerald-500">
+        <div className="bg-[#faf8f3] rounded-2xl p-6 border border-[#e5e0d3] space-y-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-400">Average Monthly Cost</span>
-            <PiggyBank className="w-5 h-5 text-emerald-600" />
+            <span className="text-[11px] font-mono uppercase tracking-wider text-[var(--lp-muted)]">Monthly Living Cost</span>
+            <PiggyBank className="w-4 h-4 text-[var(--lp-red)]" />
           </div>
-          <div className="text-2xl sm:text-3xl font-display font-black text-germany-black">€850 – €1,150</div>
-          <p className="text-xs text-gray-600 font-medium leading-relaxed">
-            Covers rent, compulsory public health insurance, groceries, transit, and mobile. Can be fully offset via part-time Werkstudent work (€1,000–€1,600/mo).
+          <div className="font-serif text-3xl font-normal text-[var(--lp-ink)]">€850 – €1,150</div>
+          <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
+            Covers rent, health insurance, food, and transport. Most students fund this via part-time Werkstudent work (<strong className="text-[var(--lp-text)]">€1,000–€1,600/mo</strong>).
           </p>
         </div>
       </div>
 
       {/* Monthly Budget Breakdown & City Comparison */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Breakdown Items */}
-        <div className="lg:col-span-6 neu-card p-4 sm:p-7 bg-white space-y-3 sm:space-y-4">
-          <h3 className="font-display text-lg sm:text-xl font-bold text-germany-black flex items-center gap-2 border-b border-[#EBE7E0] pb-3">
-            <Euro className="w-5 h-5 text-germany-red shrink-0" />
-            <span>Detailed Monthly Living Budget</span>
-          </h3>
+        <div className="lg:col-span-6 bg-[#faf8f3] rounded-2xl p-6 sm:p-7 border border-[#e5e0d3] space-y-4">
+          <div className="flex items-center gap-2 border-b border-[#e5e0d3] pb-3">
+            <Euro className="w-4 h-4 text-[var(--lp-red)]" />
+            <h3 className="font-serif text-lg font-normal text-[var(--lp-ink)]">Detailed Monthly Living Budget</h3>
+          </div>
 
-          <div className="space-y-2 sm:space-y-3">
+          <div className="space-y-2.5">
             {expenseBreakdown.map((item) => (
-              <div key={item.category} className="p-2.5 sm:p-3 rounded-xl bg-[#FAF8F5] border border-[#EBE7E0] space-y-0.5">
+              <div key={item.category} className="p-3 rounded-xl bg-[#eae5db]/50 border border-[#e5e0d3] space-y-1">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="font-bold text-xs text-germany-black">{item.category}</span>
-                  <span className="font-extrabold text-xs text-germany-red shrink-0">{item.cost}</span>
+                  <span className="font-semibold text-xs text-[var(--lp-text)]">{item.category}</span>
+                  <span className="font-mono text-xs font-semibold text-[var(--lp-red)] shrink-0">{item.cost}</span>
                 </div>
-                <p className="text-[11px] text-gray-500 font-medium leading-relaxed">{item.desc}</p>
+                <p className="text-[11px] text-[var(--lp-muted)] leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* City Tiers Table */}
-        <div className="lg:col-span-6 neu-card p-4 sm:p-7 bg-white space-y-3 sm:space-y-4">
-          <h3 className="font-display text-lg sm:text-xl font-bold text-germany-black flex items-center gap-2 border-b border-[#EBE7E0] pb-3">
-            <Building className="w-5 h-5 text-germany-gold shrink-0" />
-            <span>Living Cost Variations by City</span>
-          </h3>
+        <div className="lg:col-span-6 bg-[#faf8f3] rounded-2xl p-6 sm:p-7 border border-[#e5e0d3] space-y-4 flex flex-col justify-between">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 border-b border-[#e5e0d3] pb-3">
+              <Building className="w-4 h-4 text-[var(--lp-gold)]" />
+              <h3 className="font-serif text-lg font-normal text-[var(--lp-ink)]">Living Costs by City Tier</h3>
+            </div>
 
-          <div className="space-y-2 sm:space-y-3">
-            {cityComparison.map((city) => (
-              <div key={city.city} className="p-2.5 sm:p-3.5 rounded-xl bg-[#FAF8F5] border border-[#EBE7E0] space-y-1">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <span className="font-bold text-xs text-germany-black">{city.city}</span>
-                    <span className="text-[10px] text-gray-400 block">{city.tier}</span>
+            <div className="space-y-2.5">
+              {cityComparison.map((city) => (
+                <div key={city.city} className="p-3 rounded-xl bg-[#eae5db]/50 border border-[#e5e0d3] space-y-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="font-semibold text-xs text-[var(--lp-text)]">{city.city}</span>
+                      <span className="text-[10px] font-mono text-[var(--lp-muted)] block">{city.tier}</span>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="font-mono text-xs font-semibold text-[var(--lp-ink)]">{city.total}</span>
+                      <span className="text-[10px] text-[var(--lp-muted)] block">Rent: {city.rent}</span>
+                    </div>
                   </div>
-                  <div className="text-right shrink-0">
-                    <span className="font-black text-xs text-germany-black">{city.total}</span>
-                    <span className="text-[10px] text-gray-500 block">Rent: {city.rent}</span>
-                  </div>
+                  <p className="text-[11px] text-[var(--lp-muted)] pt-1 border-t border-[#e5e0d3] leading-relaxed">{city.note}</p>
                 </div>
-                <p className="text-[10px] text-gray-600 font-medium pt-1 border-t border-gray-200/60 leading-relaxed">{city.note}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
-          <div className="pt-2">
+          <div className="pt-3">
             <Link
               href="/study/cost-of-living"
-              className="text-xs font-extrabold text-germany-red hover:underline flex items-center gap-1.5"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--lp-red)] hover:underline"
             >
-              <span>Explore our interactive Cost of Living calculator across 40+ German cities</span>
-              <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+              <span>Explore interactive Cost of Living guide for 40+ German cities</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
       </div>
 
       {/* Major Scholarships Banner */}
-      <div className="neu-card p-4 sm:p-8 bg-white space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-[#EBE7E0] pb-3 sm:pb-4">
+      <div className="bg-[#faf8f3] rounded-2xl p-6 sm:p-8 border border-[#e5e0d3] space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#e5e0d3] pb-4">
           <div>
-            <h3 className="font-display text-lg sm:text-xl font-bold text-germany-black flex items-center gap-2">
-              <Award className="w-5 h-5 text-germany-gold shrink-0" />
-              <span>Scholarships for Master&apos;s Students in Germany</span>
-            </h3>
-            <p className="text-xs sm:text-sm text-gray-500 font-medium mt-0.5">
-              Because public tuition is already free, German scholarships focus on funding monthly living stipends.
+            <div className="flex items-center gap-2">
+              <Award className="w-4 h-4 text-[var(--lp-gold)]" />
+              <h3 className="font-serif text-xl font-normal text-[var(--lp-ink)]">
+                Scholarships for Master&apos;s Students
+              </h3>
+            </div>
+            <p className="text-xs text-[var(--lp-muted)] mt-1">
+              Because tuition is free, German scholarships focus on living allowances and travel stipends.
             </p>
           </div>
           <Link
             href="/study/scholarships"
-            className="w-full sm:w-auto text-center px-4 py-2 rounded-full bg-germany-black hover:bg-neutral-800 text-white font-extrabold text-xs whitespace-nowrap shrink-0 shadow-xs"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-[var(--lp-ink)] text-[#faf8f3] hover:bg-[var(--lp-red)] transition-colors text-xs font-semibold whitespace-nowrap self-start sm:self-auto"
           >
-            All Scholarships Guide &rarr;
+            <span>All Scholarships Guide</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-          <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#EBE7E0] space-y-1.5">
-            <div className="font-bold text-germany-black">DAAD Study Scholarships</div>
-            <div className="text-germany-red font-black text-sm">€934 / month</div>
-            <p className="text-[11px] text-gray-600 leading-relaxed">Full living stipend, travel allowance, and health insurance for exceptional master&apos;s applicants worldwide.</p>
+          <div className="p-4 rounded-xl bg-[#eae5db]/50 border border-[#e5e0d3] space-y-1.5">
+            <div className="font-semibold text-[var(--lp-text)]">DAAD Study Scholarships</div>
+            <div className="text-[var(--lp-red)] font-serif text-lg font-normal">€934 / month</div>
+            <p className="text-[11px] text-[var(--lp-muted)] leading-relaxed">Full living stipend, travel allowance, and health insurance for exceptional master&apos;s applicants worldwide.</p>
           </div>
 
-          <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#EBE7E0] space-y-1.5">
-            <div className="font-bold text-germany-black">Deutschlandstipendium</div>
-            <div className="text-germany-red font-black text-sm">€300 / month</div>
-            <p className="text-[11px] text-gray-600 leading-relaxed">Co-funded by the federal government and industrial corporate sponsors (Siemens, BASF). Awarded based on academic merit.</p>
+          <div className="p-4 rounded-xl bg-[#eae5db]/50 border border-[#e5e0d3] space-y-1.5">
+            <div className="font-semibold text-[var(--lp-text)]">Deutschlandstipendium</div>
+            <div className="text-[var(--lp-red)] font-serif text-lg font-normal">€300 / month</div>
+            <p className="text-[11px] text-[var(--lp-muted)] leading-relaxed">Co-funded 50/50 by the federal government and industrial corporate sponsors (Siemens, BASF, BMW).</p>
           </div>
 
-          <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#EBE7E0] space-y-1.5">
-            <div className="font-bold text-germany-black">Party &amp; Foundation Grants</div>
-            <div className="text-germany-red font-black text-sm">€750 – €900 / month</div>
-            <p className="text-[11px] text-gray-600 leading-relaxed">Heinrich Böll, Konrad Adenauer, and Friedrich Ebert foundations awarding grants for civic leadership and academic distinction.</p>
+          <div className="p-4 rounded-xl bg-[#eae5db]/50 border border-[#e5e0d3] space-y-1.5">
+            <div className="font-semibold text-[var(--lp-text)]">Party &amp; Foundation Grants</div>
+            <div className="text-[var(--lp-red)] font-serif text-lg font-normal">€750 – €900 / month</div>
+            <p className="text-[11px] text-[var(--lp-muted)] leading-relaxed">Heinrich Böll, Konrad Adenauer, and Friedrich Ebert foundations awarding grants for civic leadership.</p>
           </div>
         </div>
       </div>

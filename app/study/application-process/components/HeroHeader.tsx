@@ -2,70 +2,81 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Compass } from 'lucide-react';
+import { Compass, Calendar, Euro, Clock } from 'lucide-react';
 
 export const HeroHeader = () => {
   return (
-    <section className="pt-28 pb-12 px-6 lg:px-12 relative overflow-hidden">
-      {/* Background Decorative Accents */}
-      <div className="absolute top-10 right-10 w-72 h-72 bg-red-200/30 rounded-full blur-3xl -z-10 pointer-events-none" />
-      <div className="absolute bottom-5 left-10 w-80 h-80 bg-amber-200/30 rounded-full blur-3xl -z-10 pointer-events-none" />
+    <section className="pt-28 pb-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto" data-reveal>
+      {/* Breadcrumb Navigation */}
+      <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[var(--lp-muted)]">
+        <Link href="/" className="hover:text-[var(--lp-red)] transition-colors">Home</Link>
+        <span>/</span>
+        <Link href="/study/masters" className="hover:text-[var(--lp-red)] transition-colors">Study</Link>
+        <span>/</span>
+        <span className="text-[var(--lp-text)] font-semibold">Application Process</span>
+      </nav>
 
-      <div className="max-w-7xl mx-auto">
-        {/* Breadcrumb Navigation */}
-        <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs md:text-sm font-semibold text-gray-500">
-          <Link href="/" className="hover:text-germany-red transition-colors">Home</Link>
-          <span>/</span>
-          <Link href="/#our-process" className="hover:text-germany-red transition-colors">Study</Link>
-          <span>/</span>
-          <span className="text-germany-black font-extrabold">Application Process</span>
-        </nav>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Main Hero Content */}
+        <div className="lg:col-span-7 space-y-6">
+          <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--lp-red)] inline-block">
+            Step-by-Step Guide 2026
+          </span>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Main Hero Content */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-100/80 border border-red-200 text-germany-red text-xs font-black uppercase tracking-wider">
-              <Compass className="w-4 h-4" />
-              <span>Step-by-Step Guide 2026</span>
-            </div>
+          <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[var(--lp-ink)] font-normal tracking-tight leading-[1.15]">
+            How to Apply to <em className="italic text-[var(--lp-red)] font-serif">German Universities</em>
+          </h1>
 
-            <div className="flex items-start gap-4">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-germany-black leading-tight tracking-tight font-display flex-1">
-                How to Apply to <span className="text-germany-red">German Universities</span>
-              </h1>
-            </div>
+          <p className="text-sm sm:text-base text-[var(--lp-muted)] leading-relaxed max-w-xl">
+            Applying to a public German university is a structured six-step journey. Learn how to shortlist courses, format documents, navigate uni-assist vs. direct portals, block accounts, and secure admission offers.
+          </p>
 
-            <p className="text-base sm:text-lg text-gray-700 font-medium leading-relaxed">
-              Applying to a public German university is a six-step journey. Learn how to shortlist courses, prepare documents, navigate uni-assist vs. direct portals, block accounts, secure conditional admissions, and apply for visas.
-            </p>
+          <div className="flex items-center gap-3 pt-1">
+            <a
+              href="#section-research"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--lp-ink)] text-white hover:bg-[var(--lp-red)] transition-colors text-xs font-semibold"
+            >
+              <span>Explore the 6 Steps</span>
+            </a>
+            <Link
+              href="/tools/admission-chance"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#eae5db]/60 text-[var(--lp-text)] hover:bg-[#eae5db] border border-[#e5e0d3] transition-colors text-xs font-semibold"
+            >
+              <span>Check Eligibility</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Quick Stats sidebar/card */}
+        <div className="lg:col-span-5 bg-[#faf8f3] rounded-2xl p-6 border border-[#e5e0d3] space-y-4 shadow-xs">
+          <div className="flex items-center gap-2 border-b border-[#e5e0d3] pb-3">
+            <Compass className="w-4 h-4 text-[var(--lp-red)]" />
+            <h2 className="font-serif text-lg font-normal text-[var(--lp-ink)]">Application Benchmarks</h2>
           </div>
 
-          {/* Quick Stats sidebar/card */}
-          <div className="lg:col-span-5">
-            <div className="neu-card p-6 bg-white space-y-4 shadow-[12px_12px_30px_rgba(210,205,195,0.6)]">
-              <h3 className="font-display text-lg text-germany-black flex items-center gap-2 border-b border-[#EBE7E0] pb-3">
-                <Compass className="w-5 h-5 text-germany-red" />
-                <span>Application Quick Facts</span>
-              </h3>
-              <div className="grid grid-cols-2 gap-3.5 text-xs font-bold text-gray-700">
-                <div className="p-3.5 rounded-2xl bg-white border border-[#EBE7E0]/80 shadow-xs hover:border-germany-red/30 transition-colors">
-                  <span className="block text-gray-500 font-extrabold text-[10px] uppercase tracking-wider mb-0.5">Winter Deadline</span>
-                  <span className="text-germany-black text-sm font-black">July 15</span>
-                </div>
-                <div className="p-3.5 rounded-2xl bg-white border border-[#EBE7E0]/80 shadow-xs hover:border-germany-red/30 transition-colors">
-                  <span className="block text-gray-500 font-extrabold text-[10px] uppercase tracking-wider mb-0.5">Summer Deadline</span>
-                  <span className="text-germany-black text-sm font-black">January 15</span>
-                </div>
-                <div className="p-3.5 rounded-2xl bg-white border border-[#EBE7E0]/80 shadow-xs hover:border-germany-red/30 transition-colors">
-                  <span className="block text-gray-500 font-extrabold text-[10px] uppercase tracking-wider mb-0.5">uni-assist Fee</span>
-                  <span className="text-germany-black text-sm font-black">€75 (+€30 addl.)</span>
-                </div>
-                <div className="p-3.5 rounded-2xl bg-white border border-[#EBE7E0]/80 shadow-xs hover:border-germany-red/30 transition-colors">
-                  <span className="block text-gray-500 font-extrabold text-[10px] uppercase tracking-wider mb-0.5">Avg. Processing</span>
-                  <span className="text-germany-black text-sm font-black">4–8 Weeks</span>
-                </div>
-              </div>
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="p-3.5 rounded-xl bg-[#eae5db]/50 border border-[#e5e0d3] space-y-1">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--lp-muted)] block">Winter Intake</span>
+              <span className="text-[var(--lp-ink)] font-serif text-base font-normal block">July 15</span>
+              <span className="text-[10px] text-[var(--lp-muted)] block">Standard federal cutoff</span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-[#eae5db]/50 border border-[#e5e0d3] space-y-1">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--lp-muted)] block">Summer Intake</span>
+              <span className="text-[var(--lp-ink)] font-serif text-base font-normal block">January 15</span>
+              <span className="text-[10px] text-[var(--lp-muted)] block">Limited course openings</span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-[#eae5db]/50 border border-[#e5e0d3] space-y-1">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--lp-muted)] block">uni-assist Fee</span>
+              <span className="text-[var(--lp-red)] font-serif text-base font-normal block">€75</span>
+              <span className="text-[10px] text-[var(--lp-muted)] block">+€30 per extra course</span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-[#eae5db]/50 border border-[#e5e0d3] space-y-1">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--lp-muted)] block">Decision Window</span>
+              <span className="text-[var(--lp-gold)] font-serif text-base font-normal block">4–8 Weeks</span>
+              <span className="text-[10px] text-[var(--lp-muted)] block">Post-deadline evaluation</span>
             </div>
           </div>
         </div>

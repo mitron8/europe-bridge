@@ -3,80 +3,83 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, GraduationCap, CheckCircle2, UserCheck } from 'lucide-react';
+import { ArrowRight, Check } from 'lucide-react';
 
 export const MastersCTA = () => {
   return (
-    <section className="py-6 sm:py-12 px-3.5 sm:px-6 lg:px-8 max-w-6xl mx-auto my-4 sm:my-6">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5 }}
-        className="rounded-2xl sm:rounded-[30px] bg-[#111111] bg-germany-black p-5 sm:p-8 lg:p-10 relative overflow-hidden shadow-[0_20px_40px_rgba(0,0,0,0.45),inset_0_-4px_10px_rgba(0,0,0,0.8)] flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 text-center lg:text-left"
-      >
-        {/* Subtle Ambient Glows */}
-        <div className="absolute top-0 right-0 w-72 h-72 bg-germany-red/15 rounded-full blur-[80px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 bg-germany-gold/20 rounded-full blur-[80px] pointer-events-none" />
+    <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <div className="lp-grain relative isolate overflow-hidden rounded-[28px] border border-white/10 bg-[#0d0d10] px-6 py-12 text-center text-white shadow-[0_24px_60px_-20px_rgba(13,13,15,0.4)] sm:px-12 sm:py-14 lg:px-16">
+        {/* Landmark skyline outline background */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 flex justify-center overflow-hidden opacity-[0.25] select-none"
+          style={{
+            filter: "invert(1) hue-rotate(180deg) brightness(1.25) contrast(1.15)",
+            mixBlendMode: "screen",
+            maskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 55%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 55%, transparent 100%)",
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/landing/german-landmarks-outline.jpg"
+            alt=""
+            className="h-[220px] sm:h-[300px] w-full max-w-[1280px] object-cover object-bottom"
+            loading="lazy"
+          />
+        </div>
 
-        {/* Left Side Content */}
-        <div className="relative z-10 space-y-2.5 sm:space-y-3 max-w-2xl">
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 bg-white/10 rounded-full font-bold text-germany-gold text-[11px] sm:text-xs shadow-inner cursor-default">
-            <GraduationCap className="w-3.5 h-3.5 text-germany-gold" />
-            <span>EuropeBridge Master&apos;s Launchpad</span>
+        {/* Warm ambient glow */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[220px] opacity-35 blur-[90px]"
+          style={{ background: "radial-gradient(circle at 50% 100%, rgba(230,57,70,0.25), rgba(201,163,91,0.2), transparent 75%)" }}
+        />
+
+        {/* Content container */}
+        <div className="relative mx-auto flex max-w-[720px] flex-col items-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--lp-gold-soft)] backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--lp-red)] shadow-[0_0_8px_var(--lp-red)]" />
+            EuropeBridge Master&apos;s Launchpad
           </div>
 
-          <h2 className="text-xl sm:text-3xl lg:text-4xl font-bold font-display text-white tracking-tight leading-tight">
-            Ready to Begin Your <span className="text-germany-gold">Tuition-Free Master&apos;s</span> in Germany?
+          <h2 className="lp-serif mt-5 text-[clamp(1.9rem,3.4vw,2.9rem)] leading-[1.14] tracking-[-0.02em] text-white">
+            Ready to Begin Your <em className="lp-script text-[var(--lp-gold-soft)]">Tuition-Free Master&apos;s</em> in Germany?
           </h2>
 
-          <p className="text-neutral-300 font-medium text-xs sm:text-sm leading-relaxed max-w-xl">
-            Evaluate your bachelor&apos;s transcript, calculate your Bavarian GPA, map your credit requirements, and get verified admissions guidance directly from students already studying at TU9 universities.
+          <p className="mt-4 max-w-[540px] text-[15px] sm:text-[16px] leading-[1.65] text-white/75">
+            Evaluate your bachelor&apos;s transcript, calculate your Bavarian GPA, map your credit requirements, and get verified admissions guidance directly from students studying at TU9 universities.
           </p>
 
-          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center lg:justify-start gap-2 sm:gap-4 pt-1 sm:pt-2 text-xs text-neutral-400 font-medium">
-            <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
-              <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> 0€ Tuition Public Universities
-            </span>
-            <span className="flex items-center gap-1.5 text-neutral-300">
-              <CheckCircle2 className="w-3.5 h-3.5 text-germany-gold shrink-0" /> 180 &amp; 210 ECTS Mapping
-            </span>
-            <span className="flex items-center gap-1.5 text-neutral-300">
-              <CheckCircle2 className="w-3.5 h-3.5 text-germany-gold shrink-0" /> APS &amp; Visa Advisory
-            </span>
-          </div>
-        </div>
-
-        {/* Right Side Buttons */}
-        <div className="relative z-10 flex flex-col items-center lg:items-end gap-2.5 sm:gap-3 shrink-0 w-full sm:w-auto">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
-            <Link
+          <div className="mt-8 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
+            <Link 
               href="/tools/admission-chance"
-              className="w-full sm:w-auto px-6 sm:px-7 py-3 sm:py-3.5 rounded-full bg-germany-red hover:bg-rose-600 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(230,57,70,0.4)] whitespace-nowrap transition-all duration-200"
+              className="lp-btn lp-btn--red w-full justify-center shadow-[0_12px_28px_-8px_rgba(230,57,70,0.5)] sm:w-auto"
             >
-              <GraduationCap className="w-4 h-4 text-germany-gold shrink-0" />
-              <span>Evaluate Admission Odds</span>
-              <ArrowRight className="w-4 h-4 shrink-0" />
+              Evaluate admission odds <ArrowRight className="h-4 w-4" />
             </Link>
 
-            <Link
-              href="/signup"
-              className="w-full sm:w-auto px-6 py-3 sm:py-3.5 rounded-full bg-white hover:bg-neutral-100 text-germany-black hover:text-germany-red font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(0,0,0,0.5)] whitespace-nowrap transition-colors text-center"
+            <Link 
+              href="/tools/german-grade-calculator" 
+              className="lp-btn lp-btn--ghost-light w-full justify-center sm:w-auto"
             >
-              <UserCheck className="w-4 h-4 shrink-0" />
-              <span>Sign Up Free</span>
+              Convert my GPA
             </Link>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] text-neutral-400 font-semibold pt-1">
-            <span>No agency fees</span>
-            <span>•</span>
-            <span>Instant German GPA conversion</span>
-            <span>•</span>
-            <span>Unbiased university matching</span>
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12px] text-white/55">
+            <span className="inline-flex items-center gap-1.5">
+              <Check className="h-3.5 w-3.5 text-[var(--lp-red)]" /> 0€ tuition public universities
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Check className="h-3.5 w-3.5 text-[var(--lp-gold)]" /> 180 &amp; 210 ECTS credit mapping
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Check className="h-3.5 w-3.5 text-white/70" /> 18-month post-study job visa
+            </span>
           </div>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 };

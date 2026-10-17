@@ -1,6 +1,9 @@
 import React from 'react';
-import Navbar from '@/app/components/Navbar';
-import Footer from '@/app/components/Footer';
+import "@/app/components/landing/landing.css";
+import { playfair, madisonSauvage, celinda } from "@/app/components/landing/fonts";
+import LandingNavbar from "@/app/components/landing/LandingNavbar";
+import Footer from "@/app/components/Footer";
+import SmoothScroll from "@/app/components/landing/SmoothScroll";
 import { LifeAfterOfferHero } from './components/LifeAfterOfferHero';
 import { LifeAfterOfferSectionNav } from './components/LifeAfterOfferSectionNav';
 import { JobSeekerVisaSection } from './components/JobSeekerVisaSection';
@@ -54,32 +57,37 @@ export default function LifeAfterOfferPage() {
   };
 
   return (
-    <main className="min-h-screen neu-bg">
+    <main className="bg-[#f4f1ea] min-h-screen text-[var(--lp-text)] selection:bg-[var(--lp-red)] selection:text-white">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Navbar />
-      <LifeAfterOfferHero />
-      <LifeAfterOfferSectionNav />
+      <div className={`lp ${playfair.variable} ${madisonSauvage.variable} ${celinda.variable}`}>
+        <LandingNavbar />
+        <LifeAfterOfferHero />
+        <LifeAfterOfferSectionNav />
 
-      <div className="space-y-4">
-        <JobSeekerVisaSection />
-        <EUBlueCardSection />
+        <div className="space-y-4">
+          <JobSeekerVisaSection />
+          <EUBlueCardSection />
 
-        <StudyContentGate guideTitle="Career & Life in Germany Guide">
-          <div className="space-y-4">
-            <StartingSalariesSection />
-            <CareerPlaybookSection />
-            <PRAndCitizenshipRoadmap />
-            <BlueCardEligibilityCalculator />
-            <LifeAfterOfferFAQ />
-            <LifeAfterOfferCTA />
-          </div>
-        </StudyContentGate>
+          <StudyContentGate guideTitle="Career & Life in Germany Guide">
+            <div className="space-y-4">
+              <StartingSalariesSection />
+              <CareerPlaybookSection />
+              <PRAndCitizenshipRoadmap />
+              <BlueCardEligibilityCalculator />
+              <LifeAfterOfferFAQ />
+              <LifeAfterOfferCTA />
+            </div>
+          </StudyContentGate>
+        </div>
+
+        <div className="relative z-[40] mt-16">
+          <Footer />
+        </div>
       </div>
-
-      <Footer />
+      <SmoothScroll />
     </main>
   );
 }

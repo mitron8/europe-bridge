@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { FileText, UserCheck, Award, Clock, MessageSquare, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { FileText, UserCheck, Award, Clock, MessageSquare, ShieldCheck, Check } from 'lucide-react';
 
 export const MotivationFeatures = () => {
   const features = [
@@ -46,7 +46,7 @@ export const MotivationFeatures = () => {
       details: "Delivered via live Google Doc with direct comment-driven iterations and tracked changes."
     },
     {
-      icon: CheckCircle2,
+      icon: ShieldCheck,
       badge: "100% Original",
       title: "Plagiarism-Free Guarantee",
       description:
@@ -59,50 +59,50 @@ export const MotivationFeatures = () => {
     <section id="section-features" className="py-16 px-6 lg:px-12 relative">
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100/80 border border-red-200 text-germany-red text-xs font-black uppercase tracking-wider">
+        <div data-reveal className="text-center max-w-3xl mx-auto space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--lp-red)]/10 border border-[var(--lp-red)]/20 text-[var(--lp-red)] text-xs font-mono uppercase tracking-wider">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Consulate Quality Standards</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-germany-black font-display">
-            What You Get with <span className="text-germany-red">EuropeBridge</span>
+          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[var(--lp-ink)] tracking-tight">
+            What You Get with <span className="text-[var(--lp-red)] italic">EuropeBridge</span>
           </h2>
-          <p className="text-sm sm:text-base text-gray-700 font-medium">
+          <p className="text-sm sm:text-base text-[var(--lp-muted)] font-normal leading-relaxed">
             Unlike general SOPs written for university admissions, a Consular Visa Letter of Motivation has one single audience: the German consular officer determining your entry permission.
           </p>
         </div>
 
         {/* 6 Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div data-reveal className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((item, idx) => {
             const Icon = item.icon;
             return (
               <div 
                 key={idx}
-                className="neu-card p-6 flex flex-col justify-between hover:shadow-md transition-all duration-200 border border-gray-200/80 bg-white/90 group"
+                className="bg-[var(--lp-card)] border border-[var(--lp-rule)] rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md group"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="w-12 h-12 rounded-xl bg-red-50 border border-red-200/60 flex items-center justify-center text-germany-red group-hover:scale-105 transition-transform">
-                      <Icon className="w-6 h-6" />
+                    <div className="w-11 h-11 rounded-xl bg-[var(--lp-paper-2)] border border-[var(--lp-rule)] flex items-center justify-center text-[var(--lp-red)]">
+                      <Icon className="w-5 h-5" />
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+                    <span className="text-[10px] font-mono font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[var(--lp-paper-2)] text-[var(--lp-muted)] border border-[var(--lp-rule)]">
                       {item.badge}
                     </span>
                   </div>
 
                   <div className="space-y-2">
-                    <h3 className="text-lg font-extrabold text-germany-black group-hover:text-germany-red transition-colors">
+                    <h3 className="text-base sm:text-lg font-serif font-bold text-[var(--lp-ink)] group-hover:text-[var(--lp-red)] transition-colors">
                       {item.title}
                     </h3>
-                    <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
+                    <p className="text-xs sm:text-sm text-[var(--lp-muted)] leading-relaxed">
                       {item.description}
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-gray-100 flex items-start gap-2 text-[11px] font-semibold text-gray-500">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                <div className="mt-5 pt-3 border-t border-[var(--lp-rule)] flex items-start gap-2 text-[11px] text-[var(--lp-muted)]">
+                  <Check className="w-3.5 h-3.5 text-[var(--lp-gold)] shrink-0 mt-0.5" />
                   <span>{item.details}</span>
                 </div>
               </div>

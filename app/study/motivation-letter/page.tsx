@@ -1,6 +1,9 @@
 import React from 'react';
-import Navbar from '@/app/components/Navbar';
-import Footer from '@/app/components/Footer';
+import "@/app/components/landing/landing.css";
+import { playfair, madisonSauvage, celinda } from "@/app/components/landing/fonts";
+import LandingNavbar from "@/app/components/landing/LandingNavbar";
+import Footer from "@/app/components/Footer";
+import SmoothScroll from "@/app/components/landing/SmoothScroll";
 import { MotivationHero } from './components/MotivationHero';
 import { MotivationNav } from './components/MotivationNav';
 import { MotivationFeatures } from './components/MotivationFeatures';
@@ -89,7 +92,7 @@ export default function MotivationLetterPage() {
   };
 
   return (
-    <main className="min-h-screen neu-bg">
+    <main className="bg-[#f4f1ea] min-h-screen text-[var(--lp-text)] selection:bg-[var(--lp-red)] selection:text-white">
       {/* Structured Data */}
       <script
         type="application/ld+json"
@@ -100,25 +103,30 @@ export default function MotivationLetterPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
-      <Navbar />
-      <MotivationHero />
-      <MotivationNav />
+      <div className={`lp ${playfair.variable} ${madisonSauvage.variable} ${celinda.variable}`}>
+        <LandingNavbar />
+        <MotivationHero />
+        <MotivationNav />
 
-      <div className="space-y-4">
-        <MotivationFeatures />
-        <LOMStructureSection />
+        <div className="space-y-4">
+          <MotivationFeatures />
+          <LOMStructureSection />
 
-        <StudyContentGate guideTitle="Motivation Letter (LOM) Guide">
-          <div className="space-y-4">
-            <MotivationProcess />
-            <MotivationPricing />
-            <MotivationFAQ />
-            <MotivationCTA />
-          </div>
-        </StudyContentGate>
+          <StudyContentGate guideTitle="Motivation Letter (LOM) Guide">
+            <div className="space-y-4">
+              <MotivationProcess />
+              <MotivationPricing />
+              <MotivationFAQ />
+              <MotivationCTA />
+            </div>
+          </StudyContentGate>
+        </div>
+
+        <div className="relative z-[40] mt-16">
+          <Footer />
+        </div>
       </div>
-
-      <Footer />
+      <SmoothScroll />
     </main>
   );
 }

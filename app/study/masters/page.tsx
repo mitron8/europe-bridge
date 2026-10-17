@@ -1,7 +1,11 @@
 import React from 'react';
 import { Metadata } from 'next';
-import Navbar from '@/app/components/Navbar';
-import Footer from '@/app/components/Footer';
+import "@/app/components/landing/landing.css";
+import { playfair, madisonSauvage, celinda } from "@/app/components/landing/fonts";
+import LandingNavbar from "@/app/components/landing/LandingNavbar";
+import Footer from "@/app/components/Footer";
+import SmoothScroll from "@/app/components/landing/SmoothScroll";
+import { StudyContentGate } from '@/components/StudyContentGate';
 
 import { MastersHeroHeader } from './components/MastersHeroHeader';
 import { MastersSectionNav } from './components/MastersSectionNav';
@@ -41,34 +45,37 @@ export const metadata: Metadata = {
   }
 };
 
-import { StudyContentGate } from '@/components/StudyContentGate';
-
 export default function MastersGuidePage() {
   return (
-    <main className="min-h-screen neu-bg">
-      <Navbar />
-      <MastersHeroHeader />
-      <MastersSectionNav />
+    <main className="bg-[#f4f1ea] min-h-screen text-[var(--lp-text)] selection:bg-[var(--lp-red)] selection:text-white">
+      <div className={`lp ${playfair.variable} ${madisonSauvage.variable} ${celinda.variable}`}>
+        <LandingNavbar />
+        <MastersHeroHeader />
+        <MastersSectionNav />
 
-      <div className="space-y-6 sm:space-y-10 pb-12">
-        <MastersOverviewSection />
-        <UniversityTypesSection />
+        <div className="space-y-6 sm:space-y-10 pb-16">
+          <MastersOverviewSection />
+          <UniversityTypesSection />
 
-        <StudyContentGate guideTitle="Master's in Germany Guide">
-          <div className="space-y-6 sm:space-y-10">
-            <EligibilityAndRequirementsSection />
-            <DeadlinesAndSemestersSection />
-            <CostsAndFundingSection />
-            <WorkingWhileStudyingSection />
-            <CareerAndBlueCardSection />
-            <ToolsAndResourcesSection />
-            <MastersFAQ />
-            <MastersCTA />
-          </div>
-        </StudyContentGate>
+          <StudyContentGate guideTitle="Master's in Germany Guide">
+            <div className="space-y-6 sm:space-y-10">
+              <EligibilityAndRequirementsSection />
+              <DeadlinesAndSemestersSection />
+              <CostsAndFundingSection />
+              <WorkingWhileStudyingSection />
+              <CareerAndBlueCardSection />
+              <ToolsAndResourcesSection />
+              <MastersFAQ />
+              <MastersCTA />
+            </div>
+          </StudyContentGate>
+        </div>
+
+        <div className="relative z-[40] mt-16">
+          <Footer />
+        </div>
       </div>
-
-      <Footer />
+      <SmoothScroll />
     </main>
   );
 }
