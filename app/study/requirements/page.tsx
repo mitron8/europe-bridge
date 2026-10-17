@@ -1,6 +1,10 @@
 import React from 'react';
-import Navbar from '@/app/components/Navbar';
-import Footer from '@/app/components/Footer';
+import { Metadata } from 'next';
+import "@/app/components/landing/landing.css";
+import { playfair, madisonSauvage, celinda } from "@/app/components/landing/fonts";
+import LandingNavbar from "@/app/components/landing/LandingNavbar";
+import Footer from "@/app/components/Footer";
+import SmoothScroll from "@/app/components/landing/SmoothScroll";
 import { HeroHeader } from './components/HeroHeader';
 import { SectionNav } from './components/SectionNav';
 import { AcademicRequirements } from './components/AcademicRequirements';
@@ -12,7 +16,6 @@ import { CountrySpecificInfo } from './components/CountrySpecificInfo';
 import { RequirementsFAQ } from './components/RequirementsFAQ';
 import { RequirementsCTA } from './components/RequirementsCTA';
 import { StudyContentGate } from '@/components/StudyContentGate';
-import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Admission Requirements for German Universities 2026 | EuropeBridge',
@@ -21,28 +24,33 @@ export const metadata: Metadata = {
 
 export default function RequirementsPage() {
   return (
-    <main className="min-h-screen neu-bg">
-      <Navbar />
-      <HeroHeader />
-      <SectionNav />
-      
-      <div className="space-y-4">
-        <AcademicRequirements />
-        <LanguageRequirements />
+    <main className="bg-[#f4f1ea] min-h-screen text-[var(--lp-text)] selection:bg-[var(--lp-red)] selection:text-white">
+      <div className={`lp ${playfair.variable} ${madisonSauvage.variable} ${celinda.variable}`}>
+        <LandingNavbar />
+        <HeroHeader />
+        <SectionNav />
+        
+        <div className="space-y-6">
+          <AcademicRequirements />
+          <LanguageRequirements />
 
-        <StudyContentGate guideTitle="Admission Requirements Guide">
-          <div className="space-y-4">
-            <RequiredDocuments />
-            <DeadlinesTimeline />
-            <GradeConversionSection />
-            <CountrySpecificInfo />
-            <RequirementsFAQ />
-            <RequirementsCTA />
-          </div>
-        </StudyContentGate>
+          <StudyContentGate guideTitle="Admission Requirements Guide">
+            <div className="space-y-6">
+              <RequiredDocuments />
+              <DeadlinesTimeline />
+              <GradeConversionSection />
+              <CountrySpecificInfo />
+              <RequirementsFAQ />
+              <RequirementsCTA />
+            </div>
+          </StudyContentGate>
+        </div>
+
+        <div className="relative z-[40] mt-16">
+          <Footer />
+        </div>
       </div>
-
-      <Footer />
+      <SmoothScroll />
     </main>
   );
 }

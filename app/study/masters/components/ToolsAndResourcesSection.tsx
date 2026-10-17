@@ -3,25 +3,21 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  Wrench,
   Calculator,
   FileCheck2,
   Lock,
   PlaneTakeoff,
   Banknote,
-  FileText,
   HeartPulse,
   Coins,
   ArrowRight,
-  ShieldCheck,
-  CheckCircle2
+  GraduationCap
 } from 'lucide-react';
 
 interface ToolItem {
   title: string;
   category: string;
   badge: string;
-  badgeColor: string;
   desc: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -32,9 +28,8 @@ export const ToolsAndResourcesSection = () => {
   const tools: ToolItem[] = [
     {
       title: "Admission Chance Calculator",
-      category: "Eligibility AI",
+      category: "Eligibility",
       badge: "Free Tool",
-      badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
       desc: "Simulate your profile against 400+ public German master's degrees using German Bavarian GPA conversion, credits, and university tiers.",
       href: "/tools/admission-chance",
       icon: Calculator,
@@ -44,8 +39,7 @@ export const ToolsAndResourcesSection = () => {
       title: "APS Certificate Step-by-Step",
       category: "Mandatory Document",
       badge: "India / China / Vietnam",
-      badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
-      desc: "Complete walkthrough for submitting transcripts, DigiLocker verification, professor email contacts, and tracking your APS status.",
+      desc: "Complete walkthrough for submitting transcripts, DigiLocker verification, professor verification, and tracking your APS dossier.",
       href: "/study/aps",
       icon: FileCheck2,
       cta: "Read APS Guide"
@@ -54,8 +48,7 @@ export const ToolsAndResourcesSection = () => {
       title: "Blocked Account Comparison",
       category: "Visa Proof",
       badge: "€11,904 Required",
-      badgeColor: "bg-amber-50 text-amber-700 border-amber-200",
-      desc: "Compare authorized providers (Expatrio, Fintiba, Coracle) for fees, account opening speed, and integrated health insurance packages.",
+      desc: "Compare authorized providers (Expatrio, Fintiba, Coracle) for fees, processing speed, and integrated health insurance packages.",
       href: "/services/blocked-account",
       icon: Lock,
       cta: "Compare Providers"
@@ -63,8 +56,7 @@ export const ToolsAndResourcesSection = () => {
     {
       title: "Student Visa (National Visa D)",
       category: "Consular Services",
-      badge: "Checklist 2026",
-      badgeColor: "bg-purple-50 text-purple-700 border-purple-200",
+      badge: "Checklist",
       desc: "Complete appointment booking process, VFS document checklist, biometric timeline, and visa interview preparation tips.",
       href: "/study/student-visa",
       icon: PlaneTakeoff,
@@ -74,8 +66,7 @@ export const ToolsAndResourcesSection = () => {
       title: "Education Loan Advisory",
       category: "Funding",
       badge: "Collateral & Non-Collateral",
-      badgeColor: "bg-teal-50 text-teal-700 border-teal-200",
-      desc: "Secure competitive interest rates on collateral or non-collateral loans to fund your blocked account and initial flight expenses.",
+      desc: "Secure competitive interest rates on collateral or non-collateral loans to fund your blocked account and initial travel costs.",
       href: "/services/education-loan",
       icon: Banknote,
       cta: "Explore Loans"
@@ -84,7 +75,6 @@ export const ToolsAndResourcesSection = () => {
       title: "German Public Health Insurance",
       category: "Mandatory Enrollment",
       badge: "TK & Barmer",
-      badgeColor: "bg-rose-50 text-rose-700 border-rose-200",
       desc: "Instant digital health insurance certificate (M10/M11) required for university enrollment and German student visa approval.",
       href: "/services/health-insurance",
       icon: HeartPulse,
@@ -94,117 +84,78 @@ export const ToolsAndResourcesSection = () => {
       title: "Scholarship Finder",
       category: "Financial Aid",
       badge: "DAAD & Foundations",
-      badgeColor: "bg-indigo-50 text-indigo-700 border-indigo-200",
       desc: "Search DAAD scholarships, Deutschlandstipendium, Heinrich Böll, and state-funded research stipends for international scholars.",
       href: "/study/scholarships",
       icon: Coins,
       cta: "Find Scholarships"
     },
     {
-      title: "German SOP & Motivation Letter",
-      category: "Application Strategy",
-      badge: "Academic Template",
-      badgeColor: "bg-orange-50 text-orange-700 border-orange-200",
-      desc: "Learn how German admission professors evaluate academic motivation letters with module-mapping frameworks and faculty research alignment.",
-      href: "/study/motivation-letter",
-      icon: FileText,
-      cta: "Read SOP Guide"
+      title: "University Program Search",
+      category: "Admissions",
+      badge: "Public Universities",
+      desc: "Filter English-taught master's degrees across TU9 and public universities with zero tuition and direct admission requirements.",
+      href: "/programs",
+      icon: GraduationCap,
+      cta: "Browse Programs"
     }
   ];
 
   return (
-    <section id="tools" className="py-8 sm:py-12 px-3.5 sm:px-6 lg:px-12 max-w-7xl mx-auto space-y-8 sm:space-y-10">
+    <section id="tools" className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" data-reveal>
       {/* Header */}
-      <div className="space-y-2.5 sm:space-y-3 text-center max-w-3xl mx-auto">
-        <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-amber-100/80 text-amber-900 text-[11px] sm:text-xs font-black uppercase tracking-wider">
-          <Wrench className="w-3.5 h-3.5 text-germany-gold" />
-          <span>EuropeBridge Toolkit</span>
-        </div>
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display text-germany-black">
-          Essential Tools &amp; Resources for Your <span className="text-germany-red">Master&apos;s Application</span>
+      <div className="space-y-3 text-center max-w-2xl mx-auto">
+        <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--lp-red)]">
+          Free Utilities &amp; Services
+        </span>
+        <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-ink)] font-normal tracking-tight">
+          Tools for Your <em className="italic text-[var(--lp-red)] font-serif">Master&apos;s Application</em>
         </h2>
-        <p className="text-xs sm:text-base text-gray-600 font-medium leading-relaxed">
-          Everything you need to shortlist public universities, verify prerequisites, secure funding, and ace consular visas without agency commissions.
+        <p className="text-sm sm:text-base text-[var(--lp-muted)] leading-relaxed">
+          Everything you need to plan, verify, and complete your German master&apos;s journey in one place.
         </p>
       </div>
 
       {/* Grid of Tools */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5">
-        {tools.map((tool, idx) => {
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        {tools.map((tool) => {
           const Icon = tool.icon;
           return (
-            <div
-              key={idx}
-              className="neu-card p-4 sm:p-5 bg-white flex flex-col justify-between hover:-translate-y-1.5 transition-all duration-300 group border border-gray-100"
+            <Link
+              key={tool.title}
+              href={tool.href}
+              className="bg-[#faf8f3] rounded-2xl p-5 border border-[#e5e0d3] flex flex-col justify-between space-y-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-[var(--lp-red)]/30 group"
             >
-              <div className="space-y-3.5">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-200/80 flex items-center justify-center text-germany-red shadow-xs group-hover:scale-110 group-hover:bg-red-50 transition-all duration-300">
-                    <Icon className="w-5 h-5" />
+                  <div className="w-9 h-9 rounded-xl bg-[#eae5db] flex items-center justify-center text-[var(--lp-ink)] group-hover:bg-[var(--lp-red)] group-hover:text-white transition-colors">
+                    <Icon className="w-4 h-4" />
                   </div>
-                  <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${tool.badgeColor}`}>
+                  <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#eae5db]/60 text-[var(--lp-muted)] border border-[#e5e0d3]">
                     {tool.badge}
                   </span>
                 </div>
 
-                <div>
-                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--lp-gold)] block">
                     {tool.category}
                   </span>
-                  <h3 className="font-display font-bold text-lg text-germany-black group-hover:text-germany-red transition-colors line-clamp-1">
+                  <h3 className="font-serif text-base font-normal text-[var(--lp-ink)] group-hover:text-[var(--lp-red)] transition-colors leading-snug">
                     {tool.title}
                   </h3>
                 </div>
 
-                <p className="text-xs text-gray-600 font-medium leading-relaxed line-clamp-3">
+                <p className="text-xs text-[var(--lp-muted)] leading-relaxed line-clamp-3">
                   {tool.desc}
                 </p>
               </div>
 
-              <div className="pt-4 mt-4 border-t border-gray-100">
-                <Link
-                  href={tool.href}
-                  className="inline-flex items-center justify-between w-full text-xs font-black text-germany-black group-hover:text-germany-red transition-colors"
-                >
-                  <span>{tool.cta}</span>
-                  <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
-                </Link>
+              <div className="pt-3 border-t border-[#e5e0d3] flex items-center justify-between text-xs font-semibold text-[var(--lp-ink)] group-hover:text-[var(--lp-red)] transition-colors">
+                <span>{tool.cta}</span>
+                <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
               </div>
-            </div>
+            </Link>
           );
         })}
-      </div>
-
-      {/* Profile Evaluation Banner */}
-      <div className="neu-card p-4 sm:p-8 bg-gradient-to-r from-amber-500/10 via-red-500/5 to-transparent border border-amber-200/70 flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
-        <div className="space-y-1.5 sm:space-y-2 text-center md:text-left">
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-black text-amber-800 uppercase tracking-wider">
-            <ShieldCheck className="w-4 h-4 text-germany-red shrink-0" />
-            <span>Personalized Shortlisting Assistance</span>
-          </div>
-          <h3 className="font-display text-lg sm:text-2xl font-bold text-germany-black">
-            Unsure if your 3-year bachelor&apos;s or GPA matches TU9 requirements?
-          </h3>
-          <p className="text-xs sm:text-sm text-gray-600 font-medium max-w-2xl leading-relaxed">
-            Get an in-depth profile audit from EuropeBridge mentors who evaluated 1,000+ curricula against anabin, Uni-Assist criteria, and faculty module catalogs.
-          </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 w-full md:w-auto shrink-0">
-          <Link
-            href="/tools/admission-chance"
-            className="neu-btn px-5 sm:px-6 py-3 rounded-full bg-germany-red text-white text-xs font-black text-center hover:bg-red-700 transition-all flex items-center justify-center gap-2"
-          >
-            <span>Evaluate Profile Free</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-          <Link
-            href="/signup"
-            className="neu-btn-outline px-5 sm:px-6 py-3 rounded-full bg-white text-germany-black border border-gray-300 text-xs font-black text-center hover:bg-gray-50 transition-all"
-          >
-            <span>Create Free Account</span>
-          </Link>
-        </div>
       </div>
     </section>
   );

@@ -1,114 +1,111 @@
 "use client";
 
 import React from 'react';
-import { ShieldCheck, Scale, HeartHandshake, CreditCard, Users, Building, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, Scale, HeartHandshake, CreditCard, Users, Building, Check } from 'lucide-react';
 
 export const InsuranceFeatures = () => {
   const features = [
     {
       icon: ShieldCheck,
-      badge: "Legal Obligation",
+      badge: "Statutory Law",
       title: "Mandatory Requirement",
       description:
-        "Health insurance is legally required for everyone living in Germany. You must show proof of coverage for both your student visa application and official university matriculation.",
-      details: "No visa or university enrollment is granted without valid German coverage."
+        "Health insurance is legally required for everyone in Germany. You must show proof of coverage for both your student visa and university enrollment.",
+      details: "No visa or matriculation is granted without certified German coverage."
     },
     {
       icon: Scale,
       badge: "Dual System",
       title: "Two Distinct Systems",
       description:
-        "Germany offers public (statutory / GKV) and private (PKV) health insurance. Eligibility, long-term costs, and benefits vary significantly based on your age and academic status.",
-      details: "Public coverage is standardized; private coverage is contract-tailored."
+        "Germany offers public statutory (GKV) and private (PKV) health insurance. Eligibility, long-term costs, and benefits depend on your age and student status.",
+      details: "Public coverage is standardized; private coverage is customized."
     },
     {
       icon: HeartHandshake,
-      badge: "Full Protection",
+      badge: "Full Care",
       title: "Comprehensive Coverage",
       description:
-        "German health insurance provides world-class medical care covering general practitioner visits, hospital inpatient care, basic dental, and prescription medicines.",
-      details: "Direct electronic billing via your German health insurance smart card."
+        "German health insurance covers doctor appointments, hospital inpatient care, basic dental care, and prescription medicines with zero clinic copays.",
+      details: "Direct electronic billing via your German health insurance chip card."
     },
     {
       icon: CreditCard,
-      badge: "Subsidized Rates",
+      badge: "Subsidized",
       title: "Student Cost Structure",
       description:
-        "Students under 30 benefit from a subsidized flat rate (~€140 to €150/month in 2026). Employed graduates pay roughly 14.6% + Zusatzbeitrag split equally with their employer.",
-      details: "Zero payments are deducted until your semester officially commences."
+        "Students under 30 benefit from a subsidized flat rate (~€140 to €150/month in 2026). Employed graduates pay roughly 14.6% split equally with their employer.",
+      details: "Zero deductions occur until your academic semester officially starts."
     },
     {
       icon: Users,
-      badge: "Dependents",
-      title: "Family & Dependent Coverage",
+      badge: "Family",
+      title: "Dependent Coverage",
       description:
-        "Under the statutory public system, non-working spouses and dependent children can frequently be insured at zero additional monthly premium under family insurance (Familienversicherung).",
-      details: "Private insurance requires individual standalone policies per family member."
+        "Under the statutory public system, non-working spouses and dependent children can frequently be insured at zero additional premium under family insurance.",
+      details: "Private insurance requires separate standalone policies per person."
     },
     {
       icon: Building,
-      badge: "Top Insurers",
-      title: "Multiple Certified Providers",
+      badge: "Partners",
+      title: "Certified Insurers",
       description:
-        "Choose between premier public Krankenkassen (TK, Barmer, AOK, DAK) and accredited private expat insurers (Ottonova, Allianz, Mawista, Dr-Walter) through one platform.",
-      details: "Unbiased advice ensuring your provider matches your exact university town."
+        "Choose between premier public Krankenkassen (TK, Barmer, AOK) and accredited private expat insurers (Ottonova) through one streamlined desk.",
+      details: "Unbiased guidance ensuring proper coverage in your university city."
     }
   ];
 
   return (
-    <section id="section-features" className="py-16 px-6 lg:px-12 relative">
-      <div className="max-w-7xl mx-auto space-y-12">
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100/80 border border-red-200 text-germany-red text-xs font-black uppercase tracking-wider">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Essential German Healthcare</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-germany-black font-display">
-            What You Get with <span className="text-germany-red">EuropeBridge Setup</span>
-          </h2>
-          <p className="text-sm sm:text-base text-gray-700 font-medium">
-            Navigating the German healthcare system (Gesetzliche vs. Private Krankenversicherung) made seamless with zero advisory fees and immediate electronic university notification.
-          </p>
-        </div>
+    <section id="section-features" className="scroll-mt-32 py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" data-reveal>
+      {/* Header */}
+      <div className="space-y-3 text-center max-w-2xl mx-auto">
+        <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--lp-red)]">
+          German Healthcare Standards
+        </span>
+        <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-ink)] font-normal tracking-tight">
+          What You Get with <em className="italic text-[var(--lp-red)] font-serif">EuropeBridge Setup</em>
+        </h2>
+        <p className="text-sm sm:text-base text-[var(--lp-muted)] leading-relaxed">
+          Navigating statutory vs. private insurance with zero agency fees and immediate electronic reporting.
+        </p>
+      </div>
 
-        {/* 6 Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((item, idx) => {
-            const Icon = item.icon;
-            return (
-              <div 
-                key={idx}
-                className="neu-card p-6 flex flex-col justify-between hover:shadow-md transition-all duration-200 border border-gray-200/80 bg-white/90 group"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="w-12 h-12 rounded-xl bg-red-50 border border-red-200/60 flex items-center justify-center text-germany-red group-hover:scale-105 transition-transform">
-                      <Icon className="w-6 h-6" />
-                    </div>
-                    <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200">
-                      {item.badge}
-                    </span>
+      {/* Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {features.map((item, idx) => {
+          const Icon = item.icon;
+          return (
+            <div 
+              key={idx}
+              className="bg-[#faf8f3] rounded-2xl p-6 border border-[#e5e0d3] flex flex-col justify-between space-y-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-[#eae5db] flex items-center justify-center text-[var(--lp-red)]">
+                    <Icon className="w-5 h-5" />
                   </div>
-
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-extrabold text-germany-black group-hover:text-germany-red transition-colors">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
-                      {item.description}
-                    </p>
-                  </div>
+                  <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#eae5db] text-[var(--lp-muted)] border border-[#e5e0d3]">
+                    {item.badge}
+                  </span>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-gray-100 flex items-start gap-2 text-[11px] font-semibold text-gray-500">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>{item.details}</span>
+                <div className="space-y-1.5">
+                  <h3 className="font-serif text-base font-normal text-[var(--lp-ink)]">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
+                    {item.description}
+                  </p>
                 </div>
               </div>
-            );
-          })}
-        </div>
+
+              <div className="pt-3 border-t border-[#e5e0d3] flex items-center gap-1.5 text-[11px] text-[var(--lp-gold)] font-mono">
+                <Check className="w-3.5 h-3.5 shrink-0" />
+                <span>{item.details}</span>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

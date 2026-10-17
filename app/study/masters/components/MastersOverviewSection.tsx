@@ -1,7 +1,8 @@
 "use client";
 
 import React from 'react';
-import { Award, CheckCircle, Euro, Globe2, Layers, Lightbulb, MapPin, TrendingUp } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Award, Euro, Globe2, Layers, Lightbulb, MapPin, TrendingUp, CheckCircle2 } from 'lucide-react';
 
 export const MastersOverviewSection = () => {
   const pillars = [
@@ -52,121 +53,132 @@ export const MastersOverviewSection = () => {
   ];
 
   return (
-    <section id="overview" className="py-8 sm:py-12 px-3.5 sm:px-6 lg:px-12 max-w-7xl mx-auto space-y-8 sm:space-y-12">
+    <section id="overview" className="py-10 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto space-y-10 scroll-mt-28">
       {/* Section Header */}
-      <div className="space-y-2.5 sm:space-y-3 text-center max-w-3xl mx-auto">
-        <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-red-100/80 text-germany-red text-[11px] sm:text-xs font-black uppercase tracking-wider">
-          <Lightbulb className="w-3.5 h-3.5" />
-          <span>Why Germany?</span>
+      <div data-reveal className="space-y-3 max-w-3xl">
+        <div className="lp-eyebrow text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--lp-red)]">
+          Strategic Overview
         </div>
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display text-germany-black">
-          The 4 Pillars of a German <span className="text-germany-red">Master&apos;s Degree</span>
+        <h2 className="lp-serif text-2xl sm:text-3xl lg:text-4xl font-semibold text-[var(--lp-text)] tracking-[-0.015em]">
+          The 4 Pillars of a German <em className="lp-script text-[var(--lp-red)]">Master&apos;s Degree</em>
         </h2>
-        <p className="text-xs sm:text-base text-gray-600 font-medium leading-relaxed">
-          Germany has become the top destination worldwide for international postgraduate studies outside the Anglophone sphere. Here is what makes the system distinct.
+        <p className="text-sm sm:text-base text-[var(--lp-muted)] leading-[1.7] font-normal">
+          Germany has become the premier global destination for international postgraduate engineering and STEM degrees outside the Anglophone sphere.
         </p>
       </div>
 
       {/* 4 Pillars Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        {pillars.map((pillar, idx) => {
+      <div data-reveal className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {pillars.map((pillar) => {
           const Icon = pillar.icon;
           return (
-            <div 
+            <motion.div 
               key={pillar.title} 
-              className="neu-card p-4 sm:p-7 bg-white flex flex-col justify-between space-y-3.5 sm:space-y-4 hover:shadow-[14px_14px_32px_rgba(210,205,195,0.7)] transition-all"
+              whileHover={{ y: -2 }}
+              transition={{ duration: 0.2 }}
+              className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 flex flex-col justify-between space-y-5 shadow-[0_8px_30px_rgba(22,22,26,0.03)] hover:shadow-[0_16px_40px_rgba(22,22,26,0.05)] transition-all"
             >
-              <div className="space-y-2.5 sm:space-y-3.5">
+              <div className="space-y-3.5">
                 <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-red-50 border border-red-200/80 flex items-center justify-center text-germany-red">
-                    <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <div className="w-12 h-12 rounded-2xl bg-[#ece7dd] border border-[#e2ddd3] flex items-center justify-center text-[var(--lp-red)]">
+                    <Icon className="w-5 h-5" />
                   </div>
-                  <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-[#FAF8F5] border border-[#EBE7E0] text-[10px] sm:text-[11px] font-extrabold text-germany-black">
+                  <span className="px-3 py-1 rounded-full bg-[#ece7dd] border border-[#e2ddd3] text-[10.5px] font-semibold text-[var(--lp-text)] uppercase tracking-wider">
                     {pillar.badge}
                   </span>
                 </div>
 
-                <h3 className="font-display text-lg sm:text-xl font-bold text-germany-black">
+                <h3 className="lp-serif text-xl font-semibold text-[var(--lp-text)]">
                   {pillar.title}
                 </h3>
 
-                <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
+                <p className="text-xs sm:text-sm text-[var(--lp-muted)] leading-relaxed">
                   {pillar.desc}
                 </p>
               </div>
 
-              <div className="pt-3 border-t border-[#EBE7E0] flex items-start sm:items-center gap-2 text-[11px] sm:text-xs font-extrabold text-emerald-700 bg-emerald-50/50 p-2 sm:p-2.5 rounded-xl border border-emerald-200/60">
-                <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 shrink-0 mt-0.5 sm:mt-0" />
+              <div className="pt-3 border-t border-[var(--lp-rule)] flex items-start gap-2.5 text-xs font-medium text-[var(--lp-text)]">
+                <CheckCircle2 className="w-4 h-4 text-[var(--lp-red)] shrink-0 mt-0.5" />
                 <span>{pillar.highlight}</span>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
 
       {/* ECTS Credit Structure Breakdown */}
-      <div className="neu-card p-4 sm:p-8 bg-white space-y-4 sm:space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5 sm:gap-4 border-b border-[#EBE7E0] pb-3 sm:pb-4">
+      <div data-reveal className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-6 shadow-[0_8px_30px_rgba(22,22,26,0.03)]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-[var(--lp-rule)] pb-4">
           <div>
-            <h3 className="font-display text-lg sm:text-2xl font-black text-germany-black">
+            <h3 className="lp-serif text-xl sm:text-2xl font-semibold text-[var(--lp-text)]">
               Understanding the 120 ECTS Degree Architecture
             </h3>
-            <p className="text-xs sm:text-sm text-gray-500 font-medium mt-0.5 sm:mt-1">
+            <p className="text-xs sm:text-sm text-[var(--lp-muted)] mt-1">
               German Master&apos;s degrees adhere strictly to the European Credit Transfer and Accumulation System (ECTS).
             </p>
           </div>
-          <span className="px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[11px] sm:text-xs font-extrabold shrink-0 w-fit">
+          <span className="px-3.5 py-1 rounded-full bg-[#ece7dd] border border-[#e2ddd3] text-[var(--lp-text)] text-xs font-semibold shrink-0 w-fit">
             1 ECTS = ~30 Academic Hours
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {ectsBreakdown.map((item, idx) => (
-            <div key={item.semester} className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#FAF8F5] border border-[#EBE7E0] space-y-1.5 sm:space-y-2 relative overflow-hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {ectsBreakdown.map((item) => (
+            <motion.div 
+              key={item.semester} 
+              whileHover={{ y: -2 }}
+              transition={{ duration: 0.2 }}
+              className="p-5 rounded-2xl bg-[#ece7dd]/40 border border-[#e2ddd3] space-y-2.5"
+            >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-extrabold text-germany-red">{item.semester}</span>
-                <span className="text-[11px] sm:text-xs font-black px-2 py-0.5 rounded-full bg-white border border-gray-200 text-germany-black">
+                <span className="text-xs font-semibold text-[var(--lp-red)] uppercase tracking-wider">{item.semester}</span>
+                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-white border border-[#e2ddd3] text-[var(--lp-text)]">
                   {item.credits}
                 </span>
               </div>
-              <h4 className="font-display text-sm font-bold text-germany-black">{item.label}</h4>
-              <p className="text-[11px] text-gray-600 font-medium leading-relaxed">{item.desc}</p>
-            </div>
+              <h4 className="lp-serif text-sm font-semibold text-[var(--lp-text)]">{item.label}</h4>
+              <p className="text-xs text-[var(--lp-muted)] leading-relaxed">{item.desc}</p>
+            </motion.div>
           ))}
         </div>
       </div>
 
       {/* Flagship Research Hubs & TU9 Showcase */}
-      <div className="neu-card p-4 sm:p-8 bg-white space-y-4 sm:space-y-6">
-        <div className="space-y-1 border-b border-[#EBE7E0] pb-4">
-          <div className="inline-flex items-center gap-2 text-xs font-black uppercase text-germany-gold tracking-wider">
+      <div data-reveal className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-6 shadow-[0_8px_30px_rgba(22,22,26,0.03)]">
+        <div className="space-y-1.5 border-b border-[var(--lp-rule)] pb-4">
+          <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase text-[var(--lp-gold)] tracking-wider">
             <TrendingUp className="w-4 h-4" />
             <span>Prestige &amp; Innovation</span>
           </div>
-          <h3 className="font-display text-xl sm:text-2xl font-black text-germany-black">
+          <h3 className="lp-serif text-xl sm:text-2xl font-semibold text-[var(--lp-text)]">
             Top Public Technical Universities (TU9 Network)
           </h3>
-          <p className="text-xs sm:text-sm text-gray-500 font-medium">
-            The TU9 alliance represents Germany&apos;s 9 most prominent technical universities, celebrated for scientific citations, patent generation, and industrial recruitments.
+          <p className="text-xs sm:text-sm text-[var(--lp-muted)]">
+            The TU9 alliance represents Germany&apos;s 9 most prominent technical universities, celebrated for scientific citations, patent generation, and industrial partnerships.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {topInstitutions.map((uni) => (
-            <div key={uni.name} className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#EBE7E0] space-y-2.5 hover:border-germany-red/40 transition-colors">
+            <motion.div 
+              key={uni.name} 
+              whileHover={{ y: -2 }}
+              transition={{ duration: 0.2 }}
+              className="p-5 rounded-2xl bg-white/70 border border-[#e2ddd3] space-y-2.5 shadow-xs hover:border-[var(--lp-red)]/30 transition-all"
+            >
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[10px] font-extrabold text-germany-red uppercase tracking-wider">{uni.type}</span>
-                <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-white border border-gray-200 text-gray-700">{uni.rank}</span>
+                <span className="text-[10.5px] font-semibold text-[var(--lp-red)] uppercase tracking-wider">{uni.type}</span>
+                <span className="text-[10.5px] font-medium px-2 py-0.5 rounded-md bg-[#ece7dd] text-[var(--lp-text)]">{uni.rank}</span>
               </div>
-              <h4 className="font-display text-sm font-bold text-germany-black leading-snug">{uni.name}</h4>
-              <div className="flex items-center gap-1.5 text-xs text-gray-500 font-semibold">
-                <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              <h4 className="lp-serif text-base font-semibold text-[var(--lp-text)] leading-snug">{uni.name}</h4>
+              <div className="flex items-center gap-1.5 text-xs text-[var(--lp-muted)] font-medium">
+                <MapPin className="w-3.5 h-3.5 text-[var(--lp-faint)] shrink-0" />
                 <span>{uni.city}</span>
               </div>
-              <div className="text-[11px] font-medium text-gray-600 pt-1 border-t border-gray-200/70">
-                <strong>Key Strengths:</strong> {uni.focus}
+              <div className="text-xs text-[var(--lp-muted)] pt-2 border-t border-[#e2ddd3]/60">
+                <strong className="text-[var(--lp-text)]">Focus:</strong> {uni.focus}
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

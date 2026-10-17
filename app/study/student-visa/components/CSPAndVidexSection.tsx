@@ -1,7 +1,6 @@
 "use client";
 
 import React from 'react';
-import Link from 'next/link';
 import { 
   FileText, 
   ClipboardList, 
@@ -9,10 +8,8 @@ import {
   Calendar, 
   MessageSquare, 
   Headphones, 
-  ArrowUpRight, 
-  CheckCircle2, 
+  Check, 
   AlertCircle,
-  ExternalLink,
   Laptop,
   QrCode,
   FileSearch,
@@ -24,7 +21,7 @@ export const CSPAndVidexSection = () => {
     {
       icon: FileText,
       title: "CSP Portal Registration",
-      desc: "Comprehensive onboarding on Germany's official Consular Services Portal (auswaertiges-amt.de). We configure your applicant profile and ensure your Entry Form is error-free."
+      desc: "Full onboarding on Germany's official Consular Services Portal (auswaertiges-amt.de). We configure your applicant profile and ensure your digital Entry Form is error-free."
     },
     {
       icon: ClipboardList,
@@ -54,136 +51,127 @@ export const CSPAndVidexSection = () => {
   ];
 
   return (
-    <section id="section-features" className="scroll-mt-36 py-12 px-6 lg:px-12">
-      <div className="max-w-7xl mx-auto space-y-16">
-        
-        {/* Section 1: What You Get Grid */}
-        <div className="space-y-8">
-          <div className="text-center max-w-3xl mx-auto space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-100/80 border border-red-200 text-germany-red text-xs font-black uppercase tracking-wider">
-              <span>Full-Scale Visa Assistance</span>
+    <section id="section-csp" className="scroll-mt-32 py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12" data-reveal>
+      {/* Section 1: What You Get Grid */}
+      <div className="space-y-8">
+        <div className="space-y-3 text-center max-w-2xl mx-auto">
+          <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--lp-red)]">
+            Full-Scale Visa Assistance
+          </span>
+          <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-ink)] font-normal tracking-tight">
+            Everything Included in <em className="italic text-[var(--lp-red)] font-serif">EuropeBridge Support</em>
+          </h2>
+          <p className="text-sm sm:text-base text-[var(--lp-muted)] leading-relaxed">
+            We handle the bureaucratic mechanics of the German Federal Foreign Office, ensuring your application is 100% compliant from day one.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {features.map((feat, idx) => {
+            const Icon = feat.icon;
+            return (
+              <div 
+                key={idx}
+                className="bg-[#faf8f3] rounded-2xl p-6 border border-[#e5e0d3] space-y-3 flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <div className="space-y-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#eae5db] flex items-center justify-center text-[var(--lp-ink)]">
+                    <Icon className="w-5 h-5 text-[var(--lp-red)]" />
+                  </div>
+                  <h3 className="font-serif text-base font-normal text-[var(--lp-ink)]">
+                    {feat.title}
+                  </h3>
+                  <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
+                    {feat.desc}
+                  </p>
+                </div>
+                <div className="pt-2 border-t border-[#e5e0d3] flex items-center gap-1.5 text-xs font-mono text-[var(--lp-gold)]">
+                  <span>Verified Standard</span>
+                  <Check className="w-3.5 h-3.5" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Section 2: CSP & VIDEX Deep Dive */}
+      <div className="bg-[#faf8f3] rounded-2xl p-6 sm:p-8 border border-[#e5e0d3] space-y-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#e5e0d3] pb-4">
+          <div className="space-y-1 max-w-2xl">
+            <span className="text-[10px] font-mono uppercase text-[var(--lp-red)] tracking-wider">Digital Visa Portal 2026</span>
+            <h3 className="font-serif text-xl sm:text-2xl font-normal text-[var(--lp-ink)]">
+              Understanding the CSP (Consular Services Portal) &amp; VIDEX Flow
+            </h3>
+            <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
+              The German Federal Foreign Office now mandates the digital Consular Services Portal for student visa applicants.
+            </p>
+          </div>
+          <span className="px-3 py-1 rounded-full bg-[#eae5db] text-[var(--lp-text)] text-[11px] font-mono uppercase tracking-wider self-start lg:self-auto border border-[#e5e0d3]">
+            Digital Fast-Track
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="p-4 rounded-xl bg-[#eae5db]/50 border border-[#e5e0d3] space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="w-7 h-7 rounded-full bg-[var(--lp-ink)] text-white font-mono text-xs flex items-center justify-center">
+                1
+              </span>
+              <Laptop className="w-4 h-4 text-[var(--lp-muted)]" />
             </div>
-            <h2 className="text-3xl sm:text-4xl font-black text-germany-black font-display leading-tight">
-              Everything Included in <span className="text-germany-red">EuropeBridge Visa Support</span>
-            </h2>
-            <p className="text-base text-gray-700 font-medium leading-relaxed">
-              We handle the complex bureaucratic mechanics of the German Federal Foreign Office, ensuring your application is 100% compliant from day one.
+            <h4 className="font-serif text-sm font-normal text-[var(--lp-ink)]">CSP Portal Account</h4>
+            <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
+              Create an account on the Consular Services Portal and select <em>&ldquo;National Visa - Study (with admission)&rdquo;</em>.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feat, idx) => {
-              const Icon = feat.icon;
-              return (
-                <div 
-                  key={idx}
-                  className="neu-card p-6 bg-white space-y-4 hover:-translate-y-1 transition-all duration-300 shadow-[12px_12px_30px_rgba(210,205,195,0.5)] border border-[#EBE7E0]/60 flex flex-col justify-between"
-                >
-                  <div className="space-y-3">
-                    <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-germany-red shadow-inner">
-                      <Icon className="w-6 h-6" />
-                    </div>
-                    <h3 className="text-lg font-bold text-germany-black font-display">
-                      {feat.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
-                      {feat.desc}
-                    </p>
-                  </div>
-                  <div className="pt-2 flex items-center gap-1.5 text-xs font-extrabold text-germany-red">
-                    <span>Verified standard</span>
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Section 2: CSP & VIDEX Deep Dive */}
-        <div id="section-csp" className="scroll-mt-36 neu-card p-8 md:p-12 bg-white space-y-8 shadow-[12px_12px_30px_rgba(210,205,195,0.6)]">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-[#EBE7E0] pb-6">
-            <div className="space-y-2 max-w-2xl">
-              <span className="text-[11px] font-black uppercase text-germany-red tracking-wider">Digital Visa Portal 2026</span>
-              <h3 className="text-2xl sm:text-3xl font-black text-germany-black font-display">
-                Understanding the CSP (Consular Services Portal) &amp; VIDEX Flow
-              </h3>
-              <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
-                The German Federal Foreign Office now mandates the digital Consular Services Portal for student visa applicants. Here is exactly how the digital workflow connects with your VFS appointment.
-              </p>
-            </div>
-            <div className="shrink-0 flex items-center gap-2">
-              <span className="px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black uppercase">
-                Fast-Track System
+          <div className="p-4 rounded-xl bg-[#eae5db]/50 border border-[#e5e0d3] space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="w-7 h-7 rounded-full bg-[var(--lp-ink)] text-white font-mono text-xs flex items-center justify-center">
+                2
               </span>
+              <QrCode className="w-4 h-4 text-[var(--lp-muted)]" />
             </div>
+            <h4 className="font-serif text-sm font-normal text-[var(--lp-ink)]">VIDEX Barcode Form</h4>
+            <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
+              Complete the digital VIDEX questionnaire. The system generates an official PDF with machine-readable 2D barcodes.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 rounded-2xl bg-white border border-[#EBE7E0]/80 shadow-xs space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="w-8 h-8 rounded-full bg-germany-black text-white font-display text-sm font-bold flex items-center justify-center">
-                  1
-                </span>
-                <Laptop className="w-5 h-5 text-gray-400" />
-              </div>
-              <h4 className="text-sm font-bold text-germany-black">CSP Portal Account</h4>
-              <p className="text-xs text-gray-600 font-medium leading-relaxed">
-                Create an account on the Consular Services Portal and select <em>"National Visa - Study (with admission)"</em>.
-              </p>
+          <div className="p-4 rounded-xl bg-[#eae5db]/50 border border-[#e5e0d3] space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="w-7 h-7 rounded-full bg-[var(--lp-ink)] text-white font-mono text-xs flex items-center justify-center">
+                3
+              </span>
+              <FileSearch className="w-4 h-4 text-[var(--lp-muted)]" />
             </div>
-
-            <div className="p-5 rounded-2xl bg-white border border-[#EBE7E0]/80 shadow-xs space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="w-8 h-8 rounded-full bg-germany-black text-white font-display text-sm font-bold flex items-center justify-center">
-                  2
-                </span>
-                <QrCode className="w-5 h-5 text-gray-400" />
-              </div>
-              <h4 className="text-sm font-bold text-germany-black">VIDEX Barcode Form</h4>
-              <p className="text-xs text-gray-600 font-medium leading-relaxed">
-                Complete the digital VIDEX questionnaire. The system generates an official PDF with machine-readable 2D barcodes.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-white border border-[#EBE7E0]/80 shadow-xs space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="w-8 h-8 rounded-full bg-germany-black text-white font-display text-sm font-bold flex items-center justify-center">
-                  3
-                </span>
-                <FileSearch className="w-5 h-5 text-gray-400" />
-              </div>
-              <h4 className="text-sm font-bold text-germany-black">Digital Pre-Audit</h4>
-              <p className="text-xs text-gray-600 font-medium leading-relaxed">
-                Upload your APS, Blocked Account confirmation, and certificates for remote consular review before stepping into VFS.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-white border border-[#EBE7E0]/80 shadow-xs space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="w-8 h-8 rounded-full bg-germany-red text-white font-display text-sm font-bold flex items-center justify-center">
-                  4
-                </span>
-                <Building2 className="w-5 h-5 text-germany-red" />
-              </div>
-              <h4 className="text-sm font-bold text-germany-black">VFS Biometrics</h4>
-              <p className="text-xs text-gray-600 font-medium leading-relaxed">
-                Once CSP approves your file, you receive authorization to book your VFS slot for fingerprinting and passport handover.
-              </p>
-            </div>
+            <h4 className="font-serif text-sm font-normal text-[var(--lp-ink)]">Digital Pre-Audit</h4>
+            <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
+              Upload your APS, Blocked Account confirmation, and certificates for remote consular review before stepping into VFS.
+            </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-red-50/60 border border-red-200/60 flex items-start gap-3 text-xs text-gray-700">
-            <AlertCircle className="w-5 h-5 text-germany-red shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <span className="font-extrabold text-germany-black block">Common Rejection Trap: Barcode Mismatch</span>
-              <p className="text-gray-600 font-medium leading-relaxed">
-                If you modify any data on the paper printout without re-generating the VIDEX barcode on CSP, the visa scanner at VFS will reject the application dossier immediately. EuropeBridge advisers verify barcode integrity before every appointment.
-              </p>
+          <div className="p-4 rounded-xl bg-[#eae5db]/50 border border-[#e5e0d3] space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="w-7 h-7 rounded-full bg-[var(--lp-red)] text-white font-mono text-xs flex items-center justify-center">
+                4
+              </span>
+              <Building2 className="w-4 h-4 text-[var(--lp-red)]" />
             </div>
+            <h4 className="font-serif text-sm font-normal text-[var(--lp-ink)]">VFS Biometrics</h4>
+            <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
+              Once CSP approves your file, you receive authorization to book your VFS slot for fingerprinting and passport handover.
+            </p>
           </div>
         </div>
 
+        <div className="p-4 rounded-xl bg-[#eae5db]/60 border border-[#e5e0d3] flex items-start gap-3 text-xs text-[var(--lp-muted)]">
+          <AlertCircle className="w-4 h-4 text-[var(--lp-red)] shrink-0 mt-0.5" />
+          <p className="leading-relaxed">
+            <strong className="text-[var(--lp-text)]">Barcode Mismatch Caveat:</strong> If you modify any personal or course details after generating the PDF without re-submitting on CSP, the 2D scanner at VFS will reject the application immediately. EuropeBridge advisers verify barcode integrity prior to appointment day.
+          </p>
+        </div>
       </div>
     </section>
   );

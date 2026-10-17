@@ -4,12 +4,9 @@ import React from 'react';
 import { 
   Award, 
   Globe2, 
-  CheckCircle2, 
-  Calendar, 
   Clock, 
   ShieldCheck, 
-  ArrowRight,
-  BookOpen
+  Check
 } from 'lucide-react';
 
 export const PRAndCitizenshipRoadmap = () => {
@@ -18,28 +15,24 @@ export const PRAndCitizenshipRoadmap = () => {
       route: 'EU Blue Card + B1 German',
       duration: '21 Months',
       badge: 'Fastest Route',
-      badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-200',
       requirements: '21 months of Blue Card employment, 21 months of pension contributions, Goethe/telc B1 German certificate, clean record.'
     },
     {
       route: 'EU Blue Card + A1 German',
       duration: '27 Months',
       badge: 'Basic German',
-      badgeColor: 'bg-blue-100 text-blue-800 border-blue-200',
       requirements: '27 months of Blue Card employment, 27 months of pension contributions, elementary A1 German language proof.'
     },
     {
       route: 'German Uni Graduate (§18c AufenthG)',
       duration: '24 Months',
       badge: 'Graduate Special',
-      badgeColor: 'bg-purple-100 text-purple-800 border-purple-200',
       requirements: 'Graduated from a German university, held a qualified work permit (§18b) for 24 months, 24 months pension contributions, B1 German.'
     },
     {
       route: 'Standard Skilled Worker (§18a/b)',
       duration: '36 Months',
       badge: 'General Route',
-      badgeColor: 'bg-gray-100 text-gray-800 border-gray-200',
       requirements: '36 months under regular skilled worker status under the modernized immigration act, B1 German, secure livelihood.'
     }
   ];
@@ -96,31 +89,31 @@ export const PRAndCitizenshipRoadmap = () => {
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Section Header */}
-        <div className="flex items-start gap-4">
-          <div className="flex h-14 w-[52px] items-center justify-center rounded-2xl bg-white border border-[#EBE7E0] shadow-sm shrink-0">
-            <Award className="w-7 h-7 text-germany-red" />
+        <div data-reveal className="flex items-start gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--lp-paper-2)] border border-[var(--lp-rule)] shrink-0">
+            <Award className="w-5 h-5 text-[var(--lp-red)]" />
           </div>
           <div>
-            <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-germany-red mb-1">
+            <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-[var(--lp-red)] mb-1">
               <span>Section 05</span>
               <span>•</span>
-              <span>Niederlassungserlaubnis &amp; StAG Reform</span>
+              <span>Niederlassungserlaubnis & StAG Reform</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-germany-black font-display">
-              Path to Permanent Residence &amp; German Citizenship
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-[var(--lp-ink)] tracking-tight">
+              Path to Permanent Residence & German Citizenship
             </h2>
           </div>
         </div>
 
         {/* PR Pathways Table */}
-        <div className="neu-card p-6 lg:p-8 bg-white space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#EBE7E0] pb-4">
+        <div data-reveal className="bg-[var(--lp-card)] border border-[var(--lp-rule)] rounded-2xl p-6 lg:p-8 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--lp-rule)] pb-4">
             <div>
-              <h3 className="text-lg font-black text-germany-black font-display flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-germany-red" />
+              <h3 className="text-lg font-serif font-bold text-[var(--lp-ink)] flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-[var(--lp-red)]" />
                 <span>Permanent Residence (Niederlassungserlaubnis) Comparison</span>
               </h3>
-              <p className="text-xs text-gray-500 font-semibold mt-1">
+              <p className="text-xs text-[var(--lp-muted)] mt-1">
                 Permanent residency provides an indefinite, unrestricted right to live and work in Germany
               </p>
             </div>
@@ -128,32 +121,32 @@ export const PRAndCitizenshipRoadmap = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {prRoutes.map((r, idx) => (
-              <div key={idx} className="p-5 rounded-2xl bg-[#FDFBF7] border border-[#EBE7E0] space-y-2.5">
+              <div key={idx} className="p-5 rounded-xl bg-[var(--lp-paper)] border border-[var(--lp-rule)] space-y-2.5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
                 <div className="flex items-center justify-between">
-                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border ${r.badgeColor}`}>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold uppercase border border-[var(--lp-rule)] bg-[var(--lp-paper-2)] text-[var(--lp-ink)]">
                     {r.badge}
                   </span>
-                  <span className="text-sm font-black text-germany-red flex items-center gap-1">
+                  <span className="text-sm font-mono font-bold text-[var(--lp-red)] flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5" />
                     {r.duration}
                   </span>
                 </div>
-                <h4 className="text-sm font-black text-germany-black">{r.route}</h4>
-                <p className="text-xs text-gray-600 font-medium leading-relaxed">{r.requirements}</p>
+                <h4 className="text-sm font-serif font-bold text-[var(--lp-ink)]">{r.route}</h4>
+                <p className="text-xs text-[var(--lp-muted)] leading-relaxed">{r.requirements}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Complete Student-to-Passport Roadmap */}
-        <div className="neu-card p-6 lg:p-8 bg-white space-y-6">
-          <div className="flex items-center justify-between border-b border-[#EBE7E0] pb-3">
+        <div data-reveal className="bg-[var(--lp-card)] border border-[var(--lp-rule)] rounded-2xl p-6 lg:p-8 space-y-6">
+          <div className="flex items-center justify-between border-b border-[var(--lp-rule)] pb-3">
             <div>
-              <h3 className="text-lg font-black text-germany-black font-display flex items-center gap-2">
-                <Globe2 className="w-5 h-5 text-germany-red" />
+              <h3 className="text-lg font-serif font-bold text-[var(--lp-ink)] flex items-center gap-2">
+                <Globe2 className="w-5 h-5 text-[var(--lp-red)]" />
                 <span>The Complete 5-Year Roadmap: Student to German Passport</span>
               </h3>
-              <p className="text-xs text-gray-500 font-semibold mt-1">
+              <p className="text-xs text-[var(--lp-muted)] mt-1">
                 From landing at Frankfurt Airport to holding one of the most powerful passports in the world
               </p>
             </div>
@@ -161,24 +154,24 @@ export const PRAndCitizenshipRoadmap = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {roadmapMilestones.map((m, idx) => (
-              <div key={idx} className="p-5 rounded-2xl bg-[#FDFBF7] border border-[#EBE7E0] space-y-3 relative">
+              <div key={idx} className="p-5 rounded-xl bg-[var(--lp-paper)] border border-[var(--lp-rule)] space-y-3 relative transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
                 <div className="flex items-center justify-between">
-                  <span className="px-3 py-1 rounded-xl bg-germany-black text-white text-xs font-black tracking-wider">
+                  <span className="px-2.5 py-1 rounded-lg bg-[var(--lp-ink)] text-white text-[11px] font-mono font-semibold tracking-wider">
                     {m.period}
                   </span>
-                  <span className="text-xs font-black text-germany-red font-display">Step 0{idx + 1}</span>
+                  <span className="text-xs font-serif font-bold text-[var(--lp-red)]">Step 0{idx + 1}</span>
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-black text-germany-black">{m.title}</h4>
-                  <span className="text-[11px] text-gray-500 font-bold block mt-0.5">{m.status}</span>
+                  <h4 className="text-sm font-serif font-bold text-[var(--lp-ink)]">{m.title}</h4>
+                  <span className="text-[11px] text-[var(--lp-muted)] font-mono block mt-0.5">{m.status}</span>
                 </div>
 
-                <ul className="space-y-1.5 pt-1 text-xs text-gray-700 font-medium">
+                <ul className="space-y-1.5 pt-1 text-xs text-[var(--lp-muted)]">
                   {m.points.map((pt, pIdx) => (
                     <li key={pIdx} className="flex items-start gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                      <span className="leading-snug text-[11px]">{pt}</span>
+                      <Check className="w-3.5 h-3.5 text-[var(--lp-gold)] shrink-0 mt-0.5" />
+                      <span className="leading-snug text-[11px] text-[var(--lp-text)]">{pt}</span>
                     </li>
                   ))}
                 </ul>
@@ -187,14 +180,14 @@ export const PRAndCitizenshipRoadmap = () => {
           </div>
 
           {/* Dual Citizenship Banner */}
-          <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 font-medium flex items-start gap-3">
-            <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+          <div className="p-4 rounded-xl bg-[var(--lp-paper-2)] border border-[var(--lp-rule)] text-xs text-[var(--lp-text)] flex items-start gap-3">
+            <ShieldCheck className="w-5 h-5 text-[var(--lp-gold)] shrink-0 mt-0.5" />
             <div>
-              <span className="font-extrabold text-emerald-900 block text-sm">
+              <span className="font-serif font-bold text-[var(--lp-ink)] block text-sm">
                 Historic Dual Citizenship Law (2024+ German Nationality Act Reform)
               </span>
-              <p className="text-xs text-emerald-800 leading-relaxed mt-1">
-                Germany officially allows <strong>multiple citizenship</strong> for all applicants. You no longer have to surrender your home passport to acquire German citizenship. Furthermore, student visa years legally count towards the 5-year naturalization timeline!
+              <p className="text-xs text-[var(--lp-muted)] leading-relaxed mt-1">
+                Germany officially allows <strong className="text-[var(--lp-ink)]">multiple citizenship</strong> for all applicants. You no longer have to surrender your home passport to acquire German citizenship. Furthermore, student visa years legally count towards the 5-year naturalization timeline.
               </p>
             </div>
           </div>

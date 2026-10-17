@@ -1,6 +1,12 @@
 import React from 'react';
-import Navbar from '@/app/components/Navbar';
-import Footer from '@/app/components/Footer';
+import { Metadata } from 'next';
+import "@/app/components/landing/landing.css";
+import { playfair, madisonSauvage, celinda } from "@/app/components/landing/fonts";
+import LandingNavbar from "@/app/components/landing/LandingNavbar";
+import Footer from "@/app/components/Footer";
+import SmoothScroll from "@/app/components/landing/SmoothScroll";
+import { StudyContentGate } from '@/components/StudyContentGate';
+
 import { ScholarshipsHero } from './components/ScholarshipsHero';
 import { ScholarshipsNav } from './components/ScholarshipsNav';
 import { MajorScholarshipsSection } from './components/MajorScholarshipsSection';
@@ -10,7 +16,6 @@ import { ScholarshipApplicationRoadmap } from './components/ScholarshipApplicati
 import { AlternativeFundingSection } from './components/AlternativeFundingSection';
 import { ScholarshipsFAQ } from './components/ScholarshipsFAQ';
 import { ScholarshipsCTA } from './components/ScholarshipsCTA';
-import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Scholarships & Funding for Germany 2026 | EuropeBridge',
@@ -32,31 +37,34 @@ export const metadata: Metadata = {
   }
 };
 
-import { StudyContentGate } from '@/components/StudyContentGate';
-
 export default function ScholarshipsPage() {
   return (
-    <main className="min-h-screen neu-bg">
-      <Navbar />
-      <ScholarshipsHero />
-      <ScholarshipsNav />
+    <main className="bg-[#f4f1ea] min-h-screen text-[var(--lp-text)] selection:bg-[var(--lp-red)] selection:text-white">
+      <div className={`lp ${playfair.variable} ${madisonSauvage.variable} ${celinda.variable}`}>
+        <LandingNavbar />
+        <ScholarshipsHero />
+        <ScholarshipsNav />
 
-      <div className="space-y-4">
-        <MajorScholarshipsSection />
-        <DeutschlandstipendiumDeepDive />
+        <div className="space-y-6 sm:space-y-10 pb-16">
+          <MajorScholarshipsSection />
+          <DeutschlandstipendiumDeepDive />
 
-        <StudyContentGate guideTitle="Scholarships & Funding Guide">
-          <div className="space-y-4">
-            <FoundationsAndUniversityGrants />
-            <ScholarshipApplicationRoadmap />
-            <AlternativeFundingSection />
-            <ScholarshipsFAQ />
-            <ScholarshipsCTA />
-          </div>
-        </StudyContentGate>
+          <StudyContentGate guideTitle="Scholarships & Funding Guide">
+            <div className="space-y-6 sm:space-y-10">
+              <FoundationsAndUniversityGrants />
+              <ScholarshipApplicationRoadmap />
+              <AlternativeFundingSection />
+              <ScholarshipsFAQ />
+              <ScholarshipsCTA />
+            </div>
+          </StudyContentGate>
+        </div>
+
+        <div className="relative z-[40] mt-16">
+          <Footer />
+        </div>
       </div>
-
-      <Footer />
+      <SmoothScroll />
     </main>
   );
 }

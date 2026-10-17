@@ -2,71 +2,71 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { CheckCircle2, ArrowRight, Zap, ShieldCheck, Clock } from 'lucide-react';
+import { ArrowRight, Zap, ShieldCheck, Clock, Check } from 'lucide-react';
 
 export const MotivationPricing = () => {
   return (
-    <section id="section-pricing" className="py-16 px-6 lg:px-12 bg-white/50 border-t border-gray-200/80 relative">
+    <section id="section-pricing" className="py-16 px-6 lg:px-12 relative">
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100/80 border border-emerald-200 text-emerald-900 text-xs font-black uppercase tracking-wider">
+        <div data-reveal className="text-center max-w-3xl mx-auto space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--lp-red)]/10 border border-[var(--lp-red)]/20 text-[var(--lp-red)] text-xs font-mono uppercase tracking-wider">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Transparent Pricing • Zero Hidden Fees</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-germany-black font-display">
-            Simple, Transparent <span className="text-germany-red">Pricing</span>
+          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[var(--lp-ink)] tracking-tight">
+            Simple, Transparent <span className="text-[var(--lp-red)] italic">Pricing</span>
           </h2>
-          <p className="text-sm sm:text-base text-gray-700 font-medium">
+          <p className="text-sm sm:text-base text-[var(--lp-muted)] font-normal leading-relaxed">
             Invest in a flawless consular document that protects your university admission and prevents costly visa rejections or rescheduling delays.
           </p>
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
+        <div data-reveal className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
           {/* Standard Order */}
-          <div className="neu-card p-6 sm:p-8 bg-white border-2 border-gray-200/90 shadow-lg flex flex-col justify-between space-y-6">
+          <div className="bg-[var(--lp-card)] border border-[var(--lp-rule)] rounded-3xl p-6 sm:p-8 flex flex-col justify-between space-y-6 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
             <div className="space-y-4">
-              <div className="border-b border-gray-200 pb-5 space-y-1 text-center">
-                <p className="text-xs font-black text-gray-500 uppercase tracking-wider">Standard Order</p>
-                <div className="mt-2 flex items-baseline justify-center gap-1">
-                  <span className="text-4xl sm:text-5xl font-black text-germany-black">₹3,999</span>
-                  <span className="text-xs font-bold text-gray-500">all inclusive</span>
+              <div className="border-b border-[var(--lp-rule)] pb-5 space-y-1 text-center">
+                <p className="text-xs font-mono font-semibold text-[var(--lp-muted)] uppercase tracking-wider">Standard Order</p>
+                <div className="mt-2 flex items-baseline justify-center gap-1.5">
+                  <span className="text-4xl sm:text-5xl font-serif font-bold text-[var(--lp-ink)]">₹3,999</span>
+                  <span className="text-xs font-mono text-[var(--lp-muted)]">all inclusive</span>
                 </div>
-                <div className="inline-flex items-center gap-1 text-xs font-bold text-gray-600 bg-gray-100 px-3 py-1 rounded-full mt-2">
-                  <Clock className="w-3.5 h-3.5 text-gray-500" />
+                <div className="inline-flex items-center gap-1 text-xs font-mono text-[var(--lp-muted)] bg-[var(--lp-paper-2)] px-3 py-1 rounded-full mt-2 border border-[var(--lp-rule)]">
+                  <Clock className="w-3.5 h-3.5" />
                   <span>First draft in 3 working days</span>
                 </div>
               </div>
 
-              <ul className="space-y-3 text-xs sm:text-sm text-gray-700 font-medium">
+              <ul className="space-y-3 text-xs sm:text-sm text-[var(--lp-text)]">
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <span><strong>Consulate-ready LOM</strong> written completely from scratch</span>
+                  <Check className="w-4 h-4 text-[var(--lp-gold)] shrink-0 mt-0.5" />
+                  <span><strong className="text-[var(--lp-ink)]">Consulate-ready LOM</strong> written completely from scratch</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <span><strong>Two rounds</strong> of student reviews &amp; revisions</span>
+                  <Check className="w-4 h-4 text-[var(--lp-gold)] shrink-0 mt-0.5" />
+                  <span><strong className="text-[var(--lp-ink)]">Two rounds</strong> of student reviews & revisions</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <span><strong>100% Plagiarism-free</strong>, profile &amp; module specific</span>
+                  <Check className="w-4 h-4 text-[var(--lp-gold)] shrink-0 mt-0.5" />
+                  <span><strong className="text-[var(--lp-ink)]">100% Plagiarism-free</strong>, profile & module specific</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>Delivered as a <strong>Google Doc</strong> for easy commenting</span>
+                  <Check className="w-4 h-4 text-[var(--lp-gold)] shrink-0 mt-0.5" />
+                  <span>Delivered as a <strong className="text-[var(--lp-ink)]">Google Doc</strong> for easy commenting</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>Includes German Mission salutation &amp; § 16b citation</span>
+                  <Check className="w-4 h-4 text-[var(--lp-gold)] shrink-0 mt-0.5" />
+                  <span>Includes German Mission salutation & § 16b citation</span>
                 </li>
               </ul>
             </div>
 
-            <div className="pt-4 border-t border-gray-100">
+            <div className="pt-4 border-t border-[var(--lp-rule)]">
               <Link
                 href="/signup?service=lom&plan=standard"
-                className="w-full neu-btn py-3.5 px-6 text-xs font-black uppercase tracking-wider text-germany-black hover:text-germany-red border border-gray-300 shadow-xs flex items-center justify-center gap-2 cursor-pointer bg-gray-50 hover:bg-white"
+                className="w-full py-3.5 px-6 rounded-xl text-xs font-mono font-semibold uppercase tracking-wider text-[var(--lp-ink)] hover:text-[var(--lp-red)] border border-[var(--lp-rule)] bg-[var(--lp-paper)] hover:bg-[var(--lp-card)] transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>Order Standard - ₹3,999</span>
                 <ArrowRight className="w-4 h-4" />
@@ -75,50 +75,50 @@ export const MotivationPricing = () => {
           </div>
 
           {/* Express Order (Dark / Premium) */}
-          <div className="neu-card-dark p-6 sm:p-8 relative border-2 border-germany-red shadow-2xl flex flex-col justify-between space-y-6 overflow-hidden">
+          <div className="bg-[var(--lp-ink)] text-white border border-white/10 rounded-3xl p-6 sm:p-8 relative shadow-xl flex flex-col justify-between space-y-6 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
             {/* Ambient glows */}
-            <div className="absolute top-0 right-0 w-48 h-48 bg-germany-red/30 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-400/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-48 h-48 bg-[var(--lp-red)]/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-[var(--lp-gold)]/10 rounded-full blur-3xl pointer-events-none" />
 
             <div className="relative z-10 space-y-4">
-              <div className="border-b border-white/15 pb-5 space-y-1 text-center">
+              <div className="border-b border-white/10 pb-5 space-y-1 text-center">
                 <div className="flex items-center justify-center gap-1.5 mb-1">
-                  <span className="text-[10px] font-black uppercase tracking-wider bg-germany-red text-white px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1">
+                  <span className="text-[10px] font-mono font-semibold uppercase tracking-wider bg-[var(--lp-red)] text-white px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1">
                     <Zap className="w-3 h-3" />
                     Express Fast-Track
                   </span>
                 </div>
-                <p className="text-xs font-black text-amber-300 uppercase tracking-wider">Express Order</p>
-                <div className="mt-2 flex items-baseline justify-center gap-1">
-                  <span className="text-4xl sm:text-5xl font-black text-white">₹4,999</span>
-                  <span className="text-xs font-bold text-gray-300">all inclusive</span>
+                <p className="text-xs font-mono font-semibold text-[var(--lp-gold)] uppercase tracking-wider">Express Order</p>
+                <div className="mt-2 flex items-baseline justify-center gap-1.5">
+                  <span className="text-4xl sm:text-5xl font-serif font-bold text-white">₹4,999</span>
+                  <span className="text-xs font-mono text-white/50">all inclusive</span>
                 </div>
-                <div className="inline-flex items-center gap-1 text-xs font-bold text-amber-200 bg-white/10 px-3 py-1 rounded-full mt-2">
-                  <Zap className="w-3.5 h-3.5 text-amber-300" />
+                <div className="inline-flex items-center gap-1 text-xs font-mono text-white/80 bg-white/10 px-3 py-1 rounded-full mt-2 border border-white/10">
+                  <Zap className="w-3.5 h-3.5 text-[var(--lp-gold)]" />
                   <span>First draft in 1 working day (24 hrs)</span>
                 </div>
               </div>
 
-              <ul className="space-y-3 text-xs sm:text-sm text-gray-200 font-medium">
+              <ul className="space-y-3 text-xs sm:text-sm text-white/80">
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span className="text-white font-bold">Same premium consular quality as Standard</span>
+                  <Check className="w-4 h-4 text-[var(--lp-gold)] shrink-0 mt-0.5" />
+                  <span className="text-white font-semibold">Same premium consular quality as Standard</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span className="text-amber-200 font-semibold">Compressed 24-hour turnaround SLA</span>
+                  <Check className="w-4 h-4 text-[var(--lp-gold)] shrink-0 mt-0.5" />
+                  <span className="text-[var(--lp-gold)]">Compressed 24-hour turnaround SLA</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span><strong>Two rounds</strong> of priority student reviews</span>
+                  <Check className="w-4 h-4 text-[var(--lp-gold)] shrink-0 mt-0.5" />
+                  <span><strong className="text-white">Two rounds</strong> of priority student reviews</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span>Assigned to <strong>Senior Visa Editorial Lead</strong></span>
+                  <Check className="w-4 h-4 text-[var(--lp-gold)] shrink-0 mt-0.5" />
+                  <span>Assigned to <strong className="text-white">Senior Visa Editorial Lead</strong></span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span>Recommended for students with approaching <strong>VFS appointment dates</strong></span>
+                  <Check className="w-4 h-4 text-[var(--lp-gold)] shrink-0 mt-0.5" />
+                  <span>Recommended for students with approaching <strong className="text-white">VFS appointment dates</strong></span>
                 </li>
               </ul>
             </div>
@@ -126,7 +126,7 @@ export const MotivationPricing = () => {
             <div className="relative z-10 pt-4 border-t border-white/10">
               <Link
                 href="/signup?service=lom&plan=express"
-                className="w-full neu-btn-primary py-3.5 px-6 text-xs font-black uppercase tracking-wider text-white shadow-xl flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3.5 px-6 rounded-xl text-xs font-mono font-semibold uppercase tracking-wider text-white bg-[var(--lp-red)] hover:bg-[var(--lp-red)]/90 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
               >
                 <span>Order Express - ₹4,999</span>
                 <ArrowRight className="w-4 h-4" />
@@ -136,8 +136,8 @@ export const MotivationPricing = () => {
         </div>
 
         {/* Trust Endorsement */}
-        <div className="text-center max-w-xl mx-auto text-xs font-bold text-gray-500">
-          Trusted by over 10,000+ Indian &amp; international students admitted to top German universities including TU Munich, RWTH Aachen, TU Berlin, and University of Stuttgart.
+        <div data-reveal className="text-center max-w-xl mx-auto text-xs font-mono text-[var(--lp-muted)]">
+          Trusted by over 10,000+ Indian & international students admitted to top German universities including TU Munich, RWTH Aachen, TU Berlin, and University of Stuttgart.
         </div>
       </div>
     </section>

@@ -1,7 +1,8 @@
 "use client";
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HelpCircle, Plus, Minus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 export interface FAQItem {
   q: string;
@@ -18,7 +19,7 @@ interface StudyFAQProps {
 
 export const StudyFAQ: React.FC<StudyFAQProps> = ({
   id = "section-faq",
-  badge = "Got Questions?",
+  badge = "Questions & Answers",
   title = "Frequently Asked Questions",
   subtitle = "Everything you need to know about requirements, timelines, and next steps.",
   faqs
@@ -26,64 +27,81 @@ export const StudyFAQ: React.FC<StudyFAQProps> = ({
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section id={id} className="scroll-mt-32 py-16 sm:py-20 px-4 sm:px-6 lg:px-12 max-w-5xl mx-auto">
-      {/* Section Header */}
-      <div className="text-center mb-10 sm:mb-12">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white rounded-full font-bold text-germany-red shadow-[2px_2px_8px_rgba(71,85,105,0.08)] text-xs mb-3 cursor-default">
-          <HelpCircle className="w-3.5 h-3.5 text-germany-red" />
-          <span>{badge}</span>
-        </div>
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-display text-germany-black tracking-tight">
-          {title}
-        </h2>
-        {subtitle && (
-          <p className="text-xs sm:text-sm text-gray-500 font-medium max-w-xl mx-auto mt-2.5 leading-relaxed">
-            {subtitle}
-          </p>
-        )}
-      </div>
-
-      {/* Accordion List */}
-      <div className="space-y-3 max-w-3xl mx-auto w-full">
-        {faqs.map((faq, index) => {
-          const isOpen = openIndex === index;
-          return (
-            <div 
-              key={index}
-              className="bg-white rounded-2xl border border-gray-200/80 overflow-hidden transition-all duration-200 hover:border-gray-300"
+    <section id={id} className="relative scroll-mt-28 py-16 sm:py-24 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
+      <div className="grid gap-12 lg:grid-cols-[380px_1fr] lg:gap-20">
+        {/* Left Sticky Column */}
+        <div className="lg:sticky lg:top-36 lg:self-start space-y-4">
+          <div className="lp-eyebrow text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--lp-muted)]">
+            {badge}
+          </div>
+          <h2 className="lp-serif text-3xl sm:text-4xl lg:text-[40px] leading-[1.15] text-[var(--lp-text)] font-semibold">
+            {title}
+          </h2>
+          {subtitle && (
+            <p className="text-[14.5px] leading-[1.65] text-[var(--lp-muted)]">
+              {subtitle}
+            </p>
+          )}
+          <div className="pt-2">
+            <Link 
+              href="/login" 
+              className="lp-link inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-[var(--lp-text)] hover:text-[var(--lp-red)] transition-colors"
             >
-              <button
-                type="button"
-                onClick={() => setOpenIndex(isOpen ? null : index)}
-                className="w-full px-5 sm:px-6 py-4 sm:py-4.5 flex items-center justify-between text-left focus:outline-none gap-4"
-              >
-                <span className="font-display font-bold text-sm sm:text-base text-germany-black leading-snug">
-                  {faq.q}
-                </span>
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-colors ${
-                  isOpen ? 'bg-germany-red text-white' : 'bg-gray-100 text-gray-400'
-                }`}>
-                  {isOpen ? <Minus className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
-                </div>
-              </button>
-              
-              <AnimatePresence>
-                {isOpen && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.25, ease: "easeInOut" }}
+              Ask an admissions counsellor &rarr;
+            </Link>
+          </div>
+        </div>
+
+        {/* Right Accordion List */}
+        <div className="border-t border-[var(--lp-rule-strong)]">
+          {faqs.map((faq, index) => {
+            const isOpen = openIndex === index;
+            return (
+              <div key={index} className="border-b border-[var(--lp-rule)]">
+                <button
+                  type="button"
+                  onClick={() => setOpenIndex(isOpen ? null : index)}
+                  aria-expanded={isOpen}
+                  className="group flex w-full items-start justify-between gap-6 py-6 sm:py-7 text-left cursor-pointer"
+                >
+                  <span className="flex gap-4 sm:gap-5">
+                    <span className="pt-1.5 text-[12px] font-medium tabular-nums text-[var(--lp-faint)]">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span className="lp-serif text-[19px] sm:text-[22px] leading-[1.25] text-[var(--lp-text)] transition-colors group-hover:text-[var(--lp-red)]">
+                      {faq.q}
+                    </span>
+                  </span>
+                  <span
+                    className={`mt-1 flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
+                      isOpen
+                        ? "rotate-45 border-[var(--lp-ink)] bg-[var(--lp-ink)] text-white"
+                        : "border-[var(--lp-rule-strong)] text-[var(--lp-text)] group-hover:border-[var(--lp-text)]"
+                    }`}
                   >
-                    <div className="px-5 sm:px-6 pb-5 pt-1 text-xs sm:text-sm text-gray-600 font-normal leading-relaxed border-t border-gray-100 mt-1 whitespace-pre-line">
-                      {faq.a}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          );
-        })}
+                    <Plus className="h-4 w-4" />
+                  </span>
+                </button>
+
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <p className="max-w-[680px] pb-7 pl-8 sm:pl-[44px] text-[14.5px] sm:text-[15.5px] leading-[1.75] text-[var(--lp-muted)] whitespace-pre-line">
+                        {faq.a}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

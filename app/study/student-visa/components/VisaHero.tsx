@@ -2,128 +2,115 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { ShieldCheck, ArrowRight, FileCheck, CheckCircle2, Clock, Landmark, CreditCard } from 'lucide-react';
+import { ShieldCheck, ArrowRight, FileCheck, Check, Clock, Landmark, CreditCard } from 'lucide-react';
 
 export const VisaHero = () => {
   return (
-    <section className="pt-28 pb-12 px-6 lg:px-12 relative overflow-hidden">
-      {/* Background Decorative Accents */}
-      <div className="absolute top-10 right-10 w-80 h-80 bg-red-200/30 rounded-full blur-3xl -z-10 pointer-events-none" />
-      <div className="absolute bottom-5 left-10 w-96 h-96 bg-amber-200/30 rounded-full blur-3xl -z-10 pointer-events-none" />
+    <section className="pt-28 pb-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto" data-reveal>
+      {/* Breadcrumb Navigation */}
+      <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[var(--lp-muted)]">
+        <Link href="/" className="hover:text-[var(--lp-red)] transition-colors">Home</Link>
+        <span>/</span>
+        <Link href="/study/masters" className="hover:text-[var(--lp-red)] transition-colors">Study</Link>
+        <span>/</span>
+        <span className="text-[var(--lp-text)] font-semibold">Student Visa Guide</span>
+      </nav>
 
-      <div className="max-w-7xl mx-auto">
-        {/* Breadcrumb Navigation */}
-        <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs md:text-sm font-semibold text-gray-500">
-          <Link href="/" className="hover:text-germany-red transition-colors">Home</Link>
-          <span>/</span>
-          <Link href="/#our-process" className="hover:text-germany-red transition-colors">Study</Link>
-          <span>/</span>
-          <span className="text-germany-black font-extrabold">Student Visa Guide</span>
-        </nav>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left: Main Hero Content */}
+        <div className="lg:col-span-7 space-y-6">
+          <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--lp-red)] inline-block">
+            National Visa (Type D) Guide 2026
+          </span>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Left: Main Hero Content */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-100/80 border border-red-200 text-germany-red text-xs font-black uppercase tracking-wider">
-              <ShieldCheck className="w-4 h-4" />
-              <span>National Visa (Type D) Guide 2026</span>
+          <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[var(--lp-ink)] font-normal tracking-tight leading-[1.15]">
+            German Student Visa <em className="italic text-[var(--lp-red)] font-serif">Application Roadmap</em>
+          </h1>
+
+          <p className="text-sm sm:text-base text-[var(--lp-muted)] leading-relaxed max-w-xl">
+            Step-by-step walkthrough for your German National Visa. From <strong className="text-[var(--lp-text)]">Consular Services Portal (CSP)</strong> registration and <strong className="text-[var(--lp-text)]">VIDEX</strong> barcode generation to <strong className="text-[var(--lp-text)]">VFS appointment booking</strong>, blocked account verification, and 1:1 consular interview preparation.
+          </p>
+
+          <div className="flex flex-wrap items-center gap-3 pt-1">
+            <Link 
+              href="/signup"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--lp-ink)] text-white hover:bg-[var(--lp-red)] transition-colors text-xs font-semibold"
+            >
+              <span>Start Visa Application</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+            <a 
+              href="#section-checklist"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#eae5db]/60 text-[var(--lp-text)] hover:bg-[#eae5db] border border-[#e5e0d3] transition-colors text-xs font-semibold"
+            >
+              <FileCheck className="w-3.5 h-3.5 text-[var(--lp-red)]" />
+              <span>Document Checklist</span>
+            </a>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4 text-xs text-[var(--lp-muted)] pt-2 border-t border-[#e5e0d3]">
+            <span className="flex items-center gap-1.5">
+              <Check className="w-3.5 h-3.5 text-[var(--lp-gold)] shrink-0" />
+              <span>Consular Services Portal (CSP)</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Check className="w-3.5 h-3.5 text-[var(--lp-gold)] shrink-0" />
+              <span>99.2% Visa Grant Rate</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Check className="w-3.5 h-3.5 text-[var(--lp-gold)] shrink-0" />
+              <span>1:1 Mock Interview</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Right: Quick Facts Card */}
+        <div className="lg:col-span-5 bg-[#faf8f3] rounded-2xl p-6 border border-[#e5e0d3] space-y-4 shadow-xs">
+          <div className="flex items-center gap-2 border-b border-[#e5e0d3] pb-3">
+            <ShieldCheck className="w-4 h-4 text-[var(--lp-red)]" />
+            <h2 className="font-serif text-lg font-normal text-[var(--lp-ink)]">Visa Essentials at a Glance</h2>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="p-3.5 rounded-xl bg-[#eae5db]/50 border border-[#e5e0d3] space-y-1">
+              <div className="flex items-center gap-1 text-[var(--lp-muted)] text-[10px] font-mono uppercase tracking-wider">
+                <Landmark className="w-3 h-3 text-[var(--lp-red)]" />
+                <span>Category</span>
+              </div>
+              <span className="text-[var(--lp-ink)] font-serif text-base font-normal block">National Visa D</span>
+              <span className="text-[10px] text-[var(--lp-muted)] block">Long-term study visa</span>
             </div>
 
-            <div className="flex items-start gap-4">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-germany-black leading-tight tracking-tight font-display flex-1">
-                German Student Visa <span className="text-germany-red">Application Guide</span>
-              </h1>
+            <div className="p-3.5 rounded-xl bg-[#eae5db]/50 border border-[#e5e0d3] space-y-1">
+              <div className="flex items-center gap-1 text-[var(--lp-muted)] text-[10px] font-mono uppercase tracking-wider">
+                <Clock className="w-3 h-3 text-[var(--lp-gold)]" />
+                <span>Processing</span>
+              </div>
+              <span className="text-[var(--lp-ink)] font-serif text-base font-normal block">4–6 Weeks</span>
+              <span className="text-[10px] text-[var(--lp-muted)] block">Via digital CSP portal</span>
             </div>
 
-            <p className="text-base sm:text-lg text-gray-700 font-medium leading-relaxed">
-              Full-scale support and step-by-step walkthrough for your Germany National Visa. From <strong>Consular Services Portal (CSP)</strong> registration and <strong>VIDEX</strong> document upload to <strong>VFS appointment booking</strong>, financial proof verification, and 1:1 visa interview prep.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3.5 pt-1">
-              <Link 
-                href="/signup"
-                className="neu-btn-primary px-7 py-3.5 text-xs font-black uppercase tracking-wider text-white flex items-center gap-2 shadow-md cursor-pointer"
-              >
-                <span>Start Visa Application</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <a 
-                href="#section-checklist"
-                className="neu-btn px-6 py-3.5 text-xs font-black uppercase tracking-wider text-germany-black hover:text-germany-red border border-[#EBE7E0]/80 shadow-2xs flex items-center gap-2 cursor-pointer bg-white"
-              >
-                <FileCheck className="w-4 h-4 text-germany-red" />
-                <span>Document Checklist</span>
-              </a>
+            <div className="p-3.5 rounded-xl bg-[#eae5db]/50 border border-[#e5e0d3] space-y-1">
+              <div className="flex items-center gap-1 text-[var(--lp-muted)] text-[10px] font-mono uppercase tracking-wider">
+                <CreditCard className="w-3 h-3 text-[var(--lp-gold)]" />
+                <span>Blocked Account</span>
+              </div>
+              <span className="text-[var(--lp-red)] font-serif text-base font-normal block">€11,904</span>
+              <span className="text-[10px] text-[var(--lp-muted)] block">€992/month unlock</span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-gray-600 pt-2">
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Consular Services Portal (CSP) 2026</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>99.2% Visa Approval Rate</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>1:1 Mock Interview Included</span>
-              </span>
+            <div className="p-3.5 rounded-xl bg-[#eae5db]/50 border border-[#e5e0d3] space-y-1">
+              <div className="flex items-center gap-1 text-[var(--lp-muted)] text-[10px] font-mono uppercase tracking-wider">
+                <ShieldCheck className="w-3 h-3 text-[var(--lp-red)]" />
+                <span>Work Rights</span>
+              </div>
+              <span className="text-[var(--lp-ink)] font-serif text-base font-normal block">140 Days</span>
+              <span className="text-[10px] text-[var(--lp-muted)] block">Annual statutory allowance</span>
             </div>
           </div>
 
-          {/* Right: Quick Facts Card */}
-          <div className="lg:col-span-5">
-            <div className="neu-card p-6 bg-white space-y-4 shadow-[12px_12px_30px_rgba(210,205,195,0.6)]">
-              <h3 className="font-display text-lg text-germany-black flex items-center gap-2 border-b border-[#EBE7E0] pb-3">
-                <ShieldCheck className="w-5 h-5 text-germany-red" />
-                <span>Visa Fast Facts & Requirements</span>
-              </h3>
-              
-              <div className="grid grid-cols-2 gap-3.5 text-xs font-bold text-gray-700">
-                <div className="p-3.5 rounded-2xl bg-white border border-[#EBE7E0]/80 shadow-xs hover:border-germany-red/30 transition-colors space-y-1">
-                  <div className="flex items-center gap-1 text-gray-500 text-[10px] font-extrabold uppercase tracking-wider">
-                    <Landmark className="w-3 h-3 text-germany-red" />
-                    <span>Visa Category</span>
-                  </div>
-                  <span className="text-germany-black text-sm font-black block">National Visa D</span>
-                  <span className="text-[10px] text-gray-400 font-medium">Long-term study visa</span>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-white border border-[#EBE7E0]/80 shadow-xs hover:border-germany-red/30 transition-colors space-y-1">
-                  <div className="flex items-center gap-1 text-gray-500 text-[10px] font-extrabold uppercase tracking-wider">
-                    <Clock className="w-3 h-3 text-germany-red" />
-                    <span>Processing Time</span>
-                  </div>
-                  <span className="text-germany-black text-sm font-black block">4–6 Weeks</span>
-                  <span className="text-[10px] text-gray-400 font-medium">Via digital CSP portal</span>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-white border border-[#EBE7E0]/80 shadow-xs hover:border-germany-red/30 transition-colors space-y-1">
-                  <div className="flex items-center gap-1 text-gray-500 text-[10px] font-extrabold uppercase tracking-wider">
-                    <CreditCard className="w-3 h-3 text-germany-red" />
-                    <span>Blocked Account</span>
-                  </div>
-                  <span className="text-germany-black text-sm font-black block">€11,904 / Year</span>
-                  <span className="text-[10px] text-gray-400 font-medium">€992 / month required</span>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-white border border-[#EBE7E0]/80 shadow-xs hover:border-germany-red/30 transition-colors space-y-1">
-                  <div className="flex items-center gap-1 text-gray-500 text-[10px] font-extrabold uppercase tracking-wider">
-                    <CheckCircle2 className="w-3 h-3 text-germany-red" />
-                    <span>Embassy Fee</span>
-                  </div>
-                  <span className="text-germany-black text-sm font-black block">€75.00</span>
-                  <span className="text-[10px] text-gray-400 font-medium">Payable at VFS appointment</span>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-2xl bg-amber-50/70 border border-amber-200/60 text-xs font-semibold text-amber-900 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0 animate-ping" />
-                <span><strong>2026 Update:</strong> Consular Services Portal (CSP) is now mandatory for applicants across India &amp; Asia.</span>
-              </div>
-            </div>
+          <div className="p-3 rounded-xl bg-[#eae5db]/60 border border-[#e5e0d3] text-xs text-[var(--lp-muted)]">
+            <strong className="text-[var(--lp-text)]">Important:</strong> For Indian, Chinese, and Vietnamese applicants, an original APS certificate is strictly required prior to visa filing.
           </div>
         </div>
       </div>

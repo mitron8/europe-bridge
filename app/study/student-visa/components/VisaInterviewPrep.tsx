@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { MessageSquare, CheckCircle2, XCircle, HelpCircle, ChevronDown, ChevronUp, UserCheck } from 'lucide-react';
+import { MessageSquare, ChevronDown, ChevronUp, Check, X } from 'lucide-react';
 import Link from 'next/link';
 
 export const VisaInterviewPrep = () => {
@@ -14,7 +14,7 @@ export const VisaInterviewPrep = () => {
     },
     {
       q: "How will you finance your living and education costs in Germany?",
-      tip: "Confidently state: 'I have deposited the mandatory €11,904 in an approved Blocked Account with Expatrio/Fintiba, which provides €992 per month to comfortably cover all my living expenses.'"
+      tip: "Confidently state: 'I have deposited the mandatory €11,904 in an approved Blocked Account with Expatrio/Fintiba, which unlocks €992 per month to comfortably cover all my living expenses.'"
     },
     {
       q: "Why study in Germany instead of your home country or the US/UK?",
@@ -31,57 +31,59 @@ export const VisaInterviewPrep = () => {
   ];
 
   return (
-    <section id="section-interview" className="scroll-mt-36 py-12 px-6 lg:px-12">
-      <div className="max-w-7xl mx-auto space-y-12">
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-100/80 border border-red-200 text-germany-red text-xs font-black uppercase tracking-wider">
-            <MessageSquare className="w-4 h-4" />
-            <span>Interview Readiness</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-germany-black font-display leading-tight">
-            German Student Visa <span className="text-germany-red">Interview Preparation</span>
-          </h2>
-          <p className="text-base text-gray-700 font-medium leading-relaxed">
-            Consular officers evaluate academic authenticity, curriculum awareness, and financial solvency. Practice the key questions before your appointment.
-          </p>
-        </div>
+    <section id="section-interview" className="scroll-mt-32 py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" data-reveal>
+      {/* Header */}
+      <div className="space-y-3 text-center max-w-2xl mx-auto">
+        <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--lp-red)]">
+          Interview Readiness
+        </span>
+        <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-ink)] font-normal tracking-tight">
+          German Student Visa <em className="italic text-[var(--lp-red)] font-serif">Interview Preparation</em>
+        </h2>
+        <p className="text-sm sm:text-base text-[var(--lp-muted)] leading-relaxed">
+          Consular officers evaluate academic authenticity, curriculum awareness, and financial solvency. Practice the key questions before your appointment.
+        </p>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Top Questions Accordion */}
-          <div className="lg:col-span-7 space-y-3">
-            <h3 className="font-display text-lg text-germany-black font-bold border-b border-[#EBE7E0] pb-2 flex items-center justify-between">
-              <span>Top Consular Interview Questions</span>
-              <span className="text-xs text-gray-400 font-semibold">Click to reveal strategy</span>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Top Questions Accordion */}
+        <div className="lg:col-span-7 space-y-3">
+          <div className="flex items-center justify-between border-b border-[#e5e0d3] pb-2">
+            <h3 className="font-serif text-base font-normal text-[var(--lp-ink)]">
+              Top Consular Interview Questions
             </h3>
+            <span className="text-[11px] font-mono text-[var(--lp-muted)]">Click to reveal strategy</span>
+          </div>
 
+          <div className="space-y-2.5">
             {interviewQuestions.map((item, idx) => {
               const isOpen = openQuestion === idx;
               return (
                 <div 
                   key={idx}
-                  className="neu-card p-4 sm:p-5 bg-white space-y-2 cursor-pointer transition-all border border-[#EBE7E0]/70 hover:border-germany-red/30 shadow-xs"
+                  className="bg-[#faf8f3] rounded-2xl p-4 sm:p-5 border border-[#e5e0d3] space-y-2 cursor-pointer transition-all hover:border-[var(--lp-red)]/30"
                   onClick={() => setOpenQuestion(isOpen ? null : idx)}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-2">
-                      <span className="text-[10px] font-black text-germany-red bg-red-100/70 px-2 py-0.5 rounded shrink-0 mt-0.5">
+                      <span className="text-[10px] font-mono text-[var(--lp-red)] bg-[var(--lp-red)]/10 px-2 py-0.5 rounded shrink-0 mt-0.5">
                         Q{idx + 1}
                       </span>
-                      <span className="text-xs sm:text-sm font-bold text-germany-black leading-snug">
+                      <span className="text-xs sm:text-sm font-semibold text-[var(--lp-text)] leading-snug">
                         {item.q}
                       </span>
                     </div>
                     {isOpen ? (
-                      <ChevronUp className="w-4 h-4 text-germany-red shrink-0" />
+                      <ChevronUp className="w-4 h-4 text-[var(--lp-red)] shrink-0" />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+                      <ChevronDown className="w-4 h-4 text-[var(--lp-muted)] shrink-0" />
                     )}
                   </div>
 
                   {isOpen && (
-                    <div className="pt-2 border-t border-[#EBE7E0]/60 mt-2">
-                      <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed bg-amber-50/50 p-3 rounded-xl border border-amber-100">
-                        <strong className="text-germany-black">How to answer: </strong>
+                    <div className="pt-2 border-t border-[#e5e0d3] mt-2">
+                      <p className="text-xs text-[var(--lp-muted)] leading-relaxed bg-[#eae5db]/50 p-3 rounded-xl border border-[#e5e0d3]">
+                        <strong className="text-[var(--lp-text)]">Recommended response angle: </strong>
                         {item.tip}
                       </p>
                     </div>
@@ -90,48 +92,52 @@ export const VisaInterviewPrep = () => {
               );
             })}
           </div>
+        </div>
 
-          {/* Right Column: Dos & Don'ts */}
-          <div className="lg:col-span-5 space-y-4">
-            <div className="neu-card p-6 bg-white space-y-4 shadow-[12px_12px_30px_rgba(210,205,195,0.5)] border border-[#EBE7E0]/80">
-              <h3 className="font-display text-base text-germany-black font-bold border-b border-[#EBE7E0] pb-2">
-                Interview Dos &amp; Don'ts
-              </h3>
+        {/* Right Column: Dos & Don'ts */}
+        <div className="lg:col-span-5 bg-[#faf8f3] rounded-2xl p-6 border border-[#e5e0d3] space-y-4">
+          <h3 className="font-serif text-base font-normal text-[var(--lp-ink)] border-b border-[#e5e0d3] pb-2">
+            Interview Dos &amp; Don&apos;ts
+          </h3>
 
-              <div className="space-y-3">
-                <div className="p-3.5 rounded-2xl bg-emerald-50/60 border border-emerald-200/60 space-y-1.5 text-xs text-emerald-950 font-medium">
-                  <div className="flex items-center gap-1.5 font-bold text-emerald-800">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Always Do:</span>
-                  </div>
-                  <ul className="space-y-1 text-gray-700 pl-5 list-disc text-xs">
-                    <li>Memorize course modules and university city name.</li>
-                    <li>Know your exact living costs and blocked account amounts.</li>
-                    <li>Arrive at VFS 15 minutes before scheduled slot.</li>
-                  </ul>
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--lp-gold)] block">
+                Dos: What Officers Value
+              </span>
+              <div className="space-y-1.5 text-xs text-[var(--lp-muted)]">
+                <div className="flex items-start gap-2">
+                  <Check className="w-3.5 h-3.5 text-[var(--lp-gold)] shrink-0 mt-0.5" />
+                  <span>Know your syllabus modules and professor names</span>
                 </div>
-
-                <div className="p-3.5 rounded-2xl bg-red-50/60 border border-red-200/60 space-y-1.5 text-xs text-red-950 font-medium">
-                  <div className="flex items-center gap-1.5 font-bold text-germany-red">
-                    <XCircle className="w-4 h-4 text-germany-red shrink-0" />
-                    <span>Never Do:</span>
-                  </div>
-                  <ul className="space-y-1 text-gray-700 pl-5 list-disc text-xs">
-                    <li>Never say you are going to Germany for permanent settlement.</li>
-                    <li>Never guess answers — if unsure, politely clarify.</li>
-                    <li>Never present wrinkled, uncertified, or stapled papers.</li>
-                  </ul>
+                <div className="flex items-start gap-2">
+                  <Check className="w-3.5 h-3.5 text-[var(--lp-gold)] shrink-0 mt-0.5" />
+                  <span>Explain exact funding via €11,904 blocked account</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-3.5 h-3.5 text-[var(--lp-gold)] shrink-0 mt-0.5" />
+                  <span>Present loose documents neatly in order without staples</span>
                 </div>
               </div>
+            </div>
 
-              <div className="pt-2">
-                <Link 
-                  href="/signup"
-                  className="w-full neu-btn-primary py-3 text-xs font-black uppercase tracking-wider text-white shadow-md flex items-center justify-center gap-2"
-                >
-                  <UserCheck className="w-4 h-4" />
-                  <span>Book 1:1 Mock Interview Session</span>
-                </Link>
+            <div className="space-y-2 pt-2 border-t border-[#e5e0d3]">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--lp-red)] block">
+                Don&apos;ts: Common Pitfalls
+              </span>
+              <div className="space-y-1.5 text-xs text-[var(--lp-muted)]">
+                <div className="flex items-start gap-2">
+                  <X className="w-3.5 h-3.5 text-[var(--lp-red)] shrink-0 mt-0.5" />
+                  <span>Do not claim you chose Germany simply because it is tuition-free</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <X className="w-3.5 h-3.5 text-[var(--lp-red)] shrink-0 mt-0.5" />
+                  <span>Do not state that you plan to finance studies purely via part-time work</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <X className="w-3.5 h-3.5 text-[var(--lp-red)] shrink-0 mt-0.5" />
+                  <span>Do not submit documents with handwritten ink corrections on printed VIDEX</span>
+                </div>
               </div>
             </div>
           </div>
