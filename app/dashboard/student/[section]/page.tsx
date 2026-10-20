@@ -18,6 +18,7 @@ import {
   Loader2,
   AlertCircle,
   RefreshCw,
+  Sparkles,
 } from 'lucide-react';
 
 const VALID_SECTIONS = [
@@ -220,21 +221,74 @@ function MatchingSection() {
         </div>
       )}
 
-      {/* Completed but no results */}
+      {/* Completed but no automatic results - Reassuring Advisory State */}
       {!loadingResults && !isRunning && !error && run?.status === 'completed' && results.length === 0 && (
-        <div className="neu-card p-10 bg-white text-center space-y-3">
-          <AlertCircle className="w-10 h-10 text-amber-400 mx-auto" />
-          <h3 className="font-display text-base text-germany-black">No Matching Programmes Found</h3>
-          <p className="text-xs font-medium text-gray-500 max-w-sm mx-auto">
-            No programmes met the eligibility criteria for your current profile. Try updating your preferences or education details and re-run.
-          </p>
+        <div className="neu-card p-6 sm:p-8 bg-white border border-[#EBE7E0] rounded-2xl space-y-5">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-600 flex items-center justify-center shrink-0 shadow-xs">
+              <Sparkles className="w-6 h-6 text-amber-500" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-germany-red/10 text-germany-red border border-germany-red/20">
+                  Admissions Team in Action
+                </span>
+              </div>
+              <h3 className="font-display text-base sm:text-lg text-germany-black font-bold leading-tight">
+                Our Germany Specialists are Handpicking Programmes for You
+              </h3>
+              <p className="text-xs text-gray-500 font-medium leading-relaxed">
+                Because German universities have specific faculty criteria, our senior admissions counsellors are personally evaluating your profile to match you with specialized programs, pathway options, and strategic partner universities.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-[#EBE7E0]">
+            <div className="p-3 bg-[#FDFBF7] rounded-xl border border-[#EBE7E0]/80 space-y-1">
+              <div className="flex items-center gap-1.5 text-emerald-700 text-[11px] font-extrabold">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Profile Analyzed</span>
+              </div>
+              <p className="text-[10px] text-gray-500">Your degree and qualifications are securely processed.</p>
+            </div>
+
+            <div className="p-3 bg-[#FDFBF7] rounded-xl border border-[#EBE7E0]/80 space-y-1">
+              <div className="flex items-center gap-1.5 text-germany-red text-[11px] font-extrabold">
+                <Compass className="w-3.5 h-3.5" />
+                <span>Manual Matching</span>
+              </div>
+              <p className="text-[10px] text-gray-500">Advisors are curating non-standard quotas and pathway options.</p>
+            </div>
+
+            <div className="p-3 bg-[#FDFBF7] rounded-xl border border-[#EBE7E0]/80 space-y-1">
+              <div className="flex items-center gap-1.5 text-amber-700 text-[11px] font-extrabold">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>1-on-1 Consultation</span>
+              </div>
+              <p className="text-[10px] text-gray-500">Tailored university recommendations will be shared with you directly.</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+            <p className="text-[11px] text-gray-400 font-medium">
+              Want to adjust your target course or academic details? You can refine your profile anytime.
+            </p>
+            <div className="flex items-center gap-2 self-stretch sm:self-auto shrink-0">
+              <Link
+                href="/dashboard/student/complete-profile"
+                className="flex-1 sm:flex-none text-center text-xs font-extrabold text-germany-black hover:text-germany-red px-4 py-2 rounded-xl border border-gray-200/80 hover:bg-gray-50 transition-colors shadow-xs"
+              >
+                Refine Profile
+              </Link>
+            </div>
+          </div>
         </div>
       )}
 
       {/* Results grid */}
-      {!loadingResults && !isRunning && results.length > 0 && (
+      {!loadingResults && !isRunning && results.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {results.map((r: any) => (
+          {results.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').map((r: any) => (
             <div key={r.id} className="neu-card p-5 bg-white space-y-4 hover:-translate-y-1 transition-transform">
               <div className="flex items-start justify-between gap-2">
                 <div className="space-y-1 min-w-0">

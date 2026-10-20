@@ -1588,20 +1588,20 @@ export function StudentDetailModal({
                 )}
 
                 {/* Completed but 0 results */}
-                {!loadingMatching && !runningMatching && matchingRun?.status === 'completed' && matchingResults.length === 0 && !matchingError && (
+                {!loadingMatching && !runningMatching && matchingRun?.status === 'completed' && matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length === 0 && !matchingError && (
                   <div className="p-8 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-2">
-                    <AlertCircle className="w-8 h-8 text-amber-400 mx-auto" />
-                    <h4 className="font-display text-sm text-germany-black dark:text-white">No Matching Programmes Found</h4>
+                    <Compass className="w-8 h-8 text-germany-red mx-auto" />
+                    <h4 className="font-display text-sm text-germany-black dark:text-white">Profile Under Manual Advising Review</h4>
                     <p className="text-xs text-gray-500 max-w-sm mx-auto">
-                      No programmes met eligibility criteria for this student&apos;s current profile. Check their education, GPA, and test scores.
+                      No direct automated matches passed the strict criteria. Use the &quot;Recommend&quot; button above to handpick specialized universities, private partner options, or pathway programs for this student.
                     </p>
                   </div>
                 )}
 
                 {/* Real Matched Programmes Grid */}
-                {!loadingMatching && !runningMatching && matchingResults.length > 0 && (
+                {!loadingMatching && !runningMatching && matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length > 0 && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {matchingResults.map((r: any) => (
+                    {matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').map((r: any) => (
                       <div
                         key={r.id}
                         className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs hover:border-germany-red/30 space-y-3 transition-colors"
