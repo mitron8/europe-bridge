@@ -35,6 +35,7 @@ import {
   RefreshCw,
   Search,
   Ban,
+  Trash2,
 } from 'lucide-react';
 import { AssignedStudent } from './CounsellorStudents';
 import { StudentFullProfileView } from './StudentFullProfileView';
@@ -128,6 +129,7 @@ function mapDbDocToStudentDocument(row: any): StudentDocument {
 
 export interface UniversityMatch {
   id: string;
+  programmeId?: number | string;
   name: string;
   program: string;
   degree: string;
@@ -139,6 +141,8 @@ export interface UniversityMatch {
   status: 'recommended' | 'shortlisted' | 'applied' | 'offer_received' | 'waitlisted';
   deadline: string;
   type: string;
+  notes?: string;
+  counsellorName?: string;
 }
 
 export interface ConsultationTask {
@@ -222,6 +226,8 @@ export function StudentDetailModal({
   const [progFilterOnlyRelevant, setProgFilterOnlyRelevant] = useState(false);
   const [selectedProg, setSelectedProg] = useState<any | null>(null);
   const [recommendSuccessMsg, setRecommendSuccessMsg] = useState<string | null>(null);
+  const [recommendNote, setRecommendNote] = useState('');
+  const [savingRecommendation, setSavingRecommendation] = useState(false);
   const [uniMeta, setUniMeta] = useState<{ studentField?: string; totalCount?: number; relevantCount?: number; disqualifiedCount?: number } | null>(null);
 
   // Matching Engine state
@@ -367,17 +373,35 @@ export function StudentDetailModal({
     // Fetch matching engine results
     fetchMatchingResults();
 
-    // Load custom manual university recommendations (if any)
-    const savedUnis = localStorage.getItem(`eb_student_unis_${effectiveStudentId}`);
-    if (savedUnis) {
+    // Load university recommendations from backend (with localStorage fallback)
+    const fetchRecommendations = async () => {
       try {
-        setUniversities(JSON.parse(savedUnis));
-      } catch {
+        const res = await fetch(`${API_URL}/counsellor/students/${effectiveStudentId}/recommendations`, {
+          credentials: 'include',
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setUniversities(data);
+            localStorage.setItem(`eb_student_unis_${effectiveStudentId}`, JSON.stringify(data));
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load recommendations from server', err);
+      }
+      const savedUnis = localStorage.getItem(`eb_student_unis_${effectiveStudentId}`);
+      if (savedUnis) {
+        try {
+          setUniversities(JSON.parse(savedUnis));
+        } catch {
+          setUniversities([]);
+        }
+      } else {
         setUniversities([]);
       }
-    } else {
-      setUniversities([]);
-    }
+    };
+    fetchRecommendations();
 
     // Load counsellor notes
     const savedNote = localStorage.getItem(`eb_counsellor_notes_${effectiveStudentId}`);
@@ -505,7 +529,7 @@ export function StudentDetailModal({
   };
 
   // University Shortlist Status Update Handler
-  const handleUpdateUniStatus = (uniId: string, newStatus: UniversityMatch['status']) => {
+  const handleUpdateUniStatus = async (uniId: string, newStatus: UniversityMatch['status']) => {
     const updated = universities.map((u) => {
       if (u.id === uniId) {
         return { ...u, status: newStatus };
@@ -516,6 +540,35 @@ export function StudentDetailModal({
     const effectiveId = student?.userId || propStudent?.userId || studentId;
     if (effectiveId) {
       localStorage.setItem(`eb_student_unis_${effectiveId}`, JSON.stringify(updated));
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+        await fetch(`${API_URL}/counsellor/students/${effectiveId}/recommendations/${uniId}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ status: newStatus }),
+        });
+      } catch (err) {
+        console.error('Failed to sync recommendation status to backend', err);
+      }
+    }
+  };
+
+  const handleDeleteRecommendation = async (uniId: string) => {
+    const updated = universities.filter((u) => u.id !== uniId);
+    setUniversities(updated);
+    const effectiveId = student?.userId || propStudent?.userId || studentId;
+    if (effectiveId) {
+      localStorage.setItem(`eb_student_unis_${effectiveId}`, JSON.stringify(updated));
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+        await fetch(`${API_URL}/counsellor/students/${effectiveId}/recommendations/${uniId}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+      } catch (err) {
+        console.error('Failed to delete recommendation from backend', err);
+      }
     }
   };
 
@@ -585,67 +638,116 @@ export function StudentDetailModal({
     }
   };
 
-  const handleSaveRecommendation = (e?: React.FormEvent) => {
+  const handleSaveRecommendation = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    const effectiveId = student?.userId || propStudent?.userId || studentId;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
-    if (isManualUniEntry) {
-      if (!newUniName.trim() || !newUniProgram.trim()) return;
-      const newUni: UniversityMatch = {
-        id: `uni-${Date.now()}`,
-        name: newUniName.trim(),
-        program: newUniProgram.trim(),
-        degree: 'Master of Science',
-        location: newUniLocation.trim() || 'Germany',
-        matchScore: 90,
-        bavarianGpaReq: '<= 2.2 (Student: 1.3)',
-        ieltsReq: '>= 6.5 (Student: 7.5)',
-        tuition: '€0 / semester fee only',
+    setSavingRecommendation(true);
+    try {
+      if (isManualUniEntry) {
+        if (!newUniName.trim() || !newUniProgram.trim()) return;
+        let newUni: UniversityMatch = {
+          id: `uni-${Date.now()}`,
+          name: newUniName.trim(),
+          program: newUniProgram.trim(),
+          degree: 'Master of Science',
+          location: newUniLocation.trim() || 'Germany',
+          matchScore: 90,
+          bavarianGpaReq: '<= 2.2 (Student: 1.3)',
+          ieltsReq: '>= 6.5 (Student: 7.5)',
+          tuition: '€0 / semester fee only',
+          status: 'recommended',
+          deadline: 'July 15, 2026',
+          type: 'Public University',
+          notes: recommendNote.trim() || undefined,
+        };
+
+        if (effectiveId) {
+          try {
+            const res = await fetch(`${API_URL}/counsellor/students/${effectiveId}/recommendations`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify(newUni),
+            });
+            if (res.ok) {
+              const saved = await res.json();
+              newUni = saved;
+            }
+          } catch (err) {
+            console.error('Failed to save manual recommendation to backend', err);
+          }
+        }
+
+        const updated = [newUni, ...universities];
+        setUniversities(updated);
+        if (effectiveId) {
+          localStorage.setItem(`eb_student_unis_${effectiveId}`, JSON.stringify(updated));
+        }
+
+        setRecommendSuccessMsg(`✓ Recommended "${newUni.program}" to ${student?.firstName || 'student'}!`);
+        setTimeout(() => setRecommendSuccessMsg(null), 3500);
+
+        setNewUniName('');
+        setNewUniProgram('');
+        setNewUniLocation('');
+        setRecommendNote('');
+        setShowAddUni(false);
+        return;
+      }
+
+      if (!selectedUniversity || !selectedProg) return;
+      if (!selectedProg.isRelevant) return; // Strict safeguard: cannot save disqualified programmes
+
+      let newUni: UniversityMatch = {
+        id: `uni-${selectedProg.id || Date.now()}`,
+        programmeId: selectedProg.id,
+        name: selectedUniversity.name,
+        program: selectedProg.programName,
+        degree: selectedProg.degree || 'Master of Science',
+        location: `${selectedProg.city || selectedUniversity.city || 'Germany'}, ${selectedProg.country || 'Germany'}`,
+        matchScore: 94,
+        bavarianGpaReq: selectedProg.gpaRequirement ? `<= ${selectedProg.gpaRequirement}` : '<= 2.5',
+        ieltsReq: selectedProg.ieltsRequirement ? `>= ${selectedProg.ieltsRequirement}` : '>= 6.5',
+        tuition: selectedProg.tuition || '€0 / semester fee only',
         status: 'recommended',
-        deadline: 'July 15, 2026',
+        deadline: selectedProg.deadline || 'July 15, 2026',
         type: 'Public University',
+        notes: recommendNote.trim() || undefined,
       };
+
+      if (effectiveId) {
+        try {
+          const res = await fetch(`${API_URL}/counsellor/students/${effectiveId}/recommendations`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(newUni),
+          });
+          if (res.ok) {
+            const saved = await res.json();
+            newUni = saved;
+          }
+        } catch (err) {
+          console.error('Failed to save catalogue recommendation to backend', err);
+        }
+      }
+
       const updated = [newUni, ...universities];
       setUniversities(updated);
-      const effectiveId = student?.userId || propStudent?.userId || studentId;
       if (effectiveId) {
         localStorage.setItem(`eb_student_unis_${effectiveId}`, JSON.stringify(updated));
       }
-      setNewUniName('');
-      setNewUniProgram('');
-      setNewUniLocation('');
-      setShowAddUni(false);
-      return;
+
+      setRecommendSuccessMsg(`✓ Recommended "${selectedProg.programName}" to ${student?.firstName || 'student'}!`);
+      setTimeout(() => setRecommendSuccessMsg(null), 3500);
+
+      setSelectedProg(null);
+      setRecommendNote('');
+    } finally {
+      setSavingRecommendation(false);
     }
-
-    if (!selectedUniversity || !selectedProg) return;
-    if (!selectedProg.isRelevant) return; // Strict safeguard: cannot save disqualified programmes
-
-    const newUni: UniversityMatch = {
-      id: `uni-${selectedProg.id || Date.now()}`,
-      name: selectedUniversity.name,
-      program: selectedProg.programName,
-      degree: selectedProg.degree || 'Master of Science',
-      location: `${selectedProg.city || selectedUniversity.city || 'Germany'}, ${selectedProg.country || 'Germany'}`,
-      matchScore: 94,
-      bavarianGpaReq: selectedProg.gpaRequirement ? `<= ${selectedProg.gpaRequirement}` : '<= 2.5',
-      ieltsReq: selectedProg.ieltsRequirement ? `>= ${selectedProg.ieltsRequirement}` : '>= 6.5',
-      tuition: selectedProg.tuition || '€0 / semester fee only',
-      status: 'recommended',
-      deadline: selectedProg.deadline || 'July 15, 2026',
-      type: 'Public University',
-    };
-
-    const updated = [newUni, ...universities];
-    setUniversities(updated);
-    const effectiveId = student?.userId || propStudent?.userId || studentId;
-    if (effectiveId) {
-      localStorage.setItem(`eb_student_unis_${effectiveId}`, JSON.stringify(updated));
-    }
-
-    setRecommendSuccessMsg(`✓ Recommended "${selectedProg.programName}" to ${student?.firstName || 'student'}!`);
-    setTimeout(() => setRecommendSuccessMsg(null), 3500);
-
-    setSelectedProg(null);
   };
 
   const handleAddUniversity = handleSaveRecommendation;
@@ -2141,6 +2243,17 @@ export function StudentDetailModal({
                       </div>
                     )}
 
+                    {/* Counsellor Note / Rationale Input */}
+                    <div className="pt-1">
+                      <input
+                        type="text"
+                        placeholder="Advisor fit note or rationale (optional, e.g. Perfect match for your 120 ECTS in CS)"
+                        value={recommendNote}
+                        onChange={(e) => setRecommendNote(e.target.value)}
+                        className="w-full p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
+                      />
+                    </div>
+
                     {/* Drawer Footer Actions */}
                     <div className="flex items-center justify-between gap-2 pt-2 border-t border-gray-100 dark:border-gray-800/60">
                       <div>
@@ -2158,6 +2271,7 @@ export function StudentDetailModal({
                             setShowAddUni(false);
                             setSelectedUniversity(null);
                             setSelectedProg(null);
+                            setRecommendNote('');
                           }}
                           className="py-1.5 px-3 text-xs font-extrabold bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-[#1E2638] shadow-xs cursor-pointer"
                         >
@@ -2166,14 +2280,22 @@ export function StudentDetailModal({
                         <button
                           type="button"
                           disabled={
-                            isManualUniEntry
+                            savingRecommendation ||
+                            (isManualUniEntry
                               ? !newUniName.trim() || !newUniProgram.trim()
-                              : !selectedProg || !selectedProg.isRelevant
+                              : !selectedProg || !selectedProg.isRelevant)
                           }
                           onClick={() => handleSaveRecommendation()}
-                          className="neu-btn-primary py-1.5 px-4 text-xs font-extrabold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                          className="neu-btn-primary py-1.5 px-4 text-xs font-extrabold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1.5"
                         >
-                          Save Recommendation
+                          {savingRecommendation ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <span>Saving…</span>
+                            </>
+                          ) : (
+                            <span>Save Recommendation</span>
+                          )}
                         </button>
                       </div>
                     </div>
@@ -2197,9 +2319,9 @@ export function StudentDetailModal({
                         };
 
                         return (
-                          <div key={uni.id} className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs hover:border-germany-red/30 space-y-3.5 transition-colors">
+                          <div key={uni.id} className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs hover:border-germany-red/30 space-y-3 transition-colors">
                             <div className="flex items-start justify-between gap-2">
-                              <div className="space-y-0.5">
+                              <div className="space-y-0.5 min-w-0">
                                 <span className="text-[10px] font-black uppercase tracking-wider text-germany-red">
                                   {uni.type}
                                 </span>
@@ -2208,12 +2330,26 @@ export function StudentDetailModal({
                                 </h4>
                                 <p className="text-xs font-extrabold text-gray-600 dark:text-gray-300">{uni.program}</p>
                               </div>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteRecommendation(uni.id)}
+                                title="Remove recommendation"
+                                className="p-1 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer shrink-0"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
                             </div>
 
                             <div className="flex items-center justify-between text-xs font-bold text-gray-500 pt-1">
                               <span>📍 {uni.location}</span>
                               <span className="text-germany-black dark:text-white font-extrabold">{uni.tuition}</span>
                             </div>
+
+                            {uni.notes && (
+                              <div className="p-2 bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 rounded-xl text-[11px] text-amber-900 dark:text-amber-200 font-medium italic">
+                                &quot;{uni.notes}&quot;
+                              </div>
+                            )}
 
                             <div className="pt-2 border-t border-[#EBE7E0] dark:border-gray-800/80 flex items-center justify-between gap-2">
                               <div className="flex items-center gap-1.5">
