@@ -33,6 +33,8 @@ import {
   Loader2,
   Circle,
   RefreshCw,
+  Search,
+  Ban,
 } from 'lucide-react';
 import { AssignedStudent } from './CounsellorStudents';
 import { StudentFullProfileView } from './StudentFullProfileView';
@@ -202,9 +204,25 @@ export function StudentDetailModal({
   // University shortlist state & adding
   const [universities, setUniversities] = useState<UniversityMatch[]>([]);
   const [showAddUni, setShowAddUni] = useState(false);
+  const [isManualUniEntry, setIsManualUniEntry] = useState(false);
   const [newUniName, setNewUniName] = useState('');
   const [newUniProgram, setNewUniProgram] = useState('');
   const [newUniLocation, setNewUniLocation] = useState('');
+
+  // University Autocomplete & Program Relevance Assist
+  const [selectedUniversity, setSelectedUniversity] = useState<{ name: string; city?: string; country?: string } | null>(null);
+  const [uniSearchQuery, setUniSearchQuery] = useState('');
+  const [uniSearchResults, setUniSearchResults] = useState<Array<{ name: string; city?: string; country?: string }>>([]);
+  const [loadingUniSearch, setLoadingUniSearch] = useState(false);
+  const [showUniDropdown, setShowUniDropdown] = useState(false);
+  const [uniProgrammes, setUniProgrammes] = useState<any[]>([]);
+  const [loadingProgrammes, setLoadingProgrammes] = useState(false);
+  const [programmesError, setProgrammesError] = useState<string | null>(null);
+  const [progFilterText, setProgFilterText] = useState('');
+  const [progFilterOnlyRelevant, setProgFilterOnlyRelevant] = useState(false);
+  const [selectedProg, setSelectedProg] = useState<any | null>(null);
+  const [recommendSuccessMsg, setRecommendSuccessMsg] = useState<string | null>(null);
+  const [uniMeta, setUniMeta] = useState<{ studentField?: string; totalCount?: number; relevantCount?: number; disqualifiedCount?: number } | null>(null);
 
   // Matching Engine state
   const [matchingRun, setMatchingRun] = useState<any>(null);
@@ -501,22 +519,119 @@ export function StudentDetailModal({
     }
   };
 
-  const handleAddUniversity = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newUniName.trim() || !newUniProgram.trim()) return;
+  // Debounced University Search via /student/universities/search
+  useEffect(() => {
+    if (!uniSearchQuery || uniSearchQuery.trim().length < 2 || selectedUniversity?.name === uniSearchQuery) {
+      setUniSearchResults([]);
+      setLoadingUniSearch(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setLoadingUniSearch(true);
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+        const res = await fetch(`${API_URL}/student/universities/search?q=${encodeURIComponent(uniSearchQuery.trim())}`, {
+          credentials: 'include',
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUniSearchResults(Array.isArray(data) ? data : []);
+          setShowUniDropdown(true);
+        }
+      } catch (err) {
+        setUniSearchResults([]);
+      } finally {
+        setLoadingUniSearch(false);
+      }
+    }, 280);
+    return () => clearTimeout(timer);
+  }, [uniSearchQuery, selectedUniversity]);
+
+  const handleSelectUniversity = async (uni: { name: string; city?: string; country?: string }) => {
+    setSelectedUniversity(uni);
+    setUniSearchQuery(uni.name);
+    setShowUniDropdown(false);
+    setSelectedProg(null);
+    setProgFilterText('');
+    setProgrammesError(null);
+    setLoadingProgrammes(true);
+
+    const effectiveStudentId = student?.userId || propStudent?.userId || studentId;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+
+    try {
+      const url = `${API_URL}/counsellor/universities/programmes?university=${encodeURIComponent(uni.name)}${
+        effectiveStudentId ? `&studentId=${encodeURIComponent(effectiveStudentId)}` : ''
+      }`;
+      const res = await fetch(url, { credentials: 'include' });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || `Failed to load programmes (${res.status})`);
+      }
+      const data = await res.json();
+      setUniProgrammes(data.programmes || []);
+      setUniMeta({
+        studentField: data.studentField,
+        totalCount: data.totalCount,
+        relevantCount: data.relevantCount,
+        disqualifiedCount: data.disqualifiedCount,
+      });
+    } catch (err: any) {
+      setProgrammesError(err.message || 'Error loading university programmes');
+      setUniProgrammes([]);
+      setUniMeta(null);
+    } finally {
+      setLoadingProgrammes(false);
+    }
+  };
+
+  const handleSaveRecommendation = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+
+    if (isManualUniEntry) {
+      if (!newUniName.trim() || !newUniProgram.trim()) return;
+      const newUni: UniversityMatch = {
+        id: `uni-${Date.now()}`,
+        name: newUniName.trim(),
+        program: newUniProgram.trim(),
+        degree: 'Master of Science',
+        location: newUniLocation.trim() || 'Germany',
+        matchScore: 90,
+        bavarianGpaReq: '<= 2.2 (Student: 1.3)',
+        ieltsReq: '>= 6.5 (Student: 7.5)',
+        tuition: '€0 / semester fee only',
+        status: 'recommended',
+        deadline: 'July 15, 2026',
+        type: 'Public University',
+      };
+      const updated = [newUni, ...universities];
+      setUniversities(updated);
+      const effectiveId = student?.userId || propStudent?.userId || studentId;
+      if (effectiveId) {
+        localStorage.setItem(`eb_student_unis_${effectiveId}`, JSON.stringify(updated));
+      }
+      setNewUniName('');
+      setNewUniProgram('');
+      setNewUniLocation('');
+      setShowAddUni(false);
+      return;
+    }
+
+    if (!selectedUniversity || !selectedProg) return;
+    if (!selectedProg.isRelevant) return; // Strict safeguard: cannot save disqualified programmes
 
     const newUni: UniversityMatch = {
-      id: `uni-${Date.now()}`,
-      name: newUniName.trim(),
-      program: newUniProgram.trim(),
-      degree: 'Master of Science',
-      location: newUniLocation.trim() || 'Germany',
-      matchScore: 90,
-      bavarianGpaReq: '<= 2.2 (Student: 1.3)',
-      ieltsReq: '>= 6.5 (Student: 7.5)',
-      tuition: '€0 / semester fee only',
+      id: `uni-${selectedProg.id || Date.now()}`,
+      name: selectedUniversity.name,
+      program: selectedProg.programName,
+      degree: selectedProg.degree || 'Master of Science',
+      location: `${selectedProg.city || selectedUniversity.city || 'Germany'}, ${selectedProg.country || 'Germany'}`,
+      matchScore: 94,
+      bavarianGpaReq: selectedProg.gpaRequirement ? `<= ${selectedProg.gpaRequirement}` : '<= 2.5',
+      ieltsReq: selectedProg.ieltsRequirement ? `>= ${selectedProg.ieltsRequirement}` : '>= 6.5',
+      tuition: selectedProg.tuition || '€0 / semester fee only',
       status: 'recommended',
-      deadline: 'July 15, 2026',
+      deadline: selectedProg.deadline || 'July 15, 2026',
       type: 'Public University',
     };
 
@@ -526,11 +641,14 @@ export function StudentDetailModal({
     if (effectiveId) {
       localStorage.setItem(`eb_student_unis_${effectiveId}`, JSON.stringify(updated));
     }
-    setNewUniName('');
-    setNewUniProgram('');
-    setNewUniLocation('');
-    setShowAddUni(false);
+
+    setRecommendSuccessMsg(`✓ Recommended "${selectedProg.programName}" to ${student?.firstName || 'student'}!`);
+    setTimeout(() => setRecommendSuccessMsg(null), 3500);
+
+    setSelectedProg(null);
   };
+
+  const handleAddUniversity = handleSaveRecommendation;
 
   // Notes & Tasks Handlers
   const handleSaveNote = () => {
@@ -1702,53 +1820,364 @@ export function StudentDetailModal({
                   </div>
                 )}
 
-                {/* Add University Form Drawer */}
+                {/* Add University Form Drawer / Autocomplete + Relevance Assist */}
                 {showAddUni && (
-                  <form onSubmit={handleAddUniversity} className="p-4 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
-                    <h4 className="text-xs font-extrabold text-germany-black dark:text-white uppercase tracking-wider">
-                      Add Custom Recommendation
-                    </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <input
-                        type="text"
-                        placeholder="University (e.g. TU Darmstadt)"
-                        value={newUniName}
-                        onChange={(e) => setNewUniName(e.target.value)}
-                        className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
-                        required
-                      />
-                      <input
-                        type="text"
-                        placeholder="Program (e.g. M.Sc. Distributed Systems)"
-                        value={newUniProgram}
-                        onChange={(e) => setNewUniProgram(e.target.value)}
-                        className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
-                        required
-                      />
-                      <input
-                        type="text"
-                        placeholder="City / State (e.g. Darmstadt, Hesse)"
-                        value={newUniLocation}
-                        onChange={(e) => setNewUniLocation(e.target.value)}
-                        className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
-                      />
-                    </div>
-                    <div className="flex items-center justify-end gap-2 pt-1">
+                  <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-md space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="w-4 h-4 text-germany-red" />
+                        <h4 className="text-xs font-extrabold text-germany-black dark:text-white uppercase tracking-wider">
+                          Recommend University Programme
+                        </h4>
+                      </div>
                       <button
                         type="button"
-                        onClick={() => setShowAddUni(false)}
-                        className="py-1.5 px-3 text-xs font-extrabold bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-[#1E2638] shadow-xs"
+                        onClick={() => setIsManualUniEntry(!isManualUniEntry)}
+                        className="text-[11px] font-bold text-gray-500 hover:text-germany-red dark:hover:text-germany-gold underline cursor-pointer"
                       >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="neu-btn-primary py-1.5 px-4 text-xs font-extrabold"
-                      >
-                        Save Recommendation
+                        {isManualUniEntry ? 'Switch to Catalog Search' : 'Manual Entry Fallback'}
                       </button>
                     </div>
-                  </form>
+
+                    {/* Success Toast */}
+                    {recommendSuccessMsg && (
+                      <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl text-xs font-bold text-emerald-800 dark:text-emerald-200 flex items-center justify-between">
+                        <span>{recommendSuccessMsg}</span>
+                        <button type="button" onClick={() => setRecommendSuccessMsg(null)}>
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
+
+                    {!isManualUniEntry ? (
+                      <div className="space-y-4">
+                        {/* Step 1: Searchable University Combobox */}
+                        <div className="relative">
+                          <label className="block text-[11px] font-black uppercase tracking-wider text-gray-500 mb-1">
+                            Step 1: Select University (Search Database)
+                          </label>
+
+                          <div className="relative">
+                            <input
+                              type="text"
+                              value={uniSearchQuery}
+                              onChange={(e) => {
+                                setUniSearchQuery(e.target.value);
+                                if (selectedUniversity && e.target.value !== selectedUniversity.name) {
+                                  setSelectedUniversity(null);
+                                  setUniProgrammes([]);
+                                  setSelectedProg(null);
+                                }
+                              }}
+                              onFocus={() => {
+                                if (uniSearchResults.length > 0) setShowUniDropdown(true);
+                              }}
+                              placeholder="Type university name (e.g. Technical University of Munich, TU Darmstadt, RWTH Aachen)..."
+                              className="w-full pl-9 pr-9 py-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
+                            />
+                            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3 pointer-events-none" />
+                            {loadingUniSearch && (
+                              <Loader2 className="w-4 h-4 text-germany-red animate-spin absolute right-3 top-3" />
+                            )}
+                            {!loadingUniSearch && uniSearchQuery && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setUniSearchQuery('');
+                                  setSelectedUniversity(null);
+                                  setUniSearchResults([]);
+                                  setUniProgrammes([]);
+                                  setSelectedProg(null);
+                                }}
+                                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Autocomplete suggestions dropdown */}
+                          {showUniDropdown && uniSearchResults.length > 0 && (
+                            <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-[#151B27] border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl z-30 max-h-56 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800/60">
+                              {uniSearchResults.map((u, i) => (
+                                <button
+                                  key={`${u.name}-${i}`}
+                                  type="button"
+                                  onClick={() => handleSelectUniversity(u)}
+                                  className="w-full text-left p-2.5 hover:bg-gray-50 dark:hover:bg-[#1C2436] transition-colors flex items-center justify-between cursor-pointer"
+                                >
+                                  <div>
+                                    <div className="text-xs font-extrabold text-germany-black dark:text-white">{u.name}</div>
+                                    <div className="text-[10px] font-medium text-gray-400">
+                                      {u.city ? `${u.city}, ` : ''}{u.country || 'Germany'}
+                                    </div>
+                                  </div>
+                                  <span className="text-[10px] font-black uppercase text-germany-red">Select →</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Step 2: University Programmes with Relevance Assist */}
+                        {selectedUniversity && (
+                          <div className="space-y-3 pt-2 border-t border-gray-100 dark:border-gray-800/60">
+                            {/* University Header & Badges */}
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-gray-50 dark:bg-[#151B27] rounded-xl border border-gray-200/60 dark:border-gray-800/60">
+                              <div>
+                                <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">
+                                  Selected University
+                                </span>
+                                <h5 className="text-xs font-extrabold text-germany-black dark:text-white flex items-center gap-1.5">
+                                  <span>{selectedUniversity.name}</span>
+                                  {selectedUniversity.city && (
+                                    <span className="text-[11px] font-medium text-gray-400">({selectedUniversity.city})</span>
+                                  )}
+                                </h5>
+                              </div>
+
+                              {uniMeta && (
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-1">
+                                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                    <span>{uniMeta.relevantCount} Relevant</span>
+                                  </span>
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800/60 flex items-center gap-1">
+                                    <Ban className="w-3 h-3 text-red-600" />
+                                    <span>{uniMeta.disqualifiedCount} Disqualified</span>
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Programmes Loading */}
+                            {loadingProgrammes && (
+                              <div className="p-8 text-center space-y-2">
+                                <Loader2 className="w-6 h-6 text-germany-red animate-spin mx-auto" />
+                                <p className="text-xs font-bold text-gray-400">Loading university programmes &amp; checking relevance...</p>
+                              </div>
+                            )}
+
+                            {/* Programmes Error */}
+                            {programmesError && (
+                              <div className="p-3 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 text-xs font-bold rounded-xl border border-red-200 dark:border-red-900/40">
+                                {programmesError}
+                              </div>
+                            )}
+
+                            {/* Programmes List */}
+                            {!loadingProgrammes && !programmesError && uniProgrammes.length > 0 && (
+                              <div className="space-y-2.5">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                  <label className="text-[11px] font-black uppercase tracking-wider text-gray-500">
+                                    Step 2: Choose Programme (Green = Selectable • Red = Disqualified)
+                                  </label>
+
+                                  <div className="flex items-center gap-2">
+                                    {/* Tab Toggle */}
+                                    <button
+                                      type="button"
+                                      onClick={() => setProgFilterOnlyRelevant(false)}
+                                      className={`px-2 py-1 rounded-lg text-[10px] font-extrabold transition-colors cursor-pointer ${
+                                        !progFilterOnlyRelevant
+                                          ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black'
+                                          : 'bg-gray-100 dark:bg-[#1E2638] text-gray-600 dark:text-gray-300'
+                                      }`}
+                                    >
+                                      All ({uniProgrammes.length})
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setProgFilterOnlyRelevant(true)}
+                                      className={`px-2 py-1 rounded-lg text-[10px] font-extrabold transition-colors cursor-pointer ${
+                                        progFilterOnlyRelevant
+                                          ? 'bg-emerald-600 text-white'
+                                          : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
+                                      }`}
+                                    >
+                                      Relevant Only ({uniProgrammes.filter(p => p.isRelevant).length})
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Programme Quick Filter Text Input */}
+                                <input
+                                  type="text"
+                                  value={progFilterText}
+                                  onChange={(e) => setProgFilterText(e.target.value)}
+                                  placeholder="Filter by keyword (e.g. Data, AI, Software, Systems)..."
+                                  className="w-full px-3 py-1.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 placeholder:text-gray-400 focus:outline-none focus:border-germany-red"
+                                />
+
+                                {/* Scrollable List */}
+                                <div className="max-h-72 overflow-y-auto space-y-2 pr-1 divide-y divide-gray-100 dark:divide-gray-800/50">
+                                  {uniProgrammes
+                                    .filter((p) => {
+                                      if (progFilterOnlyRelevant && !p.isRelevant) return false;
+                                      if (progFilterText) {
+                                        const q = progFilterText.toLowerCase();
+                                        return (
+                                          p.programName.toLowerCase().includes(q) ||
+                                          (p.subject && p.subject.toLowerCase().includes(q))
+                                        );
+                                      }
+                                      return true;
+                                    })
+                                    .map((p) => {
+                                      const isSelected = selectedProg?.id === p.id;
+                                      return (
+                                        <div
+                                          key={p.id}
+                                          onClick={() => {
+                                            if (p.isRelevant) {
+                                              setSelectedProg(p);
+                                            }
+                                          }}
+                                          className={`pt-2.5 pb-2.5 px-3 rounded-xl transition-all border ${
+                                            p.isRelevant
+                                              ? isSelected
+                                                ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-500 ring-2 ring-emerald-500/20 cursor-pointer'
+                                                : 'bg-white dark:bg-[#151B27] border-gray-200/80 dark:border-gray-800/80 hover:border-emerald-400/80 hover:bg-emerald-50/20 dark:hover:bg-emerald-950/10 cursor-pointer'
+                                              : 'bg-gray-50/50 dark:bg-[#0B0E14] border-red-200/40 dark:border-red-950/40 opacity-55 cursor-not-allowed select-none'
+                                          }`}
+                                          title={
+                                            p.isRelevant
+                                              ? 'Click to select this relevant programme'
+                                              : 'Disqualified: This programme does not match the student\'s academic background'
+                                          }
+                                        >
+                                          <div className="flex items-start justify-between gap-3">
+                                            <div className="flex items-start gap-2.5 min-w-0">
+                                              {/* Radio Indicator */}
+                                              <div className="pt-0.5 shrink-0">
+                                                {p.isRelevant ? (
+                                                  <div
+                                                    className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
+                                                      isSelected
+                                                        ? 'border-emerald-600 bg-emerald-600 text-white'
+                                                        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111622]'
+                                                    }`}
+                                                  >
+                                                    {isSelected && <Check className="w-2.5 h-2.5" />}
+                                                  </div>
+                                                ) : (
+                                                  <Ban className="w-4 h-4 text-red-500/80 shrink-0" />
+                                                )}
+                                              </div>
+
+                                              <div className="min-w-0">
+                                                <div className="text-xs font-extrabold text-germany-black dark:text-white leading-tight">
+                                                  {p.programName}
+                                                </div>
+                                                <div className="text-[11px] font-bold text-gray-500 flex items-center gap-2 pt-0.5 flex-wrap">
+                                                  <span>{p.degree}</span>
+                                                  <span>•</span>
+                                                  <span>🗣️ {p.language}</span>
+                                                  <span>•</span>
+                                                  <span>{p.tuition}</span>
+                                                </div>
+                                              </div>
+                                            </div>
+
+                                            {/* Relevance Badge */}
+                                            <div className="shrink-0 text-right">
+                                              {p.isRelevant ? (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+                                                  <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                                                  <span>Relevant</span>
+                                                </span>
+                                              ) : (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/40">
+                                                  <Ban className="w-3 h-3 text-red-500 shrink-0" />
+                                                  <span>Disqualified</span>
+                                                </span>
+                                              )}
+                                              <div className="text-[9px] font-medium text-gray-400 pt-0.5 truncate max-w-[140px]">
+                                                {p.subject ? p.subject : ''}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                </div>
+                              </div>
+                            )}
+
+                            {!loadingProgrammes && !programmesError && uniProgrammes.length === 0 && (
+                              <div className="p-4 bg-gray-50 dark:bg-[#151B27] rounded-xl text-center text-xs font-bold text-gray-400">
+                                No programmes found for this university in the database.
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      /* Manual Entry Fallback */
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <input
+                          type="text"
+                          placeholder="University (e.g. TU Darmstadt)"
+                          value={newUniName}
+                          onChange={(e) => setNewUniName(e.target.value)}
+                          className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
+                          required
+                        />
+                        <input
+                          type="text"
+                          placeholder="Program (e.g. M.Sc. Distributed Systems)"
+                          value={newUniProgram}
+                          onChange={(e) => setNewUniProgram(e.target.value)}
+                          className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
+                          required
+                        />
+                        <input
+                          type="text"
+                          placeholder="City / State (e.g. Darmstadt, Hesse)"
+                          value={newUniLocation}
+                          onChange={(e) => setNewUniLocation(e.target.value)}
+                          className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
+                        />
+                      </div>
+                    )}
+
+                    {/* Drawer Footer Actions */}
+                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-gray-100 dark:border-gray-800/60">
+                      <div>
+                        {selectedProg && !isManualUniEntry && (
+                          <span className="text-xs font-extrabold text-emerald-700 dark:text-emerald-400 truncate max-w-xs block">
+                            Selected: {selectedProg.programName}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowAddUni(false);
+                            setSelectedUniversity(null);
+                            setSelectedProg(null);
+                          }}
+                          className="py-1.5 px-3 text-xs font-extrabold bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-[#1E2638] shadow-xs cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          disabled={
+                            isManualUniEntry
+                              ? !newUniName.trim() || !newUniProgram.trim()
+                              : !selectedProg || !selectedProg.isRelevant
+                          }
+                          onClick={() => handleSaveRecommendation()}
+                          className="neu-btn-primary py-1.5 px-4 text-xs font-extrabold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                        >
+                          Save Recommendation
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 )}
 
                 {/* Custom Counsellor Recommendations (if any) */}
