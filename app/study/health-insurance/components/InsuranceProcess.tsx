@@ -26,14 +26,14 @@ export const InsuranceProcess = () => {
   ];
 
   return (
-    <section id="section-process" className="scroll-mt-32 py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" data-reveal>
+    <section id="section-process" className="scroll-mt-32 py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 space-y-10">
       {/* Header */}
       <div className="space-y-3 text-center max-w-2xl mx-auto">
-        <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--lp-red)]">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--lp-red)]">
           Effortless Activation
         </span>
-        <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-ink)] font-normal tracking-tight">
-          How Setup <em className="italic text-[var(--lp-red)] font-serif">Works</em>
+        <h2 className="lp-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-text)] font-semibold tracking-tight">
+          How Setup <em className="lp-script text-[var(--lp-red)]">Works</em>
         </h2>
         <p className="text-sm sm:text-base text-[var(--lp-muted)] leading-relaxed">
           Three simple steps from initial evaluation to full consular and university compliance.

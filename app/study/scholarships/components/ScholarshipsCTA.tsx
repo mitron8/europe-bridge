@@ -2,52 +2,80 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, Award, UserCheck } from 'lucide-react';
+import { ArrowRight, Award, Check } from 'lucide-react';
 
 export const ScholarshipsCTA = () => {
   return (
-    <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto my-4" data-reveal>
-      <div className="rounded-3xl bg-[var(--lp-ink)] p-8 sm:p-10 lg:p-12 relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-8 text-center lg:text-left">
-        {/* Left Side Content */}
-        <div className="relative z-10 space-y-3 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full font-mono text-[var(--lp-gold)] text-xs cursor-default">
-            <Award className="w-3.5 h-3.5 text-[var(--lp-gold)]" />
-            <span>Scholarship Strategic Advisory</span>
-          </div>
-
-          <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-normal text-white tracking-tight leading-tight">
-            Maximize Your Funding &amp; <em className="italic text-[var(--lp-gold)] font-serif">Scholarship Odds</em>
-          </h2>
-
-          <p className="text-neutral-300 text-xs sm:text-sm leading-relaxed max-w-xl">
-            From DAAD and Deutschlandstipendium to state-funded grants, our advisors help you identify funding opportunities and polish winning scholarship essays.
-          </p>
+    <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
+      <div className="lp-grain relative isolate overflow-hidden rounded-[28px] border border-white/10 bg-[#0d0d10] px-6 py-12 text-center text-white shadow-[0_24px_60px_-20px_rgba(13,13,15,0.4)] sm:px-12 sm:py-14 lg:px-16">
+        {/* Landmark skyline outline background */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 flex justify-center overflow-hidden opacity-[0.25] select-none"
+          style={{
+            filter: "invert(1) hue-rotate(180deg) brightness(1.25) contrast(1.15)",
+            mixBlendMode: "screen",
+            maskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 55%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 55%, transparent 100%)",
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/landing/german-landmarks-outline.jpg"
+            alt=""
+            className="h-[220px] sm:h-[300px] w-full max-w-[1280px] object-cover object-bottom"
+            loading="lazy"
+          />
         </div>
 
-        {/* Right Side Buttons */}
-        <div className="relative z-10 flex flex-col items-center lg:items-end gap-3 shrink-0 w-full sm:w-auto">
-          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+        {/* Warm ambient glow */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[220px] opacity-35 blur-[90px]"
+          style={{ background: "radial-gradient(circle at 50% 100%, rgba(230,57,70,0.25), rgba(201,163,91,0.2), transparent 75%)" }}
+        />
+
+        {/* Content container */}
+        <div className="relative mx-auto flex max-w-[720px] flex-col items-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--lp-gold-soft)] backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--lp-gold)] shadow-[0_0_8px_var(--lp-gold)]" />
+            Scholarship Strategic Advisory
+          </div>
+
+          <h2 className="lp-serif mt-5 text-[clamp(1.9rem,3.4vw,2.9rem)] leading-[1.14] tracking-[-0.02em] text-white">
+            Maximize Your Funding &amp; <em className="lp-script text-[var(--lp-gold-soft)]">Scholarship Odds</em>
+          </h2>
+
+          <p className="mt-4 max-w-[540px] text-[15px] sm:text-[16px] leading-[1.65] text-white/75">
+            From DAAD EPOS and Deutschlandstipendium to state foundation grants, our mentors guide your application, review SOP essays, and maximize your award chances.
+          </p>
+
+          <div className="mt-8 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
             <Link 
               href="/signup" 
-              className="w-full sm:w-auto px-7 py-3 rounded-full bg-[var(--lp-red)] hover:bg-[#b5322b] text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 whitespace-nowrap transition-colors"
+              className="lp-btn lp-btn--red w-full justify-center shadow-[0_12px_28px_-8px_rgba(230,57,70,0.5)] sm:w-auto"
             >
-              <span>Explore Funding</span>
-              <ArrowRight className="w-4 h-4" />
+              Explore Funding Grants <ArrowRight className="h-4 w-4" />
             </Link>
 
             <Link 
               href="/tools/admission-chance"
-              className="w-full sm:w-auto px-6 py-3 rounded-full bg-white hover:bg-neutral-100 text-[var(--lp-ink)] font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 whitespace-nowrap transition-colors"
+              className="lp-btn lp-btn--ghost-light w-full justify-center sm:w-auto"
             >
-              <UserCheck className="w-4 h-4" />
-              <span>Check Eligibility</span>
+              Check Profile Odds
             </Link>
           </div>
 
-          <div className="flex items-center justify-center gap-3 text-[11px] text-neutral-400 font-mono pt-1">
-            <span>DAAD &amp; Foundation Coaching</span>
-            <span>•</span>
-            <span>Essay &amp; SOP Reviews</span>
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12px] text-white/55">
+            <span className="inline-flex items-center gap-1.5">
+              <Check className="h-3.5 w-3.5 text-[var(--lp-red)]" /> DAAD &amp; EPOS mentorship
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Check className="h-3.5 w-3.5 text-[var(--lp-gold)]" /> Deutschlandstipendium review
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Check className="h-3.5 w-3.5 text-white/70" /> Motivation letter coaching
+            </span>
           </div>
         </div>
       </div>

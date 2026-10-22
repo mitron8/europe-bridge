@@ -114,13 +114,15 @@ export const LanguageRequirements = () => {
               <motion.div 
                 whileHover={{ y: -2 }}
                 transition={{ duration: 0.2 }}
-                className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-2xl p-6 border-l-4 border-l-[var(--lp-red)] flex items-start gap-4 shadow-sm"
+                className="bg-white/80 border border-[#e5e0d3] rounded-2xl p-6 flex items-start gap-4 shadow-sm"
               >
-                <CheckCircle className="w-5 h-5 text-[var(--lp-red)] shrink-0 mt-0.5" />
+                <div className="w-9 h-9 rounded-xl bg-[var(--lp-red)]/10 text-[var(--lp-red)] flex items-center justify-center shrink-0">
+                  <CheckCircle className="w-5 h-5" />
+                </div>
                 <div className="space-y-1">
                   <h4 className="lp-serif font-semibold text-[var(--lp-text)] text-base">English Test Waiver (MOI Certificate)</h4>
                   <p className="text-xs sm:text-sm text-[var(--lp-muted)] leading-relaxed">
-                    Can you skip IELTS/TOEFL? Yes, if your Bachelor's degree was 100% instructed in English and your university issues an official <strong className="text-[var(--lp-text)] font-semibold">Medium of Instruction (MOI) Certificate</strong>. However, top universities like TU Munich and RWTH Aachen still require official IELTS/TOEFL test scores regardless of MOI.
+                    Can you skip IELTS/TOEFL? Yes, if your Bachelor&apos;s degree was 100% instructed in English and your university issues an official <strong className="text-[var(--lp-text)] font-semibold">Medium of Instruction (MOI) Certificate</strong>. However, top universities like TU Munich and RWTH Aachen still require official IELTS/TOEFL test scores regardless of MOI.
                   </p>
                 </div>
               </motion.div>
@@ -166,13 +168,15 @@ export const LanguageRequirements = () => {
               <motion.div 
                 whileHover={{ y: -2 }}
                 transition={{ duration: 0.2 }}
-                className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-2xl p-6 border-l-4 border-l-[var(--lp-gold)] flex items-start gap-4 shadow-sm"
+                className="bg-white/80 border border-[#e5e0d3] rounded-2xl p-6 flex items-start gap-4 shadow-sm"
               >
-                <Info className="w-5 h-5 text-[var(--lp-gold)] shrink-0 mt-0.5" />
+                <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center shrink-0">
+                  <Info className="w-5 h-5" />
+                </div>
                 <div className="space-y-1">
                   <h4 className="lp-serif font-semibold text-[var(--lp-text)] text-base">German Basics for English Programs</h4>
                   <p className="text-xs sm:text-sm text-[var(--lp-muted)] leading-relaxed">
-                    Even if your Master's course is taught 100% in English, learning basic German (A1/A2 level) is strongly recommended. It boosts your student visa approval rate and is essential for finding part-time jobs and post-grad employment in Germany.
+                    Even if your Master&apos;s course is taught 100% in English, learning basic German (A1/A2 level) is strongly recommended. It boosts your student visa approval rate and is essential for finding part-time jobs and post-grad employment in Germany.
                   </p>
                 </div>
               </motion.div>

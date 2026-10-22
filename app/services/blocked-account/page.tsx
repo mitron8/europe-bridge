@@ -1,5 +1,8 @@
 import React from 'react';
-import Navbar from '@/app/components/Navbar';
+import { Metadata } from 'next';
+import "@/app/components/landing/landing.css";
+import { playfair, madisonSauvage, celinda } from "@/app/components/landing/fonts";
+import LandingNavbar from '@/app/components/landing/LandingNavbar';
 import Footer from '@/app/components/Footer';
 import { BlockedAccountHero } from './components/BlockedAccountHero';
 import { BlockedAccountCalculator } from './components/BlockedAccountCalculator';
@@ -10,7 +13,6 @@ import { BlockedAccountProcess } from './components/BlockedAccountProcess';
 import { BlockedAccountForm } from './components/BlockedAccountForm';
 import { BlockedAccountFAQ } from './components/BlockedAccountFAQ';
 import { BlockedAccountCTA } from './components/BlockedAccountCTA';
-import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Blocked Account for Germany 2026/2027 | EuropeBridge',
@@ -28,22 +30,27 @@ export const metadata: Metadata = {
 
 export default function BlockedAccountPage() {
   return (
-    <main className="min-h-screen neu-bg pt-20 sm:pt-24 pb-16 space-y-4">
-      <Navbar />
-      <BlockedAccountHero />
-      
-      <div className="space-y-4">
-        <BlockedAccountCalculator />
-        <BlockedAccountProviders />
-        <BlockedAccountFeatures />
-        <BlockedAccountPricing />
-        <BlockedAccountProcess />
-        <BlockedAccountForm />
-        <BlockedAccountFAQ />
-        <BlockedAccountCTA />
-      </div>
+    <main className="bg-[#f4f1ea] min-h-screen text-[var(--lp-text)] selection:bg-[var(--lp-red)] selection:text-white">
+      <div className={`lp ${playfair.variable} ${madisonSauvage.variable} ${celinda.variable}`}>
+        <LandingNavbar />
+        <BlockedAccountHero />
+        
+        <div className="space-y-12 sm:space-y-16 pb-16">
+          <BlockedAccountCalculator />
+          <BlockedAccountProviders />
+          <BlockedAccountFeatures />
+          <BlockedAccountPricing />
+          <BlockedAccountProcess />
+          <BlockedAccountForm />
+          <BlockedAccountFAQ />
+          <BlockedAccountCTA />
+        </div>
 
-      <Footer />
+        <div className="relative z-[40] mt-16">
+          <Footer />
+        </div>
+      </div>
     </main>
   );
 }
+

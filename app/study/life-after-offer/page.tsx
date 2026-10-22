@@ -3,7 +3,6 @@ import "@/app/components/landing/landing.css";
 import { playfair, madisonSauvage, celinda } from "@/app/components/landing/fonts";
 import LandingNavbar from "@/app/components/landing/LandingNavbar";
 import Footer from "@/app/components/Footer";
-import SmoothScroll from "@/app/components/landing/SmoothScroll";
 import { LifeAfterOfferHero } from './components/LifeAfterOfferHero';
 import { LifeAfterOfferSectionNav } from './components/LifeAfterOfferSectionNav';
 import { JobSeekerVisaSection } from './components/JobSeekerVisaSection';
@@ -87,7 +86,6 @@ export default function LifeAfterOfferPage() {
           <Footer />
         </div>
       </div>
-      <SmoothScroll />
     </main>
   );
 }

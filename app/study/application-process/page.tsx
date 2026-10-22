@@ -4,7 +4,6 @@ import "@/app/components/landing/landing.css";
 import { playfair, madisonSauvage, celinda } from "@/app/components/landing/fonts";
 import LandingNavbar from "@/app/components/landing/LandingNavbar";
 import Footer from "@/app/components/Footer";
-import SmoothScroll from "@/app/components/landing/SmoothScroll";
 
 import { HeroHeader } from './components/HeroHeader';
 import { SectionNav } from './components/SectionNav';
@@ -35,7 +34,6 @@ export default function ApplicationProcessPage() {
           <Footer />
         </div>
       </div>
-      <SmoothScroll />
     </main>
   );
 }

@@ -29,14 +29,14 @@ export const DeutschlandstipendiumDeepDive = () => {
   ];
 
   return (
-    <section id="deutschlandstipendium" className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" data-reveal>
+    <section id="deutschlandstipendium" className="py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 space-y-10">
       {/* Header */}
       <div className="space-y-3 text-center max-w-2xl mx-auto">
-        <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--lp-red)]">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--lp-red)]">
           National Merit Program
         </span>
-        <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-ink)] font-normal tracking-tight">
-          The <em className="italic text-[var(--lp-red)] font-serif">Deutschlandstipendium</em> Deep Dive
+        <h2 className="lp-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-text)] font-semibold tracking-tight">
+          The <em className="lp-script text-[var(--lp-red)]">Deutschlandstipendium</em> Deep Dive
         </h2>
         <p className="text-sm sm:text-base text-[var(--lp-muted)] leading-relaxed">
           Over 30,000 scholars receive €300 per month through this public-private partnership. Here is how international students can successfully win it.

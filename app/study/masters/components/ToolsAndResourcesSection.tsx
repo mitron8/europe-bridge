@@ -101,14 +101,14 @@ export const ToolsAndResourcesSection = () => {
   ];
 
   return (
-    <section id="tools" className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" data-reveal>
+    <section id="tools" className="py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 space-y-10">
       {/* Header */}
       <div className="space-y-3 text-center max-w-2xl mx-auto">
-        <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--lp-red)]">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--lp-red)]">
           Free Utilities &amp; Services
         </span>
-        <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-ink)] font-normal tracking-tight">
-          Tools for Your <em className="italic text-[var(--lp-red)] font-serif">Master&apos;s Application</em>
+        <h2 className="lp-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-text)] font-semibold tracking-tight">
+          Tools for Your <em className="lp-script text-[var(--lp-red)]">Master&apos;s Application</em>
         </h2>
         <p className="text-sm sm:text-base text-[var(--lp-muted)] leading-relaxed">
           Everything you need to plan, verify, and complete your German master&apos;s journey in one place.

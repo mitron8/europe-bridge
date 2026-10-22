@@ -50,14 +50,14 @@ export const VisaDocumentsChecklist = () => {
   };
 
   return (
-    <section id="section-checklist" className="scroll-mt-32 py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" data-reveal>
+    <section id="section-checklist" className="scroll-mt-32 py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 space-y-10">
       {/* Header */}
       <div className="space-y-3 text-center max-w-2xl mx-auto">
-        <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--lp-red)]">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--lp-red)]">
           Consular Checklist 2026
         </span>
-        <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-ink)] font-normal tracking-tight">
-          Required Documents for <em className="italic text-[var(--lp-red)] font-serif">German Student Visa</em>
+        <h2 className="lp-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-text)] font-semibold tracking-tight">
+          Required Documents for <em className="lp-script text-[var(--lp-red)]">German Student Visa</em>
         </h2>
         <p className="text-sm sm:text-base text-[var(--lp-muted)] leading-relaxed">
           German consulates require two complete identical sets of documents arranged in a precise sequence.

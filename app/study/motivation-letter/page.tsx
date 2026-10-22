@@ -3,7 +3,6 @@ import "@/app/components/landing/landing.css";
 import { playfair, madisonSauvage, celinda } from "@/app/components/landing/fonts";
 import LandingNavbar from "@/app/components/landing/LandingNavbar";
 import Footer from "@/app/components/Footer";
-import SmoothScroll from "@/app/components/landing/SmoothScroll";
 import { MotivationHero } from './components/MotivationHero';
 import { MotivationNav } from './components/MotivationNav';
 import { MotivationFeatures } from './components/MotivationFeatures';
@@ -126,7 +125,6 @@ export default function MotivationLetterPage() {
           <Footer />
         </div>
       </div>
-      <SmoothScroll />
     </main>
   );
 }

@@ -208,14 +208,14 @@ export const MajorScholarshipsSection = () => {
   };
 
   return (
-    <section id="major-scholarships" className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" data-reveal>
+    <section id="major-scholarships" className="py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 space-y-10">
       {/* Header */}
       <div className="space-y-3 text-center max-w-2xl mx-auto">
-        <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--lp-red)]">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--lp-red)]">
           Curated Directory
         </span>
-        <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-ink)] font-normal tracking-tight">
-          Major Scholarships for <em className="italic text-[var(--lp-red)] font-serif">International Students</em>
+        <h2 className="lp-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-text)] font-semibold tracking-tight">
+          Major Scholarships for <em className="lp-script text-[var(--lp-red)]">International Students</em>
         </h2>
         <p className="text-sm sm:text-base text-[var(--lp-muted)] leading-relaxed">
           Filter through verified government, merit, and foundation programs. Expand any card for exact criteria and application strategy.
@@ -348,11 +348,14 @@ export const MajorScholarshipsSection = () => {
                   </div>
 
                   {/* Advisor Pro Tip */}
-                  <div className="bg-[#eae5db]/60 border-l-2 border-[var(--lp-gold)] p-4 rounded-xl space-y-1">
+                  <div className="bg-[#ece7dd]/70 border border-[#ded8cb] p-4 rounded-xl space-y-1.5">
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--lp-text)]">
-                      <Lightbulb className="w-3.5 h-3.5 text-[var(--lp-gold)]" /> Advisor Strategy Note
+                      <span className="w-5 h-5 rounded-md bg-amber-500/15 text-amber-700 flex items-center justify-center shrink-0">
+                        <Lightbulb className="w-3 h-3 text-[var(--lp-gold)]" />
+                      </span>
+                      <span>Advisor Strategy Note</span>
                     </div>
-                    <p className="text-xs text-[var(--lp-muted)] leading-relaxed">
+                    <p className="text-xs text-[var(--lp-muted)] leading-relaxed pl-6.5">
                       {scholarship.proTip}
                     </p>
                   </div>

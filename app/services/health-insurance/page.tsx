@@ -1,5 +1,8 @@
 import React from 'react';
-import Navbar from '@/app/components/Navbar';
+import { Metadata } from 'next';
+import "@/app/components/landing/landing.css";
+import { playfair, madisonSauvage, celinda } from "@/app/components/landing/fonts";
+import LandingNavbar from '@/app/components/landing/LandingNavbar';
 import Footer from '@/app/components/Footer';
 import { HealthInsuranceHero } from './components/HealthInsuranceHero';
 import { HealthInsuranceDecider } from './components/HealthInsuranceDecider';
@@ -10,7 +13,6 @@ import { HealthInsuranceProcess } from './components/HealthInsuranceProcess';
 import { HealthInsuranceBooking } from './components/HealthInsuranceBooking';
 import { HealthInsuranceFAQ } from './components/HealthInsuranceFAQ';
 import { HealthInsuranceCTA } from './components/HealthInsuranceCTA';
-import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'German Health Insurance Setup for Students 2026/2027 | EuropeBridge',
@@ -70,7 +72,7 @@ export default function HealthInsurancePage() {
         '@type': 'ListItem',
         position: 2,
         name: 'Services',
-        item: 'https://europebridge.in/#our-process'
+        item: 'https://europebridge.in/services'
       },
       {
         '@type': 'ListItem',
@@ -82,32 +84,39 @@ export default function HealthInsurancePage() {
   };
 
   return (
-    <main className="min-h-screen neu-bg pt-20 sm:pt-24 pb-16 space-y-4">
-      {/* Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
+    <main className="bg-[#f4f1ea] min-h-screen text-[var(--lp-text)] selection:bg-[var(--lp-red)] selection:text-white">
+      <div className={`lp ${playfair.variable} ${madisonSauvage.variable} ${celinda.variable}`}>
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
 
-      <Navbar />
-      <HealthInsuranceHero />
-      
-      <div className="space-y-4">
-        <HealthInsuranceDecider />
-        <HealthInsuranceProviders />
-        <HealthInsuranceFeatures />
-        <HealthInsurancePricing />
-        <HealthInsuranceProcess />
-        <HealthInsuranceBooking />
-        <HealthInsuranceFAQ />
-        <HealthInsuranceCTA />
+        <LandingNavbar />
+
+        <div className="pt-24 sm:pt-28 pb-16 space-y-8 sm:space-y-12">
+          <HealthInsuranceHero />
+          
+          <div className="space-y-8 sm:space-y-12">
+            <HealthInsuranceDecider />
+            <HealthInsuranceProviders />
+            <HealthInsuranceFeatures />
+            <HealthInsurancePricing />
+            <HealthInsuranceProcess />
+            <HealthInsuranceBooking />
+            <HealthInsuranceFAQ />
+            <HealthInsuranceCTA />
+          </div>
+        </div>
+
+        <div className="relative z-[40] mt-16">
+          <Footer />
+        </div>
       </div>
-
-      <Footer />
     </main>
   );
 }

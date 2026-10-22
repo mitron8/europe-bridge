@@ -1,9 +1,12 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import Navbar from '@/app/components/Navbar';
-import Footer from '@/app/components/Footer';
 import Link from 'next/link';
+import "@/app/components/landing/landing.css";
+import { playfair, madisonSauvage, celinda } from "@/app/components/landing/fonts";
+import LandingNavbar from "@/app/components/landing/LandingNavbar";
+import Footer from "@/app/components/Footer";
+import { StudyFAQ } from '@/app/study/components/StudyFAQ';
 import { 
   Calculator, 
   HelpCircle, 
@@ -14,7 +17,8 @@ import {
   Info,
   GraduationCap,
   ShieldCheck,
-  ChevronDown
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 
 interface Preset {
@@ -138,9 +142,7 @@ type CalculationResult =
       classification: {
         label: string;
         en: string;
-        color: string;
         description: string;
-        badgeClass: string;
       };
     }
   | {
@@ -155,7 +157,6 @@ export default function GermanGradeCalculatorPage() {
   const [yourGrade, setYourGrade] = useState<number>(8.5);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  // Switch preset
   const handlePresetChange = (presetId: string) => {
     setSelectedPresetId(presetId);
     const p = PRESETS.find(x => x.id === presetId);
@@ -166,8 +167,7 @@ export default function GermanGradeCalculatorPage() {
     }
   };
 
-  // Modified Bavarian Formula calculation
-  // Formula: 1 + 3 * ((Nmax - Nd) / (Nmax - Nmin))
+  // Modified Bavarian Formula: 1 + 3 * ((Nmax - Nd) / (Nmax - Nmin))
   const calculation = useMemo<CalculationResult>(() => {
     if (maxGrade <= minPassGrade) {
       return { 
@@ -180,56 +180,43 @@ export default function GermanGradeCalculatorPage() {
       return { valid: false, error: 'Please enter a valid numeric grade.' };
     }
 
-    // Mathematical formula
     let rawScore = 1 + 3 * ((maxGrade - yourGrade) / (maxGrade - minPassGrade));
     
-    // Bounds: Best possible is 1.0, worst passing is 4.0, failing is 5.0
     if (yourGrade > maxGrade) rawScore = 1.0;
     if (yourGrade < minPassGrade) rawScore = 5.0;
 
     const roundedOne = Math.round(rawScore * 10) / 10;
     const roundedTwo = Math.round(rawScore * 100) / 100;
 
-    // Classification
     let classification = {
       label: 'Sehr Gut',
-      en: 'Very Good / Excellent',
-      color: 'emerald',
-      description: 'Outstanding performance. Guaranteed eligibility for top-tier TU9 universities (TUM, RWTH, Heidelberg, etc.).',
-      badgeClass: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+      en: 'Very Good / Outstanding',
+      description: 'Outstanding academic performance. Highly competitive for top-tier TU9 universities (TUM, RWTH, TU Berlin, etc.).'
     };
 
     if (roundedOne > 1.5 && roundedOne <= 2.5) {
       classification = {
         label: 'Gut',
-        en: 'Good',
-        color: 'blue',
-        description: 'Above-average performance. Highly competitive across most public German university programs.',
-        badgeClass: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30'
+        en: 'Good / Above Average',
+        description: 'Above-average performance. Fully eligible across most public German university Master’s programs.'
       };
     } else if (roundedOne > 2.5 && roundedOne <= 3.5) {
       classification = {
         label: 'Befriedigend',
         en: 'Satisfactory',
-        color: 'amber',
-        description: 'Average performance. Eligible for non-restricted (NC-free) Master’s and Universities of Applied Sciences.',
-        badgeClass: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30'
+        description: 'Meets minimum academic standards. Eligible for Non-NC (open admission) Master’s and Universities of Applied Sciences.'
       };
     } else if (roundedOne > 3.5 && roundedOne <= 4.0) {
       classification = {
         label: 'Ausreichend',
-        en: 'Sufficient / Pass',
-        color: 'orange',
-        description: 'Minimum passing standard in Germany. Selective Master’s admissions will be difficult; consider private or pathway programs.',
-        badgeClass: 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30'
+        en: 'Sufficient / Passing Cutoff',
+        description: 'Minimum pass cutoff in Germany. Highly competitive NC programs may be restricted; target universities with open admission.'
       };
     } else if (roundedOne > 4.0) {
       classification = {
         label: 'Nicht Ausreichend',
         en: 'Insufficient / Fail',
-        color: 'red',
-        description: 'Below the minimum German academic standard. Not eligible for admission.',
-        badgeClass: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30'
+        description: 'Below the minimum German academic pass standard. Direct university admission is generally not possible.'
       };
     }
 
@@ -245,43 +232,67 @@ export default function GermanGradeCalculatorPage() {
   const activePreset = PRESETS.find(p => p.id === selectedPresetId);
 
   return (
-    <div className="min-h-screen neu-bg text-germany-black dark:text-white transition-colors duration-200">
-      <Navbar />
+    <main className="min-h-screen bg-[#f4f1ea] text-[#16161a] selection:bg-[#e63946] selection:text-white">
+      <div className={`lp ${playfair.variable} ${madisonSauvage.variable} ${celinda.variable}`}>
+        <LandingNavbar />
 
-      {/* Hero Section */}
-      <section className="relative pt-24 sm:pt-28 pb-10 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto overflow-hidden">
-        <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-germany-red/10 border border-germany-red/20 text-germany-red dark:text-[#FF6B7A] text-xs font-bold uppercase tracking-wider">
-            <Calculator className="w-3.5 h-3.5" />
-            Official Modified Bavarian Formula
+        {/* Hero Section */}
+        <section className="relative overflow-hidden pt-28 pb-10 sm:pt-36 sm:pb-14 border-b border-[#e5e0d3] bg-[#fbf9f4]">
+          <div 
+            aria-hidden 
+            className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-96 w-full max-w-7xl rounded-full bg-gradient-to-b from-[#e63946]/[0.025] to-transparent blur-3xl" 
+          />
+
+          <div className="lp-container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-4xl">
+            {/* Breadcrumb */}
+            <nav aria-label="Breadcrumb" className="mb-5 flex items-center justify-center gap-2 text-[12px] sm:text-[13px] text-[#787369]">
+              <Link href="/" className="transition-colors hover:text-[#16161a]">
+                Home
+              </Link>
+              <ChevronRight className="h-3 w-3 opacity-60" />
+              <Link href="/tools" className="transition-colors hover:text-[#16161a]">
+                Free Tools
+              </Link>
+              <ChevronRight className="h-3 w-3 opacity-60" />
+              <span className="font-semibold text-[#16161a]">German Grade Calculator</span>
+            </nav>
+
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#dcd7cb] bg-[#f3efe6] px-3.5 py-1 text-[11.5px] sm:text-[12px] font-medium text-[#4a4740] shadow-2xs mb-3.5">
+              <Calculator className="w-3.5 h-3.5 text-[#9e2a2b]" />
+              <span className="font-semibold text-[#16161a]">Modified Bavarian Formula</span>
+              <span className="text-[#9a958c]">|</span>
+              <span>Official Uni-Assist &amp; KMK Standard</span>
+            </div>
+
+            <h1 className="text-3xl sm:text-5xl lg:text-[50px] font-serif font-normal tracking-tight text-[#16161a] leading-[1.15]">
+              German Grade Calculator. <br className="hidden sm:inline" />
+              <span className="italic font-normal text-[#9e2a2b]">Convert Your CGPA or Percentage.</span>
+            </h1>
+
+            <p className="mt-3.5 max-w-2xl mx-auto text-[14.5px] sm:text-[16px] text-[#5e5b54] leading-relaxed">
+              Convert your domestic CGPA, percentage, or GPA onto the German 1.0 to 4.0 grading scale used by Uni-Assist and German public universities. In Germany, <strong>1.0 is the best</strong> and <strong>4.0 is passing</strong>.
+            </p>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-black font-display tracking-tight text-germany-black dark:text-white">
-            German Grade Calculator
-          </h1>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 font-medium">
-            Accurately convert your CGPA, percentage, or GPA to the German 1.0–5.0 academic grading scale used by uni-assist and all German universities. (In Germany, <strong>1.0 is the best</strong> and <strong>4.0 is the pass cutoff</strong>).
-          </p>
-        </div>
-      </section>
+        </section>
 
-      {/* Main Interactive Tool Grid */}
-      <section className="px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto pb-16">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* Left Column: Inputs Form */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="neu-card p-6 sm:p-8 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800/80 shadow-md">
-              <h2 className="text-lg font-bold font-display text-germany-black dark:text-white mb-5 flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-germany-red"></span>
-                Select Your Home Grading System
-              </h2>
+        {/* Interactive Tool Grid */}
+        <section className="lp-container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Left Column: Form & Presets */}
+            <div className="lg:col-span-7 space-y-6">
+              <div className="rounded-2xl border border-[#e5e0d3] bg-white p-5 sm:p-7 shadow-sm">
+                <div className="flex items-center justify-between border-b border-[#ece7dd] pb-3 mb-5">
+                  <h2 className="text-[16px] sm:text-[17px] font-serif font-bold text-[#16161a]">
+                    Select Your Home Grading System
+                  </h2>
+                  <span className="text-[11px] font-medium text-[#787369]">
+                    8 Verified Presets
+                  </span>
+                </div>
 
-              {/* Preset Selector */}
-              <div className="mb-6">
-                <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
-                  Country / Grading Standard
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {/* Preset Selector Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-6">
                   {PRESETS.map((p) => {
                     const isSelected = selectedPresetId === p.id;
                     return (
@@ -291,266 +302,246 @@ export default function GermanGradeCalculatorPage() {
                         onClick={() => handlePresetChange(p.id)}
                         className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center gap-2.5 ${
                           isSelected
-                            ? 'bg-germany-red/5 dark:bg-germany-red/15 border-germany-red text-germany-black dark:text-white font-bold ring-1 ring-germany-red/30'
-                            : 'bg-gray-50/70 dark:bg-[#0A0D14] border-gray-200/70 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700'
+                            ? 'bg-[#f4f1ea] border-[#16161a] text-[#16161a] font-bold shadow-2xs'
+                            : 'bg-white border-[#e5e0d3] text-[#4a4740] hover:border-[#16161a]'
                         }`}
                       >
                         <span className="text-base shrink-0">{p.flag}</span>
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs font-bold truncate">{p.name}</p>
-                          <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate">{p.country}</p>
+                          <p className="text-[12.5px] font-semibold truncate">{p.name}</p>
+                          <p className="text-[10.5px] text-[#787369]">Pass: {p.minPass} {p.unit} · Max: {p.max}</p>
                         </div>
                       </button>
                     );
                   })}
                 </div>
-              </div>
 
-              {/* Input Fields */}
-              <div className="space-y-5 pt-2 border-t border-gray-100 dark:border-gray-800">
-                <div>
-                  <div className="flex justify-between items-center mb-1.5">
-                    <label className="text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                      Your Obtained Score / Grade (N<sub>d</sub>) *
-                    </label>
-                    <span className="text-xs font-bold text-germany-red dark:text-[#FF6B7A]">
-                      Scale: {minPassGrade} – {maxGrade}
-                    </span>
+                {activePreset && (
+                  <div className="mb-6 rounded-xl border border-[#ece7dd] bg-[#faf8f3] p-3 text-[12px] text-[#5e5b54]">
+                    <strong>Note:</strong> {activePreset.notes}
                   </div>
-                  <div className="relative">
+                )}
+
+                {/* Interactive Grade Inputs */}
+                <div className="space-y-5 border-t border-[#ece7dd] pt-5">
+                  {/* Your Grade Input */}
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <label className="text-[12px] font-bold uppercase tracking-wider text-[#4a4740]">
+                        Your Score / CGPA ({activePreset?.unit || 'Grade'})
+                      </label>
+                      <span className="text-[13px] font-bold text-[#9e2a2b]">
+                        {yourGrade} {activePreset?.unit}
+                      </span>
+                    </div>
                     <input
                       type="number"
-                      value={isNaN(yourGrade) ? '' : yourGrade}
-                      onChange={(e) => setYourGrade(parseFloat(e.target.value))}
                       step={activePreset?.step || 0.01}
                       min={0}
-                      max={maxGrade * 1.2}
-                      className="w-full px-4 py-3 neu-input text-base font-black rounded-xl bg-gray-50 dark:bg-[#0A0D14] border border-gray-200 dark:border-gray-800 focus:border-germany-red transition-all"
-                      placeholder={`e.g. ${activePreset?.defaultScore}`}
+                      max={maxGrade}
+                      value={yourGrade}
+                      onChange={(e) => setYourGrade(parseFloat(e.target.value) || 0)}
+                      className="w-full rounded-xl border border-[#dcd7cb] bg-[#faf8f3] p-3 text-[16px] font-bold text-[#16161a] focus:border-[#16161a] focus:bg-white focus:outline-none transition-all"
                     />
-                    <span className="absolute right-4 top-3.5 text-xs font-bold text-gray-400 uppercase">
-                      {activePreset?.unit || 'Score'}
-                    </span>
+                    <input
+                      type="range"
+                      min={minPassGrade}
+                      max={maxGrade}
+                      step={activePreset?.step || 0.01}
+                      value={Math.min(Math.max(yourGrade, minPassGrade), maxGrade)}
+                      onChange={(e) => setYourGrade(parseFloat(e.target.value))}
+                      className="w-full mt-2 accent-[#16161a] cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Max & Pass Reference Inputs */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-[#787369] mb-1.5">
+                        Maximum Possible Grade (Nmax)
+                      </label>
+                      <input
+                        type="number"
+                        step={activePreset?.step || 0.01}
+                        value={maxGrade}
+                        onChange={(e) => setMaxGrade(parseFloat(e.target.value) || 0)}
+                        className="w-full rounded-xl border border-[#dcd7cb] bg-[#faf8f3] p-2.5 text-[14px] font-bold text-[#16161a] focus:border-[#16161a] focus:bg-white focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-[#787369] mb-1.5">
+                        Minimum Passing Grade (Nmin)
+                      </label>
+                      <input
+                        type="number"
+                        step={activePreset?.step || 0.01}
+                        value={minPassGrade}
+                        onChange={(e) => setMinPassGrade(parseFloat(e.target.value) || 0)}
+                        className="w-full rounded-xl border border-[#dcd7cb] bg-[#faf8f3] p-2.5 text-[14px] font-bold text-[#16161a] focus:border-[#16161a] focus:bg-white focus:outline-none"
+                      />
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">
-                      Maximum Possible Grade (N<sub>max</sub>)
-                    </label>
-                    <input
-                      type="number"
-                      value={isNaN(maxGrade) ? '' : maxGrade}
-                      onChange={(e) => setMaxGrade(parseFloat(e.target.value))}
-                      step={0.1}
-                      className="w-full px-3.5 py-2.5 neu-input text-xs font-bold rounded-xl bg-gray-50 dark:bg-[#0A0D14] border border-gray-200 dark:border-gray-800"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">
-                      Minimum Passing Grade (N<sub>min</sub>)
-                    </label>
-                    <input
-                      type="number"
-                      value={isNaN(minPassGrade) ? '' : minPassGrade}
-                      onChange={(e) => setMinPassGrade(parseFloat(e.target.value))}
-                      step={0.1}
-                      className="w-full px-3.5 py-2.5 neu-input text-xs font-bold rounded-xl bg-gray-50 dark:bg-[#0A0D14] border border-gray-200 dark:border-gray-800"
-                    />
-                  </div>
-                </div>
-
-                {activePreset?.notes && (
-                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-2">
-                    <Info className="w-4 h-4 shrink-0 mt-0.5" />
-                    <span>{activePreset.notes}</span>
+              {/* Formula & Mathematical Proof Breakdown */}
+              <div className="rounded-2xl border border-[#e5e0d3] bg-white p-5 sm:p-6 shadow-sm">
+                <h3 className="text-[14px] font-bold text-[#16161a] mb-2 flex items-center gap-2">
+                  <Calculator className="h-4 w-4 text-[#16161a]" />
+                  Mathematical Calculation Breakdown
+                </h3>
+                <p className="text-[12px] text-[#5e5b54] mb-3">
+                  Applied Formula: <code className="rounded bg-[#f4f1ea] px-1.5 py-0.5 font-bold text-[#16161a]">1 + 3 × ((Nmax - Nd) / (Nmax - Nmin))</code>
+                </p>
+                {calculation.valid && (
+                  <div className="rounded-xl border border-[#ece7dd] bg-[#faf8f3] p-3 text-[12px] text-[#4a4740] font-mono leading-relaxed">
+                    Grade = 1 + 3 × (({maxGrade} - {yourGrade}) / ({maxGrade} - {minPassGrade}))<br />
+                    Grade = 1 + 3 × ({(maxGrade - yourGrade).toFixed(2)} / {(maxGrade - minPassGrade).toFixed(2)})<br />
+                    Grade = <span className="font-bold text-[#16161a]">{calculation.roundedOne} (or {calculation.roundedTwo} unrounded)</span>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Formula Explanation Card */}
-            <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800/80 shadow-xs">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
-                Mathematical Formula Used by German Universities
-              </h3>
-              <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-[#0A0D14] font-mono text-xs sm:text-sm text-germany-black dark:text-white border border-gray-200/80 dark:border-gray-800 text-center font-bold">
-                German Grade = 1 + 3 × [(N<sub>max</sub> - N<sub>d</sub>) / (N<sub>max</sub> - N<sub>min</sub>)]
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 leading-relaxed">
-                Where <strong>N<sub>max</sub></strong> is the highest possible grade, <strong>N<sub>min</sub></strong> is the lowest passing grade, and <strong>N<sub>d</sub></strong> is your obtained score. German scores range between 1.0 (highest honor) and 4.0 (lowest passing score). Grades above 4.0 represent a failing mark.
-              </p>
-            </div>
-          </div>
-
-          {/* Right Column: Output Card */}
-          <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-24">
-            <div className="neu-card p-6 sm:p-8 bg-white dark:bg-[#111622] border-2 border-germany-red/30 dark:border-germany-red/40 shadow-xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-germany-black via-germany-red to-germany-gold" />
-
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-extrabold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                  Your German Equivalent Grade
-                </span>
-                <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400">
-                  Lower is Better
-                </span>
-              </div>
-
-              {calculation.valid ? (
-                <>
-                  {/* Big Grade Number */}
-                  <div className="flex items-baseline gap-3 mb-3">
-                    <span className="text-5xl sm:text-6xl font-black font-display text-germany-black dark:text-white tracking-tight">
-                      {calculation.roundedOne.toFixed(1)}
-                    </span>
-                    <span className="text-xs font-bold text-gray-400">
-                      (Exact: {calculation.roundedTwo.toFixed(2)})
-                    </span>
-                  </div>
-
-                  {/* Classification Pill */}
-                  <div className="mb-6">
-                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-black uppercase tracking-wider ${calculation.classification?.badgeClass}`}>
-                      <Award className="w-3.5 h-3.5" />
-                      <span>{calculation.classification?.label}</span>
-                      <span className="font-medium normal-case">({calculation.classification?.en})</span>
-                    </div>
-                  </div>
-
-                  {/* Visual Grade Meter */}
-                  <div className="mb-6 space-y-2">
-                    <div className="flex justify-between text-[11px] font-bold text-gray-400">
-                      <span className="text-emerald-500">1.0 (Best)</span>
-                      <span>2.5 (Good)</span>
-                      <span className="text-red-500">4.0 (Pass Cutoff)</span>
-                    </div>
-                    <div className="h-3 w-full rounded-full bg-gradient-to-r from-emerald-500 via-yellow-400 to-rose-500 relative overflow-hidden p-0.5">
-                      {/* Marker */}
-                      <div 
-                        className="h-full bg-white dark:bg-black rounded-full shadow-md w-2 -ml-1 transition-all duration-300"
-                        style={{
-                          marginLeft: `${Math.min(Math.max(((calculation.roundedOne - 1.0) / 3.0) * 100, 0), 100)}%`
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* University Fit Guidance */}
-                  <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0A0D14] border border-gray-200/80 dark:border-gray-800 space-y-2 mb-6">
-                    <h4 className="text-xs font-black uppercase tracking-wider text-germany-black dark:text-white flex items-center gap-1.5">
-                      <GraduationCap className="w-4 h-4 text-germany-red" />
-                      Admission Outlook
-                    </h4>
-                    <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-                      {calculation.classification?.description}
-                    </p>
-                  </div>
-
-                  {/* Fast Action Buttons */}
-                  <div className="space-y-2.5">
-                    <Link
-                      href="/tools/admission-chance"
-                      className="w-full neu-btn-primary py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md hover:scale-[1.01] transition-transform text-white"
-                    >
-                      <TrendingUp className="w-4 h-4 text-germany-gold" />
-                      Calculate Master&apos;s Admission Chances
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-
-                    <Link
-                      href="/study/requirements"
-                      className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-center block text-gray-600 dark:text-gray-300 hover:text-germany-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
-                    >
-                      View German Degree Requirements Guide →
-                    </Link>
-                  </div>
-                </>
-              ) : (
-                <div className="p-6 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 text-xs font-bold">
-                  {calculation.error}
+            {/* Right Column: Calculated Results */}
+            <div className="lg:col-span-5 space-y-6">
+              <div className="rounded-3xl border border-[#e5e0d3] bg-[#faf8f3] p-6 sm:p-8 shadow-sm">
+                <div className="flex items-center justify-between border-b border-[#e5e0d3] pb-3 mb-6">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#787369]">
+                    Your German Academic Grade
+                  </span>
+                  <span className="text-[11px] text-[#787369]">German Scale 1.0 – 5.0</span>
                 </div>
-              )}
-            </div>
 
-            {/* Quick Conversion Reference Table */}
-            <div className="neu-card p-5 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800/80">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">
-                Quick 10-Point CGPA Reference
-              </h4>
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs text-left">
-                  <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-800 text-[10px] text-gray-400 uppercase">
-                      <th className="py-1.5 font-bold">Indian CGPA</th>
-                      <th className="py-1.5 font-bold">German Grade</th>
-                      <th className="py-1.5 font-bold">Rating</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60 font-medium">
-                    <tr><td className="py-1.5 font-bold">9.5 – 10.0</td><td className="py-1.5 font-bold text-emerald-500">1.0 – 1.2</td><td>Sehr Gut</td></tr>
-                    <tr><td className="py-1.5 font-bold">8.5 – 9.4</td><td className="py-1.5 font-bold text-emerald-500">1.3 – 1.7</td><td>Sehr Gut / Gut</td></tr>
-                    <tr><td className="py-1.5 font-bold">7.5 – 8.4</td><td className="py-1.5 font-bold text-blue-500">1.8 – 2.2</td><td>Gut</td></tr>
-                    <tr><td className="py-1.5 font-bold">6.5 – 7.4</td><td className="py-1.5 font-bold text-amber-500">2.3 – 2.7</td><td>Gut / Befriedigend</td></tr>
-                    <tr><td className="py-1.5 font-bold">5.5 – 6.4</td><td className="py-1.5 font-bold text-amber-500">2.8 – 3.2</td><td>Befriedigend</td></tr>
-                  </tbody>
-                </table>
+                {calculation.valid ? (
+                  <>
+                    <div className="text-center py-2 mb-6">
+                      <div className="text-5xl sm:text-6xl font-serif font-bold text-[#16161a] tracking-tight">
+                        {calculation.roundedOne.toFixed(1)}
+                      </div>
+                      <div className="text-[12px] text-[#787369] mt-1 font-mono">
+                        Exact: {calculation.roundedTwo.toFixed(2)}
+                      </div>
+
+                      <div className="mt-4">
+                        <span className="inline-block rounded-full bg-[#16161a] px-3.5 py-1 text-[12px] font-bold text-white shadow-2xs">
+                          {calculation.classification.label} ({calculation.classification.en})
+                        </span>
+                      </div>
+
+                      <p className="mt-4 text-[13px] text-[#5e5b54] leading-relaxed max-w-sm mx-auto">
+                        {calculation.classification.description}
+                      </p>
+                    </div>
+
+                    {/* Quick University Admission Fit */}
+                    <div className="rounded-2xl border border-[#e5e0d3] bg-white p-4 text-[12.5px] mb-6 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#787369]">TU9 Excellence Unis:</span>
+                        <span className={`font-bold ${calculation.roundedOne <= 2.2 ? 'text-[#16161a]' : 'text-[#787369]'}`}>
+                          {calculation.roundedOne <= 2.0 ? 'Highly Competitive' : calculation.roundedOne <= 2.4 ? 'Eligible' : 'Selective'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#787369]">Public Research Unis:</span>
+                        <span className={`font-bold ${calculation.roundedOne <= 2.5 ? 'text-[#16161a]' : 'text-[#787369]'}`}>
+                          {calculation.roundedOne <= 2.5 ? 'Eligible (NC & Open)' : 'Eligible (Open Admission)'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#787369]">Applied Sciences (HAW):</span>
+                        <span className="font-bold text-[#16161a]">
+                          {calculation.roundedOne <= 3.2 ? 'Direct Admission Fit' : 'Review Prerequisites'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Action Links */}
+                    <div className="space-y-2.5">
+                      <Link
+                        href={`/courses?maxGpa=${calculation.roundedOne}`}
+                        className="w-full rounded-xl bg-[#16161a] py-3 px-4 text-[13px] font-semibold flex items-center justify-center gap-2 text-white transition-all hover:bg-[#2e2e34] shadow-2xs"
+                      >
+                        <span>Filter Eligible Degrees ({calculation.roundedOne})</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+
+                      <Link
+                        href="/tools/admission-chance"
+                        className="w-full rounded-xl border border-[#dcd7cb] bg-white py-2.5 px-4 text-[12.5px] font-semibold text-center block text-[#16161a] hover:bg-[#f7f5f0] transition-colors"
+                      >
+                        Calculate Overall 100-Point Profile Fit →
+                      </Link>
+                    </div>
+                  </>
+                ) : (
+                  <div className="p-5 rounded-xl border border-[#e5e0d3] bg-white text-[#b4232f] text-[13px] font-medium">
+                    {calculation.error}
+                  </div>
+                )}
+              </div>
+
+              {/* CGPA Reference Table */}
+              <div className="rounded-2xl border border-[#e5e0d3] bg-white p-5 shadow-sm">
+                <h4 className="text-[11.5px] font-bold uppercase tracking-wider text-[#787369] mb-3">
+                  Indian 10-Point CGPA Conversion Table
+                </h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-[12px] text-left">
+                    <thead>
+                      <tr className="border-b border-[#ece7dd] text-[10.5px] text-[#9a958c] uppercase">
+                        <th className="py-2 font-bold">Indian CGPA</th>
+                        <th className="py-2 font-bold">German Grade</th>
+                        <th className="py-2 font-bold">KMK Rating</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#ece7dd] text-[#4a4740]">
+                      <tr><td className="py-2 font-semibold">9.5 – 10.0</td><td className="py-2 font-bold text-[#16161a]">1.0 – 1.2</td><td>Sehr Gut</td></tr>
+                      <tr><td className="py-2 font-semibold">8.5 – 9.4</td><td className="py-2 font-bold text-[#16161a]">1.3 – 1.7</td><td>Sehr Gut / Gut</td></tr>
+                      <tr><td className="py-2 font-semibold">7.5 – 8.4</td><td className="py-2 font-bold text-[#16161a]">1.8 – 2.2</td><td>Gut</td></tr>
+                      <tr><td className="py-2 font-semibold">6.5 – 7.4</td><td className="py-2 font-bold text-[#16161a]">2.3 – 2.7</td><td>Gut / Befriedigend</td></tr>
+                      <tr><td className="py-2 font-semibold">5.5 – 6.4</td><td className="py-2 font-bold text-[#16161a]">2.8 – 3.2</td><td>Befriedigend</td></tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
+
           </div>
+        </section>
 
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="px-4 sm:px-6 lg:px-12 max-w-4xl mx-auto pb-20">
-        <h2 className="text-2xl font-black font-display text-germany-black dark:text-white mb-6 text-center">
-          Frequently Asked Questions
-        </h2>
-        <div className="space-y-3">
-          {[
+        {/* FAQ Section */}
+        <StudyFAQ
+          id="faq"
+          badge="Bavarian Formula FAQs"
+          title="Frequently Asked Questions"
+          subtitle="How the modified Bavarian formula works, grade cutoffs for TU9 programs, and VPD verification."
+          faqs={[
             {
               q: "What is the Modified Bavarian Formula (Modifizierte bayerische Formel)?",
-              a: "It is the standardized mathematical formula adopted by the Standing Conference of the Ministers of Education and Cultural Affairs (KMK) and uni-assist to convert foreign grades into the German 1.0 to 4.0 academic scale."
+              a: "It is the standardized mathematical formula adopted by the Standing Conference of the Ministers of Education and Cultural Affairs (KMK) and Uni-Assist to convert international grades into the German 1.0 to 4.0 academic scale."
             },
             {
               q: "Why is a lower German grade better?",
-              a: "In the German university grading system, 1.0 is 'Sehr Gut' (the highest mark with distinction), 2.0 is 'Gut' (Good), 3.0 is 'Befriedigend' (Satisfactory), and 4.0 is 'Ausreichend' (the minimum passing cutoff). Any score worse than 4.0 is considered failing."
+              a: "In Germany, 1.0 is 'Sehr Gut' (the highest mark with distinction), 2.0 is 'Gut' (Good), 3.0 is 'Befriedigend' (Satisfactory), and 4.0 is 'Ausreichend' (the minimum passing cutoff). Any score higher than 4.0 is a fail."
             },
             {
               q: "What German grade do I need for competitive TU9 universities like TUM or RWTH Aachen?",
-              a: "For restricted Master’s programs (NC / Numerus Clausus) like Computer Science or Data Science, top universities usually require a German grade of 2.0 or better (equivalent to approximately 7.8–8.2+ CGPA in India). For non-NC programs, grades up to 2.5 or 3.0 are often accepted if you meet course credit prerequisites."
+              a: "For restricted Master’s programs (NC / Numerus Clausus) such as Computer Science, top universities usually expect a German grade of 2.0 or better (approx 7.8–8.2+ CGPA in India). For non-NC programs, grades up to 2.5 or 3.0 are accepted if your subject credit prerequisites match."
             },
             {
-              q: "Does uni-assist use this exact calculation?",
-              a: "Yes. When uni-assist issues your VPD (Vorprüfungsdokumentation), they apply the Modified Bavarian Formula using the minimum passing cutoff officially indicated on your university transcript or grading scale sheet."
+              q: "Does Uni-Assist use this exact calculation?",
+              a: "Yes. When Uni-Assist issues your VPD (Vorprüfungsdokumentation), they apply the Modified Bavarian Formula using the minimum passing cutoff officially confirmed on your university transcript."
             }
-          ].map((faq, i) => (
-            <div 
-              key={i} 
-              className="neu-card bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800/80 rounded-2xl overflow-hidden"
-            >
-              <button
-                type="button"
-                onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                className="w-full p-4 sm:p-5 text-left font-bold text-xs sm:text-sm text-germany-black dark:text-white flex items-center justify-between cursor-pointer"
-              >
-                <span>{faq.q}</span>
-                <ChevronDown className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
-              </button>
-              {openFaq === i && (
-                <div className="px-4 pb-4 sm:px-5 sm:pb-5 text-xs text-gray-600 dark:text-gray-300 font-medium leading-relaxed border-t border-gray-100 dark:border-gray-800 pt-3">
-                  {faq.a}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
+          ]}
+        />
 
-      <Footer />
-    </div>
+        {/* EuropeBridge Standard Footer */}
+        <div className="relative z-[40]">
+          <Footer />
+        </div>
+      </div>
+    </main>
   );
 }

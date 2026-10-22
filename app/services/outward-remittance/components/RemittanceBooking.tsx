@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Send, CheckCircle2, ShieldCheck, Clock, PhoneCall, Banknote, MessageSquare } from 'lucide-react';
+import { Send, CheckCircle2, PhoneCall, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const RemittanceBooking = () => {
@@ -29,19 +29,18 @@ export const RemittanceBooking = () => {
   };
 
   return (
-    <section id="booking" className="py-12 px-4 sm:px-6 lg:px-12 max-w-4xl mx-auto scroll-mt-28">
-      <div className="neu-card p-6 sm:p-12 border-2 border-germany-red/30 relative overflow-hidden space-y-8">
+    <section id="booking" className="py-8 px-4 sm:px-6 lg:px-12 max-w-4xl mx-auto scroll-mt-28">
+      <div className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-12 shadow-[0_16px_40px_rgba(22,22,26,0.05)] relative overflow-hidden space-y-8">
         {/* Header */}
         <div className="text-center space-y-2 max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 text-germany-red text-xs font-black uppercase tracking-wider">
-            <Banknote className="w-4 h-4" />
-            <span>Fast Remittance Request</span>
+          <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--lp-red)] block">
+            Fast Remittance Request
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-germany-black font-display">
-            Apply for Outward Remittance
+          <h2 className="lp-serif text-3xl sm:text-4xl font-semibold text-[var(--lp-text)]">
+            Apply for <em className="lp-script text-[var(--lp-red)] font-normal text-4xl sm:text-5xl">Outward Remittance</em>
           </h2>
-          <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
-            Submit the form below. A senior EuropeBridge forex counselor will call you back within <strong className="text-germany-black font-extrabold">60 minutes</strong> (working hours) with a live wholesale quote, designated domestic Indian bank account details, and Form A2 guidance.
+          <p className="text-xs sm:text-sm text-[var(--lp-muted)] font-medium leading-relaxed">
+            Submit the form below. A senior EuropeBridge forex counselor will call you back within <strong className="text-[var(--lp-text)] font-semibold">60 minutes</strong> (working hours) with a live wholesale quote, designated domestic Indian bank account details, and Form A2 guidance.
           </p>
         </div>
 
@@ -49,17 +48,17 @@ export const RemittanceBooking = () => {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="p-8 bg-green-50 border-2 border-green-300 rounded-3xl text-center space-y-5"
+            className="p-8 bg-[#ece7dd]/60 border border-[#e2ddd3] rounded-3xl text-center space-y-5"
           >
-            <div className="w-16 h-16 rounded-full bg-green-100 text-green-700 flex items-center justify-center mx-auto font-bold shadow-sm">
+            <div className="w-16 h-16 rounded-full bg-[var(--lp-red)]/10 text-[var(--lp-red)] flex items-center justify-center mx-auto font-bold shadow-sm">
               <CheckCircle2 className="w-10 h-10" />
             </div>
-            <h3 className="text-2xl font-black text-green-900 font-display">Remittance Request Received!</h3>
-            <p className="text-sm text-green-800 font-medium max-w-lg mx-auto leading-relaxed">
+            <h3 className="lp-serif text-2xl font-bold text-[var(--lp-text)]">Remittance Request Received!</h3>
+            <p className="text-sm text-[var(--lp-muted)] font-medium max-w-lg mx-auto leading-relaxed">
               Thank you, <strong>{firstName}</strong>. A dedicated senior forex executive has been assigned to your case and will call you at <strong>{countryCode} {phone}</strong> within 60 minutes with your personalized live exchange quote.
             </p>
 
-            <div className="p-4 rounded-2xl bg-white/80 border border-green-200 text-xs text-green-900 font-semibold max-w-md mx-auto space-y-1">
+            <div className="p-4 rounded-2xl bg-white border border-[#e5e0d3] text-xs text-[var(--lp-text)] font-medium max-w-md mx-auto space-y-1">
               <div>Purpose: <strong>{transferPurpose}</strong></div>
               <div>Approx. Amount: <strong>{approxAmount}</strong></div>
               <div>Funding Source: <strong>{fundingSource}</strong></div>
@@ -71,7 +70,7 @@ export const RemittanceBooking = () => {
                 href={`https://wa.me/4915212345678?text=Hi%20EuropeBridge%20team,%20I%20just%20submitted%20my%20outward%20remittance%20request%20for%20${encodeURIComponent(firstName)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-600 text-white font-extrabold text-xs flex items-center justify-center gap-2 hover:bg-emerald-700 shadow-sm"
+                className="w-full sm:w-auto lp-btn lp-btn--red px-6 py-3 text-xs flex items-center justify-center gap-2"
               >
                 <MessageSquare className="w-4 h-4" />
                 <span>Urgent WhatsApp Rate Confirmation?</span>
@@ -79,7 +78,7 @@ export const RemittanceBooking = () => {
 
               <button 
                 onClick={() => setIsSubmitted(false)}
-                className="w-full sm:w-auto neu-btn px-6 py-3 text-xs font-extrabold text-germany-black bg-white border border-gray-200"
+                className="w-full sm:w-auto lp-btn lp-btn--ghost-dark px-6 py-3 text-xs font-bold"
               >
                 Submit Another Request
               </button>
@@ -90,156 +89,153 @@ export const RemittanceBooking = () => {
             {/* Name Fields */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">First Name *</label>
+                <label className="text-xs font-bold uppercase text-[var(--lp-text)] tracking-wider block">First Name *</label>
                 <input 
                   type="text" 
                   required
                   placeholder="e.g. Aryan"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm focus:border-germany-red focus:ring-1 focus:ring-germany-red outline-none bg-white"
+                  className="w-full px-4 py-3 rounded-2xl border border-[#e5e0d3] font-medium text-sm focus:border-[var(--lp-red)] focus:ring-2 focus:ring-[var(--lp-red)]/15 outline-none bg-white text-[var(--lp-text)]"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">Last Name</label>
+                <label className="text-xs font-bold uppercase text-[var(--lp-text)] tracking-wider block">Last Name</label>
                 <input 
                   type="text" 
-                  placeholder="e.g. Verma"
+                  placeholder="e.g. Sharma"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm focus:border-germany-red focus:ring-1 focus:ring-germany-red outline-none bg-white"
+                  className="w-full px-4 py-3 rounded-2xl border border-[#e5e0d3] font-medium text-sm focus:border-[var(--lp-red)] focus:ring-2 focus:ring-[var(--lp-red)]/15 outline-none bg-white text-[var(--lp-text)]"
                 />
               </div>
             </div>
 
-            {/* Email and Phone */}
+            {/* Email & Phone */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">Email Address *</label>
+                <label className="text-xs font-bold uppercase text-[var(--lp-text)] tracking-wider block">Email Address *</label>
                 <input 
                   type="email" 
                   required
-                  placeholder="aryan@example.com"
+                  placeholder="aryan@gmail.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm focus:border-germany-red focus:ring-1 focus:ring-germany-red outline-none bg-white"
+                  className="w-full px-4 py-3 rounded-2xl border border-[#e5e0d3] font-medium text-sm focus:border-[var(--lp-red)] focus:ring-2 focus:ring-[var(--lp-red)]/15 outline-none bg-white text-[var(--lp-text)]"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">Phone Number (WhatsApp) *</label>
+                <label className="text-xs font-bold uppercase text-[var(--lp-text)] tracking-wider block">Phone Number *</label>
                 <div className="flex gap-2">
                   <select 
                     value={countryCode} 
                     onChange={(e) => setCountryCode(e.target.value)}
-                    className="px-3 py-3 rounded-xl border border-gray-300 font-bold text-xs bg-gray-50 focus:border-germany-red outline-none"
+                    className="px-3 py-3 rounded-2xl border border-[#e5e0d3] font-bold text-xs bg-white text-[var(--lp-text)] outline-none"
                   >
-                    <option value="+91">🇮🇳 +91</option>
-                    <option value="+49">🇩🇪 +49</option>
-                    <option value="+1">🇺🇸 +1</option>
-                    <option value="+44">🇬🇧 +44</option>
-                    <option value="+971">🇦🇪 +971</option>
+                    <option value="+91">+91 (IN)</option>
+                    <option value="+49">+49 (DE)</option>
+                    <option value="+971">+971 (UAE)</option>
                   </select>
                   <input 
                     type="tel" 
                     required
-                    placeholder="9876543210"
+                    placeholder="98765 43210"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="flex-1 px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm focus:border-germany-red focus:ring-1 focus:ring-germany-red outline-none bg-white"
+                    className="w-full px-4 py-3 rounded-2xl border border-[#e5e0d3] font-medium text-sm focus:border-[var(--lp-red)] focus:ring-2 focus:ring-[var(--lp-red)]/15 outline-none bg-white text-[var(--lp-text)]"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Transfer Purpose & Estimated Amount */}
+            {/* Transfer Purpose & Approx Amount */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">Transfer Purpose *</label>
-                <select
+                <label className="text-xs font-bold uppercase text-[var(--lp-text)] tracking-wider block">Transfer Purpose</label>
+                <select 
                   value={transferPurpose}
                   onChange={(e) => setTransferPurpose(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm bg-white focus:border-germany-red outline-none"
+                  className="w-full px-4 py-3 rounded-2xl border border-[#e5e0d3] font-medium text-sm bg-white text-[var(--lp-text)] outline-none"
                 >
                   <option value="German Blocked Account (€11,904–€12,053)">German Blocked Account (€11,904–€12,053)</option>
-                  <option value="University Semester Contribution / Tuition">University Semester Contribution / Tuition</option>
-                  <option value="Accommodation / Rental Deposit (Mietkaution)">Accommodation / Rental Deposit (Mietkaution)</option>
-                  <option value="Student Travel Forex Card">Student Travel Forex Card</option>
-                  <option value="Living Expenses / Other">Living Expenses / Other</option>
+                  <option value="University Tuition Fee">University Tuition Fee</option>
+                  <option value="Semester Fee / Contribution (Semesterbeitrag)">Semester Fee / Contribution (Semesterbeitrag)</option>
+                  <option value="Accommodation Rent Deposit (Kaution)">Accommodation Rent Deposit (Kaution)</option>
+                  <option value="Other Living Expense Remittance">Other Living Expense Remittance</option>
                 </select>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">Approximate Amount (EUR / INR)</label>
-                <input 
-                  type="text" 
-                  placeholder="e.g. €12,053 or ₹11 Lakhs"
+                <label className="text-xs font-bold uppercase text-[var(--lp-text)] tracking-wider block">Approx. Amount in Euros</label>
+                <select 
                   value={approxAmount}
                   onChange={(e) => setApproxAmount(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm focus:border-germany-red outline-none bg-white"
-                />
+                  className="w-full px-4 py-3 rounded-2xl border border-[#e5e0d3] font-medium text-sm bg-white text-[var(--lp-text)] outline-none"
+                >
+                  <option value="€12,053 (Standard Blocked Account)">€12,053 (Standard Blocked Account)</option>
+                  <option value="€2,000 to €5,000 (Tuition / Deposit)">€2,000 to €5,000 (Tuition / Deposit)</option>
+                  <option value="€5,000 to €15,000 (Full Year Tuition)">€5,000 to €15,000 (Full Year Tuition)</option>
+                  <option value="Under €1,500 (Small Payment)">Under €1,500 (Small Payment)</option>
+                  <option value="Above €15,000">Above €15,000</option>
+                </select>
               </div>
             </div>
 
-            {/* Funding Source & Urgency */}
+            {/* Funding Source & Timeline */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">Funding Source *</label>
-                <select
+                <label className="text-xs font-bold uppercase text-[var(--lp-text)] tracking-wider block">Funding Source (TCS Rate)</label>
+                <select 
                   value={fundingSource}
                   onChange={(e) => setFundingSource(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm bg-white focus:border-germany-red outline-none"
+                  className="w-full px-4 py-3 rounded-2xl border border-[#e5e0d3] font-medium text-sm bg-white text-[var(--lp-text)] outline-none"
                 >
-                  <option value="Education Loan (0.5% TCS)">Education Loan (0.5% TCS above ₹7L)</option>
-                  <option value="Self / Parent Savings (5% TCS)">Self / Parent Savings (5% TCS above ₹7L)</option>
-                  <option value="Mix of Loan and Savings">Mix of Loan and Savings</option>
+                  <option value="Education Loan (0.5% TCS)">Education Loan (0.5% TCS)</option>
+                  <option value="Self / Parent Bank Savings (5% TCS)">Self / Parent Bank Savings (5% TCS)</option>
+                  <option value="Part Loan + Part Savings">Part Loan + Part Savings</option>
                 </select>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">Deadline Urgency *</label>
-                <select
+                <label className="text-xs font-bold uppercase text-[var(--lp-text)] tracking-wider block">Transfer Urgency</label>
+                <select 
                   value={urgency}
                   onChange={(e) => setUrgency(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm bg-white focus:border-germany-red outline-none"
+                  className="w-full px-4 py-3 rounded-2xl border border-[#e5e0d3] font-medium text-sm bg-white text-[var(--lp-text)] outline-none"
                 >
                   <option value="Urgent (< 3 Days - Visa / Enrollment Deadline)">Urgent (&lt; 3 Days - Visa / Enrollment Deadline)</option>
-                  <option value="Within 1 to 2 Weeks">Within 1 to 2 Weeks</option>
-                  <option value="Planning Ahead / Exploring Rates">Planning Ahead / Exploring Rates</option>
+                  <option value="Within Next 1–2 Weeks">Within Next 1–2 Weeks</option>
+                  <option value="Exploring Rates for Upcoming Intake">Exploring Rates for Upcoming Intake</option>
                 </select>
               </div>
             </div>
 
             {/* Consent Checkbox */}
-            <div className="flex items-start gap-3 pt-2">
-              <input 
-                type="checkbox" 
-                id="consent"
-                required
-                checked={consent}
-                onChange={(e) => setConsent(e.target.checked)}
-                className="w-5 h-5 rounded text-germany-red focus:ring-germany-red accent-germany-red mt-0.5 cursor-pointer shrink-0"
-              />
-              <label htmlFor="consent" className="text-xs text-gray-600 font-medium leading-relaxed cursor-pointer select-none">
-                I agree that EuropeBridge and its RBI-authorized forex partners may contact me via phone or WhatsApp regarding German outward remittance quotes and Form A2 procedures. EuropeBridge does not charge students any agency markup.
+            <div className="pt-2">
+              <label className="flex items-start gap-3 cursor-pointer select-none">
+                <input 
+                  type="checkbox"
+                  required
+                  checked={consent}
+                  onChange={(e) => setConsent(e.target.checked)}
+                  className="mt-1 w-4 h-4 rounded text-[var(--lp-red)] focus:ring-[var(--lp-red)] accent-[var(--lp-red)]"
+                />
+                <span className="text-xs text-[var(--lp-muted)] font-medium leading-relaxed">
+                  I authorize EuropeBridge and its RBI-licensed Authorized Dealer Category-II banking partner to contact me via phone, WhatsApp, and email regarding live remittance exchange rates and Form A2 processing.
+                </span>
               </label>
             </div>
 
             {/* Submit Button */}
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={isSubmitting}
-              className="w-full neu-btn-primary py-4 text-base font-black flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
+              className="lp-btn lp-btn--red w-full py-4 text-sm font-bold flex items-center justify-center gap-2"
             >
-              {isSubmitting ? (
-                <span>Submitting Request...</span>
-              ) : (
-                <>
-                  <span>Request 60-Minute Callback &amp; Quote</span>
-                  <Send className="w-4 h-4" />
-                </>
-              )}
+              <Send className="w-4 h-4" />
+              <span>{isSubmitting ? 'Submitting Request...' : 'Request Wholesale Quote & 60-Min Callback'}</span>
             </button>
           </form>
         )}

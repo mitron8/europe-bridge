@@ -1,145 +1,144 @@
 "use client";
+
 import React from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { ShieldCheck, Clock, ArrowRight, Wallet, Landmark, CheckCircle2, RefreshCw } from 'lucide-react';
+import { ShieldCheck, Clock, ArrowRight, Wallet, Landmark, RefreshCw } from 'lucide-react';
 
 export const BlockedAccountHero = () => {
   return (
-    <section className="pt-2 sm:pt-4 pb-12 px-4 sm:px-6 lg:px-12 relative overflow-hidden">
-      {/* Background Decorative Accents */}
-      <div className="absolute top-10 right-10 w-72 h-72 bg-red-200/20 rounded-full blur-3xl -z-10 pointer-events-none" />
-      <div className="absolute bottom-5 left-10 w-80 h-80 bg-amber-200/20 rounded-full blur-3xl -z-10 pointer-events-none" />
+    <section className="relative pt-24 sm:pt-28 pb-10 sm:pb-14 px-4 sm:px-6 lg:px-12 overflow-hidden">
+      {/* Warm ambient landing lights */}
+      <div 
+        aria-hidden 
+        className="pointer-events-none absolute -right-[10%] top-[5%] h-[80vh] w-[65vw] rounded-full blur-[140px] opacity-40 select-none"
+        style={{ background: "radial-gradient(closest-side, rgba(231,211,168,0.55), rgba(244,241,234,0))" }}
+      />
+      <div 
+        aria-hidden 
+        className="pointer-events-none absolute -bottom-[20%] left-[20%] h-[60vh] w-[45vw] rounded-full blur-[120px] opacity-30 select-none"
+        style={{ background: "radial-gradient(closest-side, rgba(230,57,70,0.15), rgba(244,241,234,0))" }}
+      />
 
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto relative z-10">
         {/* Breadcrumb Navigation */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs md:text-sm font-semibold text-gray-500">
-          <Link href="/" className="hover:text-germany-red transition-colors">Home</Link>
-          <span>/</span>
-          <Link href="/#our-process" className="hover:text-germany-red transition-colors">Services</Link>
-          <span>/</span>
-          <span className="text-germany-black font-extrabold">Blocked Account for Germany</span>
+        <nav aria-label="Breadcrumb" className="mb-4 sm:mb-5 flex items-center gap-2 text-xs font-semibold text-[var(--lp-muted)]">
+          <Link href="/" className="hover:text-[var(--lp-red)] transition-colors">Home</Link>
+          <span className="text-[var(--lp-faint)]">/</span>
+          <Link href="/services" className="hover:text-[var(--lp-red)] transition-colors">Services</Link>
+          <span className="text-[var(--lp-faint)]">/</span>
+          <span className="text-[var(--lp-text)] font-bold">Blocked Account for Germany</span>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Main Hero Content */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-100/80 border border-red-200 text-germany-red text-xs font-black uppercase tracking-wider">
-                <Landmark className="w-4 h-4" />
-                <span>Official § 16b AufenthG Requirement</span>
-              </div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                <span>BaFin &amp; Foreign Office Approved</span>
-              </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          {/* Main Hero Left Content */}
+          <div className="lg:col-span-7 space-y-5">
+            {/* Eyebrow Badge */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--lp-rule-strong)] bg-white/70 backdrop-blur-sm px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--lp-muted)]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--lp-red)]" />
+              Official § 16b AufenthG Requirement
             </div>
 
-            <div className="flex items-start gap-4">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-germany-black leading-tight tracking-tight font-display flex-1">
-                German Blocked Account <br className="hidden sm:inline" />
-                <span className="text-germany-red">Made Fast &amp; 100% Compliant</span>
-              </h1>
-            </div>
+            <h1 className="lp-serif text-3xl sm:text-5xl lg:text-[52px] font-bold text-[var(--lp-text)] tracking-[-0.02em] leading-[1.08]">
+              German Blocked Account <br />
+              <em className="lp-script text-[var(--lp-red)]">Fast &amp; 100% Compliant</em>
+            </h1>
 
-            <p className="text-base sm:text-lg text-gray-700 font-medium leading-relaxed">
-              Open your mandatory German Sperrkonto for your VFS student visa appointment. Speak to a dedicated finance advisor within <strong className="text-germany-black font-extrabold">60 minutes</strong>, compare BaFin-approved providers (Expatrio, Coracle, Fintiba), and receive your official blocking confirmation document within <strong className="text-germany-black font-extrabold">24 hours</strong>.
+            <p className="text-base sm:text-lg text-[var(--lp-muted)] leading-[1.7] font-normal max-w-2xl">
+              Open your mandatory German Sperrkonto for your VFS student visa appointment. Speak to a dedicated finance advisor within <strong className="text-[var(--lp-text)] font-bold">60 minutes</strong>, compare BaFin-approved providers (Expatrio, Coracle, Fintiba), and receive your official blocking confirmation document within <strong className="text-[var(--lp-text)] font-bold">24 hours</strong>.
             </p>
 
             {/* Micro Value Metrics Bar */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-2">
-              <div className="p-3 bg-white/90 rounded-2xl border border-gray-200 text-center shadow-sm">
-                <div className="text-base sm:text-lg font-black text-germany-black">€11,904</div>
-                <div className="text-[11px] font-bold text-gray-500 uppercase">Annual Requirement</div>
+              <div className="p-3.5 bg-[var(--lp-card)] rounded-2xl border border-[var(--lp-rule)] text-center shadow-2xs">
+                <div className="lp-serif text-lg font-bold text-[var(--lp-text)]">€11,904</div>
+                <div className="text-[10px] font-semibold text-[var(--lp-muted)] uppercase tracking-wider mt-0.5">Annual Requirement</div>
               </div>
-              <div className="p-3 bg-white/90 rounded-2xl border border-gray-200 text-center shadow-sm">
-                <div className="text-base sm:text-lg font-black text-germany-red">€992 /mo</div>
-                <div className="text-[11px] font-bold text-gray-500 uppercase">Monthly Allowance</div>
+              <div className="p-3.5 bg-[var(--lp-card)] rounded-2xl border border-[var(--lp-rule)] text-center shadow-2xs">
+                <div className="lp-serif text-lg font-bold text-[var(--lp-red)]">€992 /mo</div>
+                <div className="text-[10px] font-semibold text-[var(--lp-muted)] uppercase tracking-wider mt-0.5">Monthly Allowance</div>
               </div>
-              <div className="p-3 bg-white/90 rounded-2xl border border-gray-200 text-center shadow-sm">
-                <div className="text-base sm:text-lg font-black text-emerald-700">24 Hours</div>
-                <div className="text-[11px] font-bold text-gray-500 uppercase">Confirmation Time</div>
+              <div className="p-3.5 bg-[var(--lp-card)] rounded-2xl border border-[var(--lp-rule)] text-center shadow-2xs">
+                <div className="lp-serif text-lg font-bold text-[var(--lp-text)]">24 Hours</div>
+                <div className="text-[10px] font-semibold text-[var(--lp-muted)] uppercase tracking-wider mt-0.5">Confirmation Time</div>
               </div>
-              <div className="p-3 bg-white/90 rounded-2xl border border-gray-200 text-center shadow-sm">
-                <div className="text-base sm:text-lg font-black text-germany-gold">100%</div>
-                <div className="text-[11px] font-bold text-gray-500 uppercase">Refund Guarantee</div>
+              <div className="p-3.5 bg-[var(--lp-card)] rounded-2xl border border-[var(--lp-rule)] text-center shadow-2xs">
+                <div className="lp-serif text-lg font-bold text-[var(--lp-red)]">100%</div>
+                <div className="text-[10px] font-semibold text-[var(--lp-muted)] uppercase tracking-wider mt-0.5">Refund Guarantee</div>
               </div>
             </div>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
+            {/* Quick Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
               <a 
                 href="#booking" 
-                className="neu-btn-primary px-8 py-4 text-base font-extrabold flex items-center justify-center gap-2 w-full sm:w-auto shadow-md"
+                className="lp-btn lp-btn--red justify-center text-sm shadow-[0_12px_28px_-8px_rgba(230,57,70,0.4)]"
               >
                 <span>Apply for Blocked Account</span>
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-4 h-4 shrink-0" />
               </a>
 
               <a 
                 href="#calculator" 
-                className="neu-btn px-6 py-4 text-base font-extrabold text-germany-black hover:text-germany-red bg-white border border-gray-200 w-full sm:w-auto text-center"
+                className="lp-btn lp-btn--dark justify-center text-sm"
               >
                 <span>Calculate Cost in INR</span>
               </a>
-
-              <a 
-                href="#providers" 
-                className="text-xs font-bold text-gray-600 hover:text-germany-red underline underline-offset-4 py-2 sm:py-0"
-              >
-                Compare Providers
-              </a>
             </div>
+
+            <p className="text-xs font-semibold text-[var(--lp-faint)]">
+              BaFin-regulated German deposit · Zero hidden fees · Direct blocking certificate.
+            </p>
           </div>
 
-          {/* Quick Facts Card Widget */}
+          {/* Quick Facts Sidebar Card */}
           <div className="lg:col-span-5">
-            <motion.div 
-              className="neu-card p-6 sm:p-8 space-y-6 border border-amber-100 relative"
-              whileHover={{ y: -4 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
-                <div className="w-12 h-12 rounded-2xl bg-red-100 text-germany-red flex items-center justify-center font-bold shadow-inner">
-                  <Wallet className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-germany-black text-lg">2026/2027 Official Rates</h3>
-                  <p className="text-xs text-gray-500 font-medium">Federal Foreign Office (Auswärtiges Amt)</p>
-                </div>
+            <div className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-7 space-y-5 shadow-[0_12px_40px_rgba(22,22,26,0.04)]">
+              <div className="flex items-center justify-between border-b border-[var(--lp-rule)] pb-4">
+                <h3 className="lp-serif text-lg font-semibold text-[var(--lp-text)] flex items-center gap-2.5">
+                  <Wallet className="w-5 h-5 text-[var(--lp-red)] shrink-0" />
+                  <span>2026/2027 Official Rates</span>
+                </h3>
+                <span className="px-3 py-1 rounded-full bg-[#ece7dd] text-[var(--lp-text)] border border-[#e2ddd3] text-[10.5px] font-semibold uppercase tracking-wider shrink-0">
+                  Federal Foreign Office
+                </span>
               </div>
 
-              <div className="space-y-3.5">
-                <div className="flex justify-between items-center p-3.5 bg-gray-50 rounded-2xl border border-gray-200">
-                  <span className="text-xs font-extrabold text-gray-600 uppercase">Annual Blocked Amount</span>
-                  <span className="text-xl font-black text-germany-black">€11,904</span>
+              <div className="space-y-3 text-xs">
+                <div className="flex justify-between items-center p-3.5 rounded-2xl bg-[#ece7dd]/40 border border-[#e2ddd3]">
+                  <span className="text-[var(--lp-muted)] font-semibold text-[11px] uppercase tracking-wider">Annual Blocked Amount</span>
+                  <span className="lp-serif text-lg font-bold text-[var(--lp-text)]">€11,904</span>
                 </div>
 
-                <div className="flex justify-between items-center p-3.5 bg-gray-50 rounded-2xl border border-gray-200">
-                  <span className="text-xs font-extrabold text-gray-600 uppercase">Monthly Payout Rate</span>
-                  <span className="text-xl font-black text-germany-red">€992 <span className="text-xs font-normal text-gray-500">/mo</span></span>
+                <div className="flex justify-between items-center p-3.5 rounded-2xl bg-[#ece7dd]/40 border border-[#e2ddd3]">
+                  <span className="text-[var(--lp-muted)] font-semibold text-[11px] uppercase tracking-wider">Monthly Payout Rate</span>
+                  <span className="lp-serif text-lg font-bold text-[var(--lp-red)]">€992 /mo</span>
                 </div>
 
-                <div className="flex justify-between items-center p-3.5 bg-emerald-50/90 rounded-2xl border border-emerald-200">
-                  <span className="text-xs font-extrabold text-emerald-800 uppercase flex items-center gap-1.5">
-                    <Clock className="w-4 h-4 text-emerald-700" /> Confirmation Delivery
+                <div className="flex justify-between items-center p-3.5 rounded-2xl bg-[#ece7dd]/40 border border-[#e2ddd3]">
+                  <span className="text-[var(--lp-muted)] font-semibold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                    <Clock className="w-4 h-4 text-[var(--lp-red)]" /> Confirmation Delivery
                   </span>
-                  <span className="text-sm font-black text-emerald-800">Within 24 Hours</span>
+                  <span className="font-bold text-[var(--lp-text)]">Within 24 Hours</span>
                 </div>
 
-                <div className="flex justify-between items-center p-3.5 bg-blue-50/80 rounded-2xl border border-blue-200">
-                  <span className="text-xs font-extrabold text-blue-800 uppercase flex items-center gap-1.5">
-                    <RefreshCw className="w-4 h-4 text-blue-700" /> Insurance Bundle Cashback
+                <div className="flex justify-between items-center p-3.5 rounded-2xl bg-[#ece7dd]/40 border border-[#e2ddd3]">
+                  <span className="text-[var(--lp-text)] font-semibold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                    <RefreshCw className="w-4 h-4 text-[var(--lp-red)]" /> Insurance Cashback
                   </span>
-                  <span className="text-sm font-black text-blue-800">Up to €247 Refund</span>
+                  <span className="font-bold text-[var(--lp-text)]">Up to €247 Benefit</span>
                 </div>
               </div>
 
-              <div className="pt-2 text-xs text-gray-600 font-medium leading-relaxed flex items-center gap-2 border-t border-gray-100">
-                <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
-                <span>100% money-back guarantee if visa is officially declined by the Embassy.</span>
+              <div className="pt-2 text-center border-t border-[var(--lp-rule)]">
+                <a 
+                  href="#providers" 
+                  className="text-xs font-semibold text-[var(--lp-red)] hover:underline inline-flex items-center gap-1"
+                >
+                  <span>Compare Expatrio, Coracle &amp; Fintiba</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </a>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>

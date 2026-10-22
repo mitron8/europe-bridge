@@ -1,23 +1,12 @@
 "use client";
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Calendar, ArrowRight, Calculator, Check, Sparkles } from 'lucide-react';
+import { Calendar, ArrowRight, Calculator, Check, Compass, BookOpen } from 'lucide-react';
 
 export const HeroHeader = () => {
-  const [quickPercentage, setQuickPercentage] = useState<number>(78);
-
-  // Quick Bavarian formula estimation with standard Indian scale (Max 100, Pass 40)
-  const calculateQuickGermanGrade = (pct: number) => {
-    if (!pct || pct < 40) return "N/A";
-    const grade = 1 + 3 * ((100 - pct) / (100 - 40));
-    return grade.toFixed(2);
-  };
-
-  const germanGrade = calculateQuickGermanGrade(quickPercentage);
-
   return (
-    <section className="relative pt-32 sm:pt-40 pb-16 px-4 sm:px-6 lg:px-12 overflow-hidden">
+    <section className="relative pt-28 sm:pt-32 pb-10 sm:pb-14 px-4 sm:px-6 lg:px-12 overflow-hidden">
       {/* Warm ambient landing lights */}
       <div 
         aria-hidden 
@@ -32,10 +21,10 @@ export const HeroHeader = () => {
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Breadcrumb Navigation */}
-        <nav aria-label="Breadcrumb" className="mb-8 flex items-center gap-2 text-xs font-semibold text-[var(--lp-muted)]">
+        <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs font-semibold text-[var(--lp-muted)]">
           <Link href="/" className="hover:text-[var(--lp-red)] transition-colors">Home</Link>
           <span className="text-[var(--lp-faint)]">/</span>
-          <Link href="/#our-process" className="hover:text-[var(--lp-red)] transition-colors">Study</Link>
+          <Link href="/study/masters" className="hover:text-[var(--lp-red)] transition-colors">Study</Link>
           <span className="text-[var(--lp-faint)]">/</span>
           <span className="text-[var(--lp-text)] font-bold">Admission Requirements</span>
         </nav>
@@ -68,23 +57,23 @@ export const HeroHeader = () => {
             <motion.div 
               whileHover={{ y: -2 }}
               transition={{ duration: 0.2 }}
-              className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-7 relative overflow-hidden shadow-[0_4px_24px_rgba(22,22,26,0.03)] border-l-4 border-l-[var(--lp-red)]"
+              className="bg-[#ece7dd]/70 border border-[#ded8cb] rounded-3xl p-6 sm:p-7 relative overflow-hidden shadow-[0_8px_24px_rgba(22,22,26,0.04)]"
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--lp-red)] flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-[var(--lp-red)]" /> At a Glance Summary
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--lp-red)] bg-white/80 border border-[#e5e0d3] shadow-xs">
+                  <Compass className="w-3.5 h-3.5 text-[var(--lp-red)]" /> At a Glance Summary
                 </span>
                 <span className="text-[11.5px] font-medium text-[var(--lp-muted)] flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5 text-[var(--lp-faint)]" /> Updated May 2026
                 </span>
               </div>
               <p className="text-[14.5px] text-[var(--lp-text)] leading-[1.7] font-normal">
-                To study in Germany, you need a recognized secondary or Bachelor's degree (converted via the modified Bavarian formula to the German 1.0–4.0 scale), language proficiency (IELTS 6.0–6.5 or TestDaF 4x4), and an <strong className="font-semibold text-[var(--lp-text)]">APS certificate</strong> (mandatory for India, China, Vietnam). Standard deadlines: <strong className="text-[var(--lp-red)] font-semibold">July 15</strong> (Winter) &amp; <strong className="text-[var(--lp-red)] font-semibold">Jan 15</strong> (Summer).
+                To study in Germany, you need a recognized secondary or Bachelor&apos;s degree (converted via the modified Bavarian formula to the German 1.0–4.0 scale), language proficiency (IELTS 6.0–6.5 or TestDaF 4x4), and an <strong className="font-semibold text-[var(--lp-text)]">APS certificate</strong> (mandatory for India, China, Vietnam). Standard deadlines: <strong className="text-[var(--lp-red)] font-semibold">July 15</strong> (Winter) &amp; <strong className="text-[var(--lp-red)] font-semibold">Jan 15</strong> (Summer).
               </p>
             </motion.div>
           </motion.div>
 
-          {/* Quick Grade Estimator Widget */}
+          {/* Dedicated Tool Navigation Card */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.96, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -94,67 +83,54 @@ export const HeroHeader = () => {
             <div 
               className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-6 shadow-[0_16px_40px_rgba(22,22,26,0.06)] hover:shadow-[0_20px_50px_rgba(22,22,26,0.08)] transition-all duration-300 relative"
             >
-              <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-2xl bg-[#ece7dd] text-[var(--lp-text)] flex items-center justify-center shrink-0 border border-[#e2ddd3] shadow-xs">
-                  <Calculator className="w-6 h-6 text-[var(--lp-text)]" />
-                </div>
-                <div>
-                  <h3 className="lp-serif text-xl sm:text-2xl font-semibold text-[var(--lp-text)]">Instant German GPA Check</h3>
-                  <p className="text-xs text-[var(--lp-muted)] mt-0.5">Estimate your grade on the German scale (1.0 to 4.0)</p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex justify-between items-center text-xs font-semibold text-[var(--lp-text)]">
-                  <span>Your Academic Score (%)</span>
-                  <span className="text-[var(--lp-red)] font-bold text-sm bg-[var(--lp-red)]/10 px-2.5 py-0.5 rounded-full">{quickPercentage}%</span>
-                </div>
-                <input 
-                  type="range" 
-                  min="40" 
-                  max="100" 
-                  value={quickPercentage} 
-                  onChange={(e) => setQuickPercentage(Number(e.target.value))}
-                  className="w-full h-2.5 bg-[#ece7dd] rounded-lg appearance-none cursor-pointer accent-[var(--lp-red)] transition-all"
-                />
-                <div className="flex justify-between text-[11px] text-[var(--lp-muted)] font-medium">
-                  <span>40% (Passing)</span>
-                  <span>70% (First Class)</span>
-                  <span>100% (Distinction)</span>
-                </div>
-              </div>
-
-              <motion.div 
-                key={germanGrade}
-                initial={{ scale: 0.98, opacity: 0.9 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.2 }}
-                className="bg-[#ece7dd]/60 rounded-2xl p-5 flex items-center justify-between border border-[#e2ddd3]"
-              >
-                <div>
-                  <div className="text-[11px] font-semibold text-[var(--lp-muted)] uppercase tracking-wider">German Scale Result</div>
-                  <div className="lp-serif text-3xl sm:text-4xl font-bold text-[var(--lp-text)] mt-0.5">
-                    {germanGrade} <span className="text-xs font-normal text-[var(--lp-muted)]">(1.0 is best)</span>
+              <div className="flex items-center justify-between border-b border-[#e5e0d3] pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-2xl bg-[#ece7dd] text-[var(--lp-text)] flex items-center justify-center shrink-0 border border-[#ded8cb] shadow-xs">
+                    <Calculator className="w-5 h-5 text-[var(--lp-red)]" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--lp-red)] block">Dedicated Evaluation Tool</span>
+                    <h3 className="lp-serif text-xl sm:text-2xl font-semibold text-[var(--lp-text)]">German Grade Calculator</h3>
                   </div>
                 </div>
-                  <span className={`inline-block px-3.5 py-1.5 rounded-full text-xs font-semibold border shadow-xs ${
-                    Number(germanGrade) <= 1.5 ? 'bg-[var(--lp-ink)] text-white border-[var(--lp-ink)]' :
-                    Number(germanGrade) <= 2.2 ? 'bg-[#ece7dd] text-[var(--lp-text)] border-[#e2ddd3]' :
-                    Number(germanGrade) <= 2.8 ? 'bg-[var(--lp-gold-soft)]/50 text-[var(--lp-text)] border-[var(--lp-gold)]/40' : 'bg-[var(--lp-red)]/10 text-[var(--lp-red)] border-[var(--lp-red)]/20'
-                  }`}>
-                    {Number(germanGrade) <= 1.5 ? 'Highly Competitive' :
-                     Number(germanGrade) <= 2.2 ? 'Competitive' :
-                     Number(germanGrade) <= 2.8 ? 'Good Prospects' : 'Limited Options'}
-                  </span>
-              </motion.div>
+              </div>
 
-              <a 
-                href="#section-bavarian"
-                className="lp-btn lp-btn--dark w-full justify-center text-xs group"
-              >
-                <span>Full Grade Conversion Formula</span>
-                <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" />
-              </a>
+              <p className="text-xs sm:text-sm text-[var(--lp-muted)] leading-relaxed">
+                German universities use the modified Bavarian formula where <strong className="text-[var(--lp-text)] font-semibold">1.0 is the highest possible score</strong> and 4.0 is the minimum passing grade.
+              </p>
+
+              <div className="space-y-2.5">
+                <div className="p-3.5 bg-[#ece7dd]/60 rounded-xl border border-[#ded8cb] flex items-center justify-between text-xs">
+                  <span className="font-semibold text-[var(--lp-text)]">1.0 &ndash; 1.5 (Very Good)</span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-[var(--lp-ink)] text-white text-[10.5px] font-semibold">TU9 Competitive</span>
+                </div>
+                <div className="p-3.5 bg-[#ece7dd]/60 rounded-xl border border-[#ded8cb] flex items-center justify-between text-xs">
+                  <span className="font-semibold text-[var(--lp-text)]">1.6 &ndash; 2.5 (Good)</span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-600/15 text-emerald-800 text-[10.5px] font-semibold">Strong Eligibility</span>
+                </div>
+                <div className="p-3.5 bg-[#ece7dd]/60 rounded-xl border border-[#ded8cb] flex items-center justify-between text-xs">
+                  <span className="font-semibold text-[var(--lp-text)]">2.6 &ndash; 3.0 (Satisfactory)</span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-900 text-[10.5px] font-semibold">Non-NC Recommended</span>
+                </div>
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <Link 
+                  href="/tools/german-grade-calculator"
+                  className="lp-btn lp-btn--dark w-full justify-center text-xs group"
+                >
+                  <span>Launch German Grade Calculator</span>
+                  <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" />
+                </Link>
+
+                <Link 
+                  href="/tools/admission-chance"
+                  className="text-xs text-[var(--lp-muted)] hover:text-[var(--lp-red)] transition-colors inline-flex items-center gap-1.5 justify-center w-full font-medium"
+                >
+                  <Compass className="w-3.5 h-3.5 text-[var(--lp-red)]" />
+                  <span>Or predict university admission chances &rarr;</span>
+                </Link>
+              </div>
             </div>
           </motion.div>
         </div>

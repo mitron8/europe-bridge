@@ -26,8 +26,13 @@ export const APSFailureHandling = () => {
         </div>
 
         {/* Reapplication Policy & Rules */}
-        <div data-reveal className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-6 border-l-4 border-l-[var(--lp-red)] shadow-[0_8px_30px_rgba(22,22,26,0.03)] hover:shadow-[0_16px_40px_rgba(22,22,26,0.05)] transition-all duration-300">
-          <h3 className="lp-serif text-xl sm:text-2xl font-semibold text-[var(--lp-text)]">Official Reapplication Rules</h3>
+        <div data-reveal className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-6 shadow-[0_8px_30px_rgba(22,22,26,0.03)] hover:shadow-[0_16px_40px_rgba(22,22,26,0.05)] transition-all duration-300">
+          <div className="flex items-center gap-2.5">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--lp-red)] bg-[var(--lp-red)]/10">
+              Protocol
+            </span>
+            <h3 className="lp-serif text-xl sm:text-2xl font-semibold text-[var(--lp-text)]">Official Reapplication Rules</h3>
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.2 }} className="p-5 rounded-2xl bg-white/70 border border-[#e2ddd3] space-y-2 shadow-xs">

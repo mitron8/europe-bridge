@@ -6,58 +6,69 @@ import { ArrowRight, Award, Check } from 'lucide-react';
 
 export const LifeAfterOfferCTA = () => {
   return (
-    <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-12 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto">
-        <div data-reveal className="relative rounded-3xl bg-[var(--lp-ink)] text-white p-8 sm:p-12 lg:p-16 border border-white/10 overflow-hidden shadow-2xl">
-          {/* Subtle warm glow background */}
-          <div className="absolute -right-24 -bottom-24 w-96 h-96 bg-[var(--lp-red)]/15 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -left-24 -top-24 w-96 h-96 bg-[var(--lp-gold)]/10 rounded-full blur-3xl pointer-events-none" />
+    <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto my-4">
+      <div className="lp-grain relative isolate overflow-hidden rounded-[28px] border border-white/10 bg-[#0d0d10] px-6 py-12 text-center text-white shadow-[0_24px_60px_-20px_rgba(13,13,15,0.4)] sm:px-12 sm:py-14 lg:px-16">
+        {/* Landmark skyline outline background */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 flex justify-center overflow-hidden opacity-[0.25] select-none"
+          style={{
+            filter: "invert(1) hue-rotate(180deg) brightness(1.25) contrast(1.15)",
+            mixBlendMode: "screen",
+            maskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 55%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 55%, transparent 100%)",
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/landing/german-landmarks-outline.jpg"
+            alt=""
+            className="h-[220px] sm:h-[300px] w-full max-w-[1280px] object-cover object-bottom"
+            loading="lazy"
+          />
+        </div>
 
-          <div className="relative z-10 max-w-3xl space-y-6">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-white/90 text-xs font-mono uppercase tracking-wider">
-              <Award className="w-3.5 h-3.5 text-[var(--lp-gold)]" />
-              <span>End-to-End European Career Guidance</span>
-            </div>
+        {/* Warm ambient glow */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[220px] opacity-35 blur-[90px]"
+          style={{ background: "radial-gradient(circle at 50% 100%, rgba(230,57,70,0.25), rgba(201,163,91,0.2), transparent 75%)" }}
+        />
 
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-white leading-tight tracking-tight">
-              Ready to Turn Your German Degree into an <span className="text-[var(--lp-red)] italic">International Career?</span>
-            </h2>
+        {/* Content container */}
+        <div className="relative mx-auto flex max-w-[720px] flex-col items-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--lp-gold-soft)] backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--lp-red)] shadow-[0_0_8px_var(--lp-red)]" />
+            End-to-End European Career Guidance
+          </div>
 
-            <p className="text-sm sm:text-base text-white/70 leading-relaxed max-w-2xl font-light">
-              From finding universities with the highest Werkstudent conversion rates to tailoring your German Tabellarischer Lebenslauf, navigating the 18-month job seeker visa, and securing your EU Blue Card—EuropeBridge is with you every step of the journey.
-            </p>
+          <h2 className="lp-serif mt-5 text-[clamp(1.9rem,3.4vw,2.9rem)] leading-[1.14] tracking-[-0.02em] text-white">
+            Ready to Turn Your German Degree into an <em className="lp-script text-[var(--lp-gold-soft)]">International Career?</em>
+          </h2>
 
-            <div className="flex flex-wrap items-center gap-4 pt-2">
-              <Link
-                href="/profile-evaluation"
-                className="px-8 py-3.5 rounded-xl bg-[var(--lp-red)] text-white text-xs font-mono font-semibold uppercase tracking-wider hover:bg-[var(--lp-red)]/90 transition-all shadow-md flex items-center gap-2 cursor-pointer hover:-translate-y-0.5"
-              >
-                <span>Get My Free Evaluation</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+          <p className="mt-4 max-w-[540px] text-[15px] sm:text-[16px] leading-[1.65] text-white/75">
+            From finding universities with the highest Werkstudent conversion rates to tailoring your German Tabellarischer Lebenslauf, navigating the 18-month job seeker visa, and securing your EU Blue Card—EuropeBridge is with you every step of the journey.
+          </p>
 
-              <Link
-                href="/study/masters"
-                className="px-7 py-3.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white text-xs font-mono font-semibold uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer hover:-translate-y-0.5"
-              >
-                <span>Explore Master&apos;s Guide</span>
-              </Link>
-            </div>
+          <div className="mt-8 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
+            <Link
+              href="/tools/admission-chance"
+              className="lp-btn lp-btn--red w-full justify-center shadow-[0_12px_28px_-8px_rgba(230,57,70,0.5)] sm:w-auto"
+            >
+              Get Free Career Evaluation <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href="/study/masters"
+              className="lp-btn lp-btn--dark w-full justify-center sm:w-auto border border-white/20 hover:border-white/40"
+            >
+              Explore Master&apos;s Guide
+            </Link>
+          </div>
 
-            <div className="flex flex-wrap items-center gap-6 pt-4 text-xs font-mono text-white/70 border-t border-white/10">
-              <span className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-[var(--lp-gold)] shrink-0" />
-                <span>100% Free Initial Evaluation</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-[var(--lp-gold)] shrink-0" />
-                <span>Public University Alumni Mentors</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-[var(--lp-gold)] shrink-0" />
-                <span>Blue Card Negotiation Advice</span>
-              </span>
-            </div>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12px] text-white/60">
+            <span>✓ 100% Free Initial Evaluation</span>
+            <span>✓ Public University Alumni Mentors</span>
+            <span>✓ EU Blue Card Guidance</span>
           </div>
         </div>
       </div>

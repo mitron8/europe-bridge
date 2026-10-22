@@ -51,15 +51,15 @@ export const CSPAndVidexSection = () => {
   ];
 
   return (
-    <section id="section-csp" className="scroll-mt-32 py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12" data-reveal>
+    <section id="section-csp" className="scroll-mt-32 py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 space-y-12">
       {/* Section 1: What You Get Grid */}
       <div className="space-y-8">
         <div className="space-y-3 text-center max-w-2xl mx-auto">
-          <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--lp-red)]">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--lp-red)]">
             Full-Scale Visa Assistance
           </span>
-          <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-ink)] font-normal tracking-tight">
-            Everything Included in <em className="italic text-[var(--lp-red)] font-serif">EuropeBridge Support</em>
+          <h2 className="lp-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-text)] font-semibold tracking-tight">
+            Everything Included in <em className="lp-script text-[var(--lp-red)]">EuropeBridge Support</em>
           </h2>
           <p className="text-sm sm:text-base text-[var(--lp-muted)] leading-relaxed">
             We handle the bureaucratic mechanics of the German Federal Foreign Office, ensuring your application is 100% compliant from day one.

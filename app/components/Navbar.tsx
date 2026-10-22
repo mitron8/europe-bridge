@@ -96,8 +96,7 @@ const Navbar = () => {
     },
     {
       label: "Courses",
-      href: "/#free-tools",
-      dropdown: ["MS in CS", "MS in Data Science", "MBA", "Engineering"]
+      href: "/courses"
     },
     {
       label: "Free tools",
@@ -215,7 +214,7 @@ const Navbar = () => {
       ],
       footerLink: { label: "Explore exclusive partner benefits & discounts", href: "/#language-school" }
     },
-    { label: "Pricing", href: "/#cta" }
+    { label: "Pricing", href: "/pricing" }
   ];
 
   return (

@@ -102,7 +102,7 @@ export const AcademicRequirements = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.25 }}
-              className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 border-l-4 border-l-[var(--lp-ink)] shadow-[0_8px_30px_rgba(22,22,26,0.03)] space-y-4"
+              className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 shadow-[0_8px_30px_rgba(22,22,26,0.03)] space-y-4"
             >
               {selectedLevel === 'masters' && (
                 <div className="space-y-4">

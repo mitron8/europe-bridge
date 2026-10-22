@@ -1,11 +1,8 @@
 "use client";
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { HelpCircle, ChevronDown } from 'lucide-react';
+import React from 'react';
+import { StudyFAQ } from '@/app/study/components/StudyFAQ';
 
 export const LikelihoodFAQ = () => {
-  const [openIdx, setOpenIdx] = useState<number | null>(0);
-
   const faqs = [
     {
       q: "How accurate is this admission chance fit score?",
@@ -26,45 +23,12 @@ export const LikelihoodFAQ = () => {
   ];
 
   return (
-    <section className="py-12 px-6 lg:px-12">
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* Section Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-100 text-germany-black flex items-center justify-center font-bold shrink-0 shadow-sm">
-              <HelpCircle className="w-6 h-6 text-germany-black" />
-            </div>
-            <div>
-              <span className="text-xs font-black uppercase text-germany-red tracking-wider">Frequently Asked Questions</span>
-              <h2 className="text-2xl sm:text-3xl font-black text-germany-black font-display">Understanding German Admission Rules</h2>
-              <p className="text-sm text-gray-600 font-medium mt-1">
-                Common questions about German university entry criteria and profile evaluation.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* FAQ Accordion */}
-        <div className="space-y-3">
-          {faqs.map((faq, idx) => (
-            <div 
-              key={idx}
-              onClick={() => setOpenIdx(openIdx === idx ? null : idx)}
-              className="neu-card p-5 cursor-pointer transition-all border border-gray-100"
-            >
-              <div className="flex items-center justify-between gap-4">
-                <h3 className="text-sm font-extrabold text-germany-black">{faq.q}</h3>
-                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${openIdx === idx ? 'rotate-180 text-germany-red' : ''}`} />
-              </div>
-              {openIdx === idx && (
-                <p className="text-xs text-gray-600 font-medium mt-3 pt-3 border-t border-gray-100 leading-relaxed">
-                  {faq.a}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
+    <StudyFAQ 
+      badge="Admission Insights"
+      title="Understanding German Admission Rules"
+      subtitle="Clear answers about German university entry criteria, Bavarian formulas, and profile evaluation."
+      faqs={faqs}
+    />
   );
 };
+
