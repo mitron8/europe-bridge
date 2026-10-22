@@ -79,10 +79,12 @@ export const APSInterviewPrep = () => {
           <motion.div 
             whileHover={{ y: -2 }}
             transition={{ duration: 0.2 }}
-            className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-3 border-l-4 border-l-[var(--lp-ink)] shadow-sm hover:shadow-md transition-all"
+            className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-3.5 shadow-sm hover:shadow-md transition-all"
           >
             <div className="flex items-center gap-2.5 text-[var(--lp-text)] font-semibold text-lg">
-              <Lightbulb className="w-5 h-5 text-[var(--lp-gold)] shrink-0" />
+              <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center shrink-0">
+                <Lightbulb className="w-5 h-5" />
+              </div>
               <span className="lp-serif">Winning Preparation Strategies</span>
             </div>
             <ul className="space-y-2.5 text-xs sm:text-sm text-[var(--lp-muted)] leading-relaxed">
@@ -104,10 +106,12 @@ export const APSInterviewPrep = () => {
           <motion.div 
             whileHover={{ y: -2 }}
             transition={{ duration: 0.2 }}
-            className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-3 border-l-4 border-l-[var(--lp-red)] shadow-sm hover:shadow-md transition-all"
+            className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-3.5 shadow-sm hover:shadow-md transition-all"
           >
             <div className="flex items-center gap-2.5 text-[var(--lp-text)] font-semibold text-lg">
-              <AlertTriangle className="w-5 h-5 text-[var(--lp-red)] shrink-0" />
+              <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-700 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
               <span className="lp-serif">Common Pitfalls to Avoid</span>
             </div>
             <ul className="space-y-2.5 text-xs sm:text-sm text-[var(--lp-muted)] leading-relaxed">

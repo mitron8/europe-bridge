@@ -1,5 +1,8 @@
 import React from 'react';
-import Navbar from '@/app/components/Navbar';
+import { Metadata } from 'next';
+import "@/app/components/landing/landing.css";
+import { playfair, madisonSauvage, celinda } from "@/app/components/landing/fonts";
+import LandingNavbar from '@/app/components/landing/LandingNavbar';
 import Footer from '@/app/components/Footer';
 import { RemittanceHero } from './components/RemittanceHero';
 import { RemittanceCalculator } from './components/RemittanceCalculator';
@@ -10,7 +13,6 @@ import { RemittanceProcess } from './components/RemittanceProcess';
 import { RemittanceBooking } from './components/RemittanceBooking';
 import { RemittanceFAQ } from './components/RemittanceFAQ';
 import { RemittanceCTA } from './components/RemittanceCTA';
-import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Outward Remittance for Germany (Money Transfer) 2026/2027 | EuropeBridge',
@@ -70,7 +72,7 @@ export default function OutwardRemittancePage() {
         '@type': 'ListItem',
         position: 2,
         name: 'Services',
-        item: 'https://europebridge.in/#our-process'
+        item: 'https://europebridge.in/services'
       },
       {
         '@type': 'ListItem',
@@ -82,32 +84,36 @@ export default function OutwardRemittancePage() {
   };
 
   return (
-    <main className="min-h-screen neu-bg pt-20 sm:pt-24 pb-16 space-y-4">
-      {/* Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
+    <main className="bg-[#f4f1ea] min-h-screen text-[var(--lp-text)] selection:bg-[var(--lp-red)] selection:text-white">
+      <div className={`lp ${playfair.variable} ${madisonSauvage.variable} ${celinda.variable}`}>
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
 
-      <Navbar />
-      <RemittanceHero />
-      
-      <div className="space-y-4">
-        <RemittanceCalculator />
-        <RemittanceFeatures />
-        <RemittanceComparison />
-        <RemittancePricing />
-        <RemittanceProcess />
-        <RemittanceBooking />
-        <RemittanceFAQ />
-        <RemittanceCTA />
+        <LandingNavbar />
+        <RemittanceHero />
+        
+        <div className="space-y-12 sm:space-y-16 pb-16">
+          <RemittanceCalculator />
+          <RemittanceFeatures />
+          <RemittanceComparison />
+          <RemittancePricing />
+          <RemittanceProcess />
+          <RemittanceBooking />
+          <RemittanceFAQ />
+          <RemittanceCTA />
+        </div>
+
+        <div className="relative z-[40] mt-16">
+          <Footer />
+        </div>
       </div>
-
-      <Footer />
     </main>
   );
 }

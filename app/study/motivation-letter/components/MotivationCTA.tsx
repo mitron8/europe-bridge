@@ -6,59 +6,70 @@ import { ArrowRight, FileCheck, UserCheck, Check } from 'lucide-react';
 
 export const MotivationCTA = () => {
   return (
-    <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto my-4">
-      <div 
-        data-reveal
-        className="rounded-3xl bg-[var(--lp-ink)] text-white p-8 sm:p-10 lg:p-12 relative overflow-hidden border border-white/10 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-8 text-center lg:text-left"
-      >
-        {/* Subtle Ambient Glows */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--lp-red)]/15 rounded-full blur-[70px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[var(--lp-gold)]/10 rounded-full blur-[70px] pointer-events-none" />
-
-        {/* Left Side Content */}
-        <div className="relative z-10 space-y-3 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 border border-white/15 rounded-full font-mono text-[var(--lp-gold)] text-xs">
-            <FileCheck className="w-3.5 h-3.5 text-[var(--lp-gold)]" />
-            <span>Academic SOP & Consular LOM Crafting</span>
-          </div>
-
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-white tracking-tight leading-tight">
-            Craft a Motivation Letter That <span className="text-[var(--lp-gold)] italic">Committees Remember</span>
-          </h2>
-
-          <p className="text-white/70 font-light text-xs sm:text-sm leading-relaxed max-w-xl">
-            100% original, faculty-tailored writing that highlights your prerequisite coursework, thesis plans, and academic strengths without generic AI boilerplate.
-          </p>
+    <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto my-4">
+      <div className="lp-grain relative isolate overflow-hidden rounded-[28px] border border-white/10 bg-[#0d0d10] px-6 py-12 text-center text-white shadow-[0_24px_60px_-20px_rgba(13,13,15,0.4)] sm:px-12 sm:py-14 lg:px-16">
+        {/* Landmark skyline outline background */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 flex justify-center overflow-hidden opacity-[0.25] select-none"
+          style={{
+            filter: "invert(1) hue-rotate(180deg) brightness(1.25) contrast(1.15)",
+            mixBlendMode: "screen",
+            maskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 55%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 55%, transparent 100%)",
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/landing/german-landmarks-outline.jpg"
+            alt=""
+            className="h-[220px] sm:h-[300px] w-full max-w-[1280px] object-cover object-bottom"
+            loading="lazy"
+          />
         </div>
 
-        {/* Right Side Buttons & Reassurance */}
-        <div className="relative z-10 flex flex-col items-center lg:items-end gap-3 shrink-0 w-full sm:w-auto">
-          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+        {/* Warm ambient glow */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[220px] opacity-35 blur-[90px]"
+          style={{ background: "radial-gradient(circle at 50% 100%, rgba(230,57,70,0.25), rgba(201,163,91,0.2), transparent 75%)" }}
+        />
+
+        {/* Content container */}
+        <div className="relative mx-auto flex max-w-[720px] flex-col items-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--lp-gold-soft)] backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--lp-red)] shadow-[0_0_8px_var(--lp-red)]" />
+            Academic SOP &amp; Consular LOM Crafting
+          </div>
+
+          <h2 className="lp-serif mt-5 text-[clamp(1.9rem,3.4vw,2.9rem)] leading-[1.14] tracking-[-0.02em] text-white">
+            Craft a Motivation Letter That <em className="lp-script text-[var(--lp-gold-soft)]">Committees Remember</em>
+          </h2>
+
+          <p className="mt-4 max-w-[540px] text-[15px] sm:text-[16px] leading-[1.65] text-white/75">
+            100% original, faculty-tailored writing that highlights your prerequisite coursework, thesis plans, and academic strengths without generic AI boilerplate.
+          </p>
+
+          <div className="mt-8 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
             <Link 
               href="/signup" 
-              className="w-full sm:w-auto px-7 py-3 rounded-xl bg-[var(--lp-red)] hover:bg-[var(--lp-red)]/90 text-white font-mono font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md whitespace-nowrap transition-all hover:-translate-y-0.5 cursor-pointer"
+              className="lp-btn lp-btn--red w-full justify-center shadow-[0_12px_28px_-8px_rgba(230,57,70,0.5)] sm:w-auto"
             >
-              <span>Get SOP Support</span>
-              <ArrowRight className="w-4 h-4" />
+              Get SOP Support <ArrowRight className="h-4 w-4" />
             </Link>
-
             <Link 
               href="/tools/admission-chance"
-              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-mono font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-2 whitespace-nowrap transition-all hover:-translate-y-0.5 cursor-pointer"
+              className="lp-btn lp-btn--dark w-full justify-center sm:w-auto border border-white/20 hover:border-white/40"
             >
-              <UserCheck className="w-4 h-4 text-[var(--lp-gold)]" />
-              <span>Target Programs</span>
+              <UserCheck className="h-4 w-4" />
+              Target Programs
             </Link>
           </div>
 
-          <div className="flex items-center justify-center gap-3 text-[11px] font-mono text-white/60 pt-1">
-            <span className="flex items-center gap-1">
-              <Check className="w-3 h-3 text-[var(--lp-gold)]" /> Zero AI Boilerplate
-            </span>
-            <span>•</span>
-            <span className="flex items-center gap-1">
-              <Check className="w-3 h-3 text-[var(--lp-gold)]" /> German Alumni Review
-            </span>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12px] text-white/60">
+            <span>✓ Zero AI Boilerplate</span>
+            <span>✓ German Alumni Review</span>
+            <span>✓ 100% Plagiarism Guaranteed</span>
           </div>
         </div>
       </div>

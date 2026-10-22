@@ -35,7 +35,7 @@ export const DeadlinesAndSemestersSection = () => {
         <motion.div 
           whileHover={{ y: -2 }}
           transition={{ duration: 0.2 }}
-          className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-4 shadow-[0_8px_30px_rgba(22,22,26,0.03)] border-t-4 border-t-[var(--lp-red)]"
+          className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-4 shadow-[0_8px_30px_rgba(22,22,26,0.03)] hover:shadow-[0_16px_40px_rgba(22,22,26,0.05)] transition-all duration-300"
         >
           <div className="flex items-center justify-between">
             <span className="px-3 py-1 rounded-full bg-[var(--lp-red)]/10 text-[var(--lp-red)] border border-[var(--lp-red)]/20 text-[10.5px] font-semibold uppercase tracking-wider">
@@ -71,7 +71,7 @@ export const DeadlinesAndSemestersSection = () => {
         <motion.div 
           whileHover={{ y: -2 }}
           transition={{ duration: 0.2 }}
-          className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-4 shadow-[0_8px_30px_rgba(22,22,26,0.03)] border-t-4 border-t-[var(--lp-gold)]"
+          className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-4 shadow-[0_8px_30px_rgba(22,22,26,0.03)] hover:shadow-[0_16px_40px_rgba(22,22,26,0.05)] transition-all duration-300"
         >
           <div className="flex items-center justify-between">
             <span className="px-3 py-1 rounded-full bg-[var(--lp-gold-soft)]/50 text-[var(--lp-text)] border border-[var(--lp-gold)]/30 text-[10.5px] font-semibold uppercase tracking-wider">

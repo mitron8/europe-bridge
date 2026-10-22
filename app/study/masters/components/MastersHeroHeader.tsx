@@ -7,7 +7,7 @@ import { GraduationCap, ArrowRight, ShieldCheck, Award, CheckCircle2 } from 'luc
 
 export const MastersHeroHeader = () => {
   return (
-    <section className="pt-28 sm:pt-36 pb-12 sm:pb-16 px-4 sm:px-6 lg:px-12 relative overflow-hidden">
+    <section className="pt-28 sm:pt-32 pb-10 sm:pb-14 px-4 sm:px-6 lg:px-12 relative overflow-hidden">
       {/* Warm Ambient Glow */}
       <div 
         aria-hidden 
@@ -18,8 +18,15 @@ export const MastersHeroHeader = () => {
       />
 
       <div className="max-w-7xl mx-auto space-y-6">
+        {/* Breadcrumb Navigation */}
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-semibold text-[var(--lp-muted)]">
+          <Link href="/" className="hover:text-[var(--lp-red)] transition-colors">Home</Link>
+          <span className="text-[var(--lp-faint)]">/</span>
+          <span className="text-[var(--lp-text)] font-bold">Master&apos;s in Germany</span>
+        </nav>
+
         {/* Eyebrow Badge */}
-        <div data-reveal className="inline-flex items-center gap-2 rounded-full border border-[#e5e0d3] bg-[#faf8f3]/80 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--lp-text)] shadow-xs backdrop-blur-sm">
+        <div className="inline-flex items-center gap-2 rounded-full border border-[var(--lp-rule-strong)] bg-white/70 backdrop-blur-sm px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--lp-muted)]">
           <span className="h-1.5 w-1.5 rounded-full bg-[var(--lp-red)] animate-pulse" />
           Master&apos;s Strategy Guide 2026
         </div>
@@ -27,7 +34,7 @@ export const MastersHeroHeader = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Main Hero Left Content */}
           <div className="lg:col-span-7 space-y-6">
-            <h1 data-reveal className="lp-serif text-3xl sm:text-5xl lg:text-6xl font-bold text-[var(--lp-text)] tracking-[-0.02em] leading-[1.08]">
+            <h1 className="lp-serif text-3xl sm:text-5xl lg:text-[52px] font-bold text-[var(--lp-text)] tracking-[-0.02em] leading-[1.08]">
               Master&apos;s Degree in <em className="lp-script text-[var(--lp-red)]">Germany</em>
             </h1>
 

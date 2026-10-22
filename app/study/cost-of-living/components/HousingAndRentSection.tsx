@@ -126,12 +126,19 @@ export const HousingAndRentSection = () => {
         </div>
 
         {/* Scam Warning Box */}
-        <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.2 }} className="p-6 rounded-2xl bg-[#ece7dd]/50 border border-[#e2ddd3] border-l-4 border-l-[var(--lp-red)] flex items-start gap-4 shadow-xs">
-          <ShieldAlert className="w-7 h-7 text-[var(--lp-red)] shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <h4 className="lp-serif text-base font-semibold text-[var(--lp-text)]">
-              Critical Warning: Avoid Rental Scams
-            </h4>
+        <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.2 }} className="p-6 rounded-2xl bg-[#ece7dd]/60 border border-[#ded8cb] flex items-start gap-4 shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[var(--lp-red)]/10 text-[var(--lp-red)] flex items-center justify-center shrink-0 border border-[var(--lp-red)]/20">
+            <ShieldAlert className="w-5 h-5" />
+          </div>
+          <div className="space-y-1.5 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-[var(--lp-red)] bg-[var(--lp-red)]/10 border border-[var(--lp-red)]/20">
+                Security Advisory
+              </span>
+              <h4 className="lp-serif text-base font-semibold text-[var(--lp-text)]">
+                Avoid Rental Scams in Student Housing
+              </h4>
+            </div>
             <p className="text-xs sm:text-sm text-[var(--lp-muted)] leading-relaxed">
               NEVER transfer a security deposit (<em>Kaution</em>) or first month's rent via wire transfer before viewing the apartment in person or signing an official rental contract. Scammers frequently target international students with fake keys or phantom Airbnb listings.
             </p>

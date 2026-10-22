@@ -203,157 +203,122 @@ p * {
     background-color: #F4F1EA; /* Warm cream background */
   }
 
-  /* Claymorphism Card */
+  /* Modern Card */
   .neu-card {
-    background-color: #FDFBF7;
-    border-radius: 36px;
-    box-shadow: 
-      12px 12px 30px rgba(210, 205, 195, 0.6), /* Soft outer drop shadow */
-      inset -8px -8px 16px rgba(210, 205, 195, 0.4), /* Dark inner bottom shadow (clay thickness) */
-      inset 8px 8px 16px rgba(255, 255, 255, 1); /* Light inner top highlight (clay curve) */
-    border: none;
+    background-color: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #e5e0d3;
+    box-shadow: 0 2px 10px rgba(22, 22, 26, 0.03);
   }
 
-  /* Claymorphism Dark Card */
+  /* Modern Dark Card */
   .neu-card-dark {
-    background-color: #111111;
+    background-color: #16161a;
     color: #ffffff;
-    border-radius: 36px;
-    box-shadow: 
-      12px 12px 30px rgba(0, 0, 0, 0.35),
-      inset -6px -6px 14px rgba(0, 0, 0, 0.6),
-      inset 6px 6px 14px rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   }
 
-  /* Claymorphism Inputs (carved into the clay) */
+  /* Modern Inputs */
   .neu-input {
-    background-color: #EBE7E0; /* Carved into cream clay */
-    border-radius: 18px;
-    box-shadow: 
-      inset 5px 5px 12px rgba(210, 205, 195, 0.6),
-      inset -5px -5px 12px rgba(255, 255, 255, 1);
-    border: 2px solid transparent;
+    background-color: #faf8f3;
+    border-radius: 12px;
+    border: 1px solid #dcd7cb;
     transition: all 0.2s ease-in-out;
-    color: var(--color-germany-black);
+    color: #16161a;
   }
   
   .neu-input:focus {
     outline: none;
-    background-color: #FDFBF7;
-    border-color: rgba(230, 57, 70, 0.3);
-    box-shadow: 
-      0 0 0 4px rgba(230, 57, 70, 0.1),
-      inset 4px 4px 10px rgba(210, 205, 195, 0.4),
-      inset -4px -4px 10px rgba(255, 255, 255, 1);
+    background-color: #ffffff;
+    border-color: #16161a;
+    box-shadow: 0 0 0 3px rgba(22, 22, 26, 0.08);
   }
 
-  /* Claymorphism Buttons */
+  /* Modern Secondary Button */
   .neu-btn {
-    background-color: #FDFBF7;
-    border-radius: 50px;
-    box-shadow: 
-      8px 8px 20px rgba(210, 205, 195, 0.6), 
-      inset -4px -4px 10px rgba(210, 205, 195, 0.4), 
-      inset 4px 4px 10px rgba(255, 255, 255, 1);
+    background-color: #ffffff;
+    color: #16161a;
+    border-radius: 12px;
+    border: 1px solid #dcd7cb;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
   .neu-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 
-      10px 10px 24px rgba(210, 205, 195, 0.7), 
-      inset -4px -4px 10px rgba(210, 205, 195, 0.4), 
-      inset 4px 4px 10px rgba(255, 255, 255, 1);
+    background-color: #faf8f3;
+    border-color: #16161a;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   }
 
   .neu-btn:active {
-    transform: translateY(2px);
-    box-shadow: 
-      4px 4px 10px rgba(210, 205, 195, 0.5), 
-      inset -3px -3px 6px rgba(210, 205, 195, 0.6), 
-      inset 3px 3px 6px rgba(255, 255, 255, 1);
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   }
 
-  /* Primary Claymorphism Button (Red) */
+  /* Primary Button (Dark Ink / Brand) */
   .neu-btn-primary {
-    background-color: var(--color-germany-red);
-    color: white;
-    border-radius: 50px;
-    box-shadow: 
-      8px 8px 20px rgba(230, 57, 70, 0.3), 
-      inset -4px -4px 10px rgba(180, 20, 30, 0.5), 
-      inset 4px 4px 10px rgba(255, 150, 150, 0.9);
+    background-color: #16161a;
+    color: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #16161a;
+    box-shadow: 0 2px 8px rgba(22, 22, 26, 0.12);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 800;
+    font-weight: 700;
   }
 
   .neu-btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 
-      10px 10px 24px rgba(230, 57, 70, 0.4), 
-      inset -4px -4px 10px rgba(180, 20, 30, 0.5), 
-      inset 4px 4px 10px rgba(255, 150, 150, 0.9);
+    background-color: #2e2e34;
+    border-color: #2e2e34;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(22, 22, 26, 0.18);
   }
 
   .neu-btn-primary:active {
-    transform: translateY(2px);
-    box-shadow: 
-      4px 4px 10px rgba(230, 57, 70, 0.2), 
-      inset -3px -3px 6px rgba(180, 20, 30, 0.5), 
-      inset 3px 3px 6px rgba(255, 150, 150, 0.9);
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(22, 22, 26, 0.1);
   }
 
-  /* Gold Claymorphism Button */
+  /* Accent Button */
   .neu-btn-gold {
-    background-color: var(--color-germany-gold);
-    color: var(--color-germany-black);
-    border-radius: 50px;
-    box-shadow: 
-      8px 8px 20px rgba(244, 162, 97, 0.4), 
-      inset -4px -4px 10px rgba(200, 110, 40, 0.5), 
-      inset 4px 4px 10px rgba(255, 230, 180, 1);
+    background-color: #9e2a2b;
+    color: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #9e2a2b;
+    box-shadow: 0 2px 8px rgba(158, 42, 43, 0.2);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 800;
+    font-weight: 700;
   }
 
   .neu-btn-gold:hover {
-    transform: translateY(-2px);
-    box-shadow: 
-      10px 10px 24px rgba(244, 162, 97, 0.5), 
-      inset -4px -4px 10px rgba(200, 110, 40, 0.5), 
-      inset 4px 4px 10px rgba(255, 230, 180, 1);
+    background-color: #b4232f;
+    border-color: #b4232f;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(158, 42, 43, 0.28);
   }
 
   .neu-btn-gold:active {
-    transform: translateY(2px);
-    box-shadow: 
-      4px 4px 10px rgba(244, 162, 97, 0.3), 
-      inset -3px -3px 6px rgba(200, 110, 40, 0.5), 
-      inset 3px 3px 6px rgba(255, 230, 180, 1);
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(158, 42, 43, 0.15);
   }
 
-  /* Claymorphism Dropdown Menu Container */
+  /* Modern Dropdown Menu Container */
   .neu-dropdown {
-    background-color: #FDFBF7;
-    border-radius: 20px;
-    box-shadow: 
-      10px 10px 28px rgba(210, 205, 195, 0.7), 
-      inset -4px -4px 10px rgba(210, 205, 195, 0.4), 
-      inset 4px 4px 10px rgba(255, 255, 255, 1);
-    border: 1px solid rgba(226, 221, 211, 0.7);
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e0d3;
   }
 
   /* Claymorphism Dropdown Item */

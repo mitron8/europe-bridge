@@ -1,23 +1,10 @@
 "use client";
-import React, { useState } from 'react';
+import React from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Calculator, HelpCircle, CheckCircle2, TrendingUp, Lightbulb } from 'lucide-react';
+import { Calculator, HelpCircle, CheckCircle2, TrendingUp, Lightbulb, ArrowRight, ExternalLink } from 'lucide-react';
 
 export const GradeConversionSection = () => {
-  const [maxGrade, setMaxGrade] = useState<number>(100);
-  const [passGrade, setPassGrade] = useState<number>(40);
-  const [userScore, setUserScore] = useState<number>(75);
-
-  const calculateGermanGrade = () => {
-    if (!userScore || userScore < passGrade) return "4.0 (Fail)";
-    if (userScore >= maxGrade) return "1.0 (Best)";
-    
-    const result = 1 + 3 * ((maxGrade - userScore) / (maxGrade - passGrade));
-    return result.toFixed(2);
-  };
-
-  const germanGrade = calculateGermanGrade();
-
   return (
     <section id="section-bavarian" className="py-12 px-4 sm:px-6 lg:px-12 scroll-mt-28">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -34,77 +21,77 @@ export const GradeConversionSection = () => {
               Grade Conversion &amp; <em className="lp-script text-[var(--lp-red)]">Bavarian Formula</em>
             </h2>
             <p className="text-sm sm:text-base text-[var(--lp-muted)] font-normal mt-1 max-w-3xl leading-relaxed">
-              German admissions convert foreign grades to the German 1.0–4.0 scale using the standardized modified Bavarian formula.
+              German admissions convert foreign degrees and transcripts to the German 1.0–4.0 scale using the standardized modified Bavarian formula.
             </p>
           </div>
         </div>
 
-        {/* Interactive Bavarian Calculator Card */}
+        {/* Bavarian Formula Explainer & Tool Navigation Card */}
         <div data-reveal className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-6 shadow-[0_8px_30px_rgba(22,22,26,0.03)] hover:shadow-[0_16px_40px_rgba(22,22,26,0.05)] transition-all duration-300">
-          <div className="border-b border-[var(--lp-rule)] pb-4">
-            <h3 className="lp-serif text-xl sm:text-2xl font-semibold text-[var(--lp-text)]">Interactive Bavarian Formula Calculator</h3>
-            <p className="text-xs sm:text-sm text-[var(--lp-muted)] mt-0.5">Input your grading system's maximum score, passing score, and your achieved marks.</p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--lp-rule)] pb-5">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--lp-red)] block">Standardized German Evaluation</span>
+              <h3 className="lp-serif text-xl sm:text-2xl font-semibold text-[var(--lp-text)]">The Modified Bavarian Formula</h3>
+            </div>
+            <Link 
+              href="/tools/german-grade-calculator"
+              className="lp-btn lp-btn--dark text-xs self-start sm:self-auto group shrink-0"
+            >
+              <span>Open Dedicated Grade Tool</span>
+              <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" />
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Input Controls */}
+            {/* Formula Mechanics */}
             <div className="lg:col-span-7 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-[var(--lp-text)] mb-1.5">Maximum Possible Score (Nmax)</label>
-                  <input
-                    type="number"
-                    value={maxGrade}
-                    onChange={(e) => setMaxGrade(Number(e.target.value))}
-                    className="w-full bg-[#ece7dd]/50 border border-[#e2ddd3] rounded-xl px-4 py-2.5 text-sm font-semibold text-[var(--lp-text)] focus:bg-white focus:border-[var(--lp-red)] transition-all outline-none shadow-inner"
-                    placeholder="e.g. 100 or 10"
-                  />
+              <div className="p-5 rounded-2xl bg-[#ece7dd]/60 border border-[#ded8cb] font-mono text-xs sm:text-sm text-[var(--lp-text)] space-y-2">
+                <div className="font-semibold text-[var(--lp-red)] uppercase tracking-wider text-[11px]">Official KMK Formula</div>
+                <div className="p-3 bg-white/80 rounded-xl border border-[#ded8cb] font-bold text-center text-sm sm:text-base tracking-wide">
+                  German Grade = 1 + 3 &times; [(N<sub>max</sub> &minus; N<sub>d</sub>) / (N<sub>max</sub> &minus; N<sub>pass</sub>)]
                 </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-[var(--lp-text)] mb-1.5">Minimum Passing Score (Npass)</label>
-                  <input
-                    type="number"
-                    value={passGrade}
-                    onChange={(e) => setPassGrade(Number(e.target.value))}
-                    className="w-full bg-[#ece7dd]/50 border border-[#e2ddd3] rounded-xl px-4 py-2.5 text-sm font-semibold text-[var(--lp-text)] focus:bg-white focus:border-[var(--lp-red)] transition-all outline-none shadow-inner"
-                    placeholder="e.g. 40 or 4"
-                  />
-                </div>
+                <ul className="text-xs text-[var(--lp-muted)] space-y-1 pt-1 font-sans">
+                  <li>&bull; <strong className="text-[var(--lp-text)] font-semibold font-mono">N<sub>max</sub></strong>: Maximum achievable grade in your system (e.g., 100% or 10.0 CGPA)</li>
+                  <li>&bull; <strong className="text-[var(--lp-text)] font-semibold font-mono">N<sub>pass</sub></strong>: Minimum passing grade required for degree award (e.g., 40% or 4.0 CGPA)</li>
+                  <li>&bull; <strong className="text-[var(--lp-text)] font-semibold font-mono">N<sub>d</sub></strong>: Your achieved overall score / CGPA</li>
+                </ul>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-[var(--lp-text)] mb-1.5">Your Score / CGPA (N-achieved)</label>
-                <input
-                  type="number"
-                  value={userScore}
-                  onChange={(e) => setUserScore(Number(e.target.value))}
-                  className="w-full bg-[#ece7dd]/50 border border-[#e2ddd3] rounded-xl px-4 py-2.5 text-sm font-bold text-[var(--lp-red)] focus:bg-white focus:border-[var(--lp-red)] transition-all outline-none shadow-inner"
-                  placeholder="e.g. 78 or 8.2"
-                />
-              </div>
-
-              {/* Mathematical Formula Preview */}
-              <div className="p-4 rounded-2xl bg-[#ece7dd]/60 border border-[#e2ddd3] text-xs text-[var(--lp-muted)] space-y-1 font-mono">
-                <div className="font-semibold text-[var(--lp-text)]">Formula: German Grade = 1 + 3 × [(Nmax - Nd) / (Nmax - Npass)]</div>
-                <div>Calculation: 1 + 3 × [({maxGrade} - {userScore}) / ({maxGrade} - {passGrade})]</div>
-              </div>
+              <p className="text-xs sm:text-sm text-[var(--lp-muted)] leading-relaxed">
+                German university admissions offices and uni-assist strictly evaluate Indian, US, British, and global transcripts with this calculation. In Germany, <strong className="text-[var(--lp-text)] font-semibold">a lower number signifies a stronger academic ranking</strong>: 1.0 is the top distinction, and 4.0 represents the cutoff passing threshold.
+              </p>
             </div>
 
-            {/* Calculated Result Display */}
-            <motion.div 
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.2 }}
-              className="lg:col-span-5 bg-[#ece7dd]/50 border border-[#e2ddd3] rounded-2xl p-6 text-center space-y-3 shadow-xs"
-            >
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--lp-muted)]">Converted German GPA</span>
-              <div className="lp-serif text-5xl font-bold text-[var(--lp-text)] tracking-tight">
-                {germanGrade}
+            {/* Quick Conversion Benchmarks */}
+            <div className="lg:col-span-5 bg-[#ece7dd]/40 border border-[#ded8cb] rounded-2xl p-5 sm:p-6 space-y-3.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--lp-muted)]">Scale Calibration Reference</span>
+                <span className="text-[10px] font-semibold text-[var(--lp-red)] bg-[var(--lp-red)]/10 px-2 py-0.5 rounded-full">Indian System</span>
               </div>
-              <p className="text-xs font-medium text-[var(--lp-muted)]">
-                Scale: 1.0 (Very Good / Excellent) &rarr; 4.0 (Sufficient / Pass)
-              </p>
-            </motion.div>
+
+              <div className="space-y-2 text-xs">
+                <div className="p-3 bg-white/70 rounded-xl border border-[#ded8cb] flex items-center justify-between">
+                  <span className="text-[var(--lp-muted)]">80% &ndash; 100% (First Class with Dist.)</span>
+                  <span className="font-bold text-[var(--lp-text)]">1.0 &ndash; 1.5</span>
+                </div>
+                <div className="p-3 bg-white/70 rounded-xl border border-[#ded8cb] flex items-center justify-between">
+                  <span className="text-[var(--lp-muted)]">70% &ndash; 79% (First Class)</span>
+                  <span className="font-bold text-[var(--lp-text)]">1.6 &ndash; 2.2</span>
+                </div>
+                <div className="p-3 bg-white/70 rounded-xl border border-[#ded8cb] flex items-center justify-between">
+                  <span className="text-[var(--lp-muted)]">60% &ndash; 69% (Second Class)</span>
+                  <span className="font-bold text-[var(--lp-text)]">2.3 &ndash; 2.8</span>
+                </div>
+              </div>
+
+              <Link 
+                href="/tools/german-grade-calculator"
+                className="inline-flex items-center justify-center gap-1.5 w-full py-2.5 px-4 rounded-xl bg-[var(--lp-ink)] text-white text-xs font-semibold hover:bg-[var(--lp-ink-3)] transition-colors shadow-xs"
+              >
+                <span>Calculate Your Exact Grade in Tool</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -113,9 +100,9 @@ export const GradeConversionSection = () => {
           <motion.div 
             whileHover={{ y: -2 }}
             transition={{ duration: 0.2 }}
-            className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-3 border-l-4 border-l-[var(--lp-red)] shadow-sm hover:shadow-md transition-all"
+            className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-3 shadow-sm hover:shadow-md transition-all"
           >
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--lp-red)]">Restricted Admission</span>
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider text-[var(--lp-red)] bg-[var(--lp-red)]/10">Restricted Admission</span>
             <h4 className="lp-serif text-xl font-semibold text-[var(--lp-text)]">Restricted Admission Programs (NC)</h4>
             <p className="text-xs sm:text-sm text-[var(--lp-muted)] leading-relaxed">
               NC programs have a fixed quota of seats. Applicants are ranked strictly by GPA. Popular subjects (Business, Data Science, Psychology) may require a top grade of 1.2–1.8.
@@ -125,9 +112,9 @@ export const GradeConversionSection = () => {
           <motion.div 
             whileHover={{ y: -2 }}
             transition={{ duration: 0.2 }}
-            className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-3 border-l-4 border-l-[var(--lp-ink)] shadow-sm hover:shadow-md transition-all"
+            className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-3 shadow-sm hover:shadow-md transition-all"
           >
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--lp-muted)]">Unrestricted Admission</span>
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-500/10">Unrestricted Admission</span>
             <h4 className="lp-serif text-xl font-semibold text-[var(--lp-text)]">Open Admission Programs (Non-NC)</h4>
             <p className="text-xs sm:text-sm text-[var(--lp-muted)] leading-relaxed">
               No seat limit. As long as you meet the minimum academic prerequisite credits (e.g. German grade 2.5 or better) and language score, you are guaranteed admission.
@@ -136,9 +123,11 @@ export const GradeConversionSection = () => {
         </div>
 
         {/* How to Compensate for Borderline GPA */}
-        <div data-reveal className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-5 border-t-4 border-t-[var(--lp-gold)] shadow-sm hover:shadow-md transition-all">
+        <div data-reveal className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-5 shadow-sm hover:shadow-md transition-all">
           <div className="flex items-center gap-2.5 text-[var(--lp-text)] font-semibold text-lg">
-            <Lightbulb className="w-5 h-5 text-[var(--lp-gold)]" />
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center shrink-0">
+              <Lightbulb className="w-5 h-5" />
+            </div>
             <span className="lp-serif">How to Compensate for a Borderline GPA (2.6 – 3.0)</span>
           </div>
 

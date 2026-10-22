@@ -4,7 +4,6 @@ import "@/app/components/landing/landing.css";
 import { playfair, madisonSauvage, celinda } from "@/app/components/landing/fonts";
 import LandingNavbar from "@/app/components/landing/LandingNavbar";
 import Footer from "@/app/components/Footer";
-import SmoothScroll from "@/app/components/landing/SmoothScroll";
 import { StudyContentGate } from '@/components/StudyContentGate';
 
 import { ScholarshipsHero } from './components/ScholarshipsHero';
@@ -64,7 +63,6 @@ export default function ScholarshipsPage() {
           <Footer />
         </div>
       </div>
-      <SmoothScroll />
     </main>
   );
 }

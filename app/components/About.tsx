@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Check, X, Sparkles } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 
 const comparison = [
   {

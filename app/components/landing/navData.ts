@@ -59,8 +59,7 @@ export const navItems: NavItem[] = [
   },
   {
     label: "Courses",
-    href: "/#free-tools",
-    dropdown: ["MS in CS", "MS in Data Science", "MBA", "Engineering"]
+    href: "/courses"
   },
   {
     label: "Free tools",
@@ -106,7 +105,7 @@ export const navItems: NavItem[] = [
   },
   {
     label: "Services",
-    href: "/#our-process",
+    href: "/services",
     groups: [
       {
         title: "Before you apply",
@@ -142,9 +141,10 @@ export const navItems: NavItem[] = [
         items: [
           { title: "Counselors run it end to end", desc: "From 29,999 INR, admission handled start to finish." }
         ],
-        action: { label: "See all packages", href: "/#cta" }
+        action: { label: "See all packages", href: "/pricing" }
       }
-    ]
+    ],
+    footerLink: { label: "Browse all services →", href: "/services" }
   },
   {
     label: "Our Brands",
@@ -178,5 +178,5 @@ export const navItems: NavItem[] = [
     ],
     footerLink: { label: "Explore exclusive partner benefits & discounts", href: "/#language-school" }
   },
-  { label: "Pricing", href: "/#cta" }
+  { label: "Pricing", href: "/pricing" }
 ];

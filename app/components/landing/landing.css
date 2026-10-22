@@ -28,6 +28,7 @@
   --lp-card: #faf8f3;
   --lp-text: #16161a;
   --lp-muted: #6b6760;
+  --lp-text-muted: #6b6760;
   --lp-faint: #9a958c;
   --lp-rule: rgba(22, 22, 26, 0.12);
   --lp-rule-strong: rgba(22, 22, 26, 0.22);
@@ -112,19 +113,11 @@
 .lp-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--lp-muted);
-}
-.lp-eyebrow::before {
-  content: "";
-  width: 22px;
-  height: 1px;
-  background: currentColor;
-  opacity: 0.6;
 }
 .lp-eyebrow--light { color: rgba(255, 255, 255, 0.62); }
 
@@ -317,3 +310,73 @@ html.lenis body { height: auto; }
   .lp *::before,
   .lp *::after { transition-duration: 0.01ms !important; }
 }
+
+/* ==========================================================
+   EuropeBridge — Internal Service & Hub Luxury Standardization
+   Ensures cards, buttons, fonts, and colors across all pages
+   under .lp adhere strictly to the landing page luxury theme.
+   ========================================================== */
+
+.lp .font-display,
+.lp [class*="font-display"] {
+  font-family: var(--lp-serif) !important;
+}
+
+/* Luxury button styling for any legacy buttons inside .lp */
+.lp .neu-btn-primary {
+  background: var(--lp-red) !important;
+  color: #fff !important;
+  border: 1px solid var(--lp-red) !important;
+  border-radius: 999px !important;
+  font-family: var(--lp-sans) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.005em !important;
+  transition: all 0.3s var(--lp-ease) !important;
+  box-shadow: 0 10px 24px -6px rgba(230, 57, 70, 0.35) !important;
+}
+.lp .neu-btn-primary:hover {
+  background: var(--lp-red-deep) !important;
+  border-color: var(--lp-red-deep) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 14px 28px -6px rgba(230, 57, 70, 0.45) !important;
+}
+
+.lp .neu-btn {
+  background: #ffffff !important;
+  color: var(--lp-text) !important;
+  border: 1px solid var(--lp-rule-strong) !important;
+  border-radius: 999px !important;
+  font-family: var(--lp-sans) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.005em !important;
+  transition: all 0.3s var(--lp-ease) !important;
+  box-shadow: 0 2px 6px rgba(22, 22, 26, 0.04) !important;
+}
+.lp .neu-btn:hover {
+  background: var(--lp-ink) !important;
+  color: #ffffff !important;
+  border-color: var(--lp-ink) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Luxury cards inside .lp */
+.lp .neu-card {
+  background: var(--lp-card) !important;
+  border: 1px solid var(--lp-rule) !important;
+  border-radius: 28px !important;
+  box-shadow: 0 8px 30px rgba(22, 22, 26, 0.03) !important;
+  transition: all 0.3s var(--lp-ease) !important;
+}
+.lp .neu-card:hover {
+  border-color: var(--lp-rule-strong) !important;
+  box-shadow: 0 16px 40px rgba(22, 22, 26, 0.06) !important;
+}
+
+/* Neutralize legacy text-germany-red & text-germany-black */
+.lp .text-germany-red {
+  color: var(--lp-red) !important;
+}
+.lp .text-germany-black {
+  color: var(--lp-text) !important;
+}
+

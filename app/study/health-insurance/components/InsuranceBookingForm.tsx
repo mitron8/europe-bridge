@@ -27,15 +27,15 @@ export const InsuranceBookingForm = () => {
   };
 
   return (
-    <section id="booking" className="scroll-mt-32 py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" data-reveal>
+    <section id="booking" className="scroll-mt-32 py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 space-y-10">
       <div className="max-w-2xl mx-auto">
         {/* Form Container */}
-        <div className="bg-[#faf8f3] rounded-3xl p-6 sm:p-8 border border-[#e5e0d3] space-y-6 shadow-xs">
-          <div className="space-y-2 border-b border-[#e5e0d3] pb-4">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--lp-gold)] bg-[var(--lp-gold)]/10 px-2.5 py-0.5 rounded-full border border-[var(--lp-gold)]/20 inline-block">
+        <div className="bg-[var(--lp-card)] rounded-3xl p-6 sm:p-8 border border-[#e5e0d3] space-y-6 shadow-[0_12px_40px_rgba(22,22,26,0.05)]">
+          <div className="space-y-2 border-b border-[var(--lp-rule)] pb-4">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--lp-gold)] bg-[var(--lp-gold)]/10 px-2.5 py-0.5 rounded-full border border-[var(--lp-gold)]/20 inline-block">
               Fast-Track Advisory
             </span>
-            <h2 className="font-serif text-2xl font-normal text-[var(--lp-ink)]">
+            <h2 className="lp-serif text-2xl font-semibold text-[var(--lp-text)]">
               Apply for German Health Insurance
             </h2>
             <p className="text-xs text-[var(--lp-muted)] leading-relaxed">

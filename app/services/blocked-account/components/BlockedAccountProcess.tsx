@@ -37,46 +37,48 @@ export const BlockedAccountProcess = () => {
   ];
 
   return (
-    <section className="py-12 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
-      <div className="neu-card p-6 sm:p-10 space-y-8">
+    <section className="py-8 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
+      <div className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-10 shadow-[0_16px_40px_rgba(22,22,26,0.05)] space-y-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="text-xs font-black uppercase tracking-widest text-germany-red">End-to-End Roadmap</div>
-          <h2 className="text-3xl sm:text-4xl font-black text-germany-black font-display">
-            How It Works: From Application to Arrival
+          <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--lp-red)] block">
+            End-to-End Roadmap
+          </div>
+          <h2 className="lp-serif text-3xl sm:text-4xl font-semibold text-[var(--lp-text)]">
+            How It Works: From Application to <em className="lp-script text-[var(--lp-red)] font-normal text-4xl sm:text-5xl">Arrival</em>
           </h2>
-          <p className="text-sm sm:text-base text-gray-600 font-medium">
+          <p className="text-[15px] text-[var(--lp-text-muted)] font-medium">
             A seamless journey designed to eliminate delays and ensure your funds are ready ahead of your visa appointment.
           </p>
         </div>
 
         {/* 5 Steps Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-2">
           {steps.map((s, idx) => {
             const Icon = s.icon;
             return (
               <div 
                 key={idx}
-                className="p-5 rounded-2xl bg-white border-2 border-gray-200 shadow-sm relative flex flex-col justify-between space-y-4 hover:border-germany-red/50 transition-all"
+                className="p-5 rounded-2xl bg-white/70 border border-[#e5e0d3] shadow-sm relative flex flex-col justify-between space-y-4 hover:border-[var(--lp-red)]/30 hover:shadow-md transition-all"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-black text-germany-red uppercase tracking-wider bg-red-50 px-2.5 py-0.5 rounded-full border border-red-100">
+                    <span className="text-[10px] font-bold text-[var(--lp-red)] uppercase tracking-wider bg-[var(--lp-red)]/10 px-2.5 py-0.5 rounded-full">
                       Step {s.stepNum}
                     </span>
-                    <div className="w-9 h-9 rounded-xl bg-gray-100 text-germany-black flex items-center justify-center font-bold">
+                    <div className="w-9 h-9 rounded-xl bg-white border border-[#e5e0d3] text-[var(--lp-text)] flex items-center justify-center font-bold">
                       <Icon className="w-4 h-4" />
                     </div>
                   </div>
 
-                  <h3 className="font-extrabold text-germany-black text-base leading-snug">{s.title}</h3>
-                  <p className="text-xs text-gray-600 font-medium leading-relaxed">
+                  <h3 className="lp-serif font-semibold text-[var(--lp-text)] text-base leading-snug">{s.title}</h3>
+                  <p className="text-xs text-[var(--lp-muted)] font-medium leading-relaxed">
                     {s.desc}
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-gray-100 flex items-center gap-1 text-[11px] font-bold text-gray-500">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-green-600 shrink-0" />
+                <div className="pt-2 border-t border-[#f0ede6] flex items-center gap-1.5 text-[11px] font-bold text-[var(--lp-muted)]">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[var(--lp-gold)] shrink-0" />
                   <span>Full Assistance</span>
                 </div>
               </div>
@@ -87,3 +89,4 @@ export const BlockedAccountProcess = () => {
     </section>
   );
 };
+

@@ -64,18 +64,17 @@ export const RemittanceUseCases = () => {
   const current = useCases[activeTab];
 
   return (
-    <section id="use-cases" className="py-12 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto scroll-mt-28">
-      <div className="neu-card p-6 sm:p-10 space-y-8">
+    <section id="use-cases" className="py-8 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto scroll-mt-28">
+      <div className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-10 shadow-[0_16px_40px_rgba(22,22,26,0.05)] space-y-8">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 text-germany-red text-xs font-black uppercase tracking-wider">
-            <Landmark className="w-4 h-4" />
-            <span>Versatile Transfer Solutions</span>
+          <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--lp-red)] block">
+            Versatile Transfer Solutions
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-germany-black font-display">
-            Every Payment Need in Germany Covered
+          <h2 className="lp-serif text-3xl sm:text-4xl font-semibold text-[var(--lp-text)]">
+            Every Payment Need in Germany <em className="lp-script text-[var(--lp-red)] font-normal text-4xl sm:text-5xl">Covered</em>
           </h2>
-          <p className="text-sm sm:text-base text-gray-600 font-medium">
+          <p className="text-[15px] text-[var(--lp-muted)] font-medium">
             From the mandatory blocked account to tuition fees, rental deposits, and contactless travel cards.
           </p>
         </div>

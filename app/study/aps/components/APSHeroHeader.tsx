@@ -6,7 +6,7 @@ import { Calendar, ShieldCheck, FileCheck2, Clock, Banknote } from 'lucide-react
 
 export const APSHeroHeader = () => {
   return (
-    <section className="pt-32 sm:pt-36 pb-12 px-4 sm:px-6 lg:px-12 relative overflow-hidden">
+    <section className="pt-28 sm:pt-32 pb-10 sm:pb-14 px-4 sm:px-6 lg:px-12 relative overflow-hidden">
       {/* Background Subtle Ambient Accents */}
       <div 
         aria-hidden 
@@ -41,9 +41,9 @@ export const APSHeroHeader = () => {
             </p>
 
             {/* At a Glance Box */}
-            <div className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-2xl p-6 relative overflow-hidden shadow-[0_4px_20px_rgba(22,22,26,0.03)] border-l-4 border-l-[var(--lp-red)]">
+            <div className="bg-[#ece7dd]/70 border border-[#ded8cb] rounded-2xl p-6 relative overflow-hidden shadow-[0_8px_24px_rgba(22,22,26,0.04)]">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--lp-red)]">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--lp-red)] bg-white/80 border border-[#e5e0d3] shadow-xs">
                   At a Glance Summary
                 </span>
                 <span className="text-[11.5px] font-medium text-[var(--lp-muted)] flex items-center gap-1.5">

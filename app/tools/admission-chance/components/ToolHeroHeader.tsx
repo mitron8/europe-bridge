@@ -1,95 +1,47 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Calendar, Target, Award, BarChart3 } from 'lucide-react';
+import { Target, ChevronRight } from 'lucide-react';
 
 export const ToolHeroHeader = () => {
   return (
-    <section className="pt-28 pb-10 px-6 lg:px-12 relative overflow-hidden">
-      {/* Background Decorative Accents */}
-      <div className="absolute top-10 right-10 w-72 h-72 bg-red-200/30 rounded-full blur-3xl -z-10 pointer-events-none" />
-      <div className="absolute bottom-5 left-10 w-80 h-80 bg-amber-200/30 rounded-full blur-3xl -z-10 pointer-events-none" />
+    <section className="relative overflow-hidden pt-28 pb-10 sm:pt-36 sm:pb-14 border-b border-[#e5e0d3] bg-[#fbf9f4]">
+      <div 
+        aria-hidden 
+        className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-96 w-full max-w-7xl rounded-full bg-gradient-to-b from-[#e63946]/[0.025] to-transparent blur-3xl" 
+      />
 
-      <div className="max-w-7xl mx-auto">
-        {/* Breadcrumb Navigation */}
-        <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs md:text-sm font-semibold text-gray-500">
-          <Link href="/" className="hover:text-germany-red transition-colors">Home</Link>
-          <span>/</span>
-          <Link href="/#free-tools" className="hover:text-germany-red transition-colors">Free Tools</Link>
-          <span>/</span>
-          <span className="text-germany-black font-extrabold">Master's Admission Chance Evaluator</span>
+      <div className="lp-container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-4xl">
+        {/* Breadcrumb */}
+        <nav aria-label="Breadcrumb" className="mb-5 flex items-center justify-center gap-2 text-[12px] sm:text-[13px] text-[#787369]">
+          <Link href="/" className="transition-colors hover:text-[#16161a]">
+            Home
+          </Link>
+          <ChevronRight className="h-3 w-3 opacity-60" />
+          <Link href="/tools" className="transition-colors hover:text-[#16161a]">
+            Free Tools
+          </Link>
+          <ChevronRight className="h-3 w-3 opacity-60" />
+          <span className="font-semibold text-[#16161a]">Admission Chance Predictor</span>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Main Hero Content */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-100/80 border border-red-200 text-germany-red text-xs font-black uppercase tracking-wider">
-              <Target className="w-4 h-4" />
-              <span>Interactive Evaluation Tool 2026</span>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-germany-black leading-tight tracking-tight font-display flex-1">
-                German Master's <span className="text-germany-red">Admission Chance</span> Predictor
-              </h1>
-            </div>
-
-            <p className="text-base sm:text-lg text-gray-700 font-medium leading-relaxed">
-              Evaluate your admission probability for public German universities based on your CGPA, field of study, target university tier, language test scores, and work experience.
-            </p>
-
-            {/* Quick Summary Card */}
-            <div className="neu-card p-6 border-l-4 border-l-germany-red relative overflow-hidden">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-black uppercase tracking-widest text-germany-red">How It Works</span>
-                <span className="text-[11px] font-semibold text-gray-400 flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5" /> 100-Point Fit Scale
-                </span>
-              </div>
-              <p className="text-sm text-gray-700 leading-relaxed font-medium">
-                Answer 7 quick profile questions to generate a <strong className="text-germany-black">customized fit score (0–100)</strong>, probability band (<strong className="text-emerald-700">High</strong>, <strong className="text-blue-700">Moderate</strong>, or <strong className="text-amber-700">Reach</strong>), and receive actionable recommendations to boost your profile.
-              </p>
-            </div>
-          </div>
-
-          {/* Snapshot Box */}
-          <div className="lg:col-span-5">
-            <motion.div 
-              className="neu-card p-6 sm:p-8 space-y-4 border border-amber-100 relative"
-              whileHover={{ y: -4 }}
-              transition={{ duration: 0.2 }}
-            >
-              <h3 className="font-extrabold text-germany-black text-lg border-b border-gray-200 pb-3 flex items-center gap-2">
-                <Target className="w-5 h-5 text-germany-red" />
-                <span>Evaluation Criteria Included</span>
-              </h3>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 border border-gray-200">
-                  <span className="text-xs font-bold text-gray-700">Academic Score (German Bavarian GPA)</span>
-                  <span className="text-xs font-extrabold text-germany-red">Max 40 Pts</span>
-                </div>
-
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 border border-gray-200">
-                  <span className="text-xs font-bold text-gray-700">Subject Credit Alignment</span>
-                  <span className="text-xs font-extrabold text-germany-red">Max 25 Pts</span>
-                </div>
-
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 border border-gray-200">
-                  <span className="text-xs font-bold text-gray-700">Language Test Scores (IELTS/TestDaF)</span>
-                  <span className="text-xs font-extrabold text-germany-red">Max 15 Pts</span>
-                </div>
-
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 border border-gray-200">
-                  <span className="text-xs font-bold text-gray-700">Work Exp / Projects / GRE</span>
-                  <span className="text-xs font-extrabold text-germany-red">Max 20 Pts</span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
+        <div className="inline-flex items-center gap-2 rounded-full border border-[#dcd7cb] bg-[#f3efe6] px-3.5 py-1 text-[11.5px] sm:text-[12px] font-medium text-[#4a4740] shadow-2xs mb-3.5">
+          <Target className="w-3.5 h-3.5 text-[#9e2a2b]" />
+          <span className="font-semibold text-[#16161a]">100-Point Profile Fit Algorithm</span>
+          <span className="text-[#9a958c]">|</span>
+          <span>TU9 &amp; Public Universities 2026</span>
         </div>
+
+        <h1 className="text-3xl sm:text-5xl lg:text-[50px] font-serif font-normal tracking-tight text-[#16161a] leading-[1.15]">
+          German Master&apos;s Admission Chance Predictor. <br className="hidden sm:inline" />
+          <span className="italic font-normal text-[#9e2a2b]">Evaluate Your Profile Fit &amp; TU9 Likelihood.</span>
+        </h1>
+
+        <p className="mt-3.5 max-w-2xl mx-auto text-[14.5px] sm:text-[16px] text-[#5e5b54] leading-relaxed">
+          Evaluate your admission probability for public German universities based on your CGPA, field of study, target university tier, language test scores, and work experience on a 100-point fit scale.
+        </p>
       </div>
     </section>
   );
 };
+

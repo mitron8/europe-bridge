@@ -44,14 +44,14 @@ export const WorkingWhileStudyingSection = () => {
   ];
 
   return (
-    <section id="work" className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" data-reveal>
+    <section id="work" className="py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 space-y-10">
       {/* Header */}
       <div className="space-y-3 text-center max-w-2xl mx-auto">
-        <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--lp-red)]">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--lp-red)]">
           Earn While You Learn
         </span>
-        <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-ink)] font-normal tracking-tight">
-          Part-Time Work &amp; <em className="italic text-[var(--lp-red)] font-serif">Werkstudent Jobs</em>
+        <h2 className="lp-serif text-2xl sm:text-3xl lg:text-4xl text-[var(--lp-text)] font-semibold tracking-tight">
+          Part-Time Work &amp; <em className="lp-script text-[var(--lp-red)]">Werkstudent Jobs</em>
         </h2>
         <p className="text-sm sm:text-base text-[var(--lp-muted)] leading-relaxed">
           Germany grants international students generous legal work rights. Most master&apos;s students comfortably self-finance their day-to-day living costs.

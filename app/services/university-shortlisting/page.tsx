@@ -1,6 +1,8 @@
 import React from 'react';
 import { Metadata } from 'next';
-import Navbar from '@/app/components/Navbar';
+import "@/app/components/landing/landing.css";
+import { playfair, madisonSauvage, celinda } from "@/app/components/landing/fonts";
+import LandingNavbar from '@/app/components/landing/LandingNavbar';
 import Footer from '@/app/components/Footer';
 import { ShortlistingHero } from './components/ShortlistingHero';
 import { ShortlistingReadinessWidget } from './components/ShortlistingReadinessWidget';
@@ -83,7 +85,7 @@ export default function UniversityShortlistingPage() {
         "@type": "ListItem",
         "position": 2,
         "name": "Services",
-        "item": "https://europebridge.in/#our-process"
+        "item": "https://europebridge.in/services"
       },
       {
         "@type": "ListItem",
@@ -95,34 +97,38 @@ export default function UniversityShortlistingPage() {
   };
 
   return (
-    <div className="min-h-screen neu-bg text-germany-black selection:bg-germany-red selection:text-white font-sans scroll-smooth">
-      {/* Structured Data Scripts */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
+    <main className="bg-[#f4f1ea] min-h-screen text-[var(--lp-text)] selection:bg-[var(--lp-red)] selection:text-white">
+      <div className={`lp ${playfair.variable} ${madisonSauvage.variable} ${celinda.variable}`}>
+        {/* Structured Data Scripts */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
 
-      <Navbar />
+        <LandingNavbar />
 
-      <main className="pt-20 sm:pt-24 pb-16 space-y-4">
-        <ShortlistingHero />
+        <div className="pt-24 sm:pt-28 pb-16 space-y-8 sm:space-y-12">
+          <ShortlistingHero />
 
-        <div className="space-y-4">
-          <ShortlistingReadinessWidget />
-          <ShortlistingFeatures />
-          <ShortlistingPricing />
-          <ShortlistingProcess />
-          <ShortlistingBooking />
-          <ShortlistingFAQ />
-          <ShortlistingCTA />
+          <div className="space-y-8 sm:space-y-12">
+            <ShortlistingReadinessWidget />
+            <ShortlistingFeatures />
+            <ShortlistingPricing />
+            <ShortlistingProcess />
+            <ShortlistingBooking />
+            <ShortlistingFAQ />
+            <ShortlistingCTA />
+          </div>
         </div>
-      </main>
 
-      <Footer />
-    </div>
+        <div className="relative z-[40] mt-16">
+          <Footer />
+        </div>
+      </div>
+    </main>
   );
 }

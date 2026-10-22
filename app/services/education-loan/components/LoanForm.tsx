@@ -25,19 +25,19 @@ export const LoanForm = () => {
   };
 
   return (
-    <section id="booking" className="py-12 px-6 lg:px-12 max-w-4xl mx-auto scroll-mt-28">
-      <div className="neu-card p-6 sm:p-12 border-2 border-germany-red/30 relative overflow-hidden space-y-8">
+    <section id="booking" className="py-12 px-4 sm:px-6 lg:px-12 max-w-4xl mx-auto scroll-mt-28">
+      <div className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-12 shadow-[0_16px_40px_rgba(22,22,26,0.06)] relative overflow-hidden space-y-8">
         {/* Header */}
-        <div className="text-center space-y-2 max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 text-germany-red text-xs font-black uppercase tracking-wider">
-            <PhoneCall className="w-4 h-4" />
+        <div className="text-center space-y-2.5 max-w-2xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#ece7dd] text-[var(--lp-red)] text-[11px] font-semibold uppercase tracking-wider border border-[#e2ddd3]">
+            <PhoneCall className="w-3.5 h-3.5" />
             <span>Fast Eligibility Assessment</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-germany-black font-display">
+          <h2 className="lp-serif text-3xl sm:text-4xl font-semibold text-[var(--lp-text)]">
             Apply for an Education Loan
           </h2>
-          <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
-            Submit your contact details below. An education loan specialist will call you back within <strong className="text-germany-black">60 minutes</strong> (working hours) to initiate your application and arrange document pickup.
+          <p className="text-xs sm:text-sm text-[var(--lp-muted)] font-normal leading-relaxed">
+            Submit your contact details below. An education loan specialist will call you back within <strong className="text-[var(--lp-text)] font-semibold">60 minutes</strong> (working hours) to initiate your application and arrange document pickup.
           </p>
         </div>
 
@@ -45,18 +45,18 @@ export const LoanForm = () => {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="p-8 bg-green-50 border-2 border-green-300 rounded-3xl text-center space-y-4"
+            className="p-8 bg-[#ece7dd]/60 border border-[#e2ddd3] rounded-3xl text-center space-y-4"
           >
-            <div className="w-16 h-16 rounded-full bg-green-100 text-green-700 flex items-center justify-center mx-auto font-bold">
+            <div className="w-16 h-16 rounded-full bg-[var(--lp-red)]/10 text-[var(--lp-red)] flex items-center justify-center mx-auto font-bold shadow-sm">
               <CheckCircle2 className="w-10 h-10" />
             </div>
-            <h3 className="text-2xl font-black text-green-900 font-display">Loan Application Submitted!</h3>
-            <p className="text-sm text-green-800 font-medium max-w-lg mx-auto leading-relaxed">
-              Thank you, <strong>{firstName}</strong>. Our loan specialist will call you at <strong>{countryCode} {phone}</strong> within 60 minutes to guide you through your sanction letter process.
+            <h3 className="lp-serif text-2xl font-semibold text-[var(--lp-text)]">Loan Application Submitted!</h3>
+            <p className="text-sm text-[var(--lp-muted)] font-normal max-w-lg mx-auto leading-relaxed">
+              Thank you, <strong className="text-[var(--lp-text)]">{firstName}</strong>. Our loan specialist will call you at <strong className="text-[var(--lp-text)]">{countryCode} {phone}</strong> within 60 minutes to guide you through your sanction letter process.
             </p>
             <button 
               onClick={() => setIsSubmitted(false)}
-              className="neu-btn px-6 py-2.5 text-xs font-extrabold text-germany-black bg-white border border-gray-200 mt-2"
+              className="lp-btn lp-btn--ghost-dark px-6 py-2.5 text-xs mt-2"
             >
               Submit Another Request
             </button>
@@ -65,48 +65,48 @@ export const LoanForm = () => {
           <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">First Name *</label>
+                <label className="text-xs font-semibold uppercase text-[var(--lp-muted)] tracking-wider block">First Name *</label>
                 <input 
                   type="text" 
                   required
                   placeholder="First name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm focus:border-germany-red focus:ring-1 focus:ring-germany-red outline-none bg-white"
+                  className="w-full px-4 py-3 rounded-xl border border-[#e5e0d3] font-medium text-sm text-[var(--lp-text)] focus:border-[var(--lp-red)] focus:ring-1 focus:ring-[var(--lp-red)] outline-none bg-white transition-colors"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">Last Name</label>
+                <label className="text-xs font-semibold uppercase text-[var(--lp-muted)] tracking-wider block">Last Name</label>
                 <input 
                   type="text" 
                   placeholder="Last name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm focus:border-germany-red focus:ring-1 focus:ring-germany-red outline-none bg-white"
+                  className="w-full px-4 py-3 rounded-xl border border-[#e5e0d3] font-medium text-sm text-[var(--lp-text)] focus:border-[var(--lp-red)] focus:ring-1 focus:ring-[var(--lp-red)] outline-none bg-white transition-colors"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">Email Address *</label>
+              <label className="text-xs font-semibold uppercase text-[var(--lp-muted)] tracking-wider block">Email Address *</label>
               <input 
                 type="email" 
                 required
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm focus:border-germany-red focus:ring-1 focus:ring-germany-red outline-none bg-white"
+                className="w-full px-4 py-3 rounded-xl border border-[#e5e0d3] font-medium text-sm text-[var(--lp-text)] focus:border-[var(--lp-red)] focus:ring-1 focus:ring-[var(--lp-red)] outline-none bg-white transition-colors"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-extrabold uppercase text-gray-600 tracking-wider block">Phone Number *</label>
+              <label className="text-xs font-semibold uppercase text-[var(--lp-muted)] tracking-wider block">Phone Number *</label>
               <div className="flex gap-2">
                 <select 
                   value={countryCode} 
                   onChange={(e) => setCountryCode(e.target.value)}
-                  className="px-3 py-3 rounded-xl border border-gray-300 font-bold text-xs bg-gray-50 focus:border-germany-red outline-none"
+                  className="px-3 py-3 rounded-xl border border-[#e5e0d3] font-bold text-xs bg-[#faf8f3] text-[var(--lp-text)] focus:border-[var(--lp-red)] outline-none"
                 >
                   <option value="+91">🇮🇳 +91</option>
                   <option value="+49">🇩🇪 +49</option>
@@ -120,7 +120,7 @@ export const LoanForm = () => {
                   placeholder="Phone number"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="flex-1 px-4 py-3 rounded-xl border border-gray-300 font-semibold text-sm focus:border-germany-red focus:ring-1 focus:ring-germany-red outline-none bg-white"
+                  className="flex-1 px-4 py-3 rounded-xl border border-[#e5e0d3] font-medium text-sm text-[var(--lp-text)] focus:border-[var(--lp-red)] focus:ring-1 focus:ring-[var(--lp-red)] outline-none bg-white transition-colors"
                 />
               </div>
             </div>
@@ -132,9 +132,9 @@ export const LoanForm = () => {
                 required
                 checked={consent}
                 onChange={(e) => setConsent(e.target.checked)}
-                className="w-5 h-5 rounded text-germany-red focus:ring-germany-red accent-germany-red mt-0.5 cursor-pointer shrink-0"
+                className="w-4 h-4 rounded text-[var(--lp-red)] focus:ring-[var(--lp-red)] accent-[var(--lp-red)] mt-0.5 cursor-pointer shrink-0"
               />
-              <label htmlFor="consent" className="text-xs text-gray-600 font-medium leading-relaxed cursor-pointer select-none">
+              <label htmlFor="consent" className="text-xs text-[var(--lp-muted)] font-normal leading-relaxed cursor-pointer select-none">
                 I agree that EuropeBridge may store my details and contact me via phone or email regarding education loan services. I can request data deletion at any time.
               </label>
             </div>
@@ -142,14 +142,14 @@ export const LoanForm = () => {
             <button 
               type="submit" 
               disabled={isSubmitting}
-              className="w-full neu-btn-primary py-4 text-base font-black flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
+              className="w-full lp-btn lp-btn--red py-4 text-sm font-semibold flex items-center justify-center gap-2 shadow-[0_12px_28px_-8px_rgba(230,57,70,0.45)] disabled:opacity-50"
             >
               {isSubmitting ? (
                 <span>Submitting Request...</span>
               ) : (
                 <>
                   <span>Submit Loan Request</span>
-                  <Send className="w-4 h-4" />
+                  <Send className="w-4 h-4 ml-1" />
                 </>
               )}
             </button>

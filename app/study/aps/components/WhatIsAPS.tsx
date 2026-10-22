@@ -60,13 +60,13 @@ export const WhatIsAPS = () => {
         </div>
 
         {/* 15 March 2026 Rule Alert */}
-        <div data-reveal className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-2xl p-6 border-l-4 border-l-[var(--lp-red)] shadow-sm space-y-2.5">
-          <div className="flex items-center gap-2 text-[var(--lp-red)] font-semibold text-xs sm:text-sm uppercase tracking-wider">
+        <div data-reveal className="bg-[#ece7dd]/65 border border-[#ded8cb] rounded-2xl p-6 shadow-xs space-y-2.5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--lp-red)]/10 text-[var(--lp-red)] font-semibold text-xs uppercase tracking-wider">
             <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>March 15, 2026 Update: 70% Class XII Rule for Bachelor's</span>
+            <span>March 15, 2026 Update: 70% Class XII Rule for Bachelor&apos;s</span>
           </div>
           <p className="text-xs sm:text-sm text-[var(--lp-muted)] leading-relaxed">
-            APS India enforces a strict threshold for Bachelor's applicants: your Class XII aggregate must be at least <strong className="text-[var(--lp-text)] font-semibold">70%</strong> to be evaluated for direct undergraduate entry. If your Class XII score is below 70%, your standard pathway is a 1-year preparatory foundation year before enrolling in a degree program. Master's and PhD applicants are unaffected by this 70% rule.
+            APS India enforces a strict threshold for Bachelor&apos;s applicants: your Class XII aggregate must be at least <strong className="text-[var(--lp-text)] font-semibold">70%</strong> to be evaluated for direct undergraduate entry. If your Class XII score is below 70%, your standard pathway is a 1-year preparatory foundation year before enrolling in a degree program. Master&apos;s and PhD applicants are unaffected by this 70% rule.
           </p>
         </div>
 
@@ -76,10 +76,12 @@ export const WhatIsAPS = () => {
           <motion.div 
             whileHover={{ y: -2 }}
             transition={{ duration: 0.2 }}
-            className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-3 border-l-4 border-l-[var(--lp-gold)] shadow-sm hover:shadow-md transition-all"
+            className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-3 shadow-sm hover:shadow-md transition-all"
           >
             <div className="flex items-center gap-2.5 text-[var(--lp-text)] font-semibold text-lg">
-              <XCircle className="w-5 h-5 text-[var(--lp-gold)] shrink-0" />
+              <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center shrink-0">
+                <XCircle className="w-5 h-5" />
+              </div>
               <span className="lp-serif">Distance-Education Exclusion</span>
             </div>
             <p className="text-xs sm:text-sm text-[var(--lp-muted)] leading-relaxed">
@@ -91,10 +93,12 @@ export const WhatIsAPS = () => {
           <motion.div 
             whileHover={{ y: -2 }}
             transition={{ duration: 0.2 }}
-            className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-3 border-l-4 border-l-[var(--lp-ink)] shadow-sm hover:shadow-md transition-all"
+            className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-8 space-y-3 shadow-sm hover:shadow-md transition-all"
           >
             <div className="flex items-center gap-2.5 text-[var(--lp-text)] font-semibold text-lg">
-              <CheckCircle2 className="w-5 h-5 text-[var(--lp-red)] shrink-0" />
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-700 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
               <span className="lp-serif">Who is Exempt from APS?</span>
             </div>
             <ul className="space-y-2 text-xs sm:text-sm text-[var(--lp-muted)] leading-relaxed">

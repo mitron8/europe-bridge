@@ -29,36 +29,45 @@ export const RelatedToolsSection = () => {
   ];
 
   return (
-    <section className="py-12 px-6 lg:px-12 bg-gradient-to-b from-transparent via-amber-50/20 to-transparent">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center justify-between border-b border-gray-200 pb-3">
-          <h2 className="text-xl font-extrabold text-germany-black font-display">Related Study Tools &amp; Guides</h2>
-          <span className="text-xs font-bold text-gray-500">Explore EuropeBridge Suite</span>
+    <section className="py-14 px-4 sm:px-6 lg:px-12">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-[#e5e0d3] pb-4 gap-2">
+          <div>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--lp-red)] block mb-1">
+              Explore EuropeBridge Suite
+            </span>
+            <h2 className="lp-serif text-2xl sm:text-3xl font-semibold text-[var(--lp-text)]">
+              Related Study <em className="lp-script text-[var(--lp-red)] font-normal text-3xl sm:text-4xl">Tools &amp; Guides</em>
+            </h2>
+          </div>
+          <span className="text-xs font-semibold text-[var(--lp-text-muted)]">
+            Verified for 2026 Admissions
+          </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {tools.map((t, idx) => {
             const Icon = t.icon;
             return (
               <Link 
                 key={idx}
                 href={t.href}
-                className="neu-card p-5 block hover:scale-[1.02] transition-transform space-y-3 border border-gray-100 group"
+                className="bg-[var(--lp-card)] border border-[#e5e0d3] rounded-3xl p-6 sm:p-7 hover:border-[var(--lp-red)]/40 hover:shadow-[0_16px_36px_rgba(22,22,26,0.06)] hover:-translate-y-0.5 transition-all duration-300 group flex flex-col justify-between space-y-4"
               >
                 <div className="flex items-center justify-between">
-                  <div className="w-9 h-9 rounded-xl bg-amber-100 text-germany-black flex items-center justify-center font-bold">
+                  <div className="w-10 h-10 rounded-2xl bg-[var(--lp-red)]/10 text-[var(--lp-red)] flex items-center justify-center font-bold">
                     <Icon className="w-5 h-5" />
                   </div>
-                  <span className="text-[10px] font-black uppercase text-germany-red bg-red-50 px-2 py-0.5 rounded border border-red-100">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--lp-red)] bg-[var(--lp-red)]/10 px-2.5 py-1 rounded-full">
                     {t.tag}
                   </span>
                 </div>
                 <div>
-                  <h3 className="text-sm font-extrabold text-germany-black group-hover:text-germany-red transition-colors flex items-center gap-1">
+                  <h3 className="lp-serif text-lg font-semibold text-[var(--lp-text)] group-hover:text-[var(--lp-red)] transition-colors flex items-center justify-between">
                     <span>{t.title}</span>
-                    <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ArrowRight className="w-4 h-4 text-[var(--lp-text-muted)] group-hover:text-[var(--lp-red)] group-hover:translate-x-1 transition-all" />
                   </h3>
-                  <p className="text-xs text-gray-600 font-medium mt-1 leading-relaxed">
+                  <p className="text-xs text-[var(--lp-text-muted)] font-medium mt-2 leading-relaxed">
                     {t.desc}
                   </p>
                 </div>
@@ -70,3 +79,4 @@ export const RelatedToolsSection = () => {
     </section>
   );
 };
+

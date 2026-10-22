@@ -23,7 +23,7 @@ export const LifeAfterOfferSectionNav = () => {
     { id: 'section-salaries', label: 'Starting Salaries', icon: Coins },
     { id: 'section-playbook', label: 'German Hiring Playbook', icon: Briefcase },
     { id: 'section-pr-citizenship', label: 'PR & Citizenship', icon: Award },
-    { id: 'section-calculator', label: 'Eligibility Calculator', icon: Calculator },
+    { id: 'section-calculator', label: 'Blue Card & Salary Tool', icon: Calculator },
     { id: 'section-faq', label: 'FAQs', icon: HelpCircle },
   ];
 

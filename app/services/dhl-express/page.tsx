@@ -1,5 +1,8 @@
 import React from 'react';
-import Navbar from '@/app/components/Navbar';
+import { Metadata } from 'next';
+import "@/app/components/landing/landing.css";
+import { playfair, madisonSauvage, celinda } from "@/app/components/landing/fonts";
+import LandingNavbar from '@/app/components/landing/LandingNavbar';
 import Footer from '@/app/components/Footer';
 import { DHLExpressHero } from './components/DHLExpressHero';
 import { DHLFeatures } from './components/DHLFeatures';
@@ -8,7 +11,6 @@ import { DHLPricingComparison } from './components/DHLPricingComparison';
 import { DHLBookingForm } from './components/DHLBookingForm';
 import { DHLFAQ } from './components/DHLFAQ';
 import { DHLCTA } from './components/DHLCTA';
-import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'DHL Express University Courier Booking | Flat ₹2,033 | EuropeBridge',
@@ -75,7 +77,7 @@ export default function DHLExpressPage() {
         '@type': 'ListItem',
         position: 2,
         name: 'Services',
-        item: 'https://europebridge.in/#our-process'
+        item: 'https://europebridge.in/services'
       },
       {
         '@type': 'ListItem',
@@ -87,29 +89,35 @@ export default function DHLExpressPage() {
   };
 
   return (
-    <main className="min-h-screen neu-bg pt-20 sm:pt-24 pb-16 space-y-4">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
+    <main className="bg-[#f4f1ea] min-h-screen text-[var(--lp-text)] selection:bg-[var(--lp-red)] selection:text-white">
+      <div className={`lp ${playfair.variable} ${madisonSauvage.variable} ${celinda.variable}`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
 
-      <Navbar />
+        <LandingNavbar />
 
-      <DHLExpressHero />
-      <div className="space-y-4">
-        <DHLFeatures />
-        <DHLProcess />
-        <DHLPricingComparison />
-        <DHLBookingForm />
-        <DHLFAQ />
-        <DHLCTA />
+        <div className="pt-24 sm:pt-28 pb-16 space-y-8 sm:space-y-12">
+          <DHLExpressHero />
+          <div className="space-y-8 sm:space-y-12">
+            <DHLFeatures />
+            <DHLProcess />
+            <DHLPricingComparison />
+            <DHLBookingForm />
+            <DHLFAQ />
+            <DHLCTA />
+          </div>
+        </div>
+
+        <div className="relative z-[40] mt-16">
+          <Footer />
+        </div>
       </div>
-
-      <Footer />
     </main>
   );
 }

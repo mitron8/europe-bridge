@@ -1,12 +1,8 @@
 "use client";
-
-import React, { useState } from 'react';
-import { ChevronDown, HelpCircle } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react';
+import { StudyFAQ } from '@/app/study/components/StudyFAQ';
 
 export const DHLFAQ = () => {
-  const [openIdx, setOpenIdx] = useState<number | null>(0);
-
   const faqs = [
     {
       q: "I have placed the booking order online, what happens next?",
@@ -47,58 +43,12 @@ export const DHLFAQ = () => {
   ];
 
   return (
-    <section id="faq" className="py-12 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto scroll-mt-28">
-      <div className="neu-card p-6 sm:p-10 space-y-8">
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="text-xs font-black uppercase tracking-widest text-germany-red">Got Questions?</div>
-          <h2 className="text-3xl sm:text-4xl font-black text-germany-black font-display">
-            Frequently Asked Questions
-          </h2>
-          <p className="text-sm sm:text-base text-gray-600 font-medium">
-            Everything you need to know about international university courier booking with DHL Express.
-          </p>
-        </div>
-
-        <div className="space-y-3 max-w-4xl mx-auto pt-2">
-          {faqs.map((faq, index) => {
-            const isOpen = openIdx === index;
-            return (
-              <div
-                key={index}
-                className="rounded-2xl border border-gray-200 bg-white overflow-hidden transition-all shadow-xs"
-              >
-                <button
-                  type="button"
-                  onClick={() => setOpenIdx(isOpen ? null : index)}
-                  className="w-full p-5 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-gray-50/50 transition-colors"
-                >
-                  <span className="font-extrabold text-base text-germany-black">
-                    {faq.q}
-                  </span>
-                  <div className={`w-8 h-8 rounded-full bg-[#FAF8F5] border border-gray-200 flex items-center justify-center shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 bg-red-50 text-germany-red' : 'text-gray-500'}`}>
-                    <ChevronDown className="w-4 h-4" />
-                  </div>
-                </button>
-
-                <AnimatePresence>
-                  {isOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-gray-600 leading-relaxed font-medium border-t border-gray-100 whitespace-pre-line">
-                        {faq.a}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
+    <StudyFAQ
+      id="faq"
+      badge="DHL Express FAQs"
+      title="Frequently Asked Questions"
+      subtitle="Everything you need to know about international university courier booking, sealed transcript handling, KYC rules, and tracking."
+      faqs={faqs}
+    />
   );
 };
