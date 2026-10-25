@@ -6,6 +6,7 @@ import "@/app/components/landing/landing.css";
 import { playfair, madisonSauvage, celinda } from "@/app/components/landing/fonts";
 import LandingNavbar from "@/app/components/landing/LandingNavbar";
 import Footer from "@/app/components/Footer";
+import { GermanLandmarkCTA } from "@/app/components/common/GermanLandmarkCTA";
 import { 
   Calculator, 
   GraduationCap, 
@@ -271,39 +272,22 @@ export default function ToolsHubPage() {
           )}
         </section>
 
-        {/* Bottom Counseling CTA Banner */}
-        <section className="lp-container mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-          <div className="rounded-3xl border border-[#e5e0d3] bg-[#faf8f3] p-8 sm:p-10 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
-            <div className="space-y-2 text-center md:text-left">
-              <div className="inline-flex items-center gap-2 text-[11px] font-bold text-[#9e2a2b] uppercase tracking-wider">
-                <ShieldCheck className="w-4 h-4" />
-                Verified Admission Assistance
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-[#16161a]">
-                Ready to shortlist your German universities?
-              </h2>
-              <p className="text-[13.5px] sm:text-[14px] text-[#5e5b54] max-w-xl">
-                Get an expert counsellor review of your GPA, English scores, and APS readiness. We help you target 8 tuition-free German universities with guaranteed application accuracy.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
-              <Link
-                href="/courses"
-                className="w-full sm:w-auto rounded-xl border border-[#dcd7cb] bg-white px-5 py-3 text-center text-[13px] font-semibold text-[#16161a] transition-colors hover:border-[#16161a] hover:bg-[#f7f5f0]"
-              >
-                Explore Courses Database
-              </Link>
-              <Link
-                href="/services/university-shortlisting"
-                className="w-full sm:w-auto rounded-xl bg-[#16161a] px-5 py-3 text-center text-[13px] font-semibold text-white transition-all hover:bg-[#2e2e34] shadow-sm flex items-center justify-center gap-2"
-              >
-                <span>Get 8-University Shortlist</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        </section>
+        {/* Bottom Counseling CTA */}
+        <GermanLandmarkCTA
+          badge="Verified Admission Assistance"
+          title="Ready to Shortlist Your"
+          highlightText="German Universities?"
+          description="Get an expert counsellor review of your GPA, English scores, and APS readiness. We help you target 8 tuition-free German universities with guaranteed application accuracy."
+          primaryButtonText="Get 8-University Shortlist"
+          primaryButtonHref="/services/university-shortlisting"
+          secondaryButtonText="Explore Courses Database"
+          secondaryButtonHref="/courses"
+          trustPoints={[
+            "8 Tuition-Free Universities Shortlisted",
+            "ECTS Prerequisite Fit Analysis",
+            "Dedicated German Alumni Guidance"
+          ]}
+        />
 
         {/* EuropeBridge Standard Footer */}
         <div className="relative z-[40]">

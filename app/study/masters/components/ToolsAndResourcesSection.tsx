@@ -94,7 +94,7 @@ export const ToolsAndResourcesSection = () => {
       category: "Admissions",
       badge: "Public Universities",
       desc: "Filter English-taught master's degrees across TU9 and public universities with zero tuition and direct admission requirements.",
-      href: "/programs",
+      href: "/courses",
       icon: GraduationCap,
       cta: "Browse Programs"
     }

@@ -49,7 +49,7 @@ export default function ExperienceSection({ data, onChange, onNext, onPrev }: Pr
     <div>
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-xl font-extrabold text-germany-black dark:text-white font-display">Experience</h3>
-        <button onClick={addExperience} className="px-4 py-2 rounded-xl bg-[#EBE7E0] dark:bg-gray-800 hover:bg-germany-black dark:hover:bg-gray-700 hover:text-white font-extrabold text-xs transition-all text-germany-black dark:text-gray-100 cursor-pointer">
+        <button onClick={addExperience} className="px-4 py-2 rounded-xl bg-[#EBE7E0] dark:bg-gray-800 hover:bg-germany-red hover:text-white font-extrabold text-xs transition-all text-germany-black dark:text-gray-100 cursor-pointer">
           + Add Experience
         </button>
       </div>

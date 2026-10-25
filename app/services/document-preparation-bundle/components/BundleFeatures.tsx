@@ -46,7 +46,8 @@ const features = [
 
 export const BundleFeatures = () => {
   return (
-    <section id="features" className="py-14 px-6 lg:px-12 max-w-7xl mx-auto scroll-mt-28">
+    <section id="whats-included" className="py-14 px-6 lg:px-12 max-w-7xl mx-auto scroll-mt-28 relative">
+      <div id="features" className="-mt-28 pt-28 pointer-events-none absolute" />
       <div className="space-y-10">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">

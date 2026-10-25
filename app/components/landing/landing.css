@@ -380,3 +380,19 @@ html.lenis body { height: auto; }
   color: var(--lp-text) !important;
 }
 
+/* Sleek custom scrollbars */
+.lp ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.lp ::-webkit-scrollbar-track {
+  background: transparent;
+}
+.lp ::-webkit-scrollbar-thumb {
+  background: #ded8cb;
+  border-radius: 9999px;
+}
+.lp ::-webkit-scrollbar-thumb:hover {
+  background: #b8b2a5;
+}
+

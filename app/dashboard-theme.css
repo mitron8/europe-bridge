@@ -582,6 +582,20 @@
   background-color: #0B0E14;
 }
 
+.dark aside,
+.dark aside nav {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.dark aside::-webkit-scrollbar,
+.dark aside nav::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+
 /* ==============================================================================
    REACT-SELECT DARK MODE SUPPORT (COMPLETE COMPATIBILITY)
    ============================================================================== */
@@ -667,4 +681,37 @@
 .dark .dashboard-container [class*="-indicatorSeparator"] {
   background-color: #1A2130 !important;
 }
+
+/* ==============================================================================
+   GUARANTEED BRAND RED PRIMARY BUTTONS IN DASHBOARD (LIGHT & DARK MODES)
+   ============================================================================== */
+.neu-btn-primary,
+.dark .neu-btn-primary,
+.dashboard-container .neu-btn-primary,
+.dark .dashboard-container .neu-btn-primary,
+.dark [class*="neu-btn-primary"] {
+  background-color: #E63946 !important;
+  color: #FFFFFF !important;
+  border-color: #E63946 !important;
+}
+
+.neu-btn-primary:hover,
+.dark .neu-btn-primary:hover,
+.dashboard-container .neu-btn-primary:hover,
+.dark .dashboard-container .neu-btn-primary:hover,
+.dark [class*="neu-btn-primary"]:hover {
+  background-color: #D62839 !important;
+  border-color: #D62839 !important;
+  color: #FFFFFF !important;
+}
+
+.neu-btn-primary:active,
+.dark .neu-btn-primary:active,
+.dashboard-container .neu-btn-primary:active,
+.dark .dashboard-container .neu-btn-primary:active {
+  background-color: #C92A37 !important;
+  border-color: #C92A37 !important;
+  color: #FFFFFF !important;
+}
+
 

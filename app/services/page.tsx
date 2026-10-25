@@ -7,6 +7,7 @@ import "@/app/components/landing/landing.css";
 import { playfair, madisonSauvage, celinda } from "@/app/components/landing/fonts";
 import LandingNavbar from "@/app/components/landing/LandingNavbar";
 import Footer from "@/app/components/Footer";
+import { GermanLandmarkCTA } from "@/app/components/common/GermanLandmarkCTA";
 import { 
   Compass, 
   FileText, 
@@ -444,66 +445,24 @@ export default function ServicesHubPage() {
               </button>
             </div>
           )}
-
-          {/* Full-Service Admission Package Banner (Luxury Dark Theme matching ClosingCTA) */}
-          <div className="mt-16 sm:mt-20 lp-grain relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0d0d10] p-8 sm:p-12 text-white shadow-2xl">
-            {/* Ambient Radial Glow */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-[280px] opacity-40 blur-[100px]"
-              style={{ background: "radial-gradient(circle at 50% 100%, rgba(230,57,70,0.25), rgba(201,163,91,0.18), transparent 75%)" }}
-            />
-
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              <div className="lg:col-span-8 space-y-4">
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--lp-gold-soft)] backdrop-blur-sm">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--lp-red)]" />
-                  All-In-One Admission Mentorship
-                </div>
-
-                <h2 className="lp-serif text-2xl sm:text-4xl font-bold text-white leading-[1.15]">
-                  Prefer a Dedicated Counselor <br className="hidden sm:inline" />
-                  <em className="lp-script text-[var(--lp-gold-soft)]">from Day 1 to Visa Stamped?</em>
-                </h2>
-
-                <p className="text-[14px] sm:text-[15px] text-white/75 font-normal max-w-2xl leading-relaxed">
-                  Avoid fragmented services. Get complete counselor backing covering university shortlisting, DIN 5008 application documents, dMAT APS fast-tracking, blocked account setup, and 1-on-1 consular visa mock drills under our flagship mentorship package.
-                </p>
-
-                {/* Trust Points */}
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-2 text-[12px] text-white/65">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Check className="h-3.5 w-3.5 text-[var(--lp-red)]" /> 100% German University Compliant
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <Check className="h-3.5 w-3.5 text-[var(--lp-gold)]" /> Unlimited Revisions on Drafts
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <Check className="h-3.5 w-3.5 text-[var(--lp-red)]" /> Consular Interview Mock Session
-                  </span>
-                </div>
-              </div>
-
-              <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-3 justify-center">
-                <Link
-                  href="/services/document-preparation-bundle"
-                  className="lp-btn lp-btn--red justify-center text-sm shadow-[0_12px_28px_-8px_rgba(230,57,70,0.5)]"
-                >
-                  <span>Explore Document Bundle</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-
-                <Link
-                  href="/signup"
-                  className="lp-btn lp-btn--ghost-light justify-center text-sm"
-                >
-                  Book Free 1-on-1 Profile Audit
-                </Link>
-              </div>
-            </div>
-          </div>
-
         </section>
+
+        {/* Full-Service Admission Package CTA (Unified Landmark Design) */}
+        <GermanLandmarkCTA
+          badge="All-In-One Admission Mentorship"
+          title="Prefer a Dedicated Counselor"
+          highlightText="from Day 1 to Visa Stamped?"
+          description="Avoid fragmented services. Get complete counselor backing covering university shortlisting, DIN 5008 application documents, dMAT APS fast-tracking, blocked account setup, and 1-on-1 consular visa mock drills under our flagship mentorship package."
+          primaryButtonText="Explore Document Bundle"
+          primaryButtonHref="/services/document-preparation-bundle"
+          secondaryButtonText="Book Free 1-on-1 Profile Audit"
+          secondaryButtonHref="/signup"
+          trustPoints={[
+            "100% German University Compliant",
+            "Unlimited Revisions on Drafts",
+            "Consular Interview Mock Session"
+          ]}
+        />
 
         {/* Footer */}
         <div className="relative z-[40]">

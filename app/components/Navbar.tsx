@@ -46,8 +46,9 @@ const Navbar = () => {
     dropdown?: string[];
     groups?: {
       title: string;
-      items: { title: string; desc?: string; badge?: string; href?: string }[];
-      action?: { label: string; href: string };
+      badge?: string;
+      items: { title: string; desc?: string; badge?: string; href?: string; disabled?: boolean }[];
+      action?: { label: string; href?: string; disabled?: boolean };
     }[];
     footerLink?: { label: string; href: string };
     customWidth?: string;
@@ -57,7 +58,7 @@ const Navbar = () => {
     { label: "Home", href: "/" },
     {
       label: "Study",
-      href: "/#our-process",
+      href: "/study",
       groups: [
         {
           title: "Am I eligible?",
@@ -92,7 +93,8 @@ const Navbar = () => {
             { title: "Life after the offer", desc: "Arriving, careers & Blue Card", href: "/study/life-after-offer" }
           ]
         }
-      ]
+      ],
+      footerLink: { label: "Browse all study guides →", href: "/study" }
     },
     {
       label: "Courses",
@@ -178,41 +180,66 @@ const Navbar = () => {
           items: [
             { title: "Counselors run it end to end", desc: "From 29,999 INR, admission handled start to finish." }
           ],
-          action: { label: "See all packages", href: "/#cta" }
+          action: { label: "See all packages", href: "/pricing" }
         }
       ]
     },
     {
       label: "Our Brands",
-      href: "/#language-school",
+      href: "https://www.eurolingo-academy.com/",
       customWidth: "w-[620px]",
       groups: [
         {
           title: "Eurolingo Academy",
           items: [
-            { title: "German Language Batches", desc: "Live A1 to C1 training with native German instructors.", badge: "25% Off", href: "/#language-school" },
-            { title: "Goethe & TestDaF Prep", desc: "Specialized exam crash courses & mock evaluations.", href: "/#language-school" }
+            {
+              title: "German Language Batches",
+              desc: "Live A1 to C1 training with native German instructors.",
+              badge: "25% OFF",
+              href: "https://www.eurolingo-academy.com/"
+            },
+            {
+              title: "Goethe & TestDaF Prep",
+              desc: "Specialized exam crash courses & mock evaluations.",
+              href: "https://www.eurolingo-academy.com/"
+            }
           ],
-          action: { label: "Explore classes", href: "/#language-school" }
+          action: { label: "Explore classes", href: "https://www.eurolingo-academy.com/" }
         },
         {
           title: "Student Housing",
           items: [
-            { title: "Verified Apartments & Shared Flats", desc: "Furnished student rooms in Berlin, Munich, Aachen & Hamburg.", href: "/#our-process" },
-            { title: "Address Registration Assistance", desc: "City address registration & lease agreement support.", href: "/#our-process" }
+            {
+              title: "Verified Apartments & Shared Flats",
+              desc: "Furnished student rooms in Berlin, Munich, Aachen & Hamburg.",
+              disabled: true
+            },
+            {
+              title: "Address Registration Assistance",
+              desc: "City address registration & lease agreement support.",
+              disabled: true
+            }
           ],
-          action: { label: "Find housing", href: "/#our-process" }
+          action: { label: "Available soon", disabled: true }
         },
         {
           title: "Health Insurance",
           items: [
-            { title: "Statutory Health Cover", desc: "Official TK & Barmer public health insurance for student visas.", href: "/#our-process" },
-            { title: "Travel & Incoming Cover", desc: "Initial coverage before official university semester start.", href: "/#our-process" }
+            {
+              title: "Statutory Health Cover",
+              desc: "Official TK & Barmer public health insurance for student visas.",
+              disabled: true
+            },
+            {
+              title: "Travel & Incoming Cover",
+              desc: "Initial coverage before official university semester start.",
+              disabled: true
+            }
           ],
-          action: { label: "Get insurance", href: "/#our-process" }
+          action: { label: "Available soon", disabled: true }
         }
       ],
-      footerLink: { label: "Explore exclusive partner benefits & discounts", href: "/#language-school" }
+      footerLink: { label: "Explore exclusive partner benefits & discounts", href: "https://www.eurolingo-academy.com/" }
     },
     { label: "Pricing", href: "/pricing" }
   ];
@@ -259,23 +286,67 @@ const Navbar = () => {
                         <div key={gIndex}>
                           <h4 className="text-sm font-extrabold text-germany-black mb-3 border-b border-gray-100 pb-2">{group.title}</h4>
                           <div className="flex flex-col gap-4">
-                            {group.items.map((gItem, gItemIndex) => (
-                              <Link key={gItemIndex} href={gItem.href || item.href || "/#free-tools"} className="block group/link">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-sm font-bold text-gray-700 transition-colors group-hover/link:text-germany-red">{gItem.title}</span>
-                                  {gItem.badge && (
-                                    <span className="text-[9px] font-extrabold text-germany-red bg-red-50 border border-red-200 px-1.5 py-0.5 rounded">
-                                      {gItem.badge}
-                                    </span>
-                                  )}
-                                </div>
-                                {gItem.desc && <div className="text-[11px] text-gray-500 font-semibold leading-snug mt-0.5">{gItem.desc}</div>}
-                              </Link>
-                            ))}
+                            {group.items.map((gItem, gItemIndex) => {
+                              if (gItem.disabled || !gItem.href) {
+                                return (
+                                  <div key={gItemIndex} className="block cursor-default select-none">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-sm font-bold text-gray-700">{gItem.title}</span>
+                                      {gItem.badge && (
+                                        <span className="shrink-0 whitespace-nowrap inline-flex items-center text-[10.5px] font-bold text-germany-red bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
+                                          {gItem.badge}
+                                        </span>
+                                      )}
+                                    </div>
+                                    {gItem.desc && <div className="text-[11px] text-gray-500 font-semibold leading-snug mt-0.5">{gItem.desc}</div>}
+                                  </div>
+                                );
+                              }
+                              const isExternal = gItem.href.startsWith("http");
+                              if (isExternal) {
+                                return (
+                                  <a key={gItemIndex} href={gItem.href} target="_blank" rel="noopener noreferrer" className="block group/link">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-sm font-bold text-gray-700 transition-colors group-hover/link:text-germany-red">{gItem.title}</span>
+                                      {gItem.badge && (
+                                        <span className="shrink-0 whitespace-nowrap inline-flex items-center text-[10.5px] font-bold text-germany-red bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
+                                          {gItem.badge}
+                                        </span>
+                                      )}
+                                    </div>
+                                    {gItem.desc && <div className="text-[11px] text-gray-500 font-semibold leading-snug mt-0.5">{gItem.desc}</div>}
+                                  </a>
+                                );
+                              }
+                              return (
+                                <Link key={gItemIndex} href={gItem.href} className="block group/link">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-sm font-bold text-gray-700 transition-colors group-hover/link:text-germany-red">{gItem.title}</span>
+                                    {gItem.badge && (
+                                      <span className="shrink-0 whitespace-nowrap inline-flex items-center text-[10.5px] font-bold text-germany-red bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
+                                        {gItem.badge}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {gItem.desc && <div className="text-[11px] text-gray-500 font-semibold leading-snug mt-0.5">{gItem.desc}</div>}
+                                </Link>
+                              );
+                            })}
                             {group.action && (
-                              <Link href={group.action.href} className="text-xs font-bold text-germany-red hover:underline flex items-center gap-1 -mt-1">
-                                {group.action.label} &rarr;
-                              </Link>
+                              group.action.disabled || !group.action.href ? (
+                                <div className="text-xs font-semibold text-gray-400 flex items-center gap-1.5 -mt-1">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-[#c9a35b]" />
+                                  <span>{group.action.label}</span>
+                                </div>
+                              ) : group.action.href.startsWith("http") ? (
+                                <a href={group.action.href} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-germany-red hover:underline flex items-center gap-1 -mt-1">
+                                  {group.action.label} &rarr;
+                                </a>
+                              ) : (
+                                <Link href={group.action.href} className="text-xs font-bold text-germany-red hover:underline flex items-center gap-1 -mt-1">
+                                  {group.action.label} &rarr;
+                                </Link>
+                              )
                             )}
                           </div>
                         </div>
@@ -283,9 +354,15 @@ const Navbar = () => {
                     </div>
                     {item.footerLink && (
                       <div className="mt-5 pt-4 border-t border-gray-100 text-center">
-                        <Link href={item.footerLink.href} className="text-sm font-bold text-germany-red hover:underline inline-flex items-center gap-1">
-                          {item.footerLink.label} &rarr;
-                        </Link>
+                        {item.footerLink.href.startsWith("http") ? (
+                          <a href={item.footerLink.href} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-germany-red hover:underline inline-flex items-center gap-1">
+                            {item.footerLink.label} &rarr;
+                          </a>
+                        ) : (
+                          <Link href={item.footerLink.href} className="text-sm font-bold text-germany-red hover:underline inline-flex items-center gap-1">
+                            {item.footerLink.label} &rarr;
+                          </Link>
+                        )}
                       </div>
                     )}
                   </div>
@@ -403,25 +480,61 @@ const Navbar = () => {
                       <div key={gIndex}>
                         <h4 className="text-sm font-extrabold text-germany-black mb-2">{group.title}</h4>
                         <div className="flex flex-col gap-3 pl-3 border-l-2 border-gray-100">
-                          {group.items.map((gItem, gItemIndex) => (
-                            <Link key={gItemIndex} href={gItem.href || item.href || "/#free-tools"} onClick={() => setIsMobileOpen(false)} className="block group/link">
-                              <div className="text-sm font-bold text-gray-700 hover:text-germany-red">{gItem.title}</div>
-                              {gItem.desc && <div className="text-[11px] text-gray-500 mt-0.5">{gItem.desc}</div>}
-                            </Link>
-                          ))}
+                          {group.items.map((gItem, gItemIndex) => {
+                            if (gItem.disabled || !gItem.href) {
+                              return (
+                                <div key={gItemIndex} className="block cursor-default select-none">
+                                  <div className="text-sm font-bold text-gray-500">{gItem.title}</div>
+                                  {gItem.desc && <div className="text-[11px] text-gray-400 mt-0.5">{gItem.desc}</div>}
+                                </div>
+                              );
+                            }
+                            const isExternal = gItem.href.startsWith("http");
+                            if (isExternal) {
+                              return (
+                                <a key={gItemIndex} href={gItem.href} target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileOpen(false)} className="block group/link">
+                                  <div className="text-sm font-bold text-gray-700 hover:text-germany-red">{gItem.title}</div>
+                                  {gItem.desc && <div className="text-[11px] text-gray-500 mt-0.5">{gItem.desc}</div>}
+                                </a>
+                              );
+                            }
+                            return (
+                              <Link key={gItemIndex} href={gItem.href} onClick={() => setIsMobileOpen(false)} className="block group/link">
+                                <div className="text-sm font-bold text-gray-700 hover:text-germany-red">{gItem.title}</div>
+                                {gItem.desc && <div className="text-[11px] text-gray-500 mt-0.5">{gItem.desc}</div>}
+                              </Link>
+                            );
+                          })}
                           {group.action && (
-                            <Link href={group.action.href} onClick={() => setIsMobileOpen(false)} className="text-xs font-bold text-germany-red hover:underline flex items-center gap-1">
-                              {group.action.label} &rarr;
-                            </Link>
+                            group.action.disabled || !group.action.href ? (
+                              <div className="text-xs font-semibold text-gray-400 flex items-center gap-1.5">
+                                <span className="h-1.5 w-1.5 rounded-full bg-[#c9a35b]" />
+                                <span>{group.action.label}</span>
+                              </div>
+                            ) : group.action.href.startsWith("http") ? (
+                              <a href={group.action.href} target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileOpen(false)} className="text-xs font-bold text-germany-red hover:underline flex items-center gap-1">
+                                {group.action.label} &rarr;
+                              </a>
+                            ) : (
+                              <Link href={group.action.href} onClick={() => setIsMobileOpen(false)} className="text-xs font-bold text-germany-red hover:underline flex items-center gap-1">
+                                {group.action.label} &rarr;
+                              </Link>
+                            )
                           )}
                         </div>
                       </div>
                     ))}
                     {item.footerLink && (
                       <div className="mt-2 pt-3 border-t border-gray-100 text-center">
-                        <Link href={item.footerLink.href} onClick={() => setIsMobileOpen(false)} className="text-sm font-bold text-germany-red hover:underline inline-flex items-center gap-1">
-                          {item.footerLink.label} &rarr;
-                        </Link>
+                        {item.footerLink.href.startsWith("http") ? (
+                          <a href={item.footerLink.href} target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileOpen(false)} className="text-sm font-bold text-germany-red hover:underline inline-flex items-center gap-1">
+                            {item.footerLink.label} &rarr;
+                          </a>
+                        ) : (
+                          <Link href={item.footerLink.href} onClick={() => setIsMobileOpen(false)} className="text-sm font-bold text-germany-red hover:underline inline-flex items-center gap-1">
+                            {item.footerLink.label} &rarr;
+                          </Link>
+                        )}
                       </div>
                     )}
                   </div>

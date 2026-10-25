@@ -76,8 +76,8 @@ export default function SuperAdminAdminsPage() {
 
         <div className="flex items-center justify-between mt-1">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-germany-black text-white rounded-full font-extrabold text-[11px]">
-              <ShieldAlert className="w-3.5 h-3.5 text-germany-gold" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-germany-red text-white rounded-full font-extrabold text-[11px]">
+              <ShieldAlert className="w-3.5 h-3.5 text-white" />
               <span>Super Admin Management</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-display text-germany-black">

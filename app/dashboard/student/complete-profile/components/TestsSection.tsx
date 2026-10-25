@@ -136,7 +136,7 @@ export default function TestsSection({ data, onChange, onNext, onPrev }: Props) 
           <div className="animate-fade-in">
             <div className="flex justify-between items-center mb-4">
               <h5 className="text-sm font-bold text-gray-700 dark:text-gray-300">Test Details</h5>
-              <button onClick={addEnglishTest} className="px-3 py-1.5 rounded-xl bg-[#EBE7E0] dark:bg-gray-800 hover:bg-germany-black dark:hover:bg-gray-700 hover:text-white font-extrabold text-xs transition-all text-germany-black dark:text-gray-100 cursor-pointer">
+              <button onClick={addEnglishTest} className="px-3 py-1.5 rounded-xl bg-[#EBE7E0] dark:bg-gray-800 hover:bg-germany-red hover:text-white font-extrabold text-xs transition-all text-germany-black dark:text-gray-100 cursor-pointer">
                 + Add Test
               </button>
             </div>
@@ -335,7 +335,7 @@ export default function TestsSection({ data, onChange, onNext, onPrev }: Props) 
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h4 className="text-md font-extrabold text-germany-black dark:text-white font-display">Standardized Tests (GRE/GMAT)</h4>
-          <button onClick={addStandardizedTest} className="px-3 py-1.5 rounded-xl bg-[#EBE7E0] dark:bg-gray-800 hover:bg-germany-black dark:hover:bg-gray-700 hover:text-white font-extrabold text-xs transition-all text-germany-black dark:text-gray-100 cursor-pointer">
+          <button onClick={addStandardizedTest} className="px-3 py-1.5 rounded-xl bg-[#EBE7E0] dark:bg-gray-800 hover:bg-germany-red hover:text-white font-extrabold text-xs transition-all text-germany-black dark:text-gray-100 cursor-pointer">
             + Add Test
           </button>
         </div>

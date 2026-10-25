@@ -612,7 +612,7 @@ export const useHelpStore = create<HelpStore>()(
                     email: 'support@europebridge.de',
                     role: 'ai',
                   },
-                  content: `🚨 Issue escalated to Central Admin by ${counsellorName}.\nEscalation Reason: ${reason}`,
+                  content: `Issue escalated to Central Admin by ${counsellorName}.\nEscalation Reason: ${reason}`,
                   timestamp: dateStr,
                   isInternalNote: false,
                 }
@@ -661,7 +661,7 @@ export const useHelpStore = create<HelpStore>()(
                     email: 'support@europebridge.de',
                     role: 'ai',
                   },
-                  content: `✅ Issue marked as Resolved by ${resolvedBy} (${role}).\nResolution Summary: ${summary}`,
+                  content: `Issue marked as Resolved by ${resolvedBy} (${role}).\nResolution Summary: ${summary}`,
                   timestamp: dateStr,
                 }
               ]

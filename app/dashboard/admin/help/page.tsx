@@ -263,7 +263,7 @@ export default function AdminHelpPage() {
           onClick={() => setActiveTab('counsellor')}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'counsellor'
-              ? 'bg-germany-black text-white shadow-xs'
+              ? 'bg-germany-red text-white shadow-xs'
               : 'text-gray-600 dark:text-gray-300 hover:text-germany-black dark:hover:text-white'
           }`}
         >
@@ -280,7 +280,7 @@ export default function AdminHelpPage() {
           onClick={() => setActiveTab('resolved')}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'resolved'
-              ? 'bg-germany-black text-white shadow-xs'
+              ? 'bg-germany-red text-white shadow-xs'
               : 'text-gray-600 dark:text-gray-300 hover:text-germany-black dark:hover:text-white'
           }`}
         >
@@ -296,7 +296,7 @@ export default function AdminHelpPage() {
 
       {/* Bulk Action Bar (if items selected) */}
       {selectedIds.length > 0 && (
-        <div className="bg-germany-black text-white p-3.5 rounded-xl flex items-center justify-between shadow-md animate-in fade-in duration-150">
+        <div className="bg-germany-red text-white p-3.5 rounded-xl flex items-center justify-between shadow-md animate-in fade-in duration-150">
           <div className="flex items-center gap-2 text-xs font-bold">
             <span className="w-2 h-2 rounded-full bg-germany-gold animate-pulse" />
             <span>{selectedIds.length} {selectedIds.length === 1 ? 'ticket' : 'tickets'} selected</span>

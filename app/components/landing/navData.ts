@@ -1,11 +1,12 @@
 // Landing-page copy of the site navigation (mirrors app/components/Navbar.tsx,
 // which other pages still use unchanged).
 
-export type NavGroupItem = { title: string; desc?: string; badge?: string; href?: string };
+export type NavGroupItem = { title: string; desc?: string; badge?: string; href?: string; disabled?: boolean };
 export type NavGroup = {
   title: string;
+  badge?: string;
   items: NavGroupItem[];
-  action?: { label: string; href: string };
+  action?: { label: string; href?: string; disabled?: boolean };
 };
 export type NavItem = {
   label: string;
@@ -20,7 +21,7 @@ export const navItems: NavItem[] = [
   { label: "Home", href: "/" },
   {
     label: "Study",
-    href: "/#our-process",
+    href: "/study",
     groups: [
       {
         title: "Am I eligible?",
@@ -55,7 +56,8 @@ export const navItems: NavItem[] = [
           { title: "Life after the offer", desc: "Arriving, careers & Blue Card", href: "/study/life-after-offer" }
         ]
       }
-    ]
+    ],
+    footerLink: { label: "Browse all study guides →", href: "/study" }
   },
   {
     label: "Courses",
@@ -148,35 +150,60 @@ export const navItems: NavItem[] = [
   },
   {
     label: "Our Brands",
-    href: "/#language-school",
+    href: "https://www.eurolingo-academy.com/",
     customWidth: "w-[620px]",
     groups: [
       {
         title: "Eurolingo Academy",
         items: [
-          { title: "German Language Batches", desc: "Live A1 to C1 training with native German instructors.", badge: "25% Off", href: "/#language-school" },
-          { title: "Goethe & TestDaF Prep", desc: "Specialized exam crash courses & mock evaluations.", href: "/#language-school" }
+          {
+            title: "German Language Batches",
+            desc: "Live A1 to C1 training with native German instructors.",
+            badge: "25% OFF",
+            href: "https://www.eurolingo-academy.com/"
+          },
+          {
+            title: "Goethe & TestDaF Prep",
+            desc: "Specialized exam crash courses & mock evaluations.",
+            href: "https://www.eurolingo-academy.com/"
+          }
         ],
-        action: { label: "Explore classes", href: "/#language-school" }
+        action: { label: "Explore classes", href: "https://www.eurolingo-academy.com/" }
       },
       {
         title: "Student Housing",
         items: [
-          { title: "Verified Apartments & Shared Flats", desc: "Furnished student rooms in Berlin, Munich, Aachen & Hamburg.", href: "/#our-process" },
-          { title: "Address Registration Assistance", desc: "City address registration & lease agreement support.", href: "/#our-process" }
+          {
+            title: "Verified Apartments & Shared Flats",
+            desc: "Furnished student rooms in Berlin, Munich, Aachen & Hamburg.",
+            disabled: true
+          },
+          {
+            title: "Address Registration Assistance",
+            desc: "City address registration & lease agreement support.",
+            disabled: true
+          }
         ],
-        action: { label: "Find housing", href: "/#our-process" }
+        action: { label: "Available soon", disabled: true }
       },
       {
         title: "Health Insurance",
         items: [
-          { title: "Statutory Health Cover", desc: "Official TK & Barmer public health insurance for student visas.", href: "/#our-process" },
-          { title: "Travel & Incoming Cover", desc: "Initial coverage before official university semester start.", href: "/#our-process" }
+          {
+            title: "Statutory Health Cover",
+            desc: "Official TK & Barmer public health insurance for student visas.",
+            disabled: true
+          },
+          {
+            title: "Travel & Incoming Cover",
+            desc: "Initial coverage before official university semester start.",
+            disabled: true
+          }
         ],
-        action: { label: "Get insurance", href: "/#our-process" }
+        action: { label: "Available soon", disabled: true }
       }
     ],
-    footerLink: { label: "Explore exclusive partner benefits & discounts", href: "/#language-school" }
+    footerLink: { label: "Explore exclusive partner benefits & discounts", href: "https://www.eurolingo-academy.com/" }
   },
   { label: "Pricing", href: "/pricing" }
 ];

@@ -27,8 +27,8 @@ export default function SuperAdminDashboard() {
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10 mt-1">
           <div className="space-y-1.5 text-center md:text-left">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-germany-black text-white rounded-full font-bold text-[11px]">
-              <ShieldAlert className="w-3.5 h-3.5 text-germany-gold" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-germany-red text-white rounded-full font-bold text-[11px]">
+              <ShieldAlert className="w-3.5 h-3.5 text-white" />
               <span>Super Administrator Portal</span>
             </div>
             <h1 className="text-xl md:text-2xl lg:text-3xl font-display font-bold text-germany-black">
@@ -56,7 +56,7 @@ export default function SuperAdminDashboard() {
         <div className="bg-white rounded-xl border border-gray-200/80 shadow-xs p-5 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-400">Total Users</span>
-            <div className="p-2 bg-germany-black text-white rounded-xl">
+            <div className="p-2 bg-germany-red/10 text-germany-red rounded-xl">
               <Users className="w-4 h-4" />
             </div>
           </div>

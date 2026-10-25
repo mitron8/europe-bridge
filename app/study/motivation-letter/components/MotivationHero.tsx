@@ -19,7 +19,7 @@ export const MotivationHero = () => {
         <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs font-semibold text-[var(--lp-muted)]">
           <Link href="/" className="hover:text-[var(--lp-red)] transition-colors">Home</Link>
           <span className="text-[var(--lp-faint)]">/</span>
-          <Link href="/study/masters" className="hover:text-[var(--lp-red)] transition-colors">Study</Link>
+          <Link href="/study" className="hover:text-[var(--lp-red)] transition-colors">Study</Link>
           <span className="text-[var(--lp-faint)]">/</span>
           <span className="text-[var(--lp-text)] font-bold">Motivation Letter</span>
         </nav>
@@ -42,14 +42,14 @@ export const MotivationHero = () => {
 
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <a 
-                href="#pricing"
+                href="#section-pricing"
                 className="lp-btn lp-btn--red text-xs font-semibold shadow-[0_12px_28px_-8px_rgba(230,57,70,0.4)]"
               >
                 <span>Get My Motivation Letter Written</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </a>
               <a 
-                href="#structure"
+                href="#section-structure"
                 className="lp-btn lp-btn--dark text-xs font-semibold"
               >
                 <span>Consular LOM Anatomy</span>

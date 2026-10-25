@@ -15,7 +15,7 @@ export const HealthInsurancePricing = () => {
               Zero Agency Charges. Direct Statutory Premiums.
             </h3>
           </div>
-          <span className="px-4 py-2 bg-germany-black text-white font-extrabold text-xs rounded-xl w-fit shadow-sm">
+          <span className="px-4 py-2 bg-germany-red text-white font-extrabold text-xs rounded-xl w-fit shadow-sm">
             EuropeBridge Setup: €0 / ₹0
           </span>
         </div>

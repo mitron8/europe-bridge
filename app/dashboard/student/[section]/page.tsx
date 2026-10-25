@@ -18,7 +18,7 @@ import {
   Loader2,
   AlertCircle,
   RefreshCw,
-  Sparkles,
+  Award,
 } from 'lucide-react';
 
 const VALID_SECTIONS = [
@@ -508,7 +508,7 @@ function MatchingSection() {
           <div className="neu-card p-4 sm:p-5 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-300 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-                <Sparkles className="w-5 h-5 text-white" />
+                <Award className="w-5 h-5 text-white" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
@@ -616,12 +616,12 @@ function MatchingSection() {
                             ? `Shortlist limit of ${maxShortlistCount} reached`
                             : undefined
                         }
-                        className="flex items-center gap-1.5 text-[11px] font-extrabold text-white bg-germany-black hover:bg-gray-800 disabled:opacity-50 py-1.5 px-3 rounded-xl shadow-xs transition-colors cursor-pointer disabled:cursor-not-allowed"
+                        className="flex items-center gap-1.5 text-[11px] font-extrabold text-white bg-germany-red hover:bg-[#D62839] disabled:opacity-50 py-1.5 px-3 rounded-xl shadow-xs transition-colors cursor-pointer disabled:cursor-not-allowed"
                       >
                         {updatingRecId === rec.id ? (
                           <Loader2 className="w-3 h-3 animate-spin" />
                         ) : (
-                          <Bookmark className="w-3 h-3 text-germany-gold" />
+                          <Bookmark className="w-3 h-3 text-white" />
                         )}
                         <span>{isShortlistFull ? 'Shortlist Full' : 'Add to Shortlist'}</span>
                       </button>
@@ -654,7 +654,7 @@ function MatchingSection() {
         <div className="neu-card p-6 sm:p-8 bg-white border border-[#EBE7E0] rounded-2xl space-y-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-600 flex items-center justify-center shrink-0 shadow-xs">
-              <Sparkles className="w-6 h-6 text-amber-500" />
+              <Award className="w-6 h-6 text-amber-600" />
             </div>
             <div className="space-y-1">
               <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-germany-red/10 text-germany-red border border-germany-red/20">

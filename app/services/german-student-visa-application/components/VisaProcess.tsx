@@ -32,7 +32,8 @@ export const VisaProcess = () => {
   ];
 
   return (
-    <section id="how-it-works" className="py-12 px-6 lg:px-12 max-w-7xl mx-auto scroll-mt-28">
+    <section id="process" className="py-12 px-6 lg:px-12 max-w-7xl mx-auto scroll-mt-28 relative">
+      <div id="how-it-works" className="-mt-28 pt-28 pointer-events-none absolute" />
       <div className="neu-card p-6 sm:p-10 space-y-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">

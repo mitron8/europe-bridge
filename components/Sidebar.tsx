@@ -86,7 +86,7 @@ export function Sidebar({ role, isOpen = false, onClose }: SidebarProps) {
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 overflow-y-auto p-3 space-y-1.5 custom-scrollbar">
+      <nav className="flex-1 overflow-y-auto p-3 space-y-1.5 no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {!isCollapsed && (
           <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">
             Workspace Navigation

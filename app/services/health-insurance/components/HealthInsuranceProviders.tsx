@@ -116,7 +116,7 @@ export const HealthInsuranceProviders = () => {
 
               <a
                 href={p.partnerLink}
-                className="w-full py-3 rounded-xl bg-gray-100 hover:bg-germany-black hover:text-white text-gray-800 text-xs font-extrabold flex items-center justify-center gap-2 transition-all"
+                className="w-full py-3 rounded-xl bg-gray-100 hover:bg-germany-red hover:text-white text-gray-800 text-xs font-extrabold flex items-center justify-center gap-2 transition-all"
               >
                 <span>Enroll in {p.name.split(' ')[0]} (Free Setup)</span>
                 <ArrowRight className="w-3.5 h-3.5" />

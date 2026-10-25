@@ -47,7 +47,7 @@ function MegaPanel({ item, onNavigate }: { item: NavItem; onNavigate: () => void
     );
   }
   const groups = item.groups ?? [];
-  const width = item.customWidth === "w-[620px]" ? "w-[720px]" : "w-[880px]";
+  const width = item.customWidth === "w-[620px]" ? "w-[760px]" : "w-[880px]";
   return (
     <div className={`lp-mega ${width} p-3`}>
       <div className={`grid gap-1 ${groups.length === 3 ? "grid-cols-3" : "grid-cols-4"}`}>
@@ -55,48 +55,123 @@ function MegaPanel({ item, onNavigate }: { item: NavItem; onNavigate: () => void
           <div key={g.title} className="rounded-2xl p-4">
             <div className="mb-3 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#9a958c]">{g.title}</div>
             <div className="flex flex-col gap-0.5">
-              {g.items.map((gi, i) => (
-                <Link
-                  key={gi.title + i}
-                  href={gi.href || item.href}
-                  onClick={onNavigate}
-                  className="group -mx-2 rounded-lg px-2 py-2 transition-colors hover:bg-[#ece7dd]"
-                >
-                  <div className="flex items-center gap-2 text-[14px] font-medium text-[#16161a]">
-                    {gi.title}
-                    {gi.badge && (
-                      <span className="rounded-full bg-[#e63946] px-1.5 py-[1px] text-[9.5px] font-semibold text-white">
-                        {gi.badge}
-                      </span>
-                    )}
-                  </div>
-                  {gi.desc && <div className="mt-0.5 text-[12.5px] leading-snug text-[#6b6760]">{gi.desc}</div>}
-                </Link>
-              ))}
+              {g.items.map((gi, i) => {
+                if (gi.disabled || !gi.href) {
+                  return (
+                    <div
+                      key={gi.title + i}
+                      className="-mx-2 rounded-lg px-2 py-2 cursor-default select-none"
+                    >
+                      <div className="flex items-center gap-2 text-[14px] font-medium text-[#16161a]">
+                        <span>{gi.title}</span>
+                        {gi.badge && (
+                          <span className="shrink-0 whitespace-nowrap inline-flex items-center rounded-full bg-red-50 text-[#e63946] border border-red-200/80 px-2 py-0.5 text-[10.5px] font-bold tracking-tight">
+                            {gi.badge}
+                          </span>
+                        )}
+                      </div>
+                      {gi.desc && <div className="mt-0.5 text-[12.5px] leading-snug text-[#6b6760]">{gi.desc}</div>}
+                    </div>
+                  );
+                }
+                const isExternal = gi.href.startsWith("http");
+                if (isExternal) {
+                  return (
+                    <a
+                      key={gi.title + i}
+                      href={gi.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={onNavigate}
+                      className="group -mx-2 rounded-lg px-2 py-2 transition-colors hover:bg-[#ece7dd]"
+                    >
+                      <div className="flex items-center gap-2 text-[14px] font-medium text-[#16161a]">
+                        <span>{gi.title}</span>
+                        {gi.badge && (
+                          <span className="shrink-0 whitespace-nowrap inline-flex items-center rounded-full bg-red-50 text-[#e63946] border border-red-200/80 px-2 py-0.5 text-[10.5px] font-bold tracking-tight">
+                            {gi.badge}
+                          </span>
+                        )}
+                      </div>
+                      {gi.desc && <div className="mt-0.5 text-[12.5px] leading-snug text-[#6b6760]">{gi.desc}</div>}
+                    </a>
+                  );
+                }
+                return (
+                  <Link
+                    key={gi.title + i}
+                    href={gi.href}
+                    onClick={onNavigate}
+                    className="group -mx-2 rounded-lg px-2 py-2 transition-colors hover:bg-[#ece7dd]"
+                  >
+                    <div className="flex items-center gap-2 text-[14px] font-medium text-[#16161a]">
+                      <span>{gi.title}</span>
+                      {gi.badge && (
+                        <span className="shrink-0 whitespace-nowrap inline-flex items-center rounded-full bg-red-50 text-[#e63946] border border-red-200/80 px-2 py-0.5 text-[10.5px] font-bold tracking-tight">
+                          {gi.badge}
+                        </span>
+                      )}
+                    </div>
+                    {gi.desc && <div className="mt-0.5 text-[12.5px] leading-snug text-[#6b6760]">{gi.desc}</div>}
+                  </Link>
+                );
+              })}
               {g.action && (
-                <Link
-                  href={g.action.href}
-                  onClick={onNavigate}
-                  className="mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[#e63946]"
-                >
-                  {g.action.label} <ArrowRight className="h-3 w-3" />
-                </Link>
+                g.action.disabled || !g.action.href ? (
+                  <div className="mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-[#8a857b]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#c9a35b]" />
+                    <span>{g.action.label}</span>
+                  </div>
+                ) : g.action.href.startsWith("http") ? (
+                  <a
+                    href={g.action.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={onNavigate}
+                    className="mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[#e63946] hover:text-[#b4232f] transition-colors"
+                  >
+                    {g.action.label} <ArrowUpRight className="h-3.5 w-3.5" />
+                  </a>
+                ) : (
+                  <Link
+                    href={g.action.href}
+                    onClick={onNavigate}
+                    className="mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[#e63946]"
+                  >
+                    {g.action.label} <ArrowRight className="h-3 w-3" />
+                  </Link>
+                )
               )}
             </div>
           </div>
         ))}
       </div>
       {item.footerLink && (
-        <div className="mt-2 flex items-center justify-between rounded-xl bg-[#ece7dd] px-5 py-3.5">
-          <span className="text-[13px] text-[#6b6760]">Everything is free to explore before you sign up.</span>
+        item.footerLink.href.startsWith("http") ? (
+          <a
+            href={item.footerLink.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onNavigate}
+            className="mt-2 flex items-center justify-between rounded-xl bg-[#ece7dd] px-5 py-3.5 group/footer hover:bg-[#e4ded2] transition-colors cursor-pointer"
+          >
+            <span className="text-[13px] text-[#6b6760]">Everything is free to explore before you sign up.</span>
+            <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#16161a] group-hover/footer:text-[#e63946] transition-colors">
+              {item.footerLink.label.replace(/\s*→\s*$/, "")} <ArrowUpRight className="h-3.5 w-3.5" />
+            </span>
+          </a>
+        ) : (
           <Link
             href={item.footerLink.href}
             onClick={onNavigate}
-            className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#16161a]"
+            className="mt-2 flex items-center justify-between rounded-xl bg-[#ece7dd] px-5 py-3.5 group/footer hover:bg-[#e4ded2] transition-colors cursor-pointer"
           >
-            {item.footerLink.label.replace(/\s*→\s*$/, "")} <ArrowRight className="h-3.5 w-3.5" />
+            <span className="text-[13px] text-[#6b6760]">Everything is free to explore before you sign up.</span>
+            <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#16161a] group-hover/footer:text-[#e63946] transition-colors">
+              {item.footerLink.label.replace(/\s*→\s*$/, "")} <ArrowRight className="h-3.5 w-3.5" />
+            </span>
           </Link>
-        </div>
+        )
       )}
     </div>
   );
@@ -377,16 +452,81 @@ export default function LandingNavbar() {
                                 {g.title}
                               </div>
                               <div className="flex flex-col gap-2.5">
-                                {g.items.map((gi, k) => (
-                                  <Link
-                                    key={gi.title + k}
-                                    href={gi.href || item.href}
-                                    onClick={() => setMobileOpen(false)}
-                                    className="text-[15px] text-white/80"
-                                  >
-                                    {gi.title}
-                                  </Link>
-                                ))}
+                                {g.items.map((gi, k) => {
+                                  if (gi.disabled || !gi.href) {
+                                    return (
+                                      <div key={gi.title + k} className="flex items-center justify-between text-[15px] text-white/50 py-0.5">
+                                        <span>{gi.title}</span>
+                                        {gi.badge && (
+                                          <span className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">
+                                            {gi.badge}
+                                          </span>
+                                        )}
+                                      </div>
+                                    );
+                                  }
+                                  const isExternal = gi.href.startsWith("http");
+                                  if (isExternal) {
+                                    return (
+                                      <a
+                                        key={gi.title + k}
+                                        href={gi.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={() => setMobileOpen(false)}
+                                        className="flex items-center justify-between text-[15px] text-white/80 hover:text-white"
+                                      >
+                                        <span>{gi.title}</span>
+                                        {gi.badge && (
+                                          <span className="shrink-0 whitespace-nowrap inline-flex items-center rounded-full bg-[#e63946] px-2 py-0.5 text-[10px] font-bold text-white">
+                                            {gi.badge}
+                                          </span>
+                                        )}
+                                      </a>
+                                    );
+                                  }
+                                  return (
+                                    <Link
+                                      key={gi.title + k}
+                                      href={gi.href || item.href}
+                                      onClick={() => setMobileOpen(false)}
+                                      className="flex items-center justify-between text-[15px] text-white/80 hover:text-white"
+                                    >
+                                      <span>{gi.title}</span>
+                                      {gi.badge && (
+                                        <span className="shrink-0 whitespace-nowrap inline-flex items-center rounded-full bg-[#e63946] px-2 py-0.5 text-[10px] font-bold text-white">
+                                          {gi.badge}
+                                        </span>
+                                      )}
+                                    </Link>
+                                  );
+                                })}
+                                {g.action && (
+                                  g.action.disabled || !g.action.href ? (
+                                    <div className="mt-1 flex items-center gap-1.5 text-[12px] text-[#c9a35b]">
+                                      <span className="h-1.5 w-1.5 rounded-full bg-[#c9a35b]" />
+                                      <span>{g.action.label}</span>
+                                    </div>
+                                  ) : g.action.href.startsWith("http") ? (
+                                    <a
+                                      href={g.action.href}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={() => setMobileOpen(false)}
+                                      className="mt-1 inline-flex items-center gap-1 text-[13px] font-semibold text-[#e63946]"
+                                    >
+                                      {g.action.label} <ArrowUpRight className="h-3 w-3" />
+                                    </a>
+                                  ) : (
+                                    <Link
+                                      href={g.action.href}
+                                      onClick={() => setMobileOpen(false)}
+                                      className="mt-1 inline-flex items-center gap-1 text-[13px] font-semibold text-[#e63946]"
+                                    >
+                                      {g.action.label} <ArrowRight className="h-3 w-3" />
+                                    </Link>
+                                  )
+                                )}
                               </div>
                             </div>
                           ))}

@@ -19,7 +19,7 @@ export const CostHeroHeader = () => {
         <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs font-semibold text-[var(--lp-muted)]">
           <Link href="/" className="hover:text-[var(--lp-red)] transition-colors">Home</Link>
           <span className="text-[var(--lp-faint)]">/</span>
-          <Link href="/study/masters" className="hover:text-[var(--lp-red)] transition-colors">Study</Link>
+          <Link href="/study" className="hover:text-[var(--lp-red)] transition-colors">Study</Link>
           <span className="text-[var(--lp-faint)]">/</span>
           <span className="text-[var(--lp-text)] font-bold">Cost of Living</span>
         </nav>

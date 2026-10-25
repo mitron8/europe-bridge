@@ -92,7 +92,7 @@ export const LorRecommenderGuide = () => {
   const IconComponent = currentTab.icon;
 
   return (
-    <section className="py-16 px-6 lg:px-12 bg-white relative">
+    <section id="recommenders-guide" className="py-16 px-6 lg:px-12 bg-white relative scroll-mt-28">
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">

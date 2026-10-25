@@ -122,39 +122,40 @@ export default function AiAgentChat({ onAskCounsellor }: AiAgentChatProps) {
       </div>
 
       {/* Sub-header */}
-      <div className="px-5 py-3 border-b border-gray-200/70 flex items-center justify-between bg-white">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-germany-gold/20 flex items-center justify-center text-germany-black">
+      {/* Sub-header */}
+      <div className="px-5 py-3.5 border-b border-gray-200/70 flex items-center justify-between bg-white">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-germany-gold/25 flex items-center justify-center text-germany-black">
             <Bot className="w-4 h-4 text-germany-red" />
           </div>
           <div>
-            <span className="text-xs font-bold text-germany-black">EuropeBridge AI Advisor</span>
-            <span className="text-[10px] text-gray-400 font-medium ml-2">Germany Higher Education Knowledge</span>
+            <span className="text-sm font-bold text-germany-black">EuropeBridge AI Instant Advisor</span>
+            <span className="text-xs text-gray-400 font-medium ml-2 hidden sm:inline">24/7 Automated Assistant</span>
           </div>
         </div>
 
         {onAskCounsellor && (
           <button
             onClick={() => onAskCounsellor()}
-            className="text-xs font-bold text-germany-red hover:underline flex items-center gap-1 transition-colors cursor-pointer"
+            className="text-xs sm:text-sm font-bold text-germany-red hover:underline flex items-center gap-1.5 transition-colors cursor-pointer bg-red-50/60 px-3 py-1.5 rounded-xl border border-red-100"
           >
-            <Headphones className="w-3.5 h-3.5" />
-            <span>Ask Counsellor</span>
+            <Headphones className="w-4 h-4" />
+            <span>Ask Human Counsellor</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </button>
         )}
       </div>
 
       {/* Suggested Questions */}
-      <div className="px-5 py-2.5 bg-gray-50/60 border-b border-gray-200/60 overflow-x-auto custom-scrollbar flex items-center gap-2">
-        <span className="text-[11px] font-bold text-gray-400 shrink-0 flex items-center gap-1">
-          <Lightbulb className="w-3 h-3 text-germany-red" /> Topics:
+      <div className="px-5 py-3 bg-gray-50/70 border-b border-gray-200/60 overflow-x-auto custom-scrollbar flex items-center gap-2">
+        <span className="text-xs font-bold text-gray-500 shrink-0 flex items-center gap-1">
+          <Lightbulb className="w-3.5 h-3.5 text-germany-red" /> Popular Questions:
         </span>
         {SUGGESTED_QUESTIONS.map((q, idx) => (
           <button
             key={idx}
             onClick={() => handleSend(q)}
-            className="text-[11px] font-bold px-2.5 py-1 bg-white hover:bg-red-50 hover:text-germany-red text-gray-700 border border-gray-200/80 rounded-lg shrink-0 transition-colors cursor-pointer shadow-2xs"
+            className="text-xs font-bold px-3 py-1.5 bg-white hover:bg-red-50 hover:text-germany-red text-gray-700 border border-gray-200/90 rounded-xl shrink-0 transition-colors cursor-pointer shadow-2xs"
           >
             {q}
           </button>
@@ -162,24 +163,24 @@ export default function AiAgentChat({ onAskCounsellor }: AiAgentChatProps) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-[#FDFBF7]/40 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 bg-[#FDFBF7]/40 custom-scrollbar">
         {messages.map((m) => (
           <div
             key={m.id}
-            className={`flex items-start gap-2.5 ${m.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
+            className={`flex items-start gap-3 ${m.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
           >
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
-              m.sender === 'user' ? 'bg-germany-black text-white' : 'bg-germany-gold/20 text-germany-black border border-germany-gold/40'
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
+              m.sender === 'user' ? 'bg-germany-black text-white' : 'bg-germany-gold/25 text-germany-black border border-germany-gold/40'
             }`}>
-              {m.sender === 'user' ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5 text-germany-black" />}
+              {m.sender === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4 text-germany-black" />}
             </div>
 
-            <div className={`max-w-[80%] space-y-1 ${m.sender === 'user' ? 'items-end' : 'items-start'}`}>
+            <div className={`max-w-[85%] sm:max-w-[78%] space-y-1.5 ${m.sender === 'user' ? 'items-end' : 'items-start'}`}>
               <div
-                className={`px-4 py-3 rounded-2xl text-xs leading-relaxed ${
+                className={`px-4 sm:px-5 py-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${
                   m.sender === 'user'
                     ? 'bg-germany-red text-white font-medium rounded-tr-xs shadow-xs'
-                    : 'bg-white text-gray-800 border border-gray-200/80 rounded-tl-xs shadow-2xs'
+                    : 'bg-white text-gray-900 border border-gray-200/80 rounded-tl-xs shadow-2xs'
                 }`}
               >
                 <div className="whitespace-pre-line">
@@ -187,11 +188,11 @@ export default function AiAgentChat({ onAskCounsellor }: AiAgentChatProps) {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 px-1 text-[10px] text-gray-400">
+              <div className="flex items-center gap-2.5 px-1 text-xs text-gray-400 font-medium">
                 <span>{m.timestamp}</span>
                 {m.sender === 'ai' && (
                   <>
-                    <span>·</span>
+                    <span>•</span>
                     <button
                       onClick={() => handleCopy(m.text, m.id)}
                       className="hover:text-gray-700 font-semibold cursor-pointer"
@@ -200,12 +201,12 @@ export default function AiAgentChat({ onAskCounsellor }: AiAgentChatProps) {
                     </button>
                     {onAskCounsellor && (
                       <>
-                        <span>·</span>
+                        <span>•</span>
                         <button
                           onClick={() => onAskCounsellor(m.text.slice(0, 150))}
                           className="text-germany-red hover:underline font-bold cursor-pointer"
                         >
-                          Forward to Counsellor
+                          Send to Human Counsellor
                         </button>
                       </>
                     )}

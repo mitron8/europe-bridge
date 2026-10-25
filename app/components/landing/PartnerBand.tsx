@@ -65,7 +65,12 @@ export default function PartnerBand() {
                 </button>
               </div>
             </div>
-            <a href="#language-school" className="lp-btn lp-btn--dark w-full sm:w-auto sm:self-start">
+            <a
+              href="https://www.eurolingo-academy.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="lp-btn lp-btn--dark w-full sm:w-auto sm:self-start"
+            >
               Explore Eurolingo classes <ArrowRight className="h-4 w-4" />
             </a>
           </div>

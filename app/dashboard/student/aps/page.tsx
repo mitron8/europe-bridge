@@ -303,8 +303,8 @@ export default function ApsChecklist() {
           <div className="flex-1 bg-germany-gold"></div>
         </div>
         <div className="mt-1 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-germany-black text-white rounded-full font-extrabold text-[11px]">
-            <CheckCircle2 className="w-3.5 h-3.5 text-germany-gold" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-germany-red text-white rounded-full font-extrabold text-[11px]">
+            <CheckCircle2 className="w-3.5 h-3.5 text-white" />
             <span>Step 5</span>
           </div>
           <h1 className="text-2xl md:text-3xl font-display text-germany-black">APS Checklist</h1>

@@ -40,7 +40,8 @@ const steps = [
 
 export const LomProcess = () => {
   return (
-    <section id="process" className="py-14 px-6 lg:px-12 max-w-7xl mx-auto scroll-mt-28">
+    <section id="how-it-works" className="py-14 px-6 lg:px-12 max-w-7xl mx-auto scroll-mt-28 relative">
+      <div id="process" className="-mt-28 pt-28 pointer-events-none absolute" />
       <div className="space-y-12">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">

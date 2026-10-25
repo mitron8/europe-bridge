@@ -88,8 +88,8 @@ export default function SuperAdminHelpPage() {
             <h1 className="text-xl sm:text-2xl font-display font-bold text-germany-black">
               Issue Governance & Audit Central
             </h1>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-germany-black text-white rounded-full font-bold text-[10px]">
-              <ShieldAlert className="w-3 h-3 text-germany-gold" />
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-germany-red text-white rounded-full font-bold text-[10px]">
+              <ShieldAlert className="w-3 h-3 text-white" />
               <span>Super Admin</span>
             </span>
           </div>

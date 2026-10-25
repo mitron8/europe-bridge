@@ -75,7 +75,7 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
           <h3 className="text-xl font-extrabold text-germany-black dark:text-white font-display">Academic History</h3>
           <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mt-1">A completed <strong className="text-germany-red dark:text-[#FF6B7A]">Bachelor&apos;s</strong> degree is required to complete this section.</p>
         </div>
-        <button onClick={addEducation} className="px-4 py-2 rounded-xl bg-[#EBE7E0] dark:bg-gray-800 hover:bg-germany-black dark:hover:bg-gray-700 hover:text-white font-extrabold text-xs transition-all text-germany-black dark:text-gray-100 cursor-pointer">
+        <button onClick={addEducation} className="px-4 py-2 rounded-xl bg-[#EBE7E0] dark:bg-gray-800 hover:bg-germany-red hover:text-white font-extrabold text-xs transition-all text-germany-black dark:text-gray-100 cursor-pointer">
           + Add Education Record
         </button>
       </div>

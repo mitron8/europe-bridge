@@ -71,10 +71,11 @@ const Footer = () => {
             <h3 className="font-display text-xl text-white">Platform</h3>
             <ul className="space-y-3 font-bold text-sm text-gray-400">
               <li><Link href="/services/university-shortlisting" className="hover:text-germany-gold transition-colors">University Shortlisting</Link></li>
-              <li><Link href="/#free-tools" className="hover:text-germany-gold transition-colors">AI SOP Builder</Link></li>
-              <li><Link href="/study/aps" className="hover:text-germany-gold transition-colors">APS Tracker</Link></li>
-              <li><Link href="/study/student-visa" className="hover:text-germany-gold transition-colors">Visa Checklist</Link></li>
+              <li><Link href="/services/sop-writing" className="hover:text-germany-gold transition-colors">SOP &amp; LOR Drafting</Link></li>
+              <li><Link href="/study/aps" className="hover:text-germany-gold transition-colors">APS Verification Guide</Link></li>
+              <li><Link href="/study/student-visa" className="hover:text-germany-gold transition-colors">Visa Roadmap &amp; Checklist</Link></li>
               <li><Link href="/services/blocked-account" className="hover:text-germany-gold transition-colors">Blocked Account Setup</Link></li>
+              <li><Link href="/study" className="hover:text-germany-gold transition-colors">Study in Germany Hub</Link></li>
             </ul>
           </div>
 
@@ -84,9 +85,10 @@ const Footer = () => {
             <ul className="space-y-3 font-bold text-sm text-gray-400">
               <li><Link href="/#about" className="hover:text-germany-gold transition-colors">About Us</Link></li>
               <li><Link href="/#testimonials" className="hover:text-germany-gold transition-colors">Student Stories</Link></li>
-              <li><Link href="/#cta" className="hover:text-germany-gold transition-colors">Pricing Tiers</Link></li>
+              <li><Link href="/pricing" className="hover:text-germany-gold transition-colors">Pricing &amp; Packages</Link></li>
+              <li><Link href="/courses" className="hover:text-germany-gold transition-colors">Explore 400+ Programs</Link></li>
               <li><Link href="/login" className="hover:text-germany-gold transition-colors">Student Portal</Link></li>
-              <li><Link href="/#faq" className="hover:text-germany-gold transition-colors">FAQ & Support</Link></li>
+              <li><Link href="/#faq" className="hover:text-germany-gold transition-colors">FAQ &amp; Support</Link></li>
             </ul>
           </div>
 
@@ -100,11 +102,11 @@ const Footer = () => {
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-germany-red shrink-0" />
-                <span>hello@europebridge.com</span>
+                <a href="mailto:hello@europebridge.com" className="hover:text-white transition-colors">hello@europebridge.com</a>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-germany-red shrink-0" />
-                <span>+49 (0) 30 1234 5678</span>
+                <a href="tel:+493012345678" className="hover:text-white transition-colors">+49 (0) 30 1234 5678</a>
               </li>
             </ul>
           </div>
@@ -115,9 +117,9 @@ const Footer = () => {
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-bold text-gray-500">
           <p>© {new Date().getFullYear()} EuropeBridge GmbH. All rights reserved.</p>
           <div className="flex gap-6">
-            <Link href="/#about" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link href="/#about" className="hover:text-white transition-colors">Terms of Service</Link>
-            <Link href="/#about" className="hover:text-white transition-colors">Imprint</Link>
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link href="/imprint" className="hover:text-white transition-colors">Imprint (Impressum)</Link>
           </div>
         </div>
 

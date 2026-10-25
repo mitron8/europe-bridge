@@ -52,7 +52,8 @@ export const LOMStructureSection = () => {
   ];
 
   return (
-    <section id="section-structure" className="py-16 px-6 lg:px-12 relative">
+    <section id="section-structure" className="py-16 px-6 lg:px-12 relative scroll-mt-24">
+      <div id="structure" className="-mt-24 pt-24 pointer-events-none absolute" />
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Header */}
         <div data-reveal className="text-center max-w-3xl mx-auto space-y-3">

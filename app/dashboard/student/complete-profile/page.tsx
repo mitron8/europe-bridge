@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+
+import { ArrowLeft, CheckCircle2, ShieldCheck, Loader2 } from 'lucide-react';
 import { ProfileSection, ProfileData, emptyProfile } from './types';
 import ProfileNavigation from './components/ProfileNavigation';
 import PersonalSection from './components/PersonalSection';
@@ -28,8 +31,6 @@ export default function CompleteProfilePage() {
       });
       if (res.ok) {
         const data: ProfileData = await res.json();
-
-        // Removed auto-normalization because canonical IDs are now used natively.
         setProfileData(data);
       }
     } catch (err) {
@@ -65,7 +66,7 @@ export default function CompleteProfilePage() {
         // Update form from the confirmed DB response — the API returns the saved state
         const saved: ProfileData & { journeyStatus?: string } = await res.json();
         setProfileData(saved);
-        if (saved.journeyStatus === 'profile_completed') {
+        if (saved.journeyStatus === 'profile_completed' || (saved.completionPercentage ?? 0) >= 100) {
           setJustCompleted(true);
         }
         setSaveMessage('Saved');
@@ -89,8 +90,6 @@ export default function CompleteProfilePage() {
     }
   };
 
-
-
   const renderSection = () => {
     switch (activeSection) {
       case 'personal':
@@ -112,39 +111,82 @@ export default function CompleteProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-5xl mx-auto py-8 px-4 flex items-center justify-center min-h-[300px]">
-        <div className="text-gray-500 font-bold flex items-center gap-2">
-          <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-germany-red"></span>
-          Loading your profile...
+      <div className="max-w-5xl mx-auto py-16 px-4 flex items-center justify-center min-h-[400px]">
+        <div className="text-gray-500 font-bold flex items-center gap-3">
+          <Loader2 className="w-5 h-5 animate-spin text-germany-red" />
+          <span className="text-sm font-medium">Loading your academic profile...</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto py-8 px-4">
-      <h1 className="text-3xl md:text-4xl font-display font-extrabold text-germany-black dark:text-white mb-6">
-        Complete My Profile
-      </h1>
+    <div className="max-w-5xl mx-auto py-4 sm:py-6 px-3 sm:px-4 space-y-6">
+      {/* Top Breadcrumb & Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <Link
+            href="/dashboard/student"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-germany-black dark:text-gray-400 dark:hover:text-white transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Dashboard</span>
+          </Link>
+          <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-germany-black dark:text-white tracking-tight">
+            Academic Profile Setup
+          </h1>
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium max-w-2xl">
+            Provide your verified educational credentials and study preferences. This information powers your Bavarian GPA conversion, AI university matching, and APS checklist.
+          </p>
+        </div>
 
-      {justCompleted && (
-        <div className="mb-6 flex items-center gap-3 rounded-2xl border border-green-200 dark:border-emerald-500/30 bg-green-50 dark:bg-emerald-950/40 px-5 py-4 text-green-800 dark:text-emerald-200 shadow-sm dark:shadow-[0_4px_20px_rgba(16,185,129,0.12)]">
-          <span className="text-2xl">🎉</span>
-          <div>
-            <p className="font-bold text-green-900 dark:text-emerald-200">Profile complete!</p>
-            <p className="text-sm text-green-800 dark:text-emerald-300 font-medium">Your application journey has started. We&apos;ll be in touch soon.</p>
+        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#F4F1EA] dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800 rounded-full text-[11px] font-bold text-gray-600 dark:text-gray-300">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Encrypted & Confidential</span>
           </div>
-          <button
-            onClick={() => setJustCompleted(false)}
-            className="ml-auto text-green-600 dark:text-emerald-400 hover:text-green-800 dark:hover:text-emerald-100 text-lg font-bold leading-none cursor-pointer p-1 rounded-lg hover:bg-green-100 dark:hover:bg-emerald-900/40 transition-colors"
-            aria-label="Dismiss"
-          >✕</button>
+        </div>
+      </div>
+
+      {/* Profile Complete Alert Banner (Executive & Clean, No Emojis) */}
+      {justCompleted && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800/50 shadow-xs">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+              <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
+            </div>
+            <div className="space-y-0.5">
+              <h3 className="text-sm font-bold text-emerald-950 dark:text-emerald-100 font-display">
+                Profile Completed & Verified
+              </h3>
+              <p className="text-xs text-emerald-800 dark:text-emerald-300 font-medium">
+                Your academic profile is 100% complete. Your full student dashboard and AI university matches are now unlocked.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Link
+              href="/dashboard/student"
+              className="w-full sm:w-auto neu-btn-primary py-2 px-4 text-xs font-bold text-center cursor-pointer"
+            >
+              Access Dashboard →
+            </Link>
+            <button
+              onClick={() => setJustCompleted(false)}
+              className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-white text-xs font-bold px-2 py-1 cursor-pointer"
+              aria-label="Dismiss"
+            >
+              ✕
+            </button>
+          </div>
         </div>
       )}
 
-      <div className="neu-card p-6 sm:p-10 relative overflow-hidden bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800/80">
-        {/* Tricolor Header Strip */}
-        <div className="absolute top-0 left-0 w-full h-2 flex">
+      {/* Main Container Card */}
+      <div className="neu-card p-6 sm:p-8 relative overflow-hidden bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800/80 shadow-[2px_2px_8px_rgba(71,85,105,0.04)]">
+        {/* Subtle German Tricolor Header Accent */}
+        <div className="absolute top-0 left-0 w-full h-[3px] flex">
           <div className="flex-1 bg-germany-black"></div>
           <div className="flex-1 bg-germany-red"></div>
           <div className="flex-1 bg-germany-gold"></div>
@@ -157,21 +199,39 @@ export default function CompleteProfilePage() {
           data={profileData}
         />
 
-        <div className="mt-8">{renderSection()}</div>
+        <div className="mt-6 pt-2">{renderSection()}</div>
 
-        <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
-          <span className={`text-sm font-bold ${saveMessage.toLowerCase().includes('fail') ? 'text-red-600' : 'text-green-600'}`}>
-            {saveMessage}
-          </span>
+        {/* Global Save & Status Bar */}
+        <div className="mt-8 pt-5 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-3">
+          <div className="flex items-center gap-2">
+            {saveMessage && (
+              <span className={`text-xs font-bold inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${
+                saveMessage.toLowerCase().includes('fail')
+                  ? 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/30 dark:text-red-300'
+                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300'
+              }`}>
+                {!saveMessage.toLowerCase().includes('fail') && <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />}
+                {saveMessage}
+              </span>
+            )}
+            {!saveMessage && (
+              <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">
+                Step changes save automatically when clicking Save & Continue.
+              </span>
+            )}
+          </div>
+
           <button
             onClick={() => saveProfile()}
             disabled={isSaving}
-            className="neu-btn-primary px-6 py-2.5 text-sm font-bold disabled:opacity-50 cursor-pointer"
+            className="neu-btn px-5 py-2 text-xs font-bold text-gray-700 dark:text-gray-200 hover:text-germany-red hover:border-germany-red dark:hover:text-germany-red disabled:opacity-50 cursor-pointer inline-flex items-center gap-2 transition-colors"
           >
-            {isSaving ? 'Saving...' : 'Save Profile'}
+            {isSaving && <Loader2 className="w-3.5 h-3.5 animate-spin text-germany-red" />}
+            <span>{isSaving ? 'Saving...' : 'Save Draft'}</span>
           </button>
         </div>
       </div>
     </div>
   );
 }
+

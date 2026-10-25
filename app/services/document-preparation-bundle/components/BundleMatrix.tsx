@@ -66,7 +66,8 @@ export const BundleMatrix = () => {
   const IconComponent = selectedDoc.icon;
 
   return (
-    <section id="bundle-matrix" className="py-14 px-6 lg:px-12 bg-white relative scroll-mt-24">
+    <section id="comparison" className="py-14 px-6 lg:px-12 bg-white relative scroll-mt-28">
+      <div id="bundle-matrix" className="-mt-28 pt-28 pointer-events-none absolute" />
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">

@@ -52,7 +52,9 @@ const LanguagePartner = () => {
               {/* Action Button */}
               <div className="pt-2">
                 <a 
-                  href="#language-school"
+                  href="https://www.eurolingo-academy.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="neu-btn-primary inline-flex px-6 py-2.5 text-xs sm:text-sm gap-2"
                 >
                   <span>Explore Eurolingo Classes</span>
