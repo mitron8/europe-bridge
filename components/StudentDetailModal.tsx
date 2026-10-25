@@ -36,6 +36,10 @@ import {
   Search,
   Ban,
   Trash2,
+  Lock,
+  Unlock,
+  Sparkles,
+  Bookmark,
 } from 'lucide-react';
 import { AssignedStudent } from './CounsellorStudents';
 import { StudentFullProfileView } from './StudentFullProfileView';
@@ -230,12 +234,19 @@ export function StudentDetailModal({
   const [savingRecommendation, setSavingRecommendation] = useState(false);
   const [uniMeta, setUniMeta] = useState<{ studentField?: string; totalCount?: number; relevantCount?: number; disqualifiedCount?: number } | null>(null);
 
-  // Matching Engine state
+  // Matching Engine & Subscription Curation state
   const [matchingRun, setMatchingRun] = useState<any>(null);
   const [matchingResults, setMatchingResults] = useState<any[]>([]);
+  const [studentSubscription, setStudentSubscription] = useState<any>(null);
+  const [curatedProgrammeIds, setCuratedProgrammeIds] = useState<string[]>([]);
+  const [isMatchingLocked, setIsMatchingLocked] = useState(false);
+  const [studentShortlistCount, setStudentShortlistCount] = useState(0);
   const [loadingMatching, setLoadingMatching] = useState(false);
   const [runningMatching, setRunningMatching] = useState(false);
   const [matchingError, setMatchingError] = useState<string | null>(null);
+  const [savingCuration, setSavingCuration] = useState(false);
+  const [togglingLock, setTogglingLock] = useState(false);
+  const [showCurationPanel, setShowCurationPanel] = useState(true);
 
   const fetchMatchingResults = async () => {
     const effectiveStudentId = propStudent?.userId || studentId;
@@ -254,6 +265,13 @@ export function StudentDetailModal({
       const data = await res.json();
       setMatchingRun(data.run ?? null);
       setMatchingResults(data.results ?? []);
+      setStudentSubscription(data.subscription ?? null);
+      setCuratedProgrammeIds(data.curatedProgrammeIds ?? []);
+      setIsMatchingLocked(Boolean(data.isLocked));
+      setStudentShortlistCount(data.shortlistCount ?? 0);
+      if (data.recommendations && Array.isArray(data.recommendations)) {
+        setUniversities(data.recommendations);
+      }
     } catch (err: any) {
       setMatchingError(err.message ?? 'Failed to load matching results');
     } finally {
@@ -282,6 +300,98 @@ export function StudentDetailModal({
       setRunningMatching(false);
     }
   };
+
+  const handleToggleLock = async () => {
+    const effectiveStudentId = propStudent?.userId || studentId;
+    if (!effectiveStudentId) return;
+    setTogglingLock(true);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+      const res = await fetch(`${API_URL}/counsellor/students/${effectiveStudentId}/lock`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ isLocked: !isMatchingLocked }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to update lock state');
+      setIsMatchingLocked(data.isLocked);
+    } catch (err: any) {
+      alert(err.message || 'Failed to toggle lock');
+    } finally {
+      setTogglingLock(false);
+    }
+  };
+
+  const handleToggleCuratedProgramme = async (programmeId: string | number) => {
+    const idStr = String(programmeId);
+    let nextIds: string[];
+    const maxDisplay = studentSubscription?.maxDisplayCount || 10;
+
+    if (curatedProgrammeIds.includes(idStr)) {
+      nextIds = curatedProgrammeIds.filter((id) => id !== idStr);
+    } else {
+      if (curatedProgrammeIds.length >= maxDisplay) {
+        alert(`Cannot select more than ${maxDisplay} programmes under this student's plan.`);
+        return;
+      }
+      nextIds = [...curatedProgrammeIds, idStr];
+    }
+
+    setCuratedProgrammeIds(nextIds);
+    await saveCuratedProgrammes(nextIds);
+  };
+
+  const handleAutoFillTopMatches = async () => {
+    const maxDisplay = studentSubscription?.maxDisplayCount || 5;
+    const topEligible = matchingResults
+      .filter((r) => r.eligibilityStatus !== 'NOT_ELIGIBLE')
+      .slice(0, maxDisplay)
+      .map((r) => String(r.programmeId || r.id));
+
+    if (topEligible.length === 0) {
+      alert('No eligible matching programmes found to auto-fill.');
+      return;
+    }
+
+    setCuratedProgrammeIds(topEligible);
+    await saveCuratedProgrammes(topEligible);
+  };
+
+  const saveCuratedProgrammes = async (programmeIds: string[]) => {
+    const effectiveStudentId = propStudent?.userId || studentId;
+    if (!effectiveStudentId) return;
+    setSavingCuration(true);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+      const res = await fetch(`${API_URL}/counsellor/students/${effectiveStudentId}/curation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ programmeIds }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to save curated programmes');
+      if (data.curatedProgrammes) {
+        setCuratedProgrammeIds(data.curatedProgrammes.map((c: any) => String(c.programmeId)));
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to save curation');
+    } finally {
+      setSavingCuration(false);
+    }
+  };
+
+  const shortlistedProgIds = useMemo(() => {
+    const set = new Set<string>();
+    universities.forEach((u: any) => {
+      if (u.status === 'shortlisted' || (u.status && u.status !== 'recommended')) {
+        if (u.programmeId) set.add(String(u.programmeId));
+        if (u.id) set.add(String(u.id));
+      }
+    });
+    return set;
+  }, [universities]);
 
   // Poll matching results while in progress
   useEffect(() => {
@@ -830,14 +940,15 @@ export function StudentDetailModal({
   const allCatalogueDocs = DOCUMENT_CATALOGUE;
   const apsCatalogueDocs = DOCUMENT_CATALOGUE.filter((d) => d.section === 'aps');
   const generalCatalogueDocs = DOCUMENT_CATALOGUE.filter((d) => d.section === 'general');
+  const lorSopCvCatalogueDocs = DOCUMENT_CATALOGUE.filter((d) => d.section === 'lor_sop_cv');
 
   // Filtered by current category
   const currentCategoryCatalogue = React.useMemo(() => {
     if (docCategory === 'aps') return apsCatalogueDocs;
     if (docCategory === 'general') return generalCatalogueDocs;
-    if (docCategory === 'lor_sop_cv') return [];
+    if (docCategory === 'lor_sop_cv') return lorSopCvCatalogueDocs;
     return allCatalogueDocs;
-  }, [docCategory, allCatalogueDocs, apsCatalogueDocs, generalCatalogueDocs]);
+  }, [docCategory, allCatalogueDocs, apsCatalogueDocs, generalCatalogueDocs, lorSopCvCatalogueDocs]);
 
   const currentCategoryUploadedDocs = React.useMemo(() => {
     if (docCategory === 'aps') return distinctUploadedDocs.filter((d) => d.section === 'aps');
@@ -864,6 +975,7 @@ export function StudentDetailModal({
   const allUploadedCount = distinctUploadedDocs.length;
   const apsUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'aps').length;
   const generalUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'general').length;
+  const lorSopCvUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'lor_sop_cv').length;
   const pendingDocsCount = distinctUploadedDocs.filter((d) => d.status === 'pending').length;
 
   // Documents to render based on docFilter
@@ -1251,40 +1363,44 @@ export function StudentDetailModal({
                     </button>
 
                     <button
-                      onClick={() => setDocCategory('lor_sop_cv')}
+                      onClick={() => {
+                        setDocCategory('lor_sop_cv');
+                        if (docFilter === 'not_uploaded') setDocFilter('all');
+                      }}
                       className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all inline-flex items-center gap-2 ${
                         docCategory === 'lor_sop_cv'
-                          ? 'bg-amber-600 text-white shadow-xs'
+                          ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black shadow-xs'
                           : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
                       }`}
                     >
-                      <span>LOR, SOP &amp; CV</span>
-                      <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-400/30 text-amber-900 dark:text-amber-200">
-                        Coming Soon
-                      </span>
+                      <span>LOR, SOP &amp; CV ({lorSopCvUploadedCount})</span>
+                      {lorSopCvUploadedCount > 0 ? (
+                        <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-800 dark:text-emerald-300">
+                          {lorSopCvUploadedCount} Uploaded
+                        </span>
+                      ) : (
+                        <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-400/30 text-amber-900 dark:text-amber-200">
+                          Pending
+                        </span>
+                      )}
                     </button>
                   </div>
                 </div>
 
-                {/* If LOR, SOP & CV is selected, show Coming Soon Placeholder */}
-                {docCategory === 'lor_sop_cv' ? (
-                  <div className="p-8 sm:p-12 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs text-center space-y-3">
-                    <div className="w-12 h-12 mx-auto rounded-2xl bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                      <Clock className="w-6 h-6" />
-                    </div>
-                    <h4 className="font-display text-base text-germany-black dark:text-white">
-                      LOR, SOP &amp; CV Workflow — Coming Soon
-                    </h4>
-                    <p className="text-xs font-bold text-gray-500 max-w-md mx-auto">
-                      Dedicated drafting, review, and feedback pipeline for Letters of Recommendation, Statements of Purpose, and Academic CVs will be available in an upcoming release.
-                    </p>
-                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 text-[11px] font-extrabold text-gray-600 dark:text-gray-300">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-germany-gold" />
-                      <span>Standard documents and APS checklist verification are fully active</span>
+                {/* If LOR, SOP & CV is selected, show informative banner */}
+                {docCategory === 'lor_sop_cv' && (
+                  <div className="p-4 bg-amber-50/80 dark:bg-amber-950/30 rounded-2xl border border-amber-200/80 dark:border-amber-900/40 flex items-start gap-3 text-xs">
+                    <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-extrabold text-amber-900 dark:text-amber-200">
+                        Academic Dossier Clearance &amp; Verification
+                      </p>
+                      <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 mt-0.5">
+                        Generated Academic CVs submitted by the student appear below for verification and clearance. SOP and LOR drafting pipelines will be active in an upcoming release.
+                      </p>
                     </div>
                   </div>
-                ) : (
-                  <>
+                )}
                     {/* Completeness & Progress Overview Card */}
                     <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
                       <div className="flex items-center justify-between">
@@ -1296,6 +1412,8 @@ export function StudentDetailModal({
                               ? 'All Categories'
                               : docCategory === 'aps'
                               ? 'APS Checklist'
+                              : docCategory === 'lor_sop_cv'
+                              ? 'LOR, SOP & CV'
                               : 'General Documents'}
                             )
                           </h4>
@@ -1404,6 +1522,8 @@ export function StudentDetailModal({
                             ? 'All Categories'
                             : docCategory === 'aps'
                             ? 'APS Checklist'
+                            : docCategory === 'lor_sop_cv'
+                            ? 'LOR, SOP & CV'
                             : 'General Documents'}
                         </span>
                       </div>
@@ -1473,10 +1593,12 @@ export function StudentDetailModal({
                                           className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${
                                             item.section === 'aps'
                                               ? 'bg-germany-red/10 text-germany-red border border-germany-red/20'
+                                              : item.section === 'lor_sop_cv'
+                                              ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800'
                                               : 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
                                           }`}
                                         >
-                                          {item.section === 'aps' ? 'APS Checklist' : 'General Document'}
+                                          {item.section === 'aps' ? 'APS Checklist' : item.section === 'lor_sop_cv' ? 'Academic Dossier' : 'General Document'}
                                         </span>
                                       </div>
 
@@ -1582,10 +1704,12 @@ export function StudentDetailModal({
                                           className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${
                                             doc.section === 'aps'
                                               ? 'bg-germany-red/10 text-germany-red border border-germany-red/20'
+                                              : doc.section === 'lor_sop_cv'
+                                              ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800'
                                               : 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
                                           }`}
                                         >
-                                          {doc.section === 'aps' ? 'APS Checklist' : 'General Document'}
+                                          {doc.section === 'aps' ? 'APS Checklist' : doc.section === 'lor_sop_cv' ? 'Academic Dossier' : 'General Document'}
                                         </span>
                                       </div>
 
@@ -1718,8 +1842,6 @@ export function StudentDetailModal({
                         </div>
                       )}
                     </div>
-                  </>
-                )}
               </div>
             )}
 
@@ -1771,6 +1893,68 @@ export function StudentDetailModal({
                   </div>
                 </div>
 
+                {/* Subscription & Shortlist Lock Control Bar */}
+                <div className="p-4 bg-gradient-to-r from-amber-500/10 via-transparent to-red-500/10 dark:from-amber-500/5 dark:to-red-500/5 rounded-2xl border border-amber-500/20 dark:border-amber-500/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {studentSubscription ? (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-germany-gold/20 text-germany-black dark:text-germany-gold border border-germany-gold/40">
+                          {studentSubscription.planName || studentSubscription.planId}
+                        </span>
+                        <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                          Display: <strong className="text-germany-red">{curatedProgrammeIds.length}</strong> / {studentSubscription.maxDisplayCount} max
+                        </span>
+                        <span className="text-xs text-gray-400">•</span>
+                        <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                          Shortlist: <strong className="text-blue-600">{studentShortlistCount}</strong> / {studentSubscription.maxShortlistCount} max
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                          No Active Plan
+                        </span>
+                        <span className="text-xs font-medium text-gray-500">
+                          Student has not purchased a plan. Results withheld from student until plan purchase.
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      id="counsellor-toggle-lock-btn"
+                      onClick={handleToggleLock}
+                      disabled={togglingLock}
+                      className={`flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-extrabold transition-colors cursor-pointer border ${
+                        isMatchingLocked
+                          ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-100'
+                          : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100'
+                      }`}
+                      title={isMatchingLocked ? 'Shortlist and matching are locked for this student. Click to unlock.' : 'Student can modify shortlist and re-run matching. Click to lock.'}
+                    >
+                      {togglingLock ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : isMatchingLocked ? (
+                        <Lock className="w-3.5 h-3.5 text-red-600" />
+                      ) : (
+                        <Unlock className="w-3.5 h-3.5 text-emerald-600" />
+                      )}
+                      <span>{isMatchingLocked ? 'Shortlist Locked' : 'Shortlist Unlocked'}</span>
+                    </button>
+
+                    <button
+                      onClick={() => setShowCurationPanel(!showCurationPanel)}
+                      className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-bold bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1C2436] transition-colors cursor-pointer shadow-xs"
+                    >
+                      <span>{showCurationPanel ? 'Hide Curation Panel' : 'Show Curation Panel'}</span>
+                      <span className="text-[10px] font-black px-1.5 py-0.2 bg-germany-red text-white rounded-full">
+                        {curatedProgrammeIds.length}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
                 {/* Error Banner */}
                 {matchingError && (
                   <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 rounded-xl flex items-center justify-between gap-3">
@@ -1818,107 +2002,274 @@ export function StudentDetailModal({
                   </div>
                 )}
 
-                {/* Real Matched Programmes Grid */}
+                {/* Matched Programmes + Right-side Curation Panel Container */}
                 {!loadingMatching && !runningMatching && matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length > 0 && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').map((r: any) => (
-                      <div
-                        key={r.id}
-                        className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs hover:border-germany-red/30 space-y-3 transition-colors"
-                      >
-                        {/* Top: University, Program & Eligibility Status */}
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="space-y-0.5 min-w-0">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-germany-red">
-                              #{r.rank} • {r.universityType ?? 'University'}
-                            </span>
-                            <h4 className="font-display text-sm sm:text-base text-germany-black dark:text-white leading-tight truncate">
-                              {r.universityName}
-                            </h4>
-                            <p className="text-xs font-extrabold text-gray-600 dark:text-gray-300 leading-snug">{r.programName}</p>
-                            <p className="text-[10px] text-gray-400 font-medium">{r.degree}</p>
-                          </div>
+                  <div className="flex flex-col xl:flex-row items-start gap-4">
+                    {/* Left: Matching Results Grid */}
+                    <div className="flex-1 min-w-0 w-full">
+                      <div className={`grid grid-cols-1 ${showCurationPanel ? 'md:grid-cols-1 xl:grid-cols-2' : 'md:grid-cols-2'} gap-4`}>
+                        {matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').map((r: any) => {
+                          const progIdStr = String(r.programmeId || r.id);
+                          const isCurated = curatedProgrammeIds.includes(progIdStr);
+                          const isShortlisted = shortlistedProgIds.has(progIdStr);
+                          const maxDisplay = studentSubscription?.maxDisplayCount || 5;
+                          const isDisplayFull = curatedProgrammeIds.length >= maxDisplay;
 
-                          <div className="text-right shrink-0 flex flex-col items-end gap-1">
-                            <span
-                              className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
-                                MATCH_ELIGIBILITY_STYLES[r.eligibilityStatus] ?? 'bg-gray-100 text-gray-600 border-gray-200'
+                          return (
+                            <div
+                              key={r.id}
+                              className={`p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border transition-colors space-y-3 shadow-xs ${
+                                isCurated
+                                  ? 'border-emerald-500/60 dark:border-emerald-500/40 ring-1 ring-emerald-500/20'
+                                  : 'border-gray-200/80 dark:border-gray-800/80 hover:border-germany-red/30'
                               }`}
                             >
-                              {MATCH_ELIGIBILITY_LABELS[r.eligibilityStatus] ?? r.eligibilityStatus}
-                            </span>
-                            {typeof r.relevanceScore === 'number' && (
-                              <span className="text-[10px] font-black text-gray-400">
-                                Score: {r.relevanceScore}
-                              </span>
-                            )}
-                          </div>
-                        </div>
+                              {/* Top: University, Program & Eligibility Status */}
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="space-y-0.5 min-w-0">
+                                  <span className="text-[10px] font-black uppercase tracking-wider text-germany-red">
+                                    #{r.rank} • {r.universityType ?? 'University'}
+                                  </span>
+                                  <h4 className="font-display text-sm sm:text-base text-germany-black dark:text-white leading-tight truncate">
+                                    {r.universityName}
+                                  </h4>
+                                  <p className="text-xs font-extrabold text-gray-600 dark:text-gray-300 leading-snug">{r.programName}</p>
+                                  <p className="text-[10px] text-gray-400 font-medium">{r.degree}</p>
+                                </div>
 
-                        {/* Location, Tuition, Language & Deadline */}
-                        <div className="grid grid-cols-2 gap-2 text-[11px] p-2.5 rounded-xl bg-[#F4F1EA]/70 dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800/80">
-                          <div>
-                            <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Location</span>
-                            <span className="font-bold text-gray-700 dark:text-gray-300">
-                              📍 {[r.city, r.country].filter(Boolean).join(', ') || 'NA'}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Tuition</span>
-                            <span className="font-bold text-gray-700 dark:text-gray-300">{r.tuitionPerSemester ?? 'NA'}</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Language</span>
-                            <span className="font-bold text-gray-700 dark:text-gray-300">🌐 {r.language ?? 'NA'}</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Deadline</span>
-                            <span className="font-bold text-gray-700 dark:text-gray-300">⏰ {r.nonEuDeadline ?? 'NA'}</span>
-                          </div>
-                        </div>
+                                <div className="text-right shrink-0 flex flex-col items-end gap-1">
+                                  <span
+                                    className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                                      MATCH_ELIGIBILITY_STYLES[r.eligibilityStatus] ?? 'bg-gray-100 text-gray-600 border-gray-200'
+                                    }`}
+                                  >
+                                    {MATCH_ELIGIBILITY_LABELS[r.eligibilityStatus] ?? r.eligibilityStatus}
+                                  </span>
+                                  {typeof r.relevanceScore === 'number' && (
+                                    <span className="text-[10px] font-black text-gray-400">
+                                      Score: {r.relevanceScore}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
 
-                        {/* Why it matched */}
-                        {r.matchedReasons?.length > 0 && (
-                          <div className="pt-2 border-t border-[#EBE7E0] dark:border-gray-800/80">
-                            <p className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-400 mb-0.5">✓ Why it matched</p>
-                            <ul className="space-y-0.5">
-                              {r.matchedReasons.slice(0, 2).map((reason: string, i: number) => (
-                                <li key={i} className="text-[10px] text-gray-600 dark:text-gray-300 truncate">• {reason}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
+                              {/* Location, Tuition, Language & Deadline */}
+                              <div className="grid grid-cols-2 gap-2 text-[11px] p-2.5 rounded-xl bg-[#F4F1EA]/70 dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800/80">
+                                <div>
+                                  <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Location</span>
+                                  <span className="font-bold text-gray-700 dark:text-gray-300">
+                                    📍 {[r.city, r.country].filter(Boolean).join(', ') || 'NA'}
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Tuition</span>
+                                  <span className="font-bold text-gray-700 dark:text-gray-300">{r.tuitionPerSemester ?? 'NA'}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Language</span>
+                                  <span className="font-bold text-gray-700 dark:text-gray-300">🌐 {r.language ?? 'NA'}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Deadline</span>
+                                  <span className="font-bold text-gray-700 dark:text-gray-300">⏰ {r.nonEuDeadline ?? 'NA'}</span>
+                                </div>
+                              </div>
 
-                        {/* Requirement gaps */}
-                        {r.requirementGaps?.length > 0 && (
-                          <div>
-                            <p className="text-[10px] font-extrabold text-amber-700 dark:text-amber-400 mb-0.5">⚠ Requirement Gaps</p>
-                            <ul className="space-y-0.5">
-                              {r.requirementGaps.slice(0, 2).map((gap: string, i: number) => (
-                                <li key={i} className="text-[10px] text-gray-500 dark:text-gray-400 truncate">• {gap}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
+                              {/* Why it matched */}
+                              {r.matchedReasons?.length > 0 && (
+                                <div className="pt-2 border-t border-[#EBE7E0] dark:border-gray-800/80">
+                                  <p className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-400 mb-0.5">✓ Why it matched</p>
+                                  <ul className="space-y-0.5">
+                                    {r.matchedReasons.slice(0, 2).map((reason: string, i: number) => (
+                                      <li key={i} className="text-[10px] text-gray-600 dark:text-gray-300 truncate">• {reason}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
 
-                        {r.gpaFallbackUsed && (
-                          <p className="text-[10px] text-gray-400 italic">GPA: platform fallback (≤ 3.0) applied</p>
-                        )}
+                              {/* Requirement gaps */}
+                              {r.requirementGaps?.length > 0 && (
+                                <div>
+                                  <p className="text-[10px] font-extrabold text-amber-700 dark:text-amber-400 mb-0.5">⚠ Requirement Gaps</p>
+                                  <ul className="space-y-0.5">
+                                    {r.requirementGaps.slice(0, 2).map((gap: string, i: number) => (
+                                      <li key={i} className="text-[10px] text-gray-500 dark:text-gray-400 truncate">• {gap}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
 
-                        {r.programUrl && (
-                          <div className="pt-1">
-                            <a
-                              href={r.programUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-germany-red hover:underline"
-                            >
-                              <ExternalLink className="w-3 h-3" /> Programme Website
-                            </a>
-                          </div>
-                        )}
+                              {r.gpaFallbackUsed && (
+                                <p className="text-[10px] text-gray-400 italic">GPA: platform fallback (≤ 3.0) applied</p>
+                              )}
+
+                              {/* Action Footer: Website link, Shortlist indicator & Curation button */}
+                              <div className="pt-2 border-t border-gray-100 dark:border-gray-800/80 flex items-center justify-between gap-2 flex-wrap">
+                                <div>
+                                  {r.programUrl ? (
+                                    <a
+                                      href={r.programUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-germany-red hover:underline"
+                                    >
+                                      <ExternalLink className="w-3 h-3" /> Programme Website
+                                    </a>
+                                  ) : (
+                                    <span />
+                                  )}
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  {isShortlisted && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60">
+                                      <Bookmark className="w-2.5 h-2.5 text-blue-600" />
+                                      <span>Student Shortlisted</span>
+                                    </span>
+                                  )}
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleCuratedProgramme(progIdStr)}
+                                    disabled={savingCuration || (!isCurated && (!studentSubscription || isDisplayFull))}
+                                    className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed border ${
+                                      isCurated
+                                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300'
+                                        : 'bg-germany-black dark:bg-white text-white dark:text-germany-black border-transparent hover:opacity-90'
+                                    }`}
+                                    title={
+                                      !studentSubscription
+                                        ? 'Student must have an active subscription'
+                                        : !isCurated && isDisplayFull
+                                        ? `Plan display limit reached (${maxDisplay})`
+                                        : isCurated
+                                        ? 'Remove from student display'
+                                        : 'Add to student display'
+                                    }
+                                  >
+                                    {isCurated ? (
+                                      <>
+                                        <Check className="w-3 h-3 text-emerald-600" />
+                                        <span>On Student Display</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Plus className="w-3 h-3" />
+                                        <span>Add to Display</span>
+                                      </>
+                                    )}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Right: Dedicated Programme Curation Panel */}
+                    {showCurationPanel && (
+                      <div className="w-full xl:w-80 shrink-0 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 p-4 shadow-xs space-y-4 xl:sticky xl:top-4">
+                        <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800">
+                          <div>
+                            <h4 className="font-display text-sm text-germany-black dark:text-white flex items-center gap-1.5">
+                              <span>Student Display Curation</span>
+                            </h4>
+                            <p className="text-[10px] font-bold text-gray-400">
+                              Programmes visible to student
+                            </p>
+                          </div>
+                          <span className="text-xs font-black px-2 py-0.5 rounded-full bg-germany-black text-white dark:bg-white dark:text-germany-black">
+                            {curatedProgrammeIds.length} / {studentSubscription?.maxDisplayCount || 5}
+                          </span>
+                        </div>
+
+                        {/* Auto-fill Button */}
+                        <button
+                          type="button"
+                          onClick={handleAutoFillTopMatches}
+                          disabled={savingCuration || !studentSubscription || matchingResults.length === 0}
+                          className="w-full flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-extrabold bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/30 rounded-xl transition-colors disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+                          title="Fill student display with the highest ranked eligible programmes up to plan limit"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 text-germany-gold" />
+                          <span>Auto-fill Top Matches</span>
+                        </button>
+
+                        {/* Curated Items List */}
+                        <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1">
+                          {curatedProgrammeIds.length === 0 ? (
+                            <div className="p-6 text-center text-xs text-gray-400 space-y-1 bg-gray-50 dark:bg-[#151B27] rounded-xl border border-dashed border-gray-200 dark:border-gray-800">
+                              <p className="font-bold text-gray-500 dark:text-gray-400">No programmes curated</p>
+                              <p className="text-[11px]">Click &quot;Add to Display&quot; on any match or use auto-fill above.</p>
+                            </div>
+                          ) : (
+                            curatedProgrammeIds.map((progId, idx) => {
+                              const matchItem = matchingResults.find(
+                                (r) => String(r.programmeId || r.id) === String(progId)
+                              );
+                              const isShortlisted = shortlistedProgIds.has(String(progId));
+
+                              return (
+                                <div
+                                  key={progId}
+                                  className="p-2.5 bg-gray-50 dark:bg-[#151B27] rounded-xl border border-gray-200/60 dark:border-gray-800/60 flex items-start justify-between gap-2 text-xs"
+                                >
+                                  <div className="min-w-0 space-y-0.5 flex-1">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[10px] font-black text-germany-red shrink-0">
+                                        #{idx + 1}
+                                      </span>
+                                      <span className="font-extrabold text-germany-black dark:text-white truncate block">
+                                        {matchItem?.universityName || 'University Programme'}
+                                      </span>
+                                    </div>
+                                    <p className="text-[11px] text-gray-600 dark:text-gray-300 truncate">
+                                      {matchItem?.programName || `Programme ID: ${progId}`}
+                                    </p>
+                                    <div className="flex items-center gap-1.5 pt-0.5">
+                                      {isShortlisted && (
+                                        <span className="text-[9px] font-extrabold px-1.5 py-0.2 bg-blue-100 text-blue-800 rounded">
+                                          ★ Shortlisted
+                                        </span>
+                                      )}
+                                      {matchItem?.relevanceScore && (
+                                        <span className="text-[9px] font-bold text-gray-400">
+                                          Score: {matchItem.relevanceScore}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleCuratedProgramme(progId)}
+                                    title="Remove from student display"
+                                    className="p-1 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer shrink-0"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+
+                        {/* Footer status */}
+                        <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-[10px] text-gray-400 font-bold">
+                          {savingCuration ? (
+                            <span className="flex items-center gap-1 text-amber-600">
+                              <Loader2 className="w-3 h-3 animate-spin" /> Saving changes…
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1 text-emerald-600">
+                              <Check className="w-3 h-3" /> Synced to student
+                            </span>
+                          )}
+                          <span>Max {studentSubscription?.maxDisplayCount || 5}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 

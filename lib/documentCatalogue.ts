@@ -1,7 +1,7 @@
 export interface CatalogueDocument {
   type: string;
   name: string;
-  section: 'aps' | 'general';
+  section: 'aps' | 'general' | 'lor_sop_cv';
   category: string;
   description: string;
   required: boolean;
@@ -31,9 +31,16 @@ export const GENERAL_DOCUMENT_CATALOGUE: CatalogueDocument[] = [
   { type: 'work_experience', name: 'Work Experience / Internship Letter', section: 'general', category: 'Employment & Experience', description: 'Professional employment or internship completion certificates', required: false },
 ];
 
+export const LOR_SOP_CV_DOCUMENT_CATALOGUE: CatalogueDocument[] = [
+  { type: 'cv', name: 'Curriculum Vitae (CV)', section: 'lor_sop_cv', category: 'Application Dossier', description: 'Academic Curriculum Vitae generated in German Europass format', required: true },
+  { type: 'sop', name: 'Statement of Purpose (SOP)', section: 'lor_sop_cv', category: 'Application Dossier', description: 'Course-specific academic statement of purpose', required: false },
+  { type: 'lor', name: 'Letter of Recommendation (LOR)', section: 'lor_sop_cv', category: 'Application Dossier', description: 'Academic recommendation letter from university faculty or research mentor', required: false },
+];
+
 export const DOCUMENT_CATALOGUE: CatalogueDocument[] = [
   ...APS_DOCUMENT_CATALOGUE,
   ...GENERAL_DOCUMENT_CATALOGUE,
+  ...LOR_SOP_CV_DOCUMENT_CATALOGUE,
 ];
 
 export const DOCUMENT_TYPE_LABELS: Record<string, { name: string; category: string }> = {
