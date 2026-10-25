@@ -19,6 +19,7 @@ import {
   AlertCircle,
   RefreshCw,
   Award,
+  Sparkles,
 } from 'lucide-react';
 
 const VALID_SECTIONS = [
