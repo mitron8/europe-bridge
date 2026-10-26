@@ -13,6 +13,8 @@ export interface AssignedStudent {
   phone: string | null;
   whatsapp: string | null;
   status: string | null;
+  planId?: string | null;
+  planName?: string | null;
 }
 
 export function CounsellorStudents() {
@@ -28,6 +30,10 @@ export function CounsellorStudents() {
 
   const formatStatus = (status: string | null) => {
     if (!status) return 'Unknown';
+    if (status === 'matching_completed') return 'Matching Engine Run';
+    if (status === 'logged_in') return 'Logged In';
+    if (status === 'profile_completed') return 'Profile Completed';
+    if (status === 'plan_purchased') return 'Plan Purchased';
     return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
@@ -87,9 +93,24 @@ export function CounsellorStudents() {
                 {student.whatsapp || 'NA'}
               </td>
               <td className="px-4 py-3 text-sm font-bold text-germany-black dark:text-white">
-                <span className="px-2 py-1 bg-germany-gold/10 text-germany-gold rounded-full text-xs">
-                  {formatStatus(student.status)}
-                </span>
+                <div className="flex flex-col gap-1 items-start">
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-extrabold ${
+                    student.status === 'plan_purchased'
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : student.status === 'matching_completed'
+                      ? 'bg-purple-100 text-purple-800'
+                      : student.status === 'profile_completed'
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-germany-gold/15 text-germany-black dark:text-white'
+                  }`}>
+                    {formatStatus(student.status)}
+                  </span>
+                  {student.planName && (
+                    <span className="text-[10px] font-bold text-germany-red bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 px-1.5 py-0.5 rounded-md">
+                      {student.planName}
+                    </span>
+                  )}
+                </div>
               </td>
               <td className="px-4 py-3 text-sm text-right">
                 <Link

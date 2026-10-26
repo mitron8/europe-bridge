@@ -12,6 +12,8 @@ export interface StudentLead {
   phone: string | null;
   whatsapp: string | null;
   status: string;
+  planId?: string | null;
+  planName?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -28,6 +30,10 @@ export function CounsellorLeads() {
   } = usePaginatedList<StudentLead>('/counsellor/leads', 20);
 
   const formatStatus = (status: string) => {
+    if (status === 'matching_completed') return 'Matching Engine Run (Unpurchased)';
+    if (status === 'logged_in') return 'Logged In';
+    if (status === 'profile_completed') return 'Profile Completed';
+    if (status === 'plan_purchased') return 'Plan Purchased';
     return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
@@ -86,9 +92,24 @@ export function CounsellorLeads() {
                 {lead.whatsapp || 'NA'}
               </td>
               <td className="px-4 py-3 text-sm font-bold text-germany-black">
-                <span className="px-2 py-1 bg-germany-gold/10 text-germany-gold rounded-full text-xs">
-                  {formatStatus(lead.status)}
-                </span>
+                <div className="flex flex-col gap-1 items-start">
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-extrabold ${
+                    lead.status === 'plan_purchased'
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : lead.status === 'matching_completed'
+                      ? 'bg-purple-100 text-purple-800'
+                      : lead.status === 'profile_completed'
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-germany-gold/15 text-germany-black'
+                  }`}>
+                    {formatStatus(lead.status)}
+                  </span>
+                  {lead.planName && (
+                    <span className="text-[10px] font-bold text-germany-red bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-md">
+                      {lead.planName}
+                    </span>
+                  )}
+                </div>
               </td>
             </tr>
           ))}

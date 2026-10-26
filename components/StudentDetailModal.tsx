@@ -1196,26 +1196,34 @@ export function StudentDetailModal({
                             Study in Germany Admission Milestone Track
                           </h3>
                         </div>
-                        <span className="text-[11px] font-bold text-gray-400">Status Overview</span>
+                        <div className="flex items-center gap-2">
+                          {summaryData?.plan?.planName && (
+                            <span className="text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-germany-red/10 text-germany-red border border-germany-red/20">
+                              Plan: {summaryData.plan.planName}
+                            </span>
+                          )}
+                          <span className="text-[11px] font-bold text-gray-400">Status Overview</span>
+                        </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
                         {[
-                          { title: 'Profile / Registration', stage: 'signed_up' },
-                          { title: 'Matching', stage: 'profile_completed' },
+                          { title: 'Profile Registration', stage: 'logged_in' },
+                          { title: 'Profile Complete', stage: 'profile_completed' },
+                          { title: 'Matching Engine', stage: 'matching_completed' },
                           { title: 'Plan / Subscription', stage: 'plan_purchased' },
                           { title: 'Document Verification', stage: 'documents' },
                           { title: 'APS India Certificate', stage: 'aps' },
                           { title: 'Applications & Uni-Assist', stage: 'applications' },
                           { title: 'Visa & Blocked Account', stage: 'visa' },
                         ].map((step, idx) => {
-                          const statusOrder = ['signed_up', 'profile_completed', 'plan_purchased', 'documents', 'aps', 'applications', 'visa'];
+                          const statusOrder = ['signed_up', 'logged_in', 'profile_completed', 'matching_completed', 'plan_purchased', 'documents', 'aps', 'applications', 'visa'];
                           const currentIdx = statusOrder.indexOf(summaryData?.status);
                           const stepIdx = statusOrder.indexOf(step.stage);
                           
                           let status = 'Pending';
                           // For future stages not yet supported by backend, always show as Pending
-                          if (stepIdx > 2) {
+                          if (stepIdx > 3) {
                             status = 'Pending';
                           } else {
                             if (currentIdx > stepIdx) status = 'Completed';

@@ -107,7 +107,7 @@ function MatchingSection() {
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [subscription, setSubscription] = useState<any>(null);
   const [plans, setPlans] = useState<any[]>([]);
-  const [status, setStatus] = useState<'LOADING' | 'SUBSCRIPTION_REQUIRED' | 'ACTIVE'>('LOADING');
+  const [status, setStatus] = useState<'LOADING' | 'SUBSCRIPTION_REQUIRED' | 'ACTIVE' | 'NOT_RUN'>('LOADING');
   const [isLocked, setIsLocked] = useState(false);
   const [totalMatchedCount, setTotalMatchedCount] = useState<number>(0);
   const [loadingResults, setLoadingResults] = useState(true);
@@ -144,7 +144,7 @@ function MatchingSection() {
       setRecommendations(data.recommendations ?? []);
       setSubscription(data.subscription ?? null);
       setPlans(data.plans ?? []);
-      setStatus(data.status === 'SUBSCRIPTION_REQUIRED' ? 'SUBSCRIPTION_REQUIRED' : 'ACTIVE');
+      setStatus(data.status || 'ACTIVE');
       setIsLocked(Boolean(data.isLocked));
       setTotalMatchedCount(data.totalMatchedCount ?? 0);
     } catch (err: any) {
@@ -320,26 +320,40 @@ function MatchingSection() {
                 {subscription.plan?.name || 'Active Plan'} ({maxDisplayCount} Shown / {maxShortlistCount} Shortlist)
               </span>
             )}
-            {isLocked && (
+            {isLocked && status === 'SUBSCRIPTION_REQUIRED' ? (
+              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 flex items-center gap-1">
+                🔒 Plan Required to Re-run
+              </span>
+            ) : isLocked ? (
               <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-300 flex items-center gap-1">
                 🔒 Shortlist Locked
               </span>
-            )}
+            ) : null}
           </div>
           {run?.status === 'failed' && (
             <p className="text-[11px] text-red-600 font-medium mt-0.5">Last automated run timed out. You can re-run below.</p>
           )}
-          {isLocked && (
+          {isLocked && status === 'SUBSCRIPTION_REQUIRED' ? (
+            <p className="text-[11px] text-amber-700 font-semibold mt-0.5">
+              Matching engine scan complete. Select a matching plan below to unlock your full programme results and re-running.
+            </p>
+          ) : isLocked ? (
             <p className="text-[11px] text-purple-700 font-semibold mt-0.5">
               Your Germany admissions counsellor has reviewed and locked your shortlist. Matching re-runs are disabled.
             </p>
-          )}
+          ) : null}
         </div>
         <button
           id="run-matching-btn"
           onClick={handleRunMatching}
           disabled={running || isLocked}
-          title={isLocked ? 'Matching is locked by counsellor' : undefined}
+          title={
+            isLocked && status === 'SUBSCRIPTION_REQUIRED'
+              ? 'Select a matching plan below to unlock re-running the engine'
+              : isLocked
+              ? 'Matching is locked by counsellor'
+              : undefined
+          }
           className="flex items-center gap-2 bg-germany-red hover:bg-[#D62839] disabled:opacity-50 text-white py-2.5 px-5 text-xs font-extrabold rounded-xl shadow-xs transition-colors cursor-pointer shrink-0 disabled:cursor-not-allowed"
         >
           {running ? (
@@ -640,7 +654,7 @@ function MatchingSection() {
       )}
 
       {/* No run yet & no recommendations yet */}
-      {!loadingResults && !isRunning && !error && status === 'ACTIVE' && !run && recommendations.length === 0 && (
+      {!loadingResults && !isRunning && !error && (status === 'NOT_RUN' || (!run && recommendations.length === 0)) && (
         <div className="neu-card p-10 bg-white text-center space-y-3">
           <Compass className="w-10 h-10 text-gray-300 mx-auto" />
           <h3 className="font-display text-base text-germany-black">Run Matching to Discover Programmes</h3>
