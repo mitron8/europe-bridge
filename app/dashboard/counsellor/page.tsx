@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { useHelpStore } from '@/store/useHelpStore';
 import {
   Users,
   Calendar,
@@ -23,9 +22,49 @@ import {
 
 const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
+interface DashboardTicketSummary {
+  id: string;
+  ticketNumber: string;
+  title: string;
+  priority: string;
+  status: string;
+  student: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
 export default function CounsellorDashboard() {
-  const queries = useHelpStore((s) => s.queries);
-  const pendingInquiries = queries.filter((q) => q.raisedBy.role === 'student' && q.status !== 'resolved');
+  const [tickets, setTickets] = useState<DashboardTicketSummary[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchQueries() {
+      try {
+        const res = await fetch(`${NEXT_PUBLIC_API_URL}/help/counsellor/queries`, {
+          credentials: 'include'
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted) {
+            setTickets(data);
+          }
+        }
+      } catch (err) {
+        // Silently handle error for overview card
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+    fetchQueries();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const pendingInquiries = tickets.filter((q) => q.status !== 'resolved' && q.status !== 'closed');
 
   // Service Orders Queue Data
   const [serviceOrders, setServiceOrders] = useState<any[]>([]);
@@ -315,30 +354,36 @@ export default function CounsellorDashboard() {
           </div>
 
           <div className="space-y-2.5">
-            {pendingInquiries.slice(0, 3).map((q) => (
-              <Link
-                key={q.id}
-                href="/dashboard/counsellor/help"
-                className="block p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-germany-red/30 bg-gray-50/50 dark:bg-[#151B27]/50 hover:bg-[#FDFBF7] dark:hover:bg-[#1A2130] transition-all group"
-              >
-                <div className="flex items-center justify-between text-[10px] text-gray-400 font-medium mb-1">
-                  <span className="font-mono font-bold text-gray-600 dark:text-gray-300 bg-white dark:bg-[#0A0D14] px-1.5 py-0.2 rounded border border-gray-200 dark:border-gray-700">
-                    {q.id}
-                  </span>
-                  <span className={`font-extrabold uppercase px-1.5 py-0.2 rounded ${
-                    q.priority === 'urgent' ? 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
-                  }`}>
-                    {q.priority}
-                  </span>
-                </div>
-                <div className="text-xs font-bold text-germany-black dark:text-white group-hover:text-germany-red transition-colors line-clamp-1">
-                  {q.title}
-                </div>
-                <div className="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-1">
-                  From: <strong className="text-gray-700 dark:text-gray-300">{q.raisedBy.name}</strong>
-                </div>
-              </Link>
-            ))}
+            {isLoading ? (
+              <div className="p-4 text-center text-xs text-gray-400">Loading inquiries...</div>
+            ) : pendingInquiries.length === 0 ? (
+              <div className="p-4 text-center text-xs text-gray-400">No active student inquiries</div>
+            ) : (
+              pendingInquiries.slice(0, 3).map((q) => (
+                <Link
+                  key={q.id}
+                  href="/dashboard/counsellor/help"
+                  className="block p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-germany-red/30 bg-gray-50/50 dark:bg-[#151B27]/50 hover:bg-[#FDFBF7] dark:hover:bg-[#1A2130] transition-all group"
+                >
+                  <div className="flex items-center justify-between text-[10px] text-gray-400 font-medium mb-1">
+                    <span className="font-mono font-bold text-gray-600 dark:text-gray-300 bg-white dark:bg-[#0A0D14] px-1.5 py-0.2 rounded border border-gray-200 dark:border-gray-700">
+                      {q.ticketNumber}
+                    </span>
+                    <span className={`font-extrabold uppercase px-1.5 py-0.2 rounded ${
+                      q.priority === 'urgent' ? 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
+                    }`}>
+                      {q.priority}
+                    </span>
+                  </div>
+                  <div className="text-xs font-bold text-germany-black dark:text-white group-hover:text-germany-red transition-colors line-clamp-1">
+                    {q.title}
+                  </div>
+                  <div className="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-1">
+                    From: <strong className="text-gray-700 dark:text-gray-300">{q.student?.name || 'Student'}</strong>
+                  </div>
+                </Link>
+              ))
+            )}
           </div>
 
           <Link
