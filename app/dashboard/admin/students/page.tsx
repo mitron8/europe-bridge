@@ -241,30 +241,6 @@ export default function AdminStudentsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="neu-card p-6 md:p-8 bg-white relative overflow-hidden shadow-[12px_12px_30px_rgba(210,205,195,0.6)]">
-        <div className="absolute top-0 left-0 w-full h-2 flex">
-          <div className="flex-1 bg-germany-black"></div>
-          <div className="flex-1 bg-germany-red"></div>
-          <div className="flex-1 bg-germany-gold"></div>
-        </div>
-
-        <div className="flex items-center justify-between mt-1">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-germany-red/10 text-germany-red rounded-full font-extrabold text-[11px]">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Admin Management</span>
-            </div>
-            <h1 className="text-2xl md:text-3xl font-display text-germany-black">
-              Students
-            </h1>
-            <p className="text-xs md:text-sm font-bold text-gray-500">
-              View registered student accounts and manage counsellor assignments.
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Main Content */}
       <div className="neu-card p-6 bg-white space-y-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">

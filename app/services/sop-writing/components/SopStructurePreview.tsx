@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, CheckCircle2, AlertCircle, Layers, FileText, ArrowRight } from 'lucide-react';
+import { BookOpen, CheckCircle2, AlertCircle, Layers, FileText, ArrowRight, X } from 'lucide-react';
 
 interface Pillar {
   id: string;
@@ -48,39 +48,39 @@ export const SopStructurePreview = () => {
 
   return (
     <section id="structure" className="py-8 px-6 lg:px-12 max-w-7xl mx-auto scroll-mt-28">
-      <div className="neu-card p-6 sm:p-10 border-2 border-amber-200/90 bg-gradient-to-b from-white to-amber-50/30 space-y-8">
+      <div className="neu-card p-6 sm:p-10 border border-[#e5e0d3] bg-[#faf8f3] space-y-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-200 pb-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#e5e0d3] pb-6">
           <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-black uppercase tracking-wider">
-              <Layers className="w-3.5 h-3.5 text-amber-700" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ece7dd] text-[#16161a] border border-[#dcd7cb] text-xs font-bold uppercase tracking-wider">
+              <Layers className="w-3.5 h-3.5 text-[#16161a]" />
               <span>The German Academic SOP Standard</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-germany-black font-display">
+            <h2 className="text-2xl sm:text-3xl font-black text-[#16161a] font-display">
               Why German SOPs Are Different From US/UK Essays
             </h2>
-            <p className="text-sm text-gray-600 font-medium">
+            <p className="text-sm text-[#5e5b54] font-medium">
               German university admission boards look for hard academic evidence and syllabus relevance, not flowery storytelling. Explore how our writers engineer each section:
             </p>
           </div>
 
-          <div className="p-3.5 bg-white rounded-2xl border border-gray-200 shadow-2xs shrink-0 text-center">
-            <span className="text-[11px] font-extrabold text-gray-500 uppercase tracking-wider block">Standard Length</span>
-            <div className="text-lg font-black text-germany-red">800 – 1,200 Words</div>
-            <span className="text-[10px] font-bold text-gray-400">Exact Word &amp; Page Constraints Met</span>
+          <div className="p-3.5 bg-white rounded-2xl border border-[#e5e0d3] shadow-xs shrink-0 text-center">
+            <span className="text-[11px] font-bold text-[#5e5b54] uppercase tracking-wider block">Standard Length</span>
+            <div className="text-lg font-black text-[#b4232f]">800 – 1,200 Words</div>
+            <span className="text-[10px] font-medium text-[#787369]">Exact Word &amp; Page Constraints Met</span>
           </div>
         </div>
 
         {/* Tab Buttons */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 bg-gray-100/80 p-1.5 rounded-2xl border border-gray-200">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 bg-[#ece7dd]/60 p-1.5 rounded-2xl border border-[#e5e0d3]">
           {PILLARS.map((pillar) => (
             <button
               key={pillar.id}
               onClick={() => setActiveTab(pillar.id)}
               className={`py-3 px-3 rounded-xl text-xs font-bold transition-all text-center ${
                 activeTab === pillar.id
-                  ? 'bg-white text-germany-black shadow-sm font-black border border-gray-200/80'
-                  : 'text-gray-600 hover:text-germany-black'
+                  ? 'bg-white text-[#16161a] shadow-xs font-black border border-[#e5e0d3]'
+                  : 'text-[#5e5b54] hover:text-[#16161a]'
               }`}
             >
               {pillar.title}
@@ -96,30 +96,31 @@ export const SopStructurePreview = () => {
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
           {/* What We Write */}
-          <div className="p-6 rounded-2xl bg-white border-2 border-green-200 shadow-2xs space-y-3">
-            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-green-800">
-              <CheckCircle2 className="w-4 h-4 text-green-600" />
+          <div className="p-6 rounded-2xl bg-white border border-[#e5e0d3] shadow-xs space-y-3">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#16161a]">
+              <CheckCircle2 className="w-4 h-4 text-[#16161a]" />
               <span>The EuropeBridge German Standard</span>
             </div>
-            <h3 className="text-base font-extrabold text-germany-black">
+            <h3 className="text-base font-bold text-[#16161a]">
               {currentPillar.whatWeWrite}
             </h3>
-            <p className="text-xs text-gray-600 font-medium leading-relaxed">
-              <strong className="text-germany-black">German Committee Focus:</strong> {currentPillar.germanFocus}
+            <p className="text-xs text-[#5e5b54] font-medium leading-relaxed">
+              <strong className="text-[#16161a]">German Committee Focus:</strong> {currentPillar.germanFocus}
             </p>
           </div>
 
           {/* Common Mistake Avoided */}
-          <div className="p-6 rounded-2xl bg-red-50/70 border-2 border-red-200 shadow-2xs space-y-3">
-            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-germany-red">
-              <AlertCircle className="w-4 h-4 text-germany-red" />
+          <div className="p-6 rounded-2xl bg-white border border-[#e5e0d3] shadow-xs space-y-3">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#b4232f]">
+              <AlertCircle className="w-4 h-4 text-[#b4232f]" />
               <span>Common Mistake We Eliminate</span>
             </div>
-            <p className="text-xs sm:text-sm text-red-950 font-medium leading-relaxed">
+            <p className="text-xs sm:text-sm text-[#5e5b54] font-medium leading-relaxed">
               {currentPillar.commonMistake}
             </p>
-            <span className="text-[11px] font-bold text-red-700 block">
-              ✗ Why students get rejected by TU9 admission professors.
+            <span className="text-[11px] font-semibold text-[#b4232f] flex items-center gap-1.5">
+              <X className="w-3.5 h-3.5 shrink-0 text-[#b4232f]" />
+              Why students get rejected by TU9 admission professors.
             </span>
           </div>
         </motion.div>

@@ -30,7 +30,7 @@ export default function StudentDashboard() {
   return (
     <div className="space-y-6">
       {/* Sleek Compact Welcome Banner */}
-      <div className="bg-white rounded-2xl border border-gray-200/80 shadow-[2px_2px_8px_rgba(71,85,105,0.04)] px-5 py-4 sm:px-6 sm:py-4.5 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden">
+      <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-[2px_2px_8px_rgba(71,85,105,0.04)] dark:shadow-none px-5 py-4 sm:px-6 sm:py-4.5 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden">
         {/* Subtle German Tricolor Top Accent */}
         <div className="absolute top-0 left-0 w-full h-[3px] flex">
           <div className="flex-1 bg-germany-black"></div>
@@ -40,15 +40,15 @@ export default function StudentDashboard() {
 
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <h1 className="text-lg sm:text-xl font-display font-bold text-germany-black">
+            <h1 className="text-lg sm:text-xl font-display font-bold text-germany-black dark:text-white">
               Welcome back!
             </h1>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-germany-gold/15 border border-germany-gold/40 rounded-full font-bold text-germany-black text-[10px]">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-germany-gold/15 dark:bg-amber-950/40 border border-germany-gold/40 dark:border-amber-700/50 rounded-full font-bold text-germany-black dark:text-amber-300 text-[10px]">
               <span className="w-1.5 h-1.5 rounded-full bg-germany-gold animate-pulse"></span>
               Winter 2026 Intake
             </span>
           </div>
-          <p className="text-xs text-gray-500 font-medium max-w-xl">
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium max-w-xl">
             You are currently on <span className="text-germany-red font-bold">Step 2: AI Matching Engine</span>. Review recommended German universities and finalize your shortlist.
           </p>
         </div>
@@ -68,8 +68,8 @@ export default function StudentDashboard() {
       <div className="neu-card p-6 bg-white relative overflow-hidden">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="font-display text-lg text-germany-black">Your Germany Journey Roadmap</h2>
-            <p className="text-xs font-bold text-gray-400">Track your milestones from profile registration to German campus arrival</p>
+            <h2 className="font-display text-lg text-germany-black dark:text-white">Your Germany Journey Roadmap</h2>
+            <p className="text-xs font-bold text-gray-400 dark:text-gray-400">Track your milestones from profile registration to German campus arrival</p>
           </div>
           <span className="text-xs font-extrabold text-germany-red bg-germany-red/10 px-3 py-1 rounded-full">
             35% Completed
@@ -127,12 +127,12 @@ export default function StudentDashboard() {
         <div className="neu-card p-5 bg-white space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-400">German GPA</span>
-            <div className="p-2 bg-germany-gold/20 rounded-xl text-germany-black">
+            <div className="p-2 bg-germany-gold/20 dark:bg-amber-950/40 rounded-xl text-germany-black dark:text-amber-300">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-display text-germany-black">1.6 (Excellent)</div>
-          <p className="text-[11px] font-bold text-emerald-600">Top 10% competitive tier</p>
+          <div className="text-2xl font-display text-germany-black dark:text-white">1.6 (Excellent)</div>
+          <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Top 10% competitive tier</p>
         </div>
 
         <div className="neu-card p-5 bg-white space-y-2">
@@ -142,30 +142,30 @@ export default function StudentDashboard() {
               <GraduationCap className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-display text-germany-black">14 Programs</div>
-          <p className="text-[11px] font-bold text-gray-500">Across 8 Public Universities</p>
+          <div className="text-2xl font-display text-germany-black dark:text-white">14 Programs</div>
+          <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400">Across 8 Public Universities</p>
         </div>
 
         <div className="neu-card p-5 bg-white space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-400">APS Verification</span>
-            <div className="p-2 bg-amber-100 rounded-xl text-amber-700">
+            <div className="p-2 bg-amber-100 dark:bg-amber-950/40 rounded-xl text-amber-700 dark:text-amber-300">
               <Clock className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-display text-germany-black">In Progress</div>
-          <p className="text-[11px] font-bold text-amber-700">3 of 5 Documents Uploaded</p>
+          <div className="text-2xl font-display text-germany-black dark:text-white">In Progress</div>
+          <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400">3 of 5 Documents Uploaded</p>
         </div>
 
         <div className="neu-card p-5 bg-white space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-400">Next Deadline</span>
-            <div className="p-2 bg-blue-100 rounded-xl text-blue-700">
+            <div className="p-2 bg-blue-100 dark:bg-blue-950/40 rounded-xl text-blue-700 dark:text-blue-300">
               <Calendar className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-display text-germany-black">July 15</div>
-          <p className="text-[11px] font-bold text-gray-500">TUM Informatics Window</p>
+          <div className="text-2xl font-display text-germany-black dark:text-white">July 15</div>
+          <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400">TUM Informatics Window</p>
         </div>
       </div>
 
@@ -177,7 +177,7 @@ export default function StudentDashboard() {
           <div className="neu-card p-6 bg-white space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-display text-lg text-germany-black">AI-Matched Universities</h3>
+                <h3 className="font-display text-lg text-germany-black dark:text-white">AI-Matched Universities</h3>
                 <p className="text-xs font-bold text-gray-400">Tailored to your background and language proficiencies</p>
               </div>
               <Link
@@ -218,32 +218,32 @@ export default function StudentDashboard() {
               ].map((item) => (
                 <div
                   key={item.uni}
-                  className="p-4 rounded-2xl bg-[#FDFBF7] border border-[#EBE7E0] hover:border-germany-gold transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
+                  className="p-4 rounded-2xl bg-[#FDFBF7] dark:bg-[#0E121A] border border-[#EBE7E0] dark:border-gray-800/80 hover:border-germany-gold transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-extrabold text-xs text-germany-black group-hover:text-germany-red transition-colors">
+                      <span className="font-extrabold text-xs text-germany-black dark:text-white group-hover:text-germany-red transition-colors">
                         {item.uni}
                       </span>
                       <span className="text-[10px] font-extrabold bg-[#EBE7E0] dark:bg-white/5 text-gray-600 dark:text-gray-300 border border-transparent dark:border-white/10 px-2 py-0.5 rounded-md">
                         {item.badge}
                       </span>
                     </div>
-                    <p className="text-xs font-bold text-gray-500">{item.program}</p>
+                    <p className="text-xs font-bold text-gray-500 dark:text-gray-400">{item.program}</p>
                     <div className="flex items-center gap-3 text-[11px] font-bold text-gray-400">
-                      <span>Tuition: <strong className="text-germany-black">{item.tuition}</strong></span>
+                      <span>Tuition: <strong className="text-germany-black dark:text-white">{item.tuition}</strong></span>
                       <span>•</span>
-                      <span>Deadline: <strong className="text-germany-black">{item.deadline}</strong></span>
+                      <span>Deadline: <strong className="text-germany-black dark:text-white">{item.deadline}</strong></span>
                     </div>
                   </div>
 
                   <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0">
-                    <span className="text-xs font-black text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full">
+                    <span className="text-xs font-black text-emerald-700 bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 px-2.5 py-1 rounded-full">
                       {item.match}
                     </span>
                     <Link
                       href="/dashboard/student/shortlist"
-                      className="neu-btn px-3 py-1.5 text-xs font-extrabold text-germany-black hover:text-germany-red"
+                      className="neu-btn px-3 py-1.5 text-xs font-extrabold text-germany-black dark:text-white hover:text-germany-red"
                     >
                       Shortlist
                     </Link>
@@ -256,7 +256,7 @@ export default function StudentDashboard() {
           {/* Quick Document Status */}
           <div className="neu-card p-6 bg-white space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-display text-lg text-germany-black">Document Hub & APS Checklist</h3>
+              <h3 className="font-display text-lg text-germany-black dark:text-white">Document Hub & APS Checklist</h3>
               <Link href="/dashboard/student/documents" className="text-xs font-extrabold text-germany-red hover:underline">
                 Manage Documents
               </Link>
@@ -299,7 +299,7 @@ export default function StudentDashboard() {
                 <Lightbulb className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-extrabold text-sm text-germany-black">German Admissions Tip</h4>
+                <h4 className="font-extrabold text-sm text-germany-black dark:text-white">German Admissions Tip</h4>
                 <p className="text-[10px] font-bold text-germany-red">Alumni Recommendation</p>
               </div>
             </div>
@@ -310,15 +310,15 @@ export default function StudentDashboard() {
 
           {/* Assigned Counsellor Card */}
           <div className="neu-card p-6 bg-white space-y-4">
-            <h4 className="font-display text-base text-germany-black">Assigned Germany Expert</h4>
+            <h4 className="font-display text-base text-germany-black dark:text-white">Assigned Germany Expert</h4>
             
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-germany-red/10 border-2 border-germany-red/40 flex items-center justify-center font-extrabold text-germany-red text-sm">
                 MK
               </div>
               <div>
-                <div className="font-extrabold text-sm text-germany-black">Max Keller</div>
-                <div className="text-xs font-bold text-gray-500">TUM Alumnus • Senior Advisor</div>
+                <div className="font-extrabold text-sm text-germany-black dark:text-white">Max Keller</div>
+                <div className="text-xs font-bold text-gray-500 dark:text-gray-400">TUM Alumnus • Senior Advisor</div>
               </div>
             </div>
 
@@ -329,7 +329,7 @@ export default function StudentDashboard() {
 
             <button
               type="button"
-              className="w-full neu-btn py-2.5 text-xs font-extrabold text-germany-black hover:text-germany-red cursor-pointer"
+              className="w-full neu-btn py-2.5 text-xs font-extrabold text-germany-black dark:text-white hover:text-germany-red cursor-pointer"
             >
               Book 1-on-1 Consultation
             </button>
@@ -337,7 +337,7 @@ export default function StudentDashboard() {
 
           {/* Quick Free Tools Links */}
           <div className="neu-card p-5 bg-white space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-gray-400">
+            <h4 className="text-xs font-black uppercase tracking-wider text-gray-400 dark:text-gray-500">
               Interactive Tools
             </h4>
             <div className="space-y-2">

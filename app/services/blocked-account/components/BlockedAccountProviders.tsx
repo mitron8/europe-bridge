@@ -97,7 +97,7 @@ export const BlockedAccountProviders = () => {
                     </div>
                     {isSelected && (
                       <span className="w-6 h-6 rounded-full bg-[var(--lp-red)] text-white flex items-center justify-center font-bold text-xs shrink-0">
-                        ✓
+                        <Check className="w-3.5 h-3.5" />
                       </span>
                     )}
                   </div>

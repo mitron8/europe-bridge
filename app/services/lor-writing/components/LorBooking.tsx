@@ -1,7 +1,10 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { CheckCircle2, ShieldCheck, Clock, Zap, ArrowRight, Users, GraduationCap, Briefcase } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { startServiceCheckout } from '@/lib/servicesPayment';
+import { useAppStore } from '@/store/useAppStore';
 
 export const LorBooking = () => {
   const [plan, setPlan] = useState<'standard' | 'express'>('standard');
@@ -25,15 +28,50 @@ export const LorBooking = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Auto-fill student data if logged in
+  const user = useAppStore((state) => state.user);
+  useEffect(() => {
+    if (user) {
+      if (user.firstName && !firstName) setFirstName(user.firstName);
+      if (user.lastName && !lastName) setLastName(user.lastName);
+      if (user.email && !email) setEmail(user.email);
+    }
+  }, [user]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!firstName || !email || !phone || !consent) return;
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-    }, 850);
+    const planKey = plan === 'express' ? 'LOR_EXPRESS' : 'LOR_STANDARD';
+
+    await startServiceCheckout({
+      planKey,
+      studentInputs: {
+        firstName,
+        lastName,
+        email,
+        phone: `${countryCode} ${phone}`,
+        lorMix,
+        targetUni,
+        targetProgram,
+        recommender1: { name: rec1Name, role: rec1Role },
+        recommender2: { name: rec2Name, role: rec2Role },
+        notes,
+      },
+      onSuccess: () => {
+        setIsSubmitting(false);
+        setIsSubmitted(true);
+      },
+      onError: (err) => {
+        setIsSubmitting(false);
+        alert(err.message || 'Payment could not be completed');
+      },
+      onAuthRequired: (redirectUrl) => {
+        setIsSubmitting(false);
+        window.location.href = redirectUrl;
+      },
+    });
   };
 
   return (
@@ -57,43 +95,52 @@ export const LorBooking = () => {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="p-8 bg-green-50 border-2 border-green-300 rounded-3xl text-center space-y-4"
+            className="p-8 bg-[#faf8f3] border border-[#e5e0d3] rounded-3xl text-center space-y-4 shadow-[0_4px_20px_rgba(22,22,26,0.04)]"
           >
-            <div className="w-16 h-16 rounded-full bg-green-100 text-green-700 flex items-center justify-center mx-auto font-bold">
-              <CheckCircle2 className="w-10 h-10" />
+            <div className="w-14 h-14 rounded-full bg-[#16161a] text-[#c9a35b] flex items-center justify-center mx-auto shadow-sm">
+              <CheckCircle2 className="w-7 h-7" />
             </div>
-            <h3 className="text-2xl font-black text-green-900 font-display">2-LOR Order Confirmed!</h3>
-            <p className="text-sm text-green-800 font-medium max-w-lg mx-auto leading-relaxed">
+            <h3 className="text-2xl font-black text-[#16161a] font-serif tracking-tight">2-LOR Order Confirmed!</h3>
+            <p className="text-sm text-[#5e5b54] font-medium max-w-lg mx-auto leading-relaxed">
               Thank you, <strong>{firstName}</strong>. Your order for <strong>2 Letters of Recommendation ({plan === 'express' ? 'Express 24h - ₹5,999' : 'Standard 3-Day - ₹4,999'})</strong> has been logged.
             </p>
             
-            <div className="p-4 bg-white/80 rounded-2xl border border-green-200 text-xs text-green-900 max-w-md mx-auto space-y-2 text-left">
+            <div className="p-5 bg-white rounded-2xl border border-[#e5e0d3] text-xs text-[#16161a] max-w-md mx-auto space-y-2.5 text-left shadow-[0_2px_8px_rgba(22,22,26,0.02)]">
               <div className="flex justify-between">
-                <span className="font-semibold text-gray-600">Confirmation Sent To:</span>
-                <span className="font-black">{email}</span>
+                <span className="font-medium text-[#6b6760]">Confirmation Sent To:</span>
+                <span className="font-bold text-[#16161a]">{email}</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-semibold text-gray-600">Recommender Configuration:</span>
-                <span className="font-black text-germany-black">
+                <span className="font-medium text-[#6b6760]">Recommender Configuration:</span>
+                <span className="font-bold text-[#16161a]">
                   {lorMix === '2-academic' ? '2 Academic LORs' : lorMix === '1-academic-1-work' ? '1 Academic + 1 Professional' : '2 Professional LORs'}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="font-semibold text-gray-600">Turnaround Speed:</span>
-                <span className="font-black text-germany-red">{plan === 'express' ? 'Within 24 Hours' : 'Within 3 Working Days'}</span>
+                <span className="font-medium text-[#6b6760]">Turnaround Speed:</span>
+                <span className="font-bold text-[#b4232f]">{plan === 'express' ? 'Within 24 Hours' : 'Within 3 Working Days'}</span>
               </div>
             </div>
 
-            <p className="text-xs text-gray-500 font-medium pt-2">
+            <p className="text-xs text-[#787369] font-medium pt-2">
               We’ve sent the comprehensive LOR intake questionnaire to your email to collect specific projects, grades, and faculty details.
             </p>
 
-            <button 
-              onClick={() => setIsSubmitted(false)}
-              className="neu-btn px-6 py-2.5 text-xs font-extrabold text-germany-black bg-white border border-gray-200 mt-2"
-            >
-              Order Another Bundle
-            </button>
+            <div className="flex flex-wrap justify-center gap-3 pt-2">
+              <Link 
+                href="/dashboard/student/services"
+                className="px-6 py-2.5 text-xs font-bold text-white bg-[#16161a] hover:bg-black rounded-xl transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>Track in Dashboard</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+              <button 
+                onClick={() => setIsSubmitted(false)}
+                className="px-6 py-2.5 text-xs font-bold text-[#16161a] bg-white border border-[#dcd7cb] hover:bg-[#f4f1ea] rounded-xl transition-colors cursor-pointer"
+              >
+                Order Another Bundle
+              </button>
+            </div>
           </motion.div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto">
@@ -375,7 +422,7 @@ export const LorBooking = () => {
 
             <div className="flex items-center justify-center gap-4 text-xs font-bold text-gray-500 pt-1">
               <span className="flex items-center gap-1">
-                <ShieldCheck className="w-4 h-4 text-green-600" />
+                <ShieldCheck className="w-4 h-4 text-[#16161a]" />
                 2 LORs Included
               </span>
               <span>•</span>

@@ -5,8 +5,11 @@ export interface UserProfile {
   id?: string;
   firstName?: string;
   lastName?: string;
+  first_name?: string;
+  last_name?: string;
   name?: string;
   email: string;
+  phone?: string;
   role?: string;
   avatarUrl?: string;
 }

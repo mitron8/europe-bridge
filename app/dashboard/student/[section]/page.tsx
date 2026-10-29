@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProfileCompletionGate from '@/components/ProfileCompletionGate';
 import { StudentDocumentHub } from '@/components/StudentDocumentHub';
+import { StudentServicesHub } from '@/components/StudentServicesHub';
 import {
   Compass,
   Bookmark,
@@ -20,11 +21,12 @@ import {
   RefreshCw,
   Award,
   Sparkles,
+  Layers,
 } from 'lucide-react';
 
 const VALID_SECTIONS = [
   'matching', 'shortlist', 'documents',
-  'aps', 'applications', 'visa', 'account', 'help'
+  'aps', 'applications', 'visa', 'account', 'help', 'services'
 ];
 
 const RESTRICTED_SECTIONS = [
@@ -73,6 +75,11 @@ const SECTION_CONFIGS: Record<string, SectionConfig> = {
     title: 'Account Settings',
     subtitle: 'Manage your credentials, notification preferences, and assigned counsellor.',
     icon: Settings,
+  },
+  services: {
+    title: 'My Purchased Services',
+    subtitle: 'Track your SOP, LOR, CV, Shortlisting, and Visa preparation orders, deliverables, and counselor feedback.',
+    icon: Layers,
   },
 };
 
@@ -1035,51 +1042,10 @@ export default function StudentSectionPage({ params }: { params: Promise<{ secti
 
   return (
     <div className="space-y-6">
-      {/* Section Header */}
-      <div className="bg-white rounded-2xl border border-gray-200/80 shadow-[2px_2px_8px_rgba(71,85,105,0.04)] px-4 sm:px-6 py-3.5 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-[3px] flex">
-          <div className="flex-1 bg-germany-black"></div>
-          <div className="flex-1 bg-germany-red"></div>
-          <div className="flex-1 bg-germany-gold"></div>
-        </div>
-
-        <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-germany-red/10 text-germany-red flex items-center justify-center shrink-0 border border-germany-red/20 shadow-xs">
-            <Icon className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-lg font-display font-bold text-germany-black tracking-tight leading-tight">
-                {config.title}
-              </h1>
-              {isRestricted && completionPercentage !== null && completionPercentage >= 100 && (
-                <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                  Unlocked
-                </span>
-              )}
-            </div>
-            <p className="text-[11px] sm:text-xs text-gray-500 font-medium leading-normal mt-0.5">
-              {config.subtitle}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 pt-1 sm:pt-0">
-          <Link
-            href="/dashboard/student"
-            className="text-[11px] font-bold text-gray-600 hover:text-germany-black px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors inline-flex items-center gap-1.5 border border-gray-200/70"
-          >
-            <span>Overview</span>
-            <ArrowRight className="w-3 h-3 text-gray-400" />
-          </Link>
-        </div>
-      </div>
-
       {/* Loading Skeleton */}
       {isRestricted && isLoading && (
-        <div className="neu-card p-10 bg-white text-center space-y-3 animate-pulse">
-          <div className="w-10 h-10 bg-[#EBE7E0] rounded-full mx-auto" />
+        <div className="neu-card p-10 bg-white dark:bg-[#111622] text-center space-y-3 animate-pulse">
+          <div className="w-10 h-10 bg-[#EBE7E0] dark:bg-gray-800 rounded-full mx-auto" />
           <p className="text-xs font-bold text-gray-400">Loading your profile status...</p>
         </div>
       )}
@@ -1099,11 +1065,12 @@ export default function StudentSectionPage({ params }: { params: Promise<{ secti
           {section === 'matching' && <MatchingSection />}
           {section === 'shortlist' && <ShortlistSection />}
           {section === 'documents' && <StudentDocumentHub />}
-          {!['matching', 'shortlist', 'documents', 'aps'].includes(section) && (
-            <div className="neu-card p-8 bg-white text-center space-y-4">
+          {section === 'services' && <StudentServicesHub />}
+          {!['matching', 'shortlist', 'documents', 'aps', 'services'].includes(section) && (
+            <div className="neu-card p-8 bg-white dark:bg-[#111622] text-center space-y-4">
               <div className="max-w-md mx-auto space-y-3">
-                <h3 className="font-display text-xl text-germany-black">{config.title} Module</h3>
-                <p className="text-xs font-bold text-gray-500">
+                <h3 className="font-display text-xl text-germany-black dark:text-white">{config.title} Module</h3>
+                <p className="text-xs font-bold text-gray-500 dark:text-gray-400">
                   This module is actively synced with your student records. You can update your details or schedule a consultation with your assigned Germany advisor.
                 </p>
                 <div className="pt-2">

@@ -60,7 +60,7 @@ export const HealthInsuranceFeatures = () => {
                 className="p-6 rounded-3xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all space-y-4 flex flex-col justify-between"
               >
                 <div className="space-y-3">
-                  <div className="w-12 h-12 rounded-2xl bg-red-50 text-germany-red flex items-center justify-center font-bold border border-red-100 shadow-inner">
+                  <div className="w-12 h-12 rounded-2xl bg-[#faf8f3] text-[#16161a] flex items-center justify-center font-bold border border-[#e5e0d3]">
                     <Icon className="w-6 h-6" />
                   </div>
                   <h3 className="font-extrabold text-germany-black text-lg">{feat.title}</h3>
@@ -69,8 +69,8 @@ export const HealthInsuranceFeatures = () => {
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-gray-100 flex items-center gap-1.5 text-[11px] font-bold text-emerald-700">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <div className="pt-3 border-t border-[#e5e0d3] flex items-center gap-1.5 text-[11px] font-bold text-[#5e5b54]">
+                  <CheckCircle2 className="w-4 h-4 text-[#16161a]" />
                   <span>Embassy &amp; University Approved</span>
                 </div>
               </div>

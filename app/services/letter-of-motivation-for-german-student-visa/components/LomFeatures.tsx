@@ -44,12 +44,12 @@ const FEATURES = [
 
 export const LomFeatures = () => {
   return (
-    <section id="features" className="py-20 px-6 lg:px-12 bg-amber-50/20 relative">
+    <section id="features" className="py-20 px-6 lg:px-12 bg-[#faf8f3] relative">
       <div className="max-w-7xl mx-auto space-y-14">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 text-germany-red text-xs font-bold uppercase tracking-wider">
-            <CheckCircle2 className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ece7dd] text-[#16161a] border border-[#dcd7cb] text-xs font-bold uppercase tracking-wider">
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#16161a]" />
             <span>Why EuropeBridge Visa LOMs Succeed</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-germany-black font-display tracking-tight">
@@ -72,10 +72,10 @@ export const LomFeatures = () => {
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="w-12 h-12 rounded-2xl bg-red-50 text-germany-red flex items-center justify-center group-hover:bg-germany-red group-hover:text-white transition-colors duration-200">
+                    <div className="w-12 h-12 rounded-2xl bg-[#faf8f3] text-[#16161a] border border-[#e5e0d3] flex items-center justify-center group-hover:bg-[#16161a] group-hover:text-white transition-colors duration-200">
                       <Icon className="w-6 h-6" />
                     </div>
-                    <span className="text-[11px] font-extrabold px-3 py-1 bg-gray-100 text-gray-600 rounded-full uppercase tracking-wider">
+                    <span className="text-[11px] font-extrabold px-3 py-1 bg-[#ece7dd] text-[#16161a] rounded-full uppercase tracking-wider">
                       {item.badge}
                     </span>
                   </div>
@@ -89,8 +89,8 @@ export const LomFeatures = () => {
                   </p>
                 </div>
 
-                <div className="pt-6 mt-6 border-t border-gray-100 flex items-center gap-2 text-xs font-bold text-gray-500">
-                  <CheckCircle2 className="w-4 h-4 text-green-600" />
+                <div className="pt-6 mt-6 border-t border-[#e5e0d3] flex items-center gap-2 text-xs font-bold text-gray-500">
+                  <CheckCircle2 className="w-4 h-4 text-[#16161a]" />
                   <span>Consulate compliance guarantee</span>
                 </div>
               </motion.div>

@@ -1,7 +1,9 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Send, CheckCircle2, PhoneCall, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { submitPartnerLead } from '@/lib/servicesPayment';
+import { useAppStore } from '@/store/useAppStore';
 
 export const RemittanceBooking = () => {
   const [firstName, setFirstName] = useState('');
@@ -17,15 +19,42 @@ export const RemittanceBooking = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { user } = useAppStore();
+
+  useEffect(() => {
+    if (user) {
+      if (user.first_name && !firstName) setFirstName(user.first_name);
+      if (user.last_name && !lastName) setLastName(user.last_name);
+      if (user.email && !email) setEmail(user.email);
+      if (user.phone && !phone) setPhone(user.phone);
+    }
+  }, [user]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!firstName || !email || !phone || !consent) return;
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await submitPartnerLead({
+        serviceType: 'OUTWARD_REMITTANCE',
+        fullName: `${firstName} ${lastName}`.trim(),
+        firstName,
+        lastName,
+        email,
+        phone: `${countryCode} ${phone}`,
+        transferPurpose,
+        fundingSource,
+        approxAmount,
+        urgency,
+      });
       setIsSubmitted(true);
-    }, 800);
+    } catch (err) {
+      console.error('Outward remittance inquiry error:', err);
+      setIsSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

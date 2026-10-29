@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Menu, X, User, LayoutDashboard, LogOut } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
@@ -252,17 +253,15 @@ const Navbar = () => {
     }`}>
       {/* Left: Logo */}
       <div className="flex-1">
-        <Link href="/" className="no-underline inline-flex items-center gap-2.5 group" aria-label="EuropeBridge Home">
-          <span aria-hidden className="flex h-[18px] w-[5px] flex-col overflow-hidden rounded-[1px]">
-            <span className="flex-1 bg-[#0d0d0f]" />
-            <span className="flex-1 bg-[#e63946]" />
-            <span className="flex-1 bg-[#c9a35b]" />
-          </span>
-          <span
-            className={`text-[24px] leading-none tracking-[-0.01em] text-[#16161a] ${playfair.className}`}
-          >
-            Europe<span className="italic font-normal">Bridge</span>
-          </span>
+        <Link href="/" className="no-underline inline-flex items-center group" aria-label="EuropeBridge Home">
+          <Image
+            src="/logo.png"
+            alt="EuropeBridge - People Beyond Borders"
+            width={245}
+            height={40}
+            priority
+            className="h-[34px] sm:h-[38px] md:h-[42px] w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]"
+          />
         </Link>
       </div>
 

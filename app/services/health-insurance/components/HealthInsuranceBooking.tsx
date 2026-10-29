@@ -1,7 +1,9 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Send, CheckCircle2, ShieldCheck, Clock, PhoneCall, HeartHandshake, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { submitPartnerLead } from '@/lib/servicesPayment';
+import { useAppStore } from '@/store/useAppStore';
 
 export const HealthInsuranceBooking = () => {
   const [firstName, setFirstName] = useState('');
@@ -17,15 +19,42 @@ export const HealthInsuranceBooking = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { user } = useAppStore();
+
+  useEffect(() => {
+    if (user) {
+      if (user.first_name && !firstName) setFirstName(user.first_name);
+      if (user.last_name && !lastName) setLastName(user.last_name);
+      if (user.email && !email) setEmail(user.email);
+      if (user.phone && !phone) setPhone(user.phone);
+    }
+  }, [user]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!firstName || !email || !phone || !consent) return;
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await submitPartnerLead({
+        serviceType: 'HEALTH_INSURANCE',
+        fullName: `${firstName} ${lastName}`.trim(),
+        firstName,
+        lastName,
+        email,
+        phone: `${countryCode} ${phone}`,
+        ageGroup,
+        studentStatus,
+        targetUniversity,
+        preferredProvider,
+      });
       setIsSubmitted(true);
-    }, 800);
+    } catch (err) {
+      console.error('Health insurance inquiry error:', err);
+      setIsSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -49,20 +78,20 @@ export const HealthInsuranceBooking = () => {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="p-8 bg-green-50 border-2 border-green-300 rounded-3xl text-center space-y-5"
+            className="p-8 bg-[#faf8f3] border border-[#e5e0d3] rounded-3xl text-center space-y-5 shadow-[0_4px_20px_rgba(22,22,26,0.04)]"
           >
-            <div className="w-16 h-16 rounded-full bg-green-100 text-green-700 flex items-center justify-center mx-auto font-bold shadow-sm">
-              <CheckCircle2 className="w-10 h-10" />
+            <div className="w-14 h-14 rounded-full bg-[#16161a] text-[#c9a35b] flex items-center justify-center mx-auto font-bold shadow-sm">
+              <CheckCircle2 className="w-7 h-7" />
             </div>
-            <h3 className="text-2xl font-black text-green-900 font-display">Application Received!</h3>
-            <p className="text-sm text-green-800 font-medium max-w-lg mx-auto leading-relaxed">
+            <h3 className="text-2xl font-black text-[#16161a] font-serif tracking-tight">Application Received!</h3>
+            <p className="text-sm text-[#5e5b54] font-medium max-w-lg mx-auto leading-relaxed">
               Thank you, <strong>{firstName}</strong>. A EuropeBridge health insurance advisor has been assigned to your case and will contact you at <strong>{countryCode} {phone}</strong> within 60 minutes.
             </p>
 
-            <div className="p-4 rounded-2xl bg-white/80 border border-green-200 text-xs text-green-900 font-semibold max-w-md mx-auto space-y-1">
-              <div>Selected Provider: <strong>{preferredProvider}</strong></div>
-              <div>Age Group: <strong>{ageGroup}</strong></div>
-              <div>Target University: <strong>{targetUniversity || 'General Intake'}</strong></div>
+            <div className="p-5 rounded-2xl bg-white border border-[#e5e0d3] text-xs text-[#16161a] font-medium max-w-md mx-auto space-y-1.5 text-left shadow-[0_2px_8px_rgba(22,22,26,0.02)]">
+              <div><span className="text-[#6b6760]">Selected Provider:</span> <strong>{preferredProvider}</strong></div>
+              <div><span className="text-[#6b6760]">Age Group:</span> <strong>{ageGroup}</strong></div>
+              <div><span className="text-[#6b6760]">Target University:</span> <strong>{targetUniversity || 'General Intake'}</strong></div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
@@ -70,15 +99,15 @@ export const HealthInsuranceBooking = () => {
                 href={`https://wa.me/4915212345678?text=Hi%20EuropeBridge%20team,%20I%20just%20submitted%20my%20health%20insurance%20request%20for%20${encodeURIComponent(firstName)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-600 text-white font-extrabold text-xs flex items-center justify-center gap-2 hover:bg-emerald-700 shadow-sm"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#16161a] text-white font-bold text-xs flex items-center justify-center gap-2 hover:bg-[#2e2e34] shadow-sm transition-colors"
               >
-                <MessageSquare className="w-4 h-4" />
+                <MessageSquare className="w-4 h-4 text-[#c9a35b]" />
                 <span>Urgent WhatsApp Callback?</span>
               </a>
 
               <button 
                 onClick={() => setIsSubmitted(false)}
-                className="w-full sm:w-auto neu-btn px-6 py-3 text-xs font-extrabold text-germany-black bg-white border border-gray-200"
+                className="w-full sm:w-auto px-6 py-3 text-xs font-bold text-[#16161a] bg-white border border-[#dcd7cb] hover:bg-[#f4f1ea] rounded-xl transition-colors cursor-pointer"
               >
                 Submit Another Request
               </button>
@@ -134,11 +163,11 @@ export const HealthInsuranceBooking = () => {
                     onChange={(e) => setCountryCode(e.target.value)}
                     className="px-3 py-3 rounded-xl border border-gray-300 font-bold text-xs bg-gray-50 focus:border-germany-red outline-none"
                   >
-                    <option value="+91">🇮🇳 +91</option>
-                    <option value="+49">🇩🇪 +49</option>
-                    <option value="+1">🇺🇸 +1</option>
-                    <option value="+44">🇬🇧 +44</option>
-                    <option value="+971">🇦🇪 +971</option>
+                    <option value="+91">IN (+91)</option>
+                    <option value="+49">DE (+49)</option>
+                    <option value="+1">US (+1)</option>
+                    <option value="+44">UK (+44)</option>
+                    <option value="+971">AE (+971)</option>
                   </select>
                   <input 
                     type="tel" 

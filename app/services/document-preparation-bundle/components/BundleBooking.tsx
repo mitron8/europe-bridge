@@ -1,7 +1,10 @@
 "use client";
-import React, { useState } from 'react';
-import { CheckCircle2, ShieldCheck, Clock, Zap, ArrowRight, FileText, User, Mail, Phone, Calendar, Layers, GraduationCap } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { CheckCircle2, ShieldCheck, Clock, Zap, ArrowRight, FileText, User, Mail, Phone, Calendar, Layers, GraduationCap, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { startServiceCheckout } from '@/lib/servicesPayment';
+import { useAppStore } from '@/store/useAppStore';
 
 export const BundleBooking = () => {
   const [plan, setPlan] = useState<'standard' | 'express'>('standard');
@@ -21,15 +24,51 @@ export const BundleBooking = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Auto-fill student data if logged in
+  const user = useAppStore((state) => state.user);
+  useEffect(() => {
+    if (user) {
+      if (user.firstName && !firstName) setFirstName(user.firstName);
+      if (user.lastName && !lastName) setLastName(user.lastName);
+      if (user.email && !email) setEmail(user.email);
+    }
+  }, [user]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!firstName || !email || !phone || !targetUni || !consent) return;
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-    }, 850);
+    const planKey = plan === 'express' ? 'BUNDLE_EXPRESS' : 'BUNDLE_STANDARD';
+
+    await startServiceCheckout({
+      planKey,
+      studentInputs: {
+        firstName,
+        lastName,
+        email,
+        phone: `${countryCode} ${phone}`,
+        programType,
+        lorMix,
+        targetUni,
+        targetProgram,
+        intakeSession,
+        deadlineDate,
+        notes,
+      },
+      onSuccess: () => {
+        setIsSubmitting(false);
+        setIsSubmitted(true);
+      },
+      onError: (err) => {
+        setIsSubmitting(false);
+        alert(err.message || 'Payment could not be completed');
+      },
+      onAuthRequired: (redirectUrl) => {
+        setIsSubmitting(false);
+        window.location.href = redirectUrl;
+      },
+    });
   };
 
   return (
@@ -53,45 +92,53 @@ export const BundleBooking = () => {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="p-8 bg-green-50 border-2 border-green-300 rounded-3xl text-center space-y-4"
+            className="p-8 bg-[#faf8f3] border border-[#e5e0d3] rounded-3xl text-center space-y-4 shadow-[0_4px_20px_rgba(22,22,26,0.04)]"
           >
-            <div className="w-16 h-16 rounded-full bg-green-100 text-green-700 flex items-center justify-center mx-auto font-bold">
-              <CheckCircle2 className="w-10 h-10" />
+            <div className="w-14 h-14 rounded-full bg-[#16161a] text-[#c9a35b] flex items-center justify-center mx-auto shadow-sm">
+              <CheckCircle2 className="w-7 h-7" />
             </div>
-            <h3 className="text-2xl font-black text-green-900 font-display">Bundle Order Received!</h3>
-            <p className="text-sm text-green-800 font-medium max-w-lg mx-auto leading-relaxed">
+            <h3 className="text-2xl font-black text-[#16161a] font-serif tracking-tight">Bundle Order Received!</h3>
+            <p className="text-sm text-[#5e5b54] font-medium max-w-lg mx-auto leading-relaxed">
               Thank you, <strong>{firstName}</strong>. Your order for the <strong>{plan === 'express' ? 'Express Bundle Plan (48h - ₹18,999)' : 'Standard Bundle Plan (3-5 Days - ₹13,999)'}</strong> has been logged.
             </p>
             
-            <div className="p-4 bg-white/80 rounded-2xl border border-green-200 text-xs text-green-900 max-w-md mx-auto space-y-2 text-left">
+            <div className="p-5 bg-white rounded-2xl border border-[#e5e0d3] text-xs text-[#16161a] max-w-md mx-auto space-y-2.5 text-left shadow-[0_2px_8px_rgba(22,22,26,0.02)]">
               <div className="flex justify-between">
-                <span className="font-semibold text-gray-600">Registered Email:</span>
-                <span className="font-black">{email}</span>
+                <span className="font-medium text-[#6b6760]">Registered Email:</span>
+                <span className="font-bold text-[#16161a]">{email}</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-semibold text-gray-600">Target University:</span>
-                <span className="font-black text-germany-black">{targetUni}</span>
+                <span className="font-medium text-[#6b6760]">Target University:</span>
+                <span className="font-bold text-[#16161a]">{targetUni}</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-semibold text-gray-600">LOR Configuration:</span>
-                <span className="font-black text-germany-black">{lorMix}</span>
+                <span className="font-medium text-[#6b6760]">LOR Configuration:</span>
+                <span className="font-bold text-[#16161a]">{lorMix}</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-semibold text-gray-600">Target Delivery:</span>
-                <span className="font-black text-germany-red">{plan === 'express' ? 'Within 48 Hours (Guaranteed)' : 'Within 3 to 5 Working Days'}</span>
+                <span className="font-medium text-[#6b6760]">Target Delivery:</span>
+                <span className="font-bold text-[#b4232f]">{plan === 'express' ? 'Within 48 Hours (Guaranteed)' : 'Within 3 to 5 Working Days'}</span>
               </div>
             </div>
 
-            <p className="text-xs text-gray-500 font-medium pt-2">
+            <p className="text-xs text-[#787369] font-medium pt-2">
               Our Senior Admissions Editor has been assigned. Please check your inbox for three separate emails containing the dedicated intake forms (SOP, LORs, and CV).
             </p>
 
-            <button 
-              onClick={() => setIsSubmitted(false)}
-              className="neu-btn px-6 py-2.5 text-xs font-extrabold text-germany-black bg-white border border-gray-200 mt-2 cursor-pointer"
-            >
-              Order Another Bundle
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-4">
+              <Link
+                href="/dashboard/student/services"
+                className="w-full sm:w-auto px-6 py-2.5 text-xs font-bold text-white bg-[#b4232f] hover:bg-[#901c26] rounded-xl transition-colors shadow-sm"
+              >
+                Track in Dashboard & Upload Documents →
+              </Link>
+              <button 
+                onClick={() => setIsSubmitted(false)}
+                className="w-full sm:w-auto px-6 py-2.5 text-xs font-bold text-[#16161a] bg-white border border-[#dcd7cb] hover:bg-[#f4f1ea] rounded-xl transition-colors cursor-pointer"
+              >
+                Order Another Bundle
+              </button>
+            </div>
           </motion.div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto">
@@ -371,8 +418,9 @@ export const BundleBooking = () => {
             </div>
 
             <div className="text-center">
-              <span className="text-[11px] text-gray-500 font-medium">
-                🔒 256-bit encrypted • 2 review rounds included • Delivered as Google Docs + PDF + Word DOCX
+              <span className="text-[11px] text-[#787369] font-medium flex items-center justify-center gap-1.5">
+                <Lock className="w-3.5 h-3.5 text-[#787369]" />
+                <span>256-bit encrypted • 2 review rounds included • Delivered as Google Docs + PDF + Word DOCX</span>
               </span>
             </div>
           </form>

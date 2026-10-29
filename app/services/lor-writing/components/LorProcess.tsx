@@ -68,7 +68,7 @@ export const LorProcess = () => {
                     </span>
                   </div>
 
-                  <div className="w-12 h-12 rounded-xl bg-red-50 text-germany-red flex items-center justify-center font-bold border border-red-100">
+                  <div className="w-12 h-12 rounded-xl bg-[#faf8f3] text-[#16161a] flex items-center justify-center font-bold border border-[#e5e0d3]">
                     <Icon className="w-6 h-6" />
                   </div>
 
@@ -78,8 +78,8 @@ export const LorProcess = () => {
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-gray-100 text-[11px] font-bold text-gray-400 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+                <div className="pt-3 border-t border-[#e5e0d3] text-[11px] font-bold text-gray-400 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#16161a]" />
                   <span>Phase {st.step} of 4</span>
                 </div>
               </motion.div>

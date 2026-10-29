@@ -42,8 +42,8 @@ export default function DashboardLayoutWrapper({ children, Sidebar }: DashboardL
 
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative z-10">
         {/* Mobile Topbar */}
-        <header className="flex lg:hidden items-center justify-between px-5 py-3.5 bg-white border-b border-gray-200/80 shrink-0 shadow-xs">
-          <div className="font-display text-lg leading-none text-germany-black">
+        <header className="flex lg:hidden items-center justify-between px-5 py-3.5 bg-white dark:bg-[#111622] border-b border-gray-200/80 dark:border-gray-800/80 shrink-0 shadow-xs">
+          <div className="font-display text-lg leading-none text-germany-black dark:text-white">
             Europe<span className="text-germany-red">Bridge</span>
           </div>
           <div className="flex items-center gap-2">
@@ -51,19 +51,19 @@ export default function DashboardLayoutWrapper({ children, Sidebar }: DashboardL
               onClick={toggleDarkMode}
               title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
               aria-label="Toggle Dark Mode"
-              className="p-2 rounded-xl bg-gray-50 border border-gray-200/80 hover:bg-gray-100 transition-colors cursor-pointer text-germany-black"
+              className="p-2 rounded-xl bg-gray-50 dark:bg-[#0E121A] border border-gray-200/80 dark:border-gray-800/80 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors cursor-pointer text-germany-black dark:text-white"
             >
               {isDarkMode ? (
                 <Sun className="w-4 h-4 text-germany-gold" />
               ) : (
-                <Moon className="w-4 h-4 text-gray-600" />
+                <Moon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
               )}
             </button>
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-xl bg-white shadow-xs border border-gray-200/80 hover:bg-gray-50 transition-colors cursor-pointer"
+              className="p-2 rounded-xl bg-white dark:bg-[#0E121A] shadow-xs border border-gray-200/80 dark:border-gray-800/80 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors cursor-pointer"
             >
-              <Menu className="w-5 h-5 text-germany-black" />
+              <Menu className="w-5 h-5 text-germany-black dark:text-white" />
             </button>
           </div>
         </header>

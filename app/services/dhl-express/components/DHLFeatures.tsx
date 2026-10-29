@@ -53,14 +53,14 @@ export const DHLFeatures = () => {
 
   return (
     <section id="features" className="py-12 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto scroll-mt-28">
-      <div className="neu-card p-6 sm:p-10 space-y-8">
+      <div className="p-6 sm:p-10 space-y-8 bg-[#faf8f3] rounded-3xl border border-[#e5e0d3] shadow-xs">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="text-xs font-black uppercase tracking-widest text-germany-red">Included Benefits</div>
-          <h2 className="text-3xl sm:text-4xl font-black text-germany-black font-display">
+          <div className="text-xs font-bold uppercase tracking-widest text-[#b4232f]">Included Benefits</div>
+          <h2 className="text-3xl sm:text-4xl font-black text-[#16161a] font-display">
             Why Book Your Courier via EuropeBridge?
           </h2>
-          <p className="text-sm sm:text-base text-gray-600 font-medium">
+          <p className="text-sm sm:text-base text-[#5e5b54] font-medium">
             Sending applications to Germany shouldn&apos;t cost a fortune or risk missing deadlines with slow postal services.
           </p>
         </div>
@@ -72,20 +72,20 @@ export const DHLFeatures = () => {
             return (
               <div 
                 key={idx}
-                className="p-6 rounded-3xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all space-y-4 flex flex-col justify-between"
+                className="p-6 rounded-3xl bg-white border border-[#e5e0d3] shadow-xs hover:border-[#16161a] transition-all space-y-4 flex flex-col justify-between"
               >
                 <div className="space-y-3">
-                  <div className="w-12 h-12 rounded-2xl bg-red-50 text-germany-red flex items-center justify-center font-bold border border-red-100 shadow-inner">
+                  <div className="w-12 h-12 rounded-2xl bg-[#ece7dd] text-[#16161a] flex items-center justify-center font-bold border border-[#dcd7cb]">
                     <Icon className="w-6 h-6" />
                   </div>
-                  <h3 className="font-extrabold text-germany-black text-lg">{feat.title}</h3>
-                  <p className="text-xs text-gray-600 font-medium leading-relaxed">
+                  <h3 className="font-bold text-[#16161a] text-lg">{feat.title}</h3>
+                  <p className="text-xs text-[#5e5b54] font-medium leading-relaxed">
                     {feat.desc}
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-gray-100 flex items-center gap-1.5 text-[11px] font-bold text-emerald-700">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <div className="pt-3 border-t border-[#e5e0d3] flex items-center gap-1.5 text-[11px] font-bold text-[#16161a]">
+                  <CheckCircle2 className="w-4 h-4 text-[#16161a]" />
                   <span>{feat.badge}</span>
                 </div>
               </div>

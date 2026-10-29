@@ -75,8 +75,8 @@ export const HealthInsuranceProcess = () => {
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-gray-100 flex items-center gap-1 text-[11px] font-bold text-gray-500">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-green-600 shrink-0" />
+                <div className="pt-2 border-t border-[#e5e0d3] flex items-center gap-1 text-[11px] font-bold text-gray-500">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#16161a] shrink-0" />
                   <span>Free Setup</span>
                 </div>
               </div>

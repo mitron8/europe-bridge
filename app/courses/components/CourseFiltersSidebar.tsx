@@ -86,12 +86,12 @@ export function CourseFiltersSidebar({
         </div>
       )}
 
-      {/* Independently Scrollable Filters Body */}
+      {/* Independently Scrollable Filters Body (hidden scrollbar) */}
       <div 
-        className="flex-1 overflow-y-auto p-4 sm:p-5 divide-y divide-[#ece7dd] text-[13px] max-h-[72vh] lg:max-h-[calc(100vh-11rem)] scrollbar-thin"
+        className="flex-1 overflow-y-auto p-4 sm:p-5 divide-y divide-[#ece7dd] text-[13px] max-h-[72vh] lg:max-h-[calc(100vh-11rem)] no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         style={{
-          scrollbarWidth: "thin",
-          scrollbarColor: "#dcd7cb transparent",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
         }}
       >
         {/* 1. Tuition Fee Filter */}

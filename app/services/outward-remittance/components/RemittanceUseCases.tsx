@@ -81,7 +81,7 @@ export const RemittanceUseCases = () => {
 
         {/* Tab Buttons */}
         <div className="flex justify-center">
-          <div className="inline-flex p-1.5 rounded-2xl bg-gray-100/90 border border-gray-200/80 gap-1.5 shadow-inner max-w-full overflow-x-auto">
+          <div className="inline-flex p-1.5 rounded-2xl bg-[#ece7dd]/60 border border-[#e5e0d3] gap-1.5 shadow-inner max-w-full overflow-x-auto">
             {[
               { id: 'blocked', label: 'Blocked Account (€11,904)', icon: Landmark },
               { id: 'tuition', label: 'University Fees / Tuition', icon: GraduationCap },
@@ -94,13 +94,13 @@ export const RemittanceUseCases = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
+                  className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
                     isActive
-                      ? 'bg-white text-germany-black shadow-sm border border-gray-200'
-                      : 'text-gray-600 hover:text-germany-black'
+                      ? 'bg-white text-[#16161a] shadow-xs border border-[#e5e0d3]'
+                      : 'text-[#5e5b54] hover:text-[#16161a]'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-germany-red' : 'text-gray-400'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-[#b4232f]' : 'text-[#787369]'}`} />
                   <span>{tab.label}</span>
                 </button>
               );
@@ -114,50 +114,50 @@ export const RemittanceUseCases = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="p-6 sm:p-8 rounded-3xl bg-white border-2 border-gray-200 shadow-md space-y-6 max-w-4xl mx-auto"
+          className="p-6 sm:p-8 rounded-3xl bg-white border border-[#e5e0d3] shadow-xs space-y-6 max-w-4xl mx-auto"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#e5e0d3] pb-4">
             <div>
-              <span className="text-[11px] font-black uppercase text-germany-red tracking-wider">
+              <span className="text-[11px] font-bold uppercase text-[#b4232f] tracking-wider">
                 Target Payment Category
               </span>
-              <h3 className="text-2xl font-black text-germany-black mt-1 font-display">{current.title}</h3>
+              <h3 className="text-2xl font-black text-[#16161a] mt-1 font-display">{current.title}</h3>
             </div>
 
-            <div className="text-left sm:text-right bg-red-50/50 p-3 sm:p-0 rounded-2xl sm:bg-transparent">
-              <div className="text-xs font-bold text-gray-500 uppercase">Typical Transfer Range</div>
-              <div className="text-xl sm:text-2xl font-black text-germany-black font-display">{current.amountRange}</div>
-              <div className="text-xs font-bold text-emerald-700 flex items-center sm:justify-end gap-1 mt-0.5">
-                <Clock className="w-3.5 h-3.5" /> {current.timeline}
+            <div className="text-left sm:text-right bg-[#faf8f3] p-3 sm:p-0 rounded-2xl sm:bg-transparent">
+              <div className="text-xs font-bold text-[#5e5b54] uppercase">Typical Transfer Range</div>
+              <div className="text-xl sm:text-2xl font-black text-[#16161a] font-display">{current.amountRange}</div>
+              <div className="text-xs font-semibold text-[#16161a] flex items-center sm:justify-end gap-1 mt-0.5">
+                <Clock className="w-3.5 h-3.5 text-[#16161a]" /> {current.timeline}
               </div>
             </div>
           </div>
 
-          <p className="text-sm text-gray-700 font-medium leading-relaxed">
+          <p className="text-sm text-[#5e5b54] font-medium leading-relaxed">
             {current.description}
           </p>
 
           <div className="space-y-3">
-            <span className="text-xs font-black uppercase text-gray-600 tracking-wider block">Service Advantages:</span>
+            <span className="text-xs font-bold uppercase text-[#5e5b54] tracking-wider block">Service Advantages:</span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {current.highlights.map((hl, i) => (
-                <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl bg-gray-50 border border-gray-200 text-xs font-semibold text-gray-700">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl bg-[#faf8f3] border border-[#e5e0d3] text-xs font-semibold text-[#16161a]">
+                  <CheckCircle2 className="w-4 h-4 text-[#16161a] shrink-0 mt-0.5" />
                   <span className="leading-snug">{hl}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 border-t border-gray-100">
-            <div className="text-xs text-gray-500 font-medium flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 border-t border-[#e5e0d3]">
+            <div className="text-xs text-[#5e5b54] font-medium flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-[#16161a] shrink-0" />
               <span>Full compliance with Reserve Bank of India LRS documentation.</span>
             </div>
 
             <a
               href="#booking"
-              className="neu-btn-primary w-full sm:w-auto px-6 py-3 text-xs font-extrabold flex items-center justify-center gap-2 shadow-sm"
+              className="neu-btn-primary w-full sm:w-auto px-6 py-3 text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer"
             >
               <span>{current.ctaText}</span>
               <ArrowRight className="w-4 h-4" />

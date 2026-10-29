@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, ArrowUpRight, ChevronDown, LayoutDashboard, LogOut, Menu, Plus, X } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
@@ -13,17 +14,15 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 
 export function Wordmark({ light = false }: { light?: boolean }) {
   return (
-    <span className="inline-flex items-center gap-2.5">
-      <span aria-hidden className="flex h-[18px] w-[5px] flex-col overflow-hidden rounded-[1px]">
-        <span className={`flex-1 ${light ? "bg-white" : "bg-[#0d0d0f]"}`} />
-        <span className="flex-1 bg-[#e63946]" />
-        <span className="flex-1 bg-[#c9a35b]" />
-      </span>
-      <span
-        className={`lp-serif ${playfair.className} text-[24px] leading-none tracking-[-0.01em] ${light ? "text-white" : "text-[#16161a]"}`}
-      >
-        Europe<span className="italic font-normal">Bridge</span>
-      </span>
+    <span className="inline-flex items-center">
+      <Image
+        src={light ? "/logo-white.png" : "/logo.png"}
+        alt="EuropeBridge - People Beyond Borders"
+        width={245}
+        height={40}
+        priority
+        className="h-[34px] sm:h-[38px] md:h-[42px] w-auto object-contain transition-transform duration-200 hover:scale-[1.02]"
+      />
     </span>
   );
 }

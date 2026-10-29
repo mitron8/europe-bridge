@@ -12,7 +12,9 @@ import {
   Briefcase, 
   ShieldCheck, 
   GraduationCap,
-  FolderOpen
+  FolderOpen,
+  Check,
+  X
 } from 'lucide-react';
 
 interface BlueprintTab {
@@ -248,30 +250,30 @@ export const CoverLetterBlueprint = () => {
 
             {/* Do's and Don'ts */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-              <div className="p-6 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-3">
-                <div className="flex items-center gap-2 text-emerald-900 font-black text-sm uppercase tracking-wider">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+              <div className="p-6 bg-[#faf8f3] border border-[#e5e0d3] rounded-2xl space-y-3">
+                <div className="flex items-center gap-2 text-[#16161a] font-bold text-sm uppercase tracking-wider">
+                  <CheckCircle2 className="w-4 h-4 text-[#16161a]" />
                   <span>Crucial Elements to Include</span>
                 </div>
-                <ul className="space-y-2.5 text-xs text-emerald-950 font-medium">
+                <ul className="space-y-2.5 text-xs text-[#5e5b54] font-medium">
                   {currentTab.dos.map((item, i) => (
                     <li key={i} className="flex items-start gap-2">
-                      <span className="text-emerald-700 font-bold shrink-0 mt-0.5">✓</span>
+                      <Check className="w-3.5 h-3.5 text-[#16161a] shrink-0 mt-0.5" />
                       <span>{item}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              <div className="p-6 bg-red-50/70 border border-red-200 rounded-2xl space-y-3">
-                <div className="flex items-center gap-2 text-red-900 font-black text-sm uppercase tracking-wider">
-                  <XCircle className="w-4 h-4 text-red-700" />
+              <div className="p-6 bg-[#faf8f3] border border-[#e5e0d3] rounded-2xl space-y-3">
+                <div className="flex items-center gap-2 text-[#b4232f] font-bold text-sm uppercase tracking-wider">
+                  <XCircle className="w-4 h-4 text-[#b4232f]" />
                   <span>Costly Pitfalls to Avoid</span>
                 </div>
-                <ul className="space-y-2.5 text-xs text-red-950 font-medium">
+                <ul className="space-y-2.5 text-xs text-[#5e5b54] font-medium">
                   {currentTab.donts.map((item, i) => (
                     <li key={i} className="flex items-start gap-2">
-                      <span className="text-red-700 font-bold shrink-0 mt-0.5">✕</span>
+                      <X className="w-3.5 h-3.5 text-[#b4232f] shrink-0 mt-0.5" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -280,9 +282,9 @@ export const CoverLetterBlueprint = () => {
             </div>
 
             {/* Insider Tip Callout */}
-            <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200 flex items-center gap-3 text-xs sm:text-sm text-amber-950 font-bold">
-              <ShieldCheck className="w-5 h-5 text-amber-700 shrink-0" />
-              <span>Consular Insider Tip: {currentTab.insiderTip}</span>
+            <div className="p-4 bg-[#faf8f3] rounded-2xl border border-[#e5e0d3] flex items-center gap-3 text-xs sm:text-sm text-[#16161a] font-medium">
+              <ShieldCheck className="w-5 h-5 text-[#b4232f] shrink-0" />
+              <span><strong>Consular Insider Tip:</strong> {currentTab.insiderTip}</span>
             </div>
           </motion.div>
         </AnimatePresence>

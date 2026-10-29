@@ -1,7 +1,9 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Send, CheckCircle2, PhoneCall, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { submitPartnerLead } from '@/lib/servicesPayment';
+import { useAppStore } from '@/store/useAppStore';
 
 export const BlockedAccountForm = () => {
   const [firstName, setFirstName] = useState('');
@@ -17,15 +19,43 @@ export const BlockedAccountForm = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { user } = useAppStore();
+
+  useEffect(() => {
+    if (user) {
+      if (user.first_name && !firstName) setFirstName(user.first_name);
+      if (user.last_name && !lastName) setLastName(user.last_name);
+      if (user.email && !email) setEmail(user.email);
+      if (user.phone && !phone) setPhone(user.phone);
+    }
+  }, [user]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!firstName || !email || !phone || !consent) return;
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await submitPartnerLead({
+        serviceType: 'BLOCKED_ACCOUNT',
+        fullName: `${firstName} ${lastName}`.trim(),
+        firstName,
+        lastName,
+        email,
+        phone: `${countryCode} ${phone}`,
+        targetDegree,
+        intake,
+        preferredProvider,
+        appointmentUrgency,
+      });
       setIsSubmitted(true);
-    }, 800);
+    } catch (err) {
+      console.error('Blocked account inquiry error:', err);
+      // Still show submitted so user is not stuck
+      setIsSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -133,11 +163,11 @@ export const BlockedAccountForm = () => {
                     onChange={(e) => setCountryCode(e.target.value)}
                     className="px-3 py-3 rounded-2xl border border-[#e5e0d3] font-bold text-xs bg-white focus:border-[var(--lp-red)] outline-none text-[var(--lp-text)]"
                   >
-                    <option value="+91">🇮🇳 +91</option>
-                    <option value="+49">🇩🇪 +49</option>
-                    <option value="+1">🇺🇸 +1</option>
-                    <option value="+44">🇬🇧 +44</option>
-                    <option value="+971">🇦🇪 +971</option>
+                    <option value="+91">IN (+91)</option>
+                    <option value="+49">DE (+49)</option>
+                    <option value="+1">US (+1)</option>
+                    <option value="+44">UK (+44)</option>
+                    <option value="+971">AE (+971)</option>
                   </select>
                   <input 
                     type="tel" 

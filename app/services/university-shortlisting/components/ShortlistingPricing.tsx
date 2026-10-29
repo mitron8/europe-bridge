@@ -46,23 +46,23 @@ export const ShortlistingPricing = () => {
               {/* Checklist */}
               <ul className="space-y-3 text-xs sm:text-sm text-gray-700 font-medium">
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#16161a] shrink-0 mt-0.5" />
                   <span><strong className="text-germany-black font-bold">Up to 10 carefully shortlisted courses</strong> matching your exact transcript</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#16161a] shrink-0 mt-0.5" />
                   <span><strong className="text-germany-black font-bold">2 full rounds of student review</strong> (swap universities, adjust cities or focus)</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#16161a] shrink-0 mt-0.5" />
                   <span>Intake deadline, German grade cutoff, and official portal URL for each university</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#16161a] shrink-0 mt-0.5" />
                   <span>ECTS credit prerequisite matching report &amp; Bavarian formula calculation</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#16161a] shrink-0 mt-0.5" />
                   <span>Comprehensive PDF dossier delivered directly to your email inbox</span>
                 </li>
               </ul>
@@ -81,27 +81,27 @@ export const ShortlistingPricing = () => {
 
           {/* Express Plan (Popular) */}
           <motion.div 
-            className="neu-card p-6 sm:p-8 flex flex-col justify-between border-2 border-germany-red bg-gradient-to-b from-white to-red-50/20 relative shadow-md"
+            className="neu-card p-6 sm:p-8 flex flex-col justify-between border-2 border-[#16161a] bg-white relative shadow-md"
             whileHover={{ y: -4 }}
             transition={{ duration: 0.2 }}
           >
             {/* Badge */}
-            <div className="absolute -top-3.5 right-6 px-3.5 py-1 bg-germany-red text-white text-[11px] font-black uppercase tracking-wider rounded-full shadow-sm flex items-center gap-1">
+            <div className="absolute -top-3.5 right-6 px-3.5 py-1 bg-[#16161a] text-white text-[11px] font-black uppercase tracking-wider rounded-full shadow-sm flex items-center gap-1">
               <Zap className="w-3.5 h-3.5 fill-current" />
               <span>Fastest Turnaround</span>
             </div>
 
             <div className="space-y-6">
-              <div className="border-b border-red-100 pb-5 text-center">
-                <span className="text-xs font-black uppercase tracking-wider text-germany-red">
+              <div className="border-b border-[#e5e0d3] pb-5 text-center">
+                <span className="text-xs font-black uppercase tracking-wider text-[#16161a]">
                   Express Order (24 Hours)
                 </span>
                 <div className="mt-3 flex items-baseline justify-center gap-1">
                   <span className="text-4xl sm:text-5xl font-black text-germany-black font-display">₹5,999</span>
                   <span className="text-xs text-gray-500 font-bold">/ one-time</span>
                 </div>
-                <p className="mt-2 text-xs font-bold text-germany-red flex items-center justify-center gap-1.5">
-                  <Zap className="w-4 h-4 text-germany-red fill-current" />
+                <p className="mt-2 text-xs font-bold text-[#5e5b54] flex items-center justify-center gap-1.5">
+                  <Zap className="w-4 h-4 text-[#16161a]" />
                   First draft delivered in 1 working day (24 hours)
                 </p>
               </div>
@@ -109,23 +109,23 @@ export const ShortlistingPricing = () => {
               {/* Checklist */}
               <ul className="space-y-3 text-xs sm:text-sm text-gray-700 font-medium">
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-germany-red shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#16161a] shrink-0 mt-0.5" />
                   <span><strong className="text-germany-black font-bold">Everything included in Standard Order</strong></span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-germany-red shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#16161a] shrink-0 mt-0.5" />
                   <span><strong className="text-germany-black font-bold">Guaranteed 24-hour turnaround</strong> for immediate submission deadlines</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-germany-red shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#16161a] shrink-0 mt-0.5" />
                   <span>Priority fast-track queue with senior Germany admissions counselor</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-germany-red shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#16161a] shrink-0 mt-0.5" />
                   <span>Complimentary 15-minute shortlist debrief call to finalize top 5 choices</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-germany-red shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#16161a] shrink-0 mt-0.5" />
                   <span>Ideal for students facing fast-approaching Uni-Assist or VPD deadlines</span>
                 </li>
               </ul>

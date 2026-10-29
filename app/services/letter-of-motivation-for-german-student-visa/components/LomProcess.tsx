@@ -45,14 +45,14 @@ export const LomProcess = () => {
       <div className="space-y-12">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 text-germany-red text-xs font-black uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ece7dd] text-[#16161a] border border-[#dcd7cb] text-xs font-bold uppercase tracking-wider">
             <Clock className="w-3.5 h-3.5" />
             <span>Structured 4-Step Workflow</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-germany-black font-display">
+          <h2 className="text-3xl sm:text-4xl font-black text-[#16161a] font-display">
             How Your Visa LOM Is Crafted
           </h2>
-          <p className="text-sm sm:text-base text-gray-600 font-medium">
+          <p className="text-sm sm:text-base text-[#5e5b54] font-medium">
             From initial profile questionnaire to consular-ready submission in as little as 24 hours.
           </p>
         </div>
@@ -64,38 +64,38 @@ export const LomProcess = () => {
             return (
               <motion.div
                 key={item.step}
-                className="neu-card p-6 border-2 border-gray-200 bg-white relative flex flex-col justify-between hover:border-germany-red/50 transition-all shadow-sm"
+                className="p-6 rounded-2xl border border-[#e5e0d3] bg-[#faf8f3] relative flex flex-col justify-between hover:border-[#16161a] transition-all shadow-xs"
                 whileHover={{ y: -4 }}
                 transition={{ duration: 0.2 }}
               >
                 {/* Step badge */}
-                <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
-                  <span className="text-2xl font-black text-germany-red font-display">
+                <div className="flex items-center justify-between border-b border-[#e5e0d3] pb-4 mb-4">
+                  <span className="text-2xl font-bold text-[#16161a] font-display">
                     {item.step}
                   </span>
-                  <div className="p-2.5 rounded-xl bg-red-50 text-germany-red">
+                  <div className="p-2.5 rounded-xl bg-[#ece7dd] text-[#16161a] border border-[#dcd7cb]">
                     <Icon className="w-5 h-5" />
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <div className="inline-block px-2.5 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[11px] font-bold">
+                  <div className="inline-block px-2.5 py-0.5 rounded-md bg-white border border-[#e5e0d3] text-[#16161a] text-[11px] font-bold">
                     {item.duration}
                   </div>
-                  <h3 className="text-base font-black text-germany-black leading-snug">
+                  <h3 className="text-base font-bold text-[#16161a] leading-snug">
                     {item.title}
                   </h3>
-                  <p className="text-xs text-gray-600 font-medium leading-relaxed">
+                  <p className="text-xs text-[#5e5b54] font-medium leading-relaxed">
                     {item.description}
                   </p>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-gray-100">
-                  <span className="text-[11px] font-bold text-gray-400 block uppercase tracking-wider">
+                <div className="mt-6 pt-4 border-t border-[#e5e0d3]">
+                  <span className="text-[11px] font-bold text-[#787369] block uppercase tracking-wider">
                     Deliverable:
                   </span>
-                  <span className="text-xs font-black text-germany-black flex items-center gap-1.5 mt-0.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-green-600 shrink-0" />
+                  <span className="text-xs font-bold text-[#16161a] flex items-center gap-1.5 mt-0.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#16161a] shrink-0" />
                     {item.deliverable}
                   </span>
                 </div>
@@ -105,23 +105,23 @@ export const LomProcess = () => {
         </div>
 
         {/* Workflow Bottom Callout */}
-        <div className="neu-card p-6 bg-gradient-to-r from-red-50 via-white to-amber-50 border-2 border-red-200 max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="p-6 rounded-3xl bg-[#faf8f3] border border-[#e5e0d3] max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-germany-red text-white rounded-2xl shadow-sm shrink-0">
+            <div className="p-3 bg-[#16161a] text-white rounded-2xl shadow-xs shrink-0">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="text-sm font-black text-germany-black">
+              <h4 className="text-sm font-bold text-[#16161a]">
                 Have an urgent VFS or Consulate biometrics slot?
               </h4>
-              <p className="text-xs text-gray-600 font-medium">
+              <p className="text-xs text-[#5e5b54] font-medium">
                 Choose our Express Plan for guaranteed 24-hour turnaround with prioritized draft reviews.
               </p>
             </div>
           </div>
           <a
             href="#pricing"
-            className="neu-btn-primary px-5 py-2.5 text-xs font-extrabold shrink-0 flex items-center gap-1.5 cursor-pointer"
+            className="neu-btn-primary px-5 py-2.5 text-xs font-bold shrink-0 flex items-center gap-1.5 cursor-pointer shadow-xs"
           >
             <span>View Pricing</span>
             <ArrowRight className="w-3.5 h-3.5" />

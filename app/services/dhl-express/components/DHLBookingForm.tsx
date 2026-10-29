@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { 
   Send, 
   CheckCircle2, 
@@ -19,6 +20,8 @@ import {
   Check
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { startServiceCheckout } from '@/lib/servicesPayment';
+import { useAppStore } from '@/store/useAppStore';
 
 export const DHLBookingForm = () => {
   // Application packet count
@@ -47,6 +50,17 @@ export const DHLBookingForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const { user } = useAppStore();
+
+  useEffect(() => {
+    if (user) {
+      if (user.first_name && !firstName) setFirstName(user.first_name);
+      if (user.last_name && !lastName) setLastName(user.last_name);
+      if (user.email && !email) setEmail(user.email);
+      if (user.phone && !phone) setPhone(user.phone);
+    }
+  }, [user]);
+
   const pricePerPacket = 2033;
   const totalPrice = packetCount * pricePerPacket;
   const estimatedSavings = packetCount * (4200 - 2033);
@@ -59,7 +73,7 @@ export const DHLBookingForm = () => {
     if (packetCount > 1) setPacketCount(prev => prev - 1);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!firstName || !email || !phone || !pickupAddress || !city || !pincode || !consent) {
       alert('Please complete all required fields.');
@@ -67,10 +81,42 @@ export const DHLBookingForm = () => {
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      const destinationLabel = 
+        destinationType === 'uni-assist' ? 'uni-assist e.V. (Berlin)' :
+        destinationType === 'aps' ? 'APS India (New Delhi)' :
+        (customUniversity || 'German Public University');
+
+      const success = await startServiceCheckout({
+        planKey: 'DHL_EXPRESS',
+        customAmount: totalPrice,
+        studentInputs: {
+          packetCount,
+          destinationType,
+          destinationLabel,
+          customUniversity,
+          firstName,
+          lastName,
+          email,
+          phone: `${countryCode} ${phone}`,
+          pickupAddress,
+          city,
+          state,
+          pincode,
+          pickupDate,
+          totalPrice,
+        },
+        returnUrl: '/services/dhl-express#booking',
+      });
+
+      if (success) {
+        setIsSubmitted(true);
+      }
+    } catch (err) {
+      console.error('DHL courier booking error:', err);
+    } finally {
       setIsSubmitting(false);
-      setIsSubmitted(true);
-    }, 850);
+    }
   };
 
   return (
@@ -94,69 +140,76 @@ export const DHLBookingForm = () => {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="p-8 sm:p-10 bg-green-50 border-2 border-green-300 rounded-3xl text-center space-y-5"
+            className="p-8 sm:p-10 bg-[#faf8f3] border border-[#e5e0d3] rounded-3xl text-center space-y-5 shadow-[0_4px_20px_rgba(22,22,26,0.04)]"
           >
-            <div className="w-16 h-16 rounded-full bg-green-100 text-green-700 flex items-center justify-center mx-auto font-bold shadow-sm">
-              <CheckCircle2 className="w-10 h-10" />
+            <div className="w-14 h-14 rounded-full bg-[#16161a] text-[#c9a35b] flex items-center justify-center mx-auto font-bold shadow-sm">
+              <CheckCircle2 className="w-7 h-7" />
             </div>
 
             <div className="space-y-1.5">
-              <span className="text-xs font-black uppercase tracking-wider text-green-800 bg-white/80 px-3 py-1 rounded-full border border-green-200">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#16161a] bg-white px-3 py-1 rounded-full border border-[#e5e0d3] shadow-2xs inline-block">
                 Booking Logged • Ref #EB-DHL-{Math.floor(100000 + Math.random() * 900000)}
               </span>
-              <h3 className="text-2xl sm:text-3xl font-black text-green-950 font-display pt-1">
+              <h3 className="text-2xl sm:text-3xl font-black text-[#16161a] font-serif pt-1">
                 Thank You, {firstName}!
               </h3>
-              <p className="text-sm text-green-800 font-medium max-w-lg mx-auto leading-relaxed">
+              <p className="text-sm text-[#5e5b54] font-medium max-w-lg mx-auto leading-relaxed">
                 Your courier pickup request for <strong>{packetCount} {packetCount === 1 ? 'application packet' : 'application packets'}</strong> has been registered. A dedicated DHL Express logistics manager will call you at <strong>{countryCode} {phone}</strong> within 24 hours to confirm your pickup slot and dispatch the courier.
               </p>
             </div>
 
             {/* Booking Details Card */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white/90 border border-green-200 text-xs text-green-900 max-w-md mx-auto space-y-2 text-left font-semibold">
-              <div className="flex justify-between border-b border-green-100 pb-2">
-                <span className="text-gray-600">Primary Destination:</span>
-                <span className="font-extrabold text-germany-black">
+            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#e5e0d3] text-xs text-[#16161a] max-w-md mx-auto space-y-2 text-left font-medium shadow-2xs">
+              <div className="flex justify-between border-b border-[#f0ede6] pb-2">
+                <span className="text-[#6b6760]">Primary Destination:</span>
+                <span className="font-bold text-[#16161a]">
                   {destinationType === 'uni-assist' && 'uni-assist e.V. (Berlin)'}
                   {destinationType === 'aps' && 'APS India (New Delhi)'}
                   {destinationType === 'university' && (customUniversity || 'German Public University')}
                 </span>
               </div>
-              <div className="flex justify-between border-b border-green-100 pb-2">
-                <span className="text-gray-600">Packets / Envelopes:</span>
-                <span className="font-extrabold text-germany-black">{packetCount} Packet{packetCount > 1 ? 's' : ''} (Flat ₹2,033 each)</span>
+              <div className="flex justify-between border-b border-[#f0ede6] pb-2">
+                <span className="text-[#6b6760]">Packets / Envelopes:</span>
+                <span className="font-bold text-[#16161a]">{packetCount} Packet{packetCount > 1 ? 's' : ''} (Flat ₹2,033 each)</span>
               </div>
-              <div className="flex justify-between border-b border-green-100 pb-2">
-                <span className="text-gray-600">Pickup City / PIN:</span>
-                <span className="font-extrabold text-germany-black">{city} ({pincode})</span>
+              <div className="flex justify-between border-b border-[#f0ede6] pb-2">
+                <span className="text-[#6b6760]">Pickup City / PIN:</span>
+                <span className="font-bold text-[#16161a]">{city} ({pincode})</span>
               </div>
-              <div className="flex justify-between text-sm font-black text-germany-red pt-1">
+              <div className="flex justify-between text-sm font-bold text-[#b4232f] pt-1">
                 <span>Total Amount to Pay:</span>
                 <span>₹{totalPrice.toLocaleString('en-IN')}</span>
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 max-w-md mx-auto text-left space-y-1 font-medium">
-              <span className="font-bold block uppercase text-[10px] tracking-wider text-amber-950">Next Steps:</span>
+            <div className="p-4 rounded-2xl bg-white border border-[#e5e0d3] text-xs text-[#5e5b54] max-w-md mx-auto text-left space-y-1 font-medium">
+              <span className="font-bold block uppercase text-[10px] tracking-wider text-[#16161a]">Next Steps:</span>
               <p>1. Keep university transcripts in sealed, university-stamped envelopes.</p>
               <p>2. Keep 1 self-attested ID photocopy (Aadhaar / Passport) ready for the DHL agent.</p>
               <p>3. Online payment is completed securely after phone confirmation.</p>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <Link
+                href="/dashboard/student/services"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#b4232f] hover:bg-[#901c26] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-colors"
+              >
+                <span>Track Courier in Dashboard →</span>
+              </Link>
+
               <a
                 href={`https://wa.me/4915212345678?text=Hi%20EuropeBridge,%20I%20just%20booked%20DHL%20Express%20for%20${packetCount}%20packets%20for%20${encodeURIComponent(firstName)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-600 text-white font-extrabold text-xs flex items-center justify-center gap-2 hover:bg-emerald-700 shadow-sm"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#16161a] text-white font-bold text-xs flex items-center justify-center gap-2 hover:bg-[#2e2e34] shadow-sm transition-colors"
               >
-                <MessageSquare className="w-4 h-4" />
+                <MessageSquare className="w-4 h-4 text-[#c9a35b]" />
                 <span>Instant WhatsApp Support</span>
               </a>
 
               <button 
                 onClick={() => setIsSubmitted(false)}
-                className="w-full sm:w-auto neu-btn px-6 py-3 text-xs font-extrabold text-germany-black bg-white border border-gray-200"
+                className="w-full sm:w-auto px-6 py-3 text-xs font-bold text-[#16161a] bg-white border border-[#dcd7cb] hover:bg-[#f4f1ea] rounded-xl transition-colors cursor-pointer"
               >
                 Book Another Packet
               </button>
@@ -267,7 +320,7 @@ export const DHLBookingForm = () => {
               {/* Destination Address Preview */}
               {destinationType === 'uni-assist' && (
                 <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-700 flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#16161a] shrink-0 mt-0.5" />
                   <div>
                     <strong className="text-germany-black">Pre-verified uni-assist Address:</strong>
                     <p className="text-gray-600">uni-assist e.V., Geneststraße 5, 10829 Berlin, Germany</p>
@@ -277,7 +330,7 @@ export const DHLBookingForm = () => {
 
               {destinationType === 'aps' && (
                 <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-700 flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#16161a] shrink-0 mt-0.5" />
                   <div>
                     <strong className="text-germany-black">Pre-verified APS Address:</strong>
                     <p className="text-gray-600">Gate No. 3, DLTA Complex, R.K. Khanna Stadium, 110029 New Delhi, India</p>
@@ -351,10 +404,10 @@ export const DHLBookingForm = () => {
                       onChange={(e) => setCountryCode(e.target.value)}
                       className="px-3 py-3 rounded-xl border border-gray-300 font-bold text-xs bg-gray-50 focus:border-germany-red outline-none"
                     >
-                      <option value="+91">🇮🇳 +91</option>
-                      <option value="+49">🇩🇪 +49</option>
-                      <option value="+1">🇺🇸 +1</option>
-                      <option value="+971">🇦🇪 +971</option>
+                      <option value="+91">IN (+91)</option>
+                      <option value="+49">DE (+49)</option>
+                      <option value="+1">US (+1)</option>
+                      <option value="+971">AE (+971)</option>
                     </select>
                     <input
                       type="tel"
@@ -449,25 +502,25 @@ export const DHLBookingForm = () => {
                 <span>EuropeBridge Student Rate:</span>
                 <span>₹{pricePerPacket.toLocaleString('en-IN')} / packet</span>
               </div>
-              <div className="flex justify-between items-center text-xs font-bold text-emerald-700">
+              <div className="flex justify-between items-center text-xs font-bold text-[#5e5b54]">
                 <span>Free Doorstep Pickup &amp; 10-Digit AWB:</span>
                 <span>Included (₹0)</span>
               </div>
-              <div className="flex justify-between items-center text-xs font-bold text-emerald-700">
+              <div className="flex justify-between items-center text-xs font-bold text-[#5e5b54]">
                 <span>Estimated Counter Savings:</span>
                 <span>Save ~₹{estimatedSavings.toLocaleString('en-IN')}</span>
               </div>
               <div className="flex justify-between items-center text-base sm:text-lg font-black text-germany-black border-t border-gray-200 pt-2 font-display">
                 <span>Total Courier Fee:</span>
-                <span className="text-germany-red">₹{totalPrice.toLocaleString('en-IN')}</span>
+                <span className="text-[#16161a]">₹{totalPrice.toLocaleString('en-IN')}</span>
               </div>
             </div>
 
             {/* Notice & Consent */}
             <div className="space-y-3">
-              <div className="p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl text-xs text-amber-900 space-y-0.5">
-                <span className="font-extrabold block">KYC Verification at Doorstep:</span>
-                <p className="text-amber-800">
+              <div className="p-3 bg-[#faf8f3] border border-[#e5e0d3] rounded-xl text-xs text-[#16161a] space-y-0.5">
+                <span className="font-bold block">KYC Verification at Doorstep:</span>
+                <p className="text-[#5e5b54]">
                   Please hand over 1 self-attested ID copy (Aadhaar or Passport) to the DHL executive at pickup. Transcripts must be inside sealed envelopes.
                 </p>
               </div>

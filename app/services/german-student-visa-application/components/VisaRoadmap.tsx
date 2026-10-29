@@ -206,8 +206,8 @@ export const VisaRoadmap = () => {
                 </div>
               </div>
 
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs font-bold shrink-0 self-start md:self-center">
-                <ShieldCheck className="w-4 h-4 text-amber-700" />
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#faf8f3] border border-[#e5e0d3] rounded-xl text-[#16161a] text-xs font-bold shrink-0 self-start md:self-center">
+                <ShieldCheck className="w-4 h-4 text-[#b4232f]" />
                 <span>Expert Supervised</span>
               </div>
             </div>
@@ -215,15 +215,15 @@ export const VisaRoadmap = () => {
             {/* Key Requirements vs How EuropeBridge Helps */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Requirements */}
-              <div className="p-6 bg-gray-50/80 border border-gray-200 rounded-2xl space-y-4">
-                <div className="flex items-center gap-2 text-gray-900 font-extrabold text-base">
-                  <Layers className="w-5 h-5 text-gray-700" />
+              <div className="p-6 bg-[#faf8f3] border border-[#e5e0d3] rounded-2xl space-y-4">
+                <div className="flex items-center gap-2 text-[#16161a] font-bold text-base">
+                  <Layers className="w-5 h-5 text-[#6b6760]" />
                   <h4>Official Embassy Requirements</h4>
                 </div>
-                <ul className="space-y-3 text-xs sm:text-sm text-gray-700 font-medium">
+                <ul className="space-y-3 text-xs sm:text-sm text-[#5e5b54] font-medium">
                   {currentStage.keyRequirements.map((item, idx) => (
                     <li key={idx} className="flex items-start gap-2.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-gray-500 mt-2 shrink-0" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#787369] mt-2 shrink-0" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -231,15 +231,15 @@ export const VisaRoadmap = () => {
               </div>
 
               {/* What We Do */}
-              <div className="p-6 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-4">
-                <div className="flex items-center gap-2 text-emerald-800 font-extrabold text-base">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+              <div className="p-6 bg-[#faf8f3] border border-[#e5e0d3] rounded-2xl space-y-4">
+                <div className="flex items-center gap-2 text-[#16161a] font-bold text-base">
+                  <CheckCircle2 className="w-5 h-5 text-[#16161a]" />
                   <h4>How EuropeBridge Handles This For You</h4>
                 </div>
-                <ul className="space-y-3 text-xs sm:text-sm text-emerald-950 font-medium">
+                <ul className="space-y-3 text-xs sm:text-sm text-[#5e5b54] font-medium">
                   {currentStage.europeBridgeRole.map((item, idx) => (
                     <li key={idx} className="flex items-start gap-2.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 mt-2 shrink-0" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#16161a] mt-2 shrink-0" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -248,13 +248,13 @@ export const VisaRoadmap = () => {
             </div>
 
             {/* Critical Consular Tip */}
-            <div className="p-5 rounded-2xl bg-amber-50/90 border border-amber-200/90 flex items-start gap-3.5">
-              <AlertCircle className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+            <div className="p-5 rounded-2xl bg-[#faf8f3] border border-[#e5e0d3] flex items-start gap-3.5">
+              <AlertCircle className="w-5 h-5 text-[#b4232f] shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <h5 className="text-xs font-black uppercase tracking-wider text-amber-900">
+                <h5 className="text-xs font-bold uppercase tracking-wider text-[#16161a]">
                   Consular Officer Insider Insight
                 </h5>
-                <p className="text-xs sm:text-sm text-amber-950 font-medium leading-relaxed">
+                <p className="text-xs sm:text-sm text-[#5e5b54] font-medium leading-relaxed">
                   {currentStage.criticalTip}
                 </p>
               </div>

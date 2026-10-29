@@ -241,6 +241,16 @@
   border-color: #1A2130 !important;
 }
 
+/* All top banners, cards, panels, and sections that use bg-white in the dashboard */
+.dark .dashboard-container .bg-white:not(button):not(input):not(textarea):not(select):not(option):not(.badge-white):not(.keep-white) {
+  background-color: #111622 !important;
+  border-color: #1A2130 !important;
+}
+
+.dark .dashboard-container [class*="bg-white/"]:not(button):not(a):not([class*="dark:bg-"]) {
+  background-color: #0E121A !important;
+}
+
 /* Translucent white inner callouts (e.g. bg-white/70, bg-white/80) - turn into clean dark surface */
 .dark .dashboard-container [class*="bg-white/70"],
 .dark .dashboard-container [class*="bg-white/80"],
@@ -384,9 +394,55 @@
   color: #FFFFFF !important;
 }
 
+/* Custom palette dark colors (e.g. #16161a, #5e5b54) */
+.dark .dashboard-container .text-\[\#16161a\]:not(button):not(a):not([class*="dark:text-"]),
+.dark .dashboard-container [class*="text-[#16161a]"]:not(button):not(a):not([class*="dark:text-"]) {
+  color: #FFFFFF !important;
+}
+
+.dark .dashboard-container .text-\[\#5e5b54\],
+.dark .dashboard-container [class*="text-[#5e5b54]"] {
+  color: #CBD5E1 !important;
+}
+
+.dark .dashboard-container .text-\[\#787369\],
+.dark .dashboard-container .text-\[\#6b6760\] {
+  color: #94A3B8 !important;
+}
+
+/* Badges with dark text on light backgrounds */
+.dark .dashboard-container .text-amber-900,
+.dark .dashboard-container .text-amber-800 {
+  color: #FDE68A !important;
+}
+.dark .dashboard-container .text-blue-900,
+.dark .dashboard-container .text-blue-800 {
+  color: #93C5FD !important;
+}
+.dark .dashboard-container .text-emerald-900,
+.dark .dashboard-container .text-emerald-800 {
+  color: #6EE7B7 !important;
+}
+.dark .dashboard-container .text-purple-900,
+.dark .dashboard-container .text-purple-800 {
+  color: #D8B4FE !important;
+}
+
 /* ==============================================================================
    BADGES, PILLS, AND CALLOUTS IN DARK MODE
    ============================================================================== */
+
+/* Amber / Gold Badges (e.g. Counsellor Choice, Intake Tags, Recommendations) */
+.dark .dashboard-container .bg-amber-400,
+.dark .dashboard-container [class*="bg-amber-400"] {
+  background-color: rgba(245, 158, 11, 0.22) !important;
+  border-color: rgba(245, 158, 11, 0.45) !important;
+  color: #FDE68A !important;
+}
+.dark .dashboard-container .bg-amber-400 *,
+.dark .dashboard-container [class*="bg-amber-400"] * {
+  color: #FDE68A !important;
+}
 
 /* Blue Badges (e.g. Open / Needs Review / Calendar Icon) */
 .dark .bg-blue-50 {

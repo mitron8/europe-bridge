@@ -1,20 +1,20 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { 
   Grid, 
   List, 
   SlidersHorizontal, 
-  ArrowUpDown, 
   X, 
   Bookmark, 
-  Search, 
-  Check, 
   Frown, 
   RotateCcw,
-  ChevronDown
+  ChevronDown,
+  Loader2,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
-import { Course, CourseFilterState, DegreeLevel, FieldOfStudy, UniversityTier, AdmissionMode, LanguageOfInstruction } from "../types/course";
+import { Course, CourseFilterState } from "../types/course";
 import { COURSES_DATA } from "../data/coursesData";
 import { CoursesHero } from "./CoursesHero";
 import { CourseFiltersSidebar } from "./CourseFiltersSidebar";
@@ -39,11 +39,50 @@ const INITIAL_FILTERS: CourseFilterState = {
 
 export function CoursesExplorer() {
   const [filters, setFilters] = useState<CourseFilterState>(INITIAL_FILTERS);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
   const [showOnlyBookmarks, setShowOnlyBookmarks] = useState(false);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  // Server data states
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [totalCourses, setTotalCourses] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  // Debounce search query input by 350ms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(filters.searchQuery);
+      setCurrentPage(1);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [filters.searchQuery]);
+
+  // Reset page to 1 whenever any filter changes (except page itself)
+  const prevFiltersRef = useRef(filters);
+  useEffect(() => {
+    const prev = prevFiltersRef.current;
+    if (
+      prev.degreeLevels !== filters.degreeLevels ||
+      prev.fields !== filters.fields ||
+      prev.tuitionFilter !== filters.tuitionFilter ||
+      prev.languages !== filters.languages ||
+      prev.universityTiers !== filters.universityTiers ||
+      prev.admissionModes !== filters.admissionModes ||
+      prev.intakes !== filters.intakes ||
+      prev.selectedCities !== filters.selectedCities ||
+      prev.maxGpa !== filters.maxGpa ||
+      prev.sortBy !== filters.sortBy
+    ) {
+      setCurrentPage(1);
+      prevFiltersRef.current = filters;
+    }
+  }, [filters]);
 
   // Load bookmarks from localStorage
   useEffect(() => {
@@ -52,7 +91,7 @@ export function CoursesExplorer() {
       if (saved) {
         setBookmarkedIds(JSON.parse(saved));
       }
-    } catch (e) {
+    } catch {
       // ignore
     }
   }, []);
@@ -62,7 +101,7 @@ export function CoursesExplorer() {
       const next = prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id];
       try {
         localStorage.setItem("eb_bookmarked_courses", JSON.stringify(next));
-      } catch (e) {
+      } catch {
         // ignore
       }
       return next;
@@ -79,10 +118,12 @@ export function CoursesExplorer() {
   const handleResetFilters = () => {
     setFilters(INITIAL_FILTERS);
     setShowOnlyBookmarks(false);
+    setCurrentPage(1);
   };
 
   // Quick filter helper
   const handleQuickFilter = (key: string, value: any) => {
+    setCurrentPage(1);
     if (key === "tuition") {
       setFilters((prev) => ({ ...prev, tuitionFilter: value }));
     } else if (key === "tier") {
@@ -103,6 +144,86 @@ export function CoursesExplorer() {
     }
   };
 
+  // Fetch courses from backend API
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function fetchCourses() {
+      setIsLoading(true);
+      setFetchError(null);
+
+      try {
+        const params = new URLSearchParams();
+        if (debouncedSearch.trim()) params.set("search", debouncedSearch.trim());
+        if (filters.degreeLevels.length > 0) params.set("degree", filters.degreeLevels.join(","));
+        if (filters.fields.length > 0) params.set("field", filters.fields.join(","));
+        if (filters.tuitionFilter !== "all") params.set("tuition", filters.tuitionFilter);
+        if (filters.languages.length > 0) params.set("language", filters.languages.join(","));
+        if (filters.universityTiers.length > 0) params.set("tier", filters.universityTiers.join(","));
+        if (filters.admissionModes.length > 0) params.set("admissionMode", filters.admissionModes.join(","));
+        if (filters.intakes.length > 0) params.set("intake", filters.intakes.join(","));
+        if (filters.selectedCities.length > 0) params.set("city", filters.selectedCities.join(","));
+        if (filters.maxGpa !== undefined) params.set("maxGpa", String(filters.maxGpa));
+        if (filters.sortBy) params.set("sortBy", filters.sortBy);
+        params.set("page", String(currentPage));
+        params.set("limit", "24");
+
+        const API_BASE = process.env.NEXT_PUBLIC_API_URL || "/api/backend";
+        const res = await fetch(`${API_BASE}/courses?${params.toString()}`);
+
+        if (!res.ok) {
+          throw new Error(`Failed to load courses (${res.status})`);
+        }
+
+        const data = await res.json();
+        if (!isCancelled) {
+          if (Array.isArray(data.courses)) {
+            setCourses(data.courses);
+            setTotalCourses(data.total || 0);
+            setTotalPages(data.totalPages || 1);
+          } else {
+            // Fallback to static data if structure unexpected
+            setCourses(COURSES_DATA);
+            setTotalCourses(COURSES_DATA.length);
+            setTotalPages(1);
+          }
+        }
+      } catch (err: any) {
+        if (!isCancelled) {
+          console.warn("Backend courses query failed, falling back to static catalogue:", err.message);
+          setFetchError(err.message);
+          // Graceful fallback to static data
+          setCourses(COURSES_DATA);
+          setTotalCourses(COURSES_DATA.length);
+          setTotalPages(1);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    fetchCourses();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    debouncedSearch,
+    filters.degreeLevels,
+    filters.fields,
+    filters.tuitionFilter,
+    filters.languages,
+    filters.universityTiers,
+    filters.admissionModes,
+    filters.intakes,
+    filters.selectedCities,
+    filters.maxGpa,
+    filters.sortBy,
+    currentPage,
+  ]);
+
   // Calculate active filter count
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -120,101 +241,11 @@ export function CoursesExplorer() {
     return count;
   }, [filters, showOnlyBookmarks]);
 
-  // Filter & sort the courses list
-  const filteredCourses = useMemo(() => {
-    return COURSES_DATA.filter((course) => {
-      // 1. Search Query
-      if (filters.searchQuery.trim()) {
-        const query = filters.searchQuery.toLowerCase();
-        const matches =
-          course.title.toLowerCase().includes(query) ||
-          course.university.toLowerCase().includes(query) ||
-          course.universityShort.toLowerCase().includes(query) ||
-          course.city.toLowerCase().includes(query) ||
-          course.field.toLowerCase().includes(query) ||
-          course.subdiscipline.toLowerCase().includes(query) ||
-          course.description.toLowerCase().includes(query);
-        if (!matches) return false;
-      }
-
-      // 2. Degree Level
-      if (filters.degreeLevels.length > 0) {
-        if (!filters.degreeLevels.includes(course.degree)) return false;
-      }
-
-      // 3. Field of Study
-      if (filters.fields.length > 0) {
-        if (!filters.fields.includes(course.field)) return false;
-      }
-
-      // 4. Tuition Filter
-      if (filters.tuitionFilter === "free" && course.tuitionFeePerSemester > 0) {
-        return false;
-      }
-      if (filters.tuitionFilter === "nominal" && course.tuitionFeePerSemester === 0) {
-        return false;
-      }
-
-      // 5. Language
-      if (filters.languages.length > 0) {
-        if (!filters.languages.includes(course.language)) return false;
-      }
-
-      // 6. University Tier
-      if (filters.universityTiers.length > 0) {
-        if (!filters.universityTiers.includes(course.universityTier)) return false;
-      }
-
-      // 7. Admission Mode
-      if (filters.admissionModes.length > 0) {
-        if (!filters.admissionModes.includes(course.admissionMode)) return false;
-      }
-
-      // 8. Intake
-      if (filters.intakes.length > 0) {
-        const hasMatch = filters.intakes.some(
-          (intake) => course.intake === "Both" || course.intake === intake
-        );
-        if (!hasMatch) return false;
-      }
-
-      // 9. Selected Cities
-      if (filters.selectedCities.length > 0) {
-        if (!filters.selectedCities.includes(course.city)) return false;
-      }
-
-      // 10. German GPA
-      if (filters.maxGpa !== undefined) {
-        // Cutoff: if course requires minGermanGpa <= filter.maxGpa (Bavarian scale, lower is better)
-        if (course.minGermanGpa > filters.maxGpa) return false;
-      }
-
-      // 11. Bookmarks filter
-      if (showOnlyBookmarks) {
-        if (!bookmarkedIds.includes(course.id)) return false;
-      }
-
-      return true;
-    }).sort((a, b) => {
-      switch (filters.sortBy) {
-        case "tuition-asc":
-          return a.tuitionFeePerSemester - b.tuitionFeePerSemester;
-        case "gpa-asc":
-          return a.minGermanGpa - b.minGermanGpa;
-        case "title-asc":
-          return a.title.localeCompare(b.title);
-        case "university-asc":
-          return a.university.localeCompare(b.university);
-        case "recommended":
-        default:
-          if (a.featured && !b.featured) return -1;
-          if (!a.featured && b.featured) return 1;
-          if (a.universityTier === "TU9" && b.universityTier !== "TU9") return -1;
-          if (a.universityTier !== "TU9" && b.universityTier === "TU9") return 1;
-          return a.title.localeCompare(b.title);
-      }
-    });
-  }, [filters, showOnlyBookmarks, bookmarkedIds]);
+  // Client-side bookmark filtering
+  const displayedCourses = useMemo(() => {
+    if (!showOnlyBookmarks) return courses;
+    return courses.filter((c) => bookmarkedIds.includes(c.id));
+  }, [courses, showOnlyBookmarks, bookmarkedIds]);
 
   return (
     <div className="w-full">
@@ -222,8 +253,8 @@ export function CoursesExplorer() {
       <CoursesHero
         searchQuery={filters.searchQuery}
         onSearchChange={(q) => handleFilterChange("searchQuery", q)}
-        totalCount={COURSES_DATA.length}
-        filteredCount={filteredCourses.length}
+        totalCount={totalCourses || 24557}
+        filteredCount={displayedCourses.length}
         onQuickFilter={handleQuickFilter}
         activeFilterCount={activeFilterCount}
         onResetFilters={handleResetFilters}
@@ -231,14 +262,14 @@ export function CoursesExplorer() {
 
       {/* 2. Main Exploration Section */}
       <div className="lp-container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-        {/* Controls Toolbar: Mobile filter toggle, active chips, layout switcher, sort dropdown */}
+        {/* Controls Toolbar */}
         <div className="flex flex-col gap-4 border-b border-[#e5e0d3] pb-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             {/* Left: Results counter & Mobile Filter Button */}
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setMobileFilterOpen(true)}
-                className="lg:hidden inline-flex items-center gap-2 rounded-xl border border-[#16161a] bg-[#16161a] px-3.5 py-2 text-[13px] font-semibold text-white shadow-sm"
+                className="lg:hidden inline-flex items-center gap-2 rounded-xl border border-[#16161a] bg-[#16161a] px-3.5 py-2 text-[13px] font-semibold text-white shadow-sm cursor-pointer"
               >
                 <SlidersHorizontal className="h-4 w-4" />
                 <span>Filters</span>
@@ -250,8 +281,18 @@ export function CoursesExplorer() {
               </button>
 
               <div className="text-[14px] text-[#5e5b54]">
-                Showing <span className="font-bold text-[#16161a]">{filteredCourses.length}</span> of{" "}
-                <span className="font-bold text-[#16161a]">{COURSES_DATA.length}</span> programs
+                {isLoading ? (
+                  <span className="inline-flex items-center gap-2 text-[#787369]">
+                    <Loader2 className="h-4 w-4 animate-spin text-[#e63946]" />
+                    Searching accredited German database...
+                  </span>
+                ) : (
+                  <span>
+                    Showing{" "}
+                    <span className="font-bold text-[#16161a]">{displayedCourses.length}</span> of{" "}
+                    <span className="font-bold text-[#16161a]">{totalCourses.toLocaleString()}</span> accredited programs
+                  </span>
+                )}
               </div>
             </div>
 
@@ -260,7 +301,7 @@ export function CoursesExplorer() {
               {/* Bookmark Filter Toggle */}
               <button
                 onClick={() => setShowOnlyBookmarks(!showOnlyBookmarks)}
-                className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-[12.5px] font-semibold transition-all ${
+                className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-[12.5px] font-semibold transition-all cursor-pointer ${
                   showOnlyBookmarks
                     ? "border-[#e63946] bg-[#e63946]/10 text-[#e63946]"
                     : "border-[#dcd7cb] bg-white text-[#4a4740] hover:border-[#16161a]"
@@ -281,11 +322,10 @@ export function CoursesExplorer() {
                   onChange={(e) => handleFilterChange("sortBy", e.target.value as any)}
                   className="appearance-none rounded-xl border border-[#dcd7cb] bg-white py-2 pl-3 pr-8 text-[12.5px] font-semibold text-[#16161a] hover:border-[#16161a] focus:outline-none cursor-pointer"
                 >
-                  <option value="recommended">Recommended & TU9</option>
-                  <option value="tuition-asc">Tuition: Low to High</option>
-                  <option value="gpa-asc">Min German GPA Cutoff</option>
+                  <option value="recommended">Recommended &amp; TU9</option>
                   <option value="title-asc">Degree Name (A–Z)</option>
                   <option value="university-asc">University (A–Z)</option>
+                  <option value="gpa-asc">Min German GPA Cutoff</option>
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-2.5 h-3.5 w-3.5 text-[#787369]" />
               </div>
@@ -294,7 +334,7 @@ export function CoursesExplorer() {
               <div className="hidden sm:flex items-center rounded-xl border border-[#dcd7cb] bg-[#f7f5f0] p-1">
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+                  className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors cursor-pointer ${
                     viewMode === "grid"
                       ? "bg-white text-[#16161a] shadow-xs"
                       : "text-[#787369] hover:text-[#16161a]"
@@ -305,7 +345,7 @@ export function CoursesExplorer() {
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+                  className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors cursor-pointer ${
                     viewMode === "list"
                       ? "bg-white text-[#16161a] shadow-xs"
                       : "text-[#787369] hover:text-[#16161a]"
@@ -326,7 +366,7 @@ export function CoursesExplorer() {
               {filters.searchQuery && (
                 <span className="inline-flex items-center gap-1 rounded-full border border-[#dcd7cb] bg-white px-2.5 py-1 font-medium text-[#16161a]">
                   Search: &quot;{filters.searchQuery}&quot;
-                  <button onClick={() => handleFilterChange("searchQuery", "")} className="hover:text-[#e63946]">
+                  <button onClick={() => handleFilterChange("searchQuery", "")} className="hover:text-[#e63946] cursor-pointer">
                     <X className="h-3 w-3" />
                   </button>
                 </span>
@@ -335,7 +375,7 @@ export function CoursesExplorer() {
               {filters.tuitionFilter !== "all" && (
                 <span className="inline-flex items-center gap-1 rounded-full border border-[#dcd7cb] bg-white px-2.5 py-1 font-medium text-[#16161a]">
                   {filters.tuitionFilter === "free" ? "0€ Tuition Free" : "Nominal / Private"}
-                  <button onClick={() => handleFilterChange("tuitionFilter", "all")} className="hover:text-[#e63946]">
+                  <button onClick={() => handleFilterChange("tuitionFilter", "all")} className="hover:text-[#e63946] cursor-pointer">
                     <X className="h-3 w-3" />
                   </button>
                 </span>
@@ -351,7 +391,7 @@ export function CoursesExplorer() {
                         filters.degreeLevels.filter((d) => d !== deg)
                       )
                     }
-                    className="hover:text-[#e63946]"
+                    className="hover:text-[#e63946] cursor-pointer"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -368,7 +408,7 @@ export function CoursesExplorer() {
                         filters.fields.filter((item) => item !== f)
                       )
                     }
-                    className="hover:text-[#e63946]"
+                    className="hover:text-[#e63946] cursor-pointer"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -385,7 +425,7 @@ export function CoursesExplorer() {
                         filters.universityTiers.filter((t) => t !== tier)
                       )
                     }
-                    className="hover:text-[#e63946]"
+                    className="hover:text-[#e63946] cursor-pointer"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -402,7 +442,7 @@ export function CoursesExplorer() {
                         filters.admissionModes.filter((a) => a !== adm)
                       )
                     }
-                    className="hover:text-[#e63946]"
+                    className="hover:text-[#e63946] cursor-pointer"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -419,7 +459,7 @@ export function CoursesExplorer() {
                         filters.languages.filter((item) => item !== l)
                       )
                     }
-                    className="hover:text-[#e63946]"
+                    className="hover:text-[#e63946] cursor-pointer"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -429,7 +469,7 @@ export function CoursesExplorer() {
               {filters.maxGpa && (
                 <span className="inline-flex items-center gap-1 rounded-full border border-[#dcd7cb] bg-white px-2.5 py-1 font-medium text-[#16161a]">
                   GPA ≤ {filters.maxGpa}
-                  <button onClick={() => handleFilterChange("maxGpa", undefined)} className="hover:text-[#e63946]">
+                  <button onClick={() => handleFilterChange("maxGpa", undefined)} className="hover:text-[#e63946] cursor-pointer">
                     <X className="h-3 w-3" />
                   </button>
                 </span>
@@ -445,7 +485,7 @@ export function CoursesExplorer() {
                         filters.selectedCities.filter((c) => c !== city)
                       )
                     }
-                    className="hover:text-[#e63946]"
+                    className="hover:text-[#e63946] cursor-pointer"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -455,7 +495,7 @@ export function CoursesExplorer() {
               {showOnlyBookmarks && (
                 <span className="inline-flex items-center gap-1 rounded-full border border-[#dcd7cb] bg-[#f4f1ea] px-2.5 py-1 font-medium text-[#16161a]">
                   Saved Only
-                  <button onClick={() => setShowOnlyBookmarks(false)} className="hover:text-[#b4232f]">
+                  <button onClick={() => setShowOnlyBookmarks(false)} className="hover:text-[#b4232f] cursor-pointer">
                     <X className="h-3 w-3" />
                   </button>
                 </span>
@@ -463,7 +503,7 @@ export function CoursesExplorer() {
 
               <button
                 onClick={handleResetFilters}
-                className="ml-auto inline-flex items-center gap-1 font-bold text-[#b4232f] hover:underline"
+                className="ml-auto inline-flex items-center gap-1 font-bold text-[#b4232f] hover:underline cursor-pointer"
               >
                 <RotateCcw className="h-3 w-3" />
                 Clear all filters
@@ -474,20 +514,47 @@ export function CoursesExplorer() {
 
         {/* 3. Main Body: Sidebar Filters + Program Results */}
         <div className="mt-8 flex flex-col lg:flex-row items-start gap-8">
-          {/* Desktop Sidebar (hidden on mobile, responsive sticky on desktop with independent scroll) */}
+          {/* Desktop Sidebar */}
           <div className="hidden lg:block w-72 shrink-0 sticky top-24 max-h-[calc(100vh-7.5rem)]">
             <CourseFiltersSidebar
               filters={filters}
               onFilterChange={handleFilterChange}
               onResetFilters={handleResetFilters}
               activeFilterCount={activeFilterCount}
-              totalResults={filteredCourses.length}
+              totalResults={totalCourses || displayedCourses.length}
             />
           </div>
 
           {/* Results Column */}
           <div className="flex-1 min-w-0 w-full">
-            {filteredCourses.length === 0 ? (
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="rounded-2xl border border-[#e5e0d3] bg-white p-6 shadow-xs animate-pulse space-y-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-12 rounded-xl bg-gray-200" />
+                      <div className="flex-1 space-y-1.5">
+                        <div className="h-4 w-3/4 rounded bg-gray-200" />
+                        <div className="h-3 w-1/2 rounded bg-gray-100" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-3 w-1/4 rounded bg-gray-200" />
+                      <div className="h-5 w-5/6 rounded bg-gray-200" />
+                      <div className="h-3 w-1/2 rounded bg-gray-100" />
+                    </div>
+                    <div className="h-16 rounded-xl bg-gray-50" />
+                    <div className="flex justify-between pt-2">
+                      <div className="h-4 w-20 rounded bg-gray-200" />
+                      <div className="h-8 w-24 rounded-xl bg-gray-200" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : displayedCourses.length === 0 ? (
               <div className="rounded-3xl border border-[#e5e0d3] bg-white p-12 text-center shadow-xs">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#f4f1ea] text-[#787369] mb-4">
                   <Frown className="h-8 w-8" />
@@ -496,11 +563,11 @@ export function CoursesExplorer() {
                   No degree programs matched your filters
                 </h3>
                 <p className="mt-2 text-[14px] text-[#5e5b54] max-w-md mx-auto">
-                  Try clearing some filter criteria, broadening your GPA range, or searching for broader terms like &quot;Computer Science&quot; or &quot;Engineering&quot;.
+                  Try clearing some filter criteria, broadening your search term, or selecting a different study field.
                 </p>
                 <button
                   onClick={handleResetFilters}
-                  className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#16161a] px-5 py-2.5 text-[13px] font-semibold text-white transition-all hover:bg-[#2e2e34]"
+                  className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#16161a] px-5 py-2.5 text-[13px] font-semibold text-white transition-all hover:bg-[#2e2e34] cursor-pointer"
                 >
                   <RotateCcw className="h-4 w-4" />
                   Reset all filters
@@ -508,7 +575,7 @@ export function CoursesExplorer() {
               </div>
             ) : viewMode === "grid" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
-                {filteredCourses.map((course) => (
+                {displayedCourses.map((course) => (
                   <CourseCard
                     key={course.id}
                     course={course}
@@ -520,7 +587,7 @@ export function CoursesExplorer() {
               </div>
             ) : (
               <div className="space-y-3.5">
-                {filteredCourses.map((course) => (
+                {displayedCourses.map((course) => (
                   <CourseListItem
                     key={course.id}
                     course={course}
@@ -529,6 +596,65 @@ export function CoursesExplorer() {
                     onToggleBookmark={toggleBookmark}
                   />
                 ))}
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {!isLoading && totalPages > 1 && (
+              <div className="mt-10 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#e5e0d3] bg-white p-4 shadow-xs">
+                <div className="text-[13px] text-[#5e5b54]">
+                  Page <span className="font-bold text-[#16161a]">{currentPage}</span> of{" "}
+                  <span className="font-bold text-[#16161a]">{totalPages}</span> (
+                  {(totalCourses).toLocaleString()} programs)
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => {
+                      setCurrentPage((p) => Math.max(1, p - 1));
+                      window.scrollTo({ top: 380, behavior: "smooth" });
+                    }}
+                    disabled={currentPage <= 1}
+                    className="inline-flex items-center gap-1 rounded-xl border border-[#dcd7cb] bg-white px-3 py-1.5 text-[12.5px] font-bold text-[#16161a] hover:bg-[#f7f5f0] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    <span>Previous</span>
+                  </button>
+
+                  {/* Quick Page Jump indicators */}
+                  <div className="hidden sm:flex items-center gap-1 px-1">
+                    {[currentPage - 1, currentPage, currentPage + 1]
+                      .filter((p) => p >= 1 && p <= totalPages)
+                      .map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => {
+                            setCurrentPage(p);
+                            window.scrollTo({ top: 380, behavior: "smooth" });
+                          }}
+                          className={`h-8 w-8 rounded-lg text-[12px] font-bold transition-colors cursor-pointer ${
+                            p === currentPage
+                              ? "bg-[#16161a] text-white"
+                              : "border border-[#dcd7cb] bg-white text-[#4a4740] hover:bg-[#f7f5f0]"
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setCurrentPage((p) => Math.min(totalPages, p + 1));
+                      window.scrollTo({ top: 380, behavior: "smooth" });
+                    }}
+                    disabled={currentPage >= totalPages}
+                    className="inline-flex items-center gap-1 rounded-xl border border-[#dcd7cb] bg-white px-3 py-1.5 text-[12.5px] font-bold text-[#16161a] hover:bg-[#f7f5f0] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    <span>Next</span>
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             )}
 
@@ -545,7 +671,7 @@ export function CoursesExplorer() {
             onClick={() => setMobileFilterOpen(false)}
             className="fixed inset-0 bg-[#0d0d0f]/60 backdrop-blur-xs"
           />
-          <div className="relative z-10 flex h-full w-full max-w-md flex-col bg-[#fdfcf9] shadow-2xl overflow-y-auto">
+          <div className="relative z-10 flex h-full w-full max-w-md flex-col bg-[#fdfcf9] shadow-2xl overflow-y-auto no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div className="sticky top-0 z-20 flex items-center justify-between border-b border-[#e5e0d3] bg-[#fdfcf9] px-4 py-3.5">
               <div className="flex items-center gap-2">
                 <span className="font-bold text-[14.5px] text-[#16161a]">
@@ -554,7 +680,7 @@ export function CoursesExplorer() {
                 {activeFilterCount > 0 && (
                   <button
                     onClick={handleResetFilters}
-                    className="text-[12px] font-semibold text-[#b4232f] hover:underline ml-2"
+                    className="text-[12px] font-semibold text-[#b4232f] hover:underline ml-2 cursor-pointer"
                   >
                     Reset all
                   </button>
@@ -562,7 +688,7 @@ export function CoursesExplorer() {
               </div>
               <button
                 onClick={() => setMobileFilterOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#e5e0d3] text-[#787369] hover:text-[#16161a]"
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#e5e0d3] text-[#787369] hover:text-[#16161a] cursor-pointer"
                 aria-label="Close filters"
               >
                 <X className="h-5 w-5" />
@@ -574,16 +700,16 @@ export function CoursesExplorer() {
                 onFilterChange={handleFilterChange}
                 onResetFilters={handleResetFilters}
                 activeFilterCount={activeFilterCount}
-                totalResults={filteredCourses.length}
+                totalResults={totalCourses || displayedCourses.length}
                 hideHeader
               />
             </div>
             <div className="sticky bottom-0 z-20 border-t border-[#e5e0d3] bg-[#fdfcf9] p-4">
               <button
                 onClick={() => setMobileFilterOpen(false)}
-                className="w-full rounded-xl bg-[#16161a] py-3 text-center text-[13.5px] font-semibold text-white"
+                className="w-full rounded-xl bg-[#16161a] py-3 text-center text-[13.5px] font-semibold text-white cursor-pointer"
               >
-                Show {filteredCourses.length} Programs
+                Show Programs
               </button>
             </div>
           </div>

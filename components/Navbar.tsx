@@ -1,10 +1,20 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function Navbar() {
   return (
     <nav className="flex items-center justify-between p-4 bg-white border-b border-black text-black">
       <div className="font-bold text-xl">
-        <Link href="/">EuropeBridge</Link>
+        <Link href="/" className="inline-flex items-center">
+          <Image
+            src="/logo.png"
+            alt="EuropeBridge - People Beyond Borders"
+            width={245}
+            height={40}
+            priority
+            className="h-9 w-auto object-contain"
+          />
+        </Link>
       </div>
       <div className="space-x-4 hidden md:block">
         <Link href="/">Home</Link>

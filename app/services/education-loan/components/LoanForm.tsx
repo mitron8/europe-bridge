@@ -1,7 +1,9 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Send, CheckCircle2, PhoneCall } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { submitPartnerLead } from '@/lib/servicesPayment';
+import { useAppStore } from '@/store/useAppStore';
 
 export const LoanForm = () => {
   const [firstName, setFirstName] = useState('');
@@ -13,15 +15,38 @@ export const LoanForm = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { user } = useAppStore();
+
+  useEffect(() => {
+    if (user) {
+      if (user.first_name && !firstName) setFirstName(user.first_name);
+      if (user.last_name && !lastName) setLastName(user.last_name);
+      if (user.email && !email) setEmail(user.email);
+      if (user.phone && !phone) setPhone(user.phone);
+    }
+  }, [user]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!firstName || !email || !phone || !consent) return;
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await submitPartnerLead({
+        serviceType: 'EDUCATION_LOAN',
+        fullName: `${firstName} ${lastName}`.trim(),
+        firstName,
+        lastName,
+        email,
+        phone: `${countryCode} ${phone}`,
+      });
       setIsSubmitted(true);
-    }, 800);
+    } catch (err) {
+      console.error('Loan application inquiry error:', err);
+      setIsSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -108,11 +133,11 @@ export const LoanForm = () => {
                   onChange={(e) => setCountryCode(e.target.value)}
                   className="px-3 py-3 rounded-xl border border-[#e5e0d3] font-bold text-xs bg-[#faf8f3] text-[var(--lp-text)] focus:border-[var(--lp-red)] outline-none"
                 >
-                  <option value="+91">🇮🇳 +91</option>
-                  <option value="+49">🇩🇪 +49</option>
-                  <option value="+1">🇺🇸 +1</option>
-                  <option value="+44">🇬🇧 +44</option>
-                  <option value="+971">🇦🇪 +971</option>
+                  <option value="+91">IN (+91)</option>
+                  <option value="+49">DE (+49)</option>
+                  <option value="+1">US (+1)</option>
+                  <option value="+44">UK (+44)</option>
+                  <option value="+971">AE (+971)</option>
                 </select>
                 <input 
                   type="tel" 
