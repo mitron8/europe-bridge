@@ -1,41 +1,94 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { 
   Search, 
-  RotateCcw, 
+  RotateCw, 
   ArrowUpRight,
   ShieldAlert,
-  ChevronRight
+  ChevronRight,
+  CheckCircle2,
+  AlertTriangle,
+  Clock
 } from 'lucide-react';
-import QueryDetailModal from '@/components/help/QueryDetailModal';
 import { ClaySelect } from '@/components/ClaySelect';
-import { useHelpStore, SupportQuery } from '@/store/useHelpStore';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+
+interface SuperAdminTicket {
+  id: string;
+  ticketNumber: string;
+  title: string;
+  category: string;
+  priority: string;
+  status: string;
+  escalatedTo: string | null;
+  escalationReason: string | null;
+  escalatedAt: string | null;
+  resolvedAt: string | null;
+  resolutionSummary: string | null;
+  student: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  counsellor: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
+  totalMessages: number;
+  internalNotesCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function SuperAdminHelpPage() {
-  const queries = useHelpStore((s) => s.queries);
-  const resetDemoData = useHelpStore((s) => s.resetDemoData);
-
+  const [tickets, setTickets] = useState<SuperAdminTicket[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [selectedQuery, setSelectedQuery] = useState<SupportQuery | null>(null);
 
-  const filteredQueries = queries.filter((q) => {
+  const fetchTickets = async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${API_URL}/help/admin/queries`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTickets(data);
+      }
+    } catch (err) {
+      // Silently handle error
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTickets();
+  }, []);
+
+  const filteredQueries = tickets.filter((q) => {
+    const qSearch = search.trim().toLowerCase();
     const matchesSearch = 
-      q.title.toLowerCase().includes(search.toLowerCase()) ||
-      q.id.toLowerCase().includes(search.toLowerCase()) ||
-      q.raisedBy.name.toLowerCase().includes(search.toLowerCase());
+      !qSearch ||
+      q.ticketNumber.toLowerCase().includes(qSearch) ||
+      q.title.toLowerCase().includes(qSearch) ||
+      q.student.name.toLowerCase().includes(qSearch) ||
+      q.student.email.toLowerCase().includes(qSearch) ||
+      (q.counsellor?.name.toLowerCase().includes(qSearch) ?? false);
 
-    const matchesRole = roleFilter === 'all' || q.raisedBy.role === roleFilter;
     const matchesStatus = statusFilter === 'all' || q.status === statusFilter;
 
-    return matchesSearch && matchesRole && matchesStatus;
+    return matchesSearch && matchesStatus;
   });
 
-  const totalRaised = queries.length;
-  const totalResolved = queries.filter((q) => q.status === 'resolved').length;
-  const totalEscalated = queries.filter((q) => q.status === 'escalated_to_admin' || q.escalationInfo).length;
+  const totalRaised = tickets.length;
+  const totalResolved = tickets.filter((q) => q.status === 'resolved' || q.status === 'closed').length;
+  const totalEscalated = tickets.filter((q) => q.status === 'escalated').length;
 
   const getStatusDot = (status: string) => {
     switch (status) {
@@ -46,21 +99,22 @@ export default function SuperAdminHelpPage() {
             Open
           </span>
         );
-      case 'in_review_counsellor':
+      case 'in_progress':
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-germany-gold">
-            <span className="w-1.5 h-1.5 rounded-full bg-germany-gold" />
-            In Review
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-600">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
+            In Progress
           </span>
         );
-      case 'escalated_to_admin':
+      case 'escalated':
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-germany-red">
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-germany-red animate-pulse">
             <span className="w-1.5 h-1.5 rounded-full bg-germany-red" />
-            Escalated
+            Escalated to Admin
           </span>
         );
       case 'resolved':
+      case 'closed':
         return (
           <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
@@ -94,12 +148,12 @@ export default function SuperAdminHelpPage() {
             </span>
           </div>
           <p className="text-xs text-gray-500 font-medium max-w-xl">
-            Full platform governance across all student and counsellor queries, lifecycle status, and resolution speed.
+            Full platform governance across all student inquiries, real ticket numbers, counsellor allocations, and administrative escalations.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Subtle Stats Inline */}
+          {/* Stats Inline */}
           <div className="hidden sm:flex items-center gap-4 text-xs font-bold text-gray-500 border-r border-gray-200 pr-4">
             <span>Total: <strong className="text-germany-black">{totalRaised}</strong></span>
             <span>Escalated: <strong className="text-germany-red">{totalEscalated}</strong></span>
@@ -107,52 +161,49 @@ export default function SuperAdminHelpPage() {
           </div>
 
           <button
-            onClick={() => resetDemoData()}
-            title="Reset Sample Data"
+            onClick={fetchTickets}
+            title="Refresh Inquiries"
             className="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCw className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {/* Filter Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="relative w-full sm:w-72">
+        <div className="relative w-full sm:w-96">
           <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-gray-400" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search all issues, students, staff..."
+            placeholder="Search by Ticket # (e.g. EB-...), student, or subject..."
             className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200/80 rounded-xl text-xs text-germany-black placeholder-gray-400 focus:outline-none focus:border-germany-red transition-all"
           />
         </div>
 
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <ClaySelect
-            value={roleFilter}
-            onChange={(val) => setRoleFilter(val)}
-            options={[
-              { value: 'all', label: 'All Roles' },
-              { value: 'student', label: 'Student Raised' },
-              { value: 'counsellor', label: 'Counsellor Raised' },
-            ]}
-            className="w-full sm:w-44"
-          />
-
-          <ClaySelect
             value={statusFilter}
             onChange={(val) => setStatusFilter(val)}
             options={[
               { value: 'all', label: 'All Statuses' },
               { value: 'open', label: 'Open' },
-              { value: 'in_review_counsellor', label: 'In Review' },
-              { value: 'escalated_to_admin', label: 'Escalated' },
+              { value: 'in_progress', label: 'In Progress' },
+              { value: 'escalated', label: 'Escalated to Admin' },
               { value: 'resolved', label: 'Resolved' },
             ]}
-            className="w-full sm:w-44"
+            className="w-full sm:w-48"
           />
+
+          <Link
+            href="/dashboard/admin/help"
+            className="bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5"
+          >
+            <span>Open Help Desk Console</span>
+            <ArrowUpRight className="w-3.5 h-3.5 text-germany-gold" />
+          </Link>
         </div>
       </div>
 
@@ -162,18 +213,25 @@ export default function SuperAdminHelpPage() {
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="border-b border-gray-200/70 text-[11px] font-bold text-gray-400 bg-gray-50/60">
-                <th className="py-3 px-4">Ticket</th>
-                <th className="py-3 px-4">Raised By</th>
-                <th className="py-3 px-4">Handling / Escalated</th>
+                <th className="py-3 px-4">Ticket Number</th>
+                <th className="py-3 px-4">Subject & Category</th>
+                <th className="py-3 px-4">Student</th>
+                <th className="py-3 px-4">Assigned Counsellor</th>
                 <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4">Updated</th>
+                <th className="py-3 px-4">Last Updated</th>
                 <th className="py-3 px-4 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredQueries.length === 0 ? (
+              {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="py-10 text-center text-gray-400 font-medium">
+                  <td colSpan={7} className="py-10 text-center text-gray-400 font-medium">
+                    Loading inquiries from database...
+                  </td>
+                </tr>
+              ) : filteredQueries.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-10 text-center text-gray-400 font-medium">
                     No tickets found matching the governance criteria.
                   </td>
                 </tr>
@@ -181,38 +239,40 @@ export default function SuperAdminHelpPage() {
                 filteredQueries.map((q) => (
                   <tr 
                     key={q.id}
-                    onClick={() => setSelectedQuery(q)}
-                    className="hover:bg-gray-50/80 transition-colors cursor-pointer group"
+                    className="hover:bg-gray-50/80 transition-colors group"
                   >
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      <span className="font-mono text-xs font-bold text-gray-900 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
+                        {q.ticketNumber}
+                      </span>
+                    </td>
+
                     <td className="py-3.5 px-4 max-w-xs">
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="font-mono text-[11px] font-bold text-gray-400">{q.id}</span>
-                        <span className="text-[10px] font-bold text-gray-600 bg-gray-100 px-1.5 py-0.2 rounded">
-                          {q.category}
-                        </span>
-                      </div>
+                      <span className="text-[10px] font-bold text-gray-600 bg-gray-100 px-1.5 py-0.2 rounded mb-1 inline-block">
+                        {q.category}
+                      </span>
                       <p className="font-bold text-germany-black group-hover:text-germany-red transition-colors truncate">
                         {q.title}
                       </p>
                     </td>
 
                     <td className="py-3.5 px-4 whitespace-nowrap">
-                      <span className="font-bold text-gray-900">{q.raisedBy.name}</span>
-                      <span className="block text-[10px] font-semibold text-gray-400 capitalize">{q.raisedBy.role}</span>
+                      <span className="font-bold text-gray-900">{q.student.name}</span>
+                      <span className="block text-[10px] text-gray-400">{q.student.email}</span>
                     </td>
 
                     <td className="py-3.5 px-4 whitespace-nowrap text-gray-600">
-                      {q.assignedCounsellor ? (
+                      {q.counsellor ? (
                         <div>
-                          <span className="font-medium text-gray-800">{q.assignedCounsellor.name}</span>
-                          {q.escalationInfo && (
+                          <span className="font-medium text-gray-800">{q.counsellor.name}</span>
+                          {q.status === 'escalated' && (
                             <span className="block text-[10px] text-germany-red font-bold">
                               ↳ Escalated to Admin
                             </span>
                           )}
                         </div>
                       ) : (
-                        <span className="text-gray-400 italic">Direct to Admin</span>
+                        <span className="text-gray-400 italic">Unassigned</span>
                       )}
                     </td>
 
@@ -220,14 +280,18 @@ export default function SuperAdminHelpPage() {
                       {getStatusDot(q.status)}
                     </td>
 
-                    <td className="py-3.5 px-4 whitespace-nowrap text-[11px] text-gray-400 font-medium">
-                      {q.updatedAt}
+                    <td className="py-3.5 px-4 whitespace-nowrap text-[11px] text-gray-400 font-medium font-mono">
+                      {new Date(q.updatedAt).toLocaleDateString()}
                     </td>
 
                     <td className="py-3.5 px-4 whitespace-nowrap text-right">
-                      <span className="text-gray-400 group-hover:text-germany-red font-bold inline-flex items-center gap-0.5">
-                        Audit <ChevronRight className="w-3.5 h-3.5" />
-                      </span>
+                      <Link
+                        href="/dashboard/admin/help"
+                        className="text-gray-500 hover:text-germany-red font-bold inline-flex items-center gap-0.5"
+                      >
+                        <span>Inspect Desk</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </Link>
                     </td>
                   </tr>
                 ))
@@ -236,18 +300,6 @@ export default function SuperAdminHelpPage() {
           </table>
         </div>
       </div>
-
-      {/* Audit Detail Modal */}
-      {selectedQuery && (
-        <QueryDetailModal
-          isOpen={!!selectedQuery}
-          onClose={() => setSelectedQuery(null)}
-          query={queries.find((q) => q.id === selectedQuery.id) || selectedQuery}
-          viewerRole="superadmin"
-          viewerName="Super Admin"
-          viewerEmail="superadmin@europebridge.de"
-        />
-      )}
     </div>
   );
 }

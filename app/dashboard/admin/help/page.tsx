@@ -1,14 +1,12 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, 
-  RotateCcw, 
+  RotateCw, 
   ArrowUpRight, 
-  Building, 
   ShieldCheck,
   CheckCircle2,
-  Check,
   AlertTriangle,
   MessageSquare,
   Send,
@@ -19,144 +17,372 @@ import {
   FileText,
   Filter,
   Layers,
-  X
+  X,
+  AlertCircle,
+  Clock,
+  Check
 } from 'lucide-react';
 import { ClaySelect } from '@/components/ClaySelect';
-import { useHelpStore, SupportQuery, QueryStatus, QueryPriority, QuerySender } from '@/store/useHelpStore';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+
+const ESCALATION_REASONS = [
+  'APS Certificate & Name Mismatch clearance with liaison',
+  'University eligibility waiver / special partnership case',
+  'Urgent Embassy Visa slot escalation',
+  'Fee waiver or blocked account funding exception',
+  'Technical portal bug / profile verification hold',
+  'Official Institutional verification letter needed from Admin',
+  'Other Administrative Intervention Required'
+];
+
+interface AdminTicketSummary {
+  id: string;
+  ticketNumber: string;
+  title: string;
+  category: string;
+  priority: string;
+  status: string;
+  escalatedTo: string | null;
+  escalationReason: string | null;
+  escalatedAt: string | null;
+  resolvedAt: string | null;
+  resolutionSummary: string | null;
+  student: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  counsellor: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
+  totalMessages: number;
+  internalNotesCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface MessageItem {
+  id: string;
+  senderId: string;
+  senderName: string;
+  senderRole: string;
+  isInternalNote: boolean;
+  content: string;
+  isMe: boolean;
+  createdAt: string;
+}
+
+interface AdminTicketDetails extends AdminTicketSummary {
+  isEscalated: boolean;
+  canChat: boolean;
+  isTextable: boolean;
+  messages: MessageItem[];
+}
 
 export default function AdminHelpPage() {
-  const queries = useHelpStore((s) => s.queries);
-  const resetDemoData = useHelpStore((s) => s.resetDemoData);
-  const resolveQuery = useHelpStore((s) => s.resolveQuery);
-  const updateQueryStatus = useHelpStore((s) => s.updateQueryStatus);
-  const addMessageToQuery = useHelpStore((s) => s.addMessageToQuery);
-
-  // Tabs: 'escalated' | 'all' | 'counsellor' | 'resolved'
-  const [activeTab, setActiveTab] = useState<'escalated' | 'all' | 'counsellor' | 'resolved'>('escalated');
+  const [tickets, setTickets] = useState<AdminTicketSummary[]>([]);
+  const [activeTab, setActiveTab] = useState<'escalated' | 'all' | 'resolved'>('escalated');
   const [search, setSearch] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [counsellorFilter, setCounsellorFilter] = useState('all');
+  const [studentFilter, setStudentFilter] = useState('all');
   
-  // Selected ticket for side-by-side details view
-  const [selectedTicketId, setSelectedTicketId] = useState<string | null>('TICK-101');
-  
-  // Checkbox multi-selection for bulk/quick actions
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  
-  // Form states in detail pane
-  const [resolutionText, setResolutionText] = useState('');
-  const [showResolveForm, setShowResolveForm] = useState(false);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [ticketDetails, setTicketDetails] = useState<AdminTicketDetails | null>(null);
+
+  const [isLoadingList, setIsLoadingList] = useState(true);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Message compose form state
   const [replyText, setReplyText] = useState('');
   const [isInternalNote, setIsInternalNote] = useState(false);
 
-  // Categorize queries
-  const escalatedQueries = queries.filter((q) => q.status === 'escalated_to_admin' || (q.escalationInfo && q.status !== 'resolved'));
-  const counsellorQueries = queries.filter((q) => q.raisedBy.role === 'counsellor');
-  const resolvedQueries = queries.filter((q) => q.status === 'resolved');
-  const allQueries = queries;
+  // Modals state
+  const [showEscalateModal, setShowEscalateModal] = useState(false);
+  const [escalateReason, setEscalateReason] = useState(ESCALATION_REASONS[0]);
+  const [escalateAdminNotes, setEscalateAdminNotes] = useState('');
+  const [isEscalating, setIsEscalating] = useState(false);
 
-  let baseList: SupportQuery[] = [];
-  if (activeTab === 'escalated') baseList = escalatedQueries;
-  else if (activeTab === 'counsellor') baseList = counsellorQueries;
-  else if (activeTab === 'resolved') baseList = resolvedQueries;
-  else baseList = allQueries;
+  const [showResolveModal, setShowResolveModal] = useState(false);
+  const [resolutionSummary, setResolutionSummary] = useState('');
+  const [isResolving, setIsResolving] = useState(false);
 
-  const filteredList = baseList.filter((q) => {
-    const matchesSearch = 
-      q.title.toLowerCase().includes(search.toLowerCase()) ||
-      q.id.toLowerCase().includes(search.toLowerCase()) ||
-      q.raisedBy.name.toLowerCase().includes(search.toLowerCase()) ||
-      q.description.toLowerCase().includes(search.toLowerCase());
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const matchesPriority = priorityFilter === 'all' || q.priority === priorityFilter;
-
-    return matchesSearch && matchesPriority;
-  });
-
-  // Current active ticket details
-  const activeTicket = queries.find((q) => q.id === selectedTicketId) || (filteredList.length > 0 ? filteredList[0] : null);
-
-  // Handle row selection
-  const handleSelectRow = (ticketId: string) => {
-    setSelectedTicketId(ticketId);
-    setShowResolveForm(false);
-    setResolutionText('');
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Checkbox toggle
-  const toggleCheckbox = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setSelectedIds((prev) => 
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  };
+  // 1. Fetch tickets list
+  const fetchTickets = async () => {
+    try {
+      setIsLoadingList(true);
+      setErrorMessage(null);
 
-  // Select all visible
-  const toggleSelectAll = () => {
-    if (selectedIds.length === filteredList.length && filteredList.length > 0) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(filteredList.map((q) => q.id));
+      const res = await fetch(`${API_URL}/help/admin/queries`, {
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to load inquiries (${res.status})`);
+      }
+
+      const data: AdminTicketSummary[] = await res.json();
+      setTickets(data);
+
+      // Auto-select first ticket if none currently selected
+      if (!selectedTicketId && data.length > 0) {
+        const defaultTicket = activeTab === 'escalated'
+          ? data.find(t => t.status === 'escalated') || data[0]
+          : data[0];
+        setSelectedTicketId(defaultTicket.id);
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Error fetching inquiries');
+    } finally {
+      setIsLoadingList(false);
     }
   };
 
-  // Mark selected as resolved
-  const handleBulkResolve = () => {
-    if (selectedIds.length === 0) return;
-    const defaultNote = 'Resolved and verified by Central Operations Admin Desk.';
-    selectedIds.forEach((id) => {
-      resolveQuery(id, 'Vikram Singh (Admin Operations)', 'admin', defaultNote);
-    });
-    setSelectedIds([]);
-  };
+  useEffect(() => {
+    fetchTickets();
+  }, []);
 
-  // Single resolve from detail panel
-  const handleSingleResolve = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeTicket || !resolutionText.trim()) return;
+  // 2. Fetch ticket details when selectedTicketId changes
+  useEffect(() => {
+    if (!selectedTicketId) {
+      setTicketDetails(null);
+      return;
+    }
 
-    resolveQuery(activeTicket.id, 'Vikram Singh (Admin Operations)', 'admin', resolutionText.trim());
-    setResolutionText('');
-    setShowResolveForm(false);
-  };
+    let isMounted = true;
+    async function loadDetails() {
+      try {
+        setIsLoadingDetails(true);
+        const res = await fetch(`${API_URL}/help/admin/queries/${selectedTicketId}`, {
+          credentials: 'include',
+        });
+        if (res.ok) {
+          const data: AdminTicketDetails = await res.json();
+          if (isMounted) {
+            setTicketDetails(data);
+          }
+        }
+      } catch (err) {
+        // Silently handle error
+      } finally {
+        if (isMounted) setIsLoadingDetails(false);
+      }
+    }
 
-  // Quick 1-click resolve button on a card
-  const handleQuickResolveCard = (q: SupportQuery, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setSelectedTicketId(q.id);
-    setShowResolveForm(true);
-    setResolutionText(`Approved and resolved by Admin. Verification document / action completed.`);
-  };
-
-  // Status changer from detail panel
-  const handleStatusChange = (newStatus: QueryStatus) => {
-    if (!activeTicket) return;
-    updateQueryStatus(activeTicket.id, newStatus, 'Vikram Singh (Admin Operations)', 'admin');
-  };
-
-  // Send admin reply
-  const handleSendReply = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeTicket || !replyText.trim()) return;
-
-    const sender: QuerySender = {
-      id: 'adm-ops',
-      name: 'Vikram Singh (Admin Operations)',
-      email: 'vikram.admin@europebridge.de',
-      role: 'admin',
+    loadDetails();
+    return () => {
+      isMounted = false;
     };
+  }, [selectedTicketId]);
 
-    addMessageToQuery(activeTicket.id, replyText.trim(), sender, isInternalNote);
-    setReplyText('');
-    setIsInternalNote(false);
+  useEffect(() => {
+    scrollToBottom();
+  }, [ticketDetails?.messages]);
+
+  // Tab counts
+  const escalatedList = tickets.filter((t) => t.status === 'escalated');
+  const resolvedList = tickets.filter((t) => t.status === 'resolved' || t.status === 'closed');
+  const allStudentList = tickets;
+
+  // Filter based on active tab
+  let currentTabList: AdminTicketSummary[] = [];
+  if (activeTab === 'escalated') currentTabList = escalatedList;
+  else if (activeTab === 'resolved') currentTabList = resolvedList;
+  else currentTabList = allStudentList;
+
+  const uniqueCounsellors = Array.from(
+    new Set(tickets.map((t) => t.counsellor?.name).filter(Boolean) as string[])
+  ).sort();
+
+  const uniqueStudents = Array.from(
+    new Set(tickets.map((t) => t.student.name))
+  ).sort();
+
+  // Search & priority, counsellor, student filtering
+  const filteredList = currentTabList.filter((q) => {
+    const qSearch = search.trim().toLowerCase();
+    const matchesSearch = 
+      !qSearch ||
+      q.ticketNumber.toLowerCase().includes(qSearch) ||
+      q.title.toLowerCase().includes(qSearch) ||
+      q.student.name.toLowerCase().includes(qSearch) ||
+      q.student.email.toLowerCase().includes(qSearch) ||
+      (q.counsellor?.name.toLowerCase().includes(qSearch) ?? false);
+
+    const matchesPriority = priorityFilter === 'all' || q.priority === priorityFilter;
+
+    const matchesCounsellor =
+      counsellorFilter === 'all' ||
+      (counsellorFilter === 'unassigned'
+        ? !q.counsellor
+        : q.counsellor?.name === counsellorFilter);
+
+    const matchesStudent =
+      studentFilter === 'all' || q.student.name === studentFilter;
+
+    return matchesSearch && matchesPriority && matchesCounsellor && matchesStudent;
+  });
+
+  // Switch tab and auto-select top ticket
+  const handleTabChange = (tab: 'escalated' | 'all' | 'resolved') => {
+    setActiveTab(tab);
+    let listForTab = allStudentList;
+    if (tab === 'escalated') listForTab = escalatedList;
+    else if (tab === 'resolved') listForTab = resolvedList;
+
+    if (listForTab.length > 0) {
+      setSelectedTicketId(listForTab[0].id);
+    }
   };
 
-  const getStatusBadge = (status: QueryStatus) => {
+  // 3. Send message action (only allowed if status === 'escalated')
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTicketId || !replyText.trim() || !ticketDetails?.canChat) return;
+
+    try {
+      setIsSending(true);
+      const res = await fetch(`${API_URL}/help/admin/queries/${selectedTicketId}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          content: replyText.trim(),
+          isInternalNote,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to post message');
+      }
+
+      const newMsg: MessageItem = await res.json();
+      setTicketDetails((prev) => prev ? {
+        ...prev,
+        messages: [...prev.messages, newMsg],
+      } : null);
+
+      setReplyText('');
+      setIsInternalNote(false);
+    } catch (err: any) {
+      alert(err.message || 'Error sending message');
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  // 4. Escalate to Admin action
+  const handleEscalateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTicketId || !escalateReason.trim()) return;
+
+    try {
+      setIsEscalating(true);
+      const res = await fetch(`${API_URL}/help/admin/queries/${selectedTicketId}/escalate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          reason: escalateReason,
+          adminNotes: escalateAdminNotes.trim() || undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to escalate inquiry');
+      }
+
+      setShowEscalateModal(false);
+      setEscalateAdminNotes('');
+      await fetchTickets();
+
+      // Refresh current details
+      const detailRes = await fetch(`${API_URL}/help/admin/queries/${selectedTicketId}`, {
+        credentials: 'include',
+      });
+      if (detailRes.ok) {
+        const updated = await detailRes.json();
+        setTicketDetails(updated);
+      }
+    } catch (err: any) {
+      alert(err.message || 'Error escalating inquiry');
+    } finally {
+      setIsEscalating(false);
+    }
+  };
+
+  // 5. Resolve query action
+  const handleResolveSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTicketId || !resolutionSummary.trim()) return;
+
+    try {
+      setIsResolving(true);
+      const res = await fetch(`${API_URL}/help/admin/queries/${selectedTicketId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          status: 'resolved',
+          resolutionSummary: resolutionSummary.trim(),
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to resolve inquiry');
+      }
+
+      setShowResolveModal(false);
+      setResolutionSummary('');
+      await fetchTickets();
+
+      // Refresh current details
+      const detailRes = await fetch(`${API_URL}/help/admin/queries/${selectedTicketId}`, {
+        credentials: 'include',
+      });
+      if (detailRes.ok) {
+        const updated = await detailRes.json();
+        setTicketDetails(updated);
+      }
+    } catch (err: any) {
+      alert(err.message || 'Error resolving inquiry');
+    } finally {
+      setIsResolving(false);
+    }
+  };
+
+  const getPriorityBadge = (priority: string) => {
+    switch (priority) {
+      case 'urgent':
+        return <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-red-100 text-red-800 uppercase">Urgent</span>;
+      case 'high':
+        return <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-100 text-amber-800 uppercase">High</span>;
+      case 'medium':
+        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 uppercase">Medium</span>;
+      default:
+        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-700 uppercase">Low</span>;
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'escalated_to_admin':
+      case 'escalated':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-germany-red bg-red-50 border border-red-200 px-2 py-0.5 rounded-full animate-pulse">
+          <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-germany-red bg-red-50 border border-red-200 px-2 py-0.5 rounded-full animate-pulse">
             <span className="w-1.5 h-1.5 rounded-full bg-germany-red" />
-            Action Required
+            Escalated to Admin
           </span>
         );
       case 'resolved':
@@ -166,11 +392,11 @@ export default function AdminHelpPage() {
             Resolved
           </span>
         );
-      case 'in_review_counsellor':
+      case 'in_progress':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-germany-gold bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-            <span className="w-1.5 h-1.5 rounded-full bg-germany-gold" />
-            In Review
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+            <Clock className="w-3 h-3 text-amber-600" />
+            In Progress
           </span>
         );
       case 'open':
@@ -187,9 +413,8 @@ export default function AdminHelpPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner in EuropeBridge Theme */}
+      {/* Header Banner */}
       <div className="bg-white rounded-2xl border border-gray-200/80 shadow-[2px_2px_8px_rgba(71,85,105,0.04)] px-5 py-4 sm:px-6 sm:py-5 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden">
-        {/* German Tricolor Top Accent */}
         <div className="absolute top-0 left-0 w-full h-[3px] flex">
           <div className="flex-1 bg-germany-black"></div>
           <div className="flex-1 bg-germany-red"></div>
@@ -199,7 +424,7 @@ export default function AdminHelpPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-display font-bold text-germany-black">
-              Admin Help & Resolution Command
+              Admin Help & Support Command
             </h1>
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-germany-red/10 border border-germany-red/30 rounded-full font-bold text-germany-red text-[10px]">
               <ShieldCheck className="w-3 h-3" />
@@ -207,248 +432,191 @@ export default function AdminHelpPage() {
             </span>
           </div>
           <p className="text-xs text-gray-500 font-medium max-w-xl">
-            Select any escalated or student query below to review details, reply, and mark as resolved.
+            Review escalated inquiries requiring admin intervention, inspect all student queries across counsellors, and track resolutions.
           </p>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
           <button
-            onClick={() => resetDemoData()}
-            title="Reset Sample Data"
+            onClick={fetchTickets}
+            title="Refresh Inquiries"
             className="px-3 py-2 text-gray-600 hover:text-germany-black rounded-xl hover:bg-gray-100 border border-gray-200 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset Demo Data</span>
+            <RotateCw className="w-3.5 h-3.5" />
+            <span>Refresh</span>
           </button>
         </div>
       </div>
 
       {/* Main Tabs */}
-      <div className="flex flex-wrap items-center gap-1.5 p-1 bg-gray-100/80 rounded-xl w-fit border border-gray-200/60">
+      <div className="flex flex-wrap items-center gap-2 p-1 bg-gray-100/80 rounded-xl w-fit border border-gray-200/60">
         <button
-          onClick={() => setActiveTab('escalated')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+          onClick={() => handleTabChange('escalated')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'escalated'
               ? 'bg-germany-red text-white shadow-xs'
               : 'text-gray-600 hover:text-germany-black'
           }`}
         >
-          <ArrowUpRight className="w-3.5 h-3.5 text-white" />
+          <ArrowUpRight className="w-3.5 h-3.5" />
           <span>Escalated to Admin</span>
-          <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-            activeTab === 'escalated' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+            activeTab === 'escalated' ? 'bg-white/20 text-white' : 'bg-red-100 text-germany-red'
           }`}>
-            {escalatedQueries.length}
+            {escalatedList.length}
           </span>
         </button>
 
         <button
-          onClick={() => setActiveTab('all')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+          onClick={() => handleTabChange('all')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'all'
               ? 'bg-germany-red text-white shadow-xs'
-              : 'text-gray-600 dark:text-gray-300 hover:text-germany-black dark:hover:text-white'
+              : 'text-gray-600 hover:text-germany-black'
           }`}
         >
-          <Layers className="w-3.5 h-3.5 text-white" />
-          <span>All Queries</span>
-          <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-            activeTab === 'all' ? 'bg-germany-red text-white' : 'bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300'
+          <Layers className="w-3.5 h-3.5" />
+          <span>All Student Inquiries</span>
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+            activeTab === 'all' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'
           }`}>
-            {allQueries.length}
+            {allStudentList.length}
           </span>
         </button>
 
         <button
-          onClick={() => setActiveTab('counsellor')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-            activeTab === 'counsellor'
-              ? 'bg-germany-red text-white shadow-xs'
-              : 'text-gray-600 dark:text-gray-300 hover:text-germany-black dark:hover:text-white'
-          }`}
-        >
-          <Building className="w-3.5 h-3.5 text-germany-gold" />
-          <span>Counsellor Inquiries</span>
-          <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-            activeTab === 'counsellor' ? 'bg-germany-red text-white' : 'bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300'
-          }`}>
-            {counsellorQueries.length}
-          </span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('resolved')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+          onClick={() => handleTabChange('resolved')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'resolved'
               ? 'bg-germany-red text-white shadow-xs'
-              : 'text-gray-600 dark:text-gray-300 hover:text-germany-black dark:hover:text-white'
+              : 'text-gray-600 hover:text-germany-black'
           }`}
         >
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-          <span>Resolved</span>
-          <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-            activeTab === 'resolved' ? 'bg-emerald-600 text-white' : 'bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300'
+          <CheckCircle2 className="w-3.5 h-3.5" />
+          <span>Resolved / Closed</span>
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+            activeTab === 'resolved' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'
           }`}>
-            {resolvedQueries.length}
+            {resolvedList.length}
           </span>
         </button>
       </div>
 
-      {/* Bulk Action Bar (if items selected) */}
-      {selectedIds.length > 0 && (
-        <div className="bg-germany-red text-white p-3.5 rounded-xl flex items-center justify-between shadow-md animate-in fade-in duration-150">
-          <div className="flex items-center gap-2 text-xs font-bold">
-            <span className="w-2 h-2 rounded-full bg-germany-gold animate-pulse" />
-            <span>{selectedIds.length} {selectedIds.length === 1 ? 'ticket' : 'tickets'} selected</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleBulkResolve}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-lg shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
-            >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Mark Selected as Resolved</span>
-            </button>
-            <button
-              onClick={() => setSelectedIds([])}
-              className="text-gray-400 hover:text-white text-xs font-medium px-2 py-1 cursor-pointer"
-            >
-              Clear
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Two-Column Master-Detail Layout */}
+      {/* Split Pane: List on Left (5 cols), Details on Right (7 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: List of Queries (5 cols on lg) */}
-        <div className="lg:col-span-5 space-y-3">
-          {/* Search & Filter */}
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-gray-400" />
+        {/* Left Side: Filterable Inquiry List */}
+        <div className="lg:col-span-5 bg-white rounded-2xl border border-gray-200/80 shadow-xs flex flex-col h-[760px] overflow-hidden">
+          {/* Search, Counsellor, Student & Priority Controls */}
+          <div className="p-4 border-b border-gray-100 space-y-2.5 bg-gray-50/50">
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search ticket ID, title, student..."
-                className="w-full pl-9 pr-3 py-2 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs text-germany-black dark:text-white placeholder-gray-400 focus:outline-none focus:border-germany-red transition-all"
+                placeholder="Search by Ticket # (e.g. EB-...), Student, or Title..."
+                className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-germany-red transition-colors"
               />
             </div>
 
-            <ClaySelect
-              value={priorityFilter}
-              onChange={(val) => setPriorityFilter(val)}
-              options={[
-                { value: 'all', label: 'All Priorities' },
-                { value: 'urgent', label: 'Urgent' },
-                { value: 'high', label: 'High' },
-                { value: 'medium', label: 'Medium' },
-                { value: 'low', label: 'Low' },
-              ]}
-              className="w-36 shrink-0"
-            />
-          </div>
-
-          {/* Select All Row */}
-          <div className="flex items-center justify-between px-2 text-[11px] font-bold text-gray-500 dark:text-gray-400">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={selectedIds.length > 0 && selectedIds.length === filteredList.length}
-                onChange={toggleSelectAll}
-                className="rounded border-gray-300 text-germany-red focus:ring-germany-red"
+            {/* Counsellor-wise & Student-wise Dropdowns */}
+            <div className="grid grid-cols-2 gap-2">
+              <ClaySelect
+                value={counsellorFilter}
+                onChange={(val) => setCounsellorFilter(val)}
+                options={[
+                  { value: 'all', label: 'All Counsellors' },
+                  { value: 'unassigned', label: 'Unassigned' },
+                  ...uniqueCounsellors.map((c) => ({ value: c, label: c })),
+                ]}
               />
-              <span>Select All Visible ({filteredList.length})</span>
-            </label>
-            <span>Showing {filteredList.length} results</span>
+
+              <ClaySelect
+                value={studentFilter}
+                onChange={(val) => setStudentFilter(val)}
+                options={[
+                  { value: 'all', label: 'All Students' },
+                  ...uniqueStudents.map((s) => ({ value: s, label: s })),
+                ]}
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 text-xs text-gray-400 font-bold">
+                <Filter className="w-3.5 h-3.5" />
+                <span>Priority:</span>
+              </div>
+              <div className="w-36">
+                <ClaySelect
+                  value={priorityFilter}
+                  onChange={(val) => setPriorityFilter(val)}
+                  options={[
+                    { value: 'all', label: 'All Priorities' },
+                    { value: 'urgent', label: 'Urgent' },
+                    { value: 'high', label: 'High' },
+                    { value: 'medium', label: 'Medium' },
+                    { value: 'low', label: 'Low' },
+                  ]}
+                />
+              </div>
+            </div>
           </div>
 
-          {/* Query Cards */}
-          <div className="space-y-2.5 max-h-[720px] overflow-y-auto custom-scrollbar pr-1">
-            {filteredList.length === 0 ? (
-              <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 p-8 text-center text-xs font-medium text-gray-400">
-                No tickets match your filters.
+          {/* Inquiry List Items */}
+          <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
+            {isLoadingList ? (
+              <div className="p-8 text-center text-xs text-gray-400">Loading inquiries...</div>
+            ) : filteredList.length === 0 ? (
+              <div className="p-8 text-center text-xs text-gray-400 space-y-2">
+                <p className="font-bold text-gray-600">No inquiries found</p>
+                <p className="text-[11px]">
+                  {search
+                    ? `No query matches "${search}". Check ticket number format.`
+                    : activeTab === 'escalated'
+                    ? 'No queries currently escalated to admin. All operational queries are handled by counsellors.'
+                    : 'No queries in this category.'}
+                </p>
               </div>
             ) : (
-              filteredList.map((q) => {
-                const isSelected = activeTicket?.id === q.id;
-                const isChecked = selectedIds.includes(q.id);
-
+              filteredList.map((ticket) => {
+                const isSelected = ticket.id === selectedTicketId;
                 return (
                   <div
-                    key={q.id}
-                    onClick={() => handleSelectRow(q.id)}
-                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer text-left relative ${
+                    key={ticket.id}
+                    onClick={() => setSelectedTicketId(ticket.id)}
+                    className={`p-4 transition-all cursor-pointer relative ${
                       isSelected
-                        ? 'bg-[#FDFBF7] dark:bg-[#161C28] border-germany-red shadow-[0_2px_12px_rgba(230,57,70,0.15)] ring-1 ring-germany-red/30'
-                        : 'bg-white dark:bg-[#111622] border-gray-200/80 dark:border-gray-800/80 hover:border-gray-300 shadow-2xs'
+                        ? 'bg-[#FDFBF7] border-l-4 border-l-germany-red'
+                        : 'hover:bg-gray-50/80'
                     }`}
                   >
-                    <div className="flex items-start gap-2.5">
-                      {/* Checkbox */}
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onClick={(e) => toggleCheckbox(q.id, e)}
-                        onChange={() => {}}
-                        className="mt-1 rounded border-gray-300 text-germany-red focus:ring-germany-red cursor-pointer"
-                      />
-
-                      <div className="flex-1 min-w-0 space-y-1">
-                        <div className="flex items-center justify-between gap-1">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-mono text-[10px] font-bold text-gray-500 dark:text-gray-300 bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">
-                              {q.id}
-                            </span>
-                            <span className="text-[10px] font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">
-                              {q.category}
-                            </span>
-                            <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded ${
-                              q.priority === 'urgent' ? 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-[#FF6B7A] font-bold' :
-                              q.priority === 'high' ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400' :
-                              'bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300'
-                            }`}>
-                              {q.priority}
-                            </span>
-                          </div>
-
-                          {getStatusBadge(q.status)}
-                        </div>
-
-                        <h3 className={`text-xs font-bold leading-snug line-clamp-1 ${
-                          isSelected ? 'text-germany-red' : 'text-germany-black dark:text-white'
-                        }`}>
-                          {q.title}
-                        </h3>
-
-                        {q.escalationInfo && (
-                          <div className="text-[10px] text-germany-red dark:text-[#FF6B7A] bg-red-50/80 dark:bg-red-950/40 border border-red-100 dark:border-red-500/30 px-2 py-1 rounded-lg line-clamp-1 font-medium">
-                            <strong>Escalated:</strong> {q.escalationInfo.reason}
-                          </div>
-                        )}
-
-                        <div className="flex items-center justify-between pt-1 text-[10px] text-gray-400 font-medium">
-                          <span>By: <strong className="text-gray-700 dark:text-gray-200">{q.raisedBy.name}</strong></span>
-                          
-                          <div className="flex items-center gap-2">
-                            {q.status !== 'resolved' && (
-                              <button
-                                type="button"
-                                onClick={(e) => handleQuickResolveCard(q, e)}
-                                className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 font-bold hover:underline bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-500/30 cursor-pointer"
-                              >
-                                Quick Resolve
-                              </button>
-                            )}
-                            <span className="text-germany-red font-bold flex items-center">
-                              View →
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                    <div className="flex items-center justify-between text-[11px] mb-1">
+                      <span className="font-mono font-bold text-gray-800 bg-white px-2 py-0.5 rounded border border-gray-200 shadow-2xs">
+                        {ticket.ticketNumber}
+                      </span>
+                      {getPriorityBadge(ticket.priority)}
                     </div>
+
+                    <div className="font-bold text-xs text-germany-black line-clamp-1 mb-1">
+                      {ticket.title}
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] text-gray-500 font-medium">
+                      <span>Student: <strong className="text-gray-700">{ticket.student.name}</strong></span>
+                      {getStatusBadge(ticket.status)}
+                    </div>
+
+                    {ticket.counsellor && (
+                      <div className="text-[10px] text-gray-400 mt-1">
+                        Counsellor: <span className="font-bold text-gray-600">{ticket.counsellor.name}</span>
+                      </div>
+                    )}
+
+                    {ticket.escalationReason && ticket.status === 'escalated' && (
+                      <div className="mt-2 p-1.5 bg-red-50/80 border border-red-200/80 rounded-lg text-[10px] text-germany-red font-medium line-clamp-1">
+                        ⚡ {ticket.escalationReason}
+                      </div>
+                    )}
                   </div>
                 );
               })
@@ -456,266 +624,384 @@ export default function AdminHelpPage() {
           </div>
         </div>
 
-        {/* Right Column: Active Query Detail & Resolution Workspace (7 cols on lg) */}
-        <div className="lg:col-span-7">
-          {activeTicket ? (
-            <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-[2px_2px_8px_rgba(71,85,105,0.04)] overflow-hidden relative">
-              {/* German Tricolor Top Accent */}
-              <div className="w-full h-[3px] flex shrink-0">
-                <div className="flex-1 bg-germany-black"></div>
-                <div className="flex-1 bg-germany-red"></div>
-                <div className="flex-1 bg-germany-gold"></div>
-              </div>
-
-              {/* Ticket Top Action Bar */}
-              <div className="p-5 border-b border-gray-200/80 dark:border-gray-800/80 space-y-3 bg-white dark:bg-[#111622]">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-mono text-xs font-bold text-gray-500 dark:text-gray-300 bg-gray-100 dark:bg-white/10 px-2 py-0.5 rounded">
-                      {activeTicket.id}
+        {/* Right Side: Conversation Thread & Actions */}
+        <div className="lg:col-span-7 bg-white rounded-2xl border border-gray-200/80 shadow-xs flex flex-col h-[760px] overflow-hidden">
+          {isLoadingDetails ? (
+            <div className="flex-1 flex items-center justify-center text-xs text-gray-400">
+              Loading inquiry thread...
+            </div>
+          ) : !ticketDetails ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-gray-400">
+              <MessageSquare className="w-10 h-10 text-gray-300 mb-3" />
+              <p className="text-xs font-bold text-gray-600">No Inquiry Selected</p>
+              <p className="text-[11px] text-gray-400 mt-1 max-w-xs">
+                Select a support ticket from the list on the left to inspect conversation history and take administrative action.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Ticket Top Info Bar */}
+              <div className="p-4 border-b border-gray-100 bg-[#FDFBF7] space-y-2 shrink-0">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold text-xs bg-white px-2.5 py-1 rounded-md border border-gray-300 text-gray-900 shadow-2xs">
+                      {ticketDetails.ticketNumber}
                     </span>
-                    <span className="text-xs font-bold text-germany-black dark:text-white bg-gray-100 dark:bg-white/10 px-2 py-0.5 rounded">
-                      {activeTicket.category}
+                    <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                      {ticketDetails.category}
                     </span>
-                    <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded ${
-                      activeTicket.priority === 'urgent' ? 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-[#FF6B7A]' :
-                      activeTicket.priority === 'high' ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400' :
-                      'bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-gray-300'
-                    }`}>
-                      {activeTicket.priority}
-                    </span>
-                    {getStatusBadge(activeTicket.status)}
+                    {getPriorityBadge(ticketDetails.priority)}
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {/* Status Changer */}
-                    <div className="w-44">
-                      <ClaySelect
-                        value={activeTicket.status}
-                        onChange={(val) => handleStatusChange(val as QueryStatus)}
-                        options={[
-                          { value: 'open', label: 'Set: Open' },
-                          { value: 'in_review_counsellor', label: 'Set: In Review' },
-                          { value: 'escalated_to_admin', label: 'Set: Escalated' },
-                          { value: 'resolved', label: 'Set: Resolved' },
-                          { value: 'closed', label: 'Set: Closed' },
-                        ]}
-                      />
-                    </div>
-
-                    {activeTicket.status !== 'resolved' && (
+                    {getStatusBadge(ticketDetails.status)}
+                    
+                    {/* If ticket is escalated, show Resolve button */}
+                    {ticketDetails.status === 'escalated' && (
                       <button
-                        onClick={() => {
-                          setShowResolveForm(true);
-                          setResolutionText('Approved and resolved by Admin desk.');
-                        }}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
+                        onClick={() => setShowResolveModal(true)}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-xs transition-colors cursor-pointer flex items-center gap-1"
                       >
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>Mark Resolved</span>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Resolve</span>
                       </button>
                     )}
-                  </div>
-                </div>
 
-                <div>
-                  <h2 className="text-base sm:text-lg font-display font-bold text-germany-black dark:text-white leading-snug">
-                    {activeTicket.title}
-                  </h2>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-1">
-                    Raised by <strong className="text-germany-black dark:text-white">{activeTicket.raisedBy.name}</strong> ({activeTicket.raisedBy.role}) · Assigned Counsellor: <strong className="text-germany-black dark:text-white">{activeTicket.assignedCounsellor?.name || 'General Desk'}</strong> · Created: {activeTicket.createdAt}
-                  </p>
-                </div>
-              </div>
+                    {/* If ticket is in all queries and not yet escalated, admin can escalate it */}
+                    {ticketDetails.status !== 'escalated' && ticketDetails.status !== 'resolved' && ticketDetails.status !== 'closed' && (
+                      <button
+                        onClick={() => setShowEscalateModal(true)}
+                        className="bg-germany-red hover:bg-[#D62839] text-white px-3 py-1 rounded-lg text-xs font-bold shadow-xs transition-colors cursor-pointer flex items-center gap-1"
+                      >
+                        <ArrowUpRight className="w-3.5 h-3.5" />
+                        <span>Escalate to Admin</span>
+                      </button>
+                    )}
 
-              {/* Stepper */}
-              <div className="px-5 py-2.5 bg-gray-50/80 dark:bg-[#0E121A] border-b border-gray-200/70 dark:border-gray-800/80 flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400 overflow-x-auto">
-                <span className="font-bold text-germany-black dark:text-white">1. Raised</span>
-                <ChevronRight className="w-3 h-3 text-gray-400 shrink-0" />
-                <span className={activeTicket.status !== 'open' ? 'font-bold text-germany-black dark:text-white' : 'text-gray-400'}>
-                  2. Counsellor Review
-                </span>
-                <ChevronRight className="w-3 h-3 text-gray-400 shrink-0" />
-                <span className={activeTicket.status === 'escalated_to_admin' || (activeTicket.status === 'resolved' && activeTicket.escalationInfo) ? 'font-bold text-germany-red dark:text-[#FF6B7A]' : 'text-gray-400'}>
-                  3. Admin Escalation
-                </span>
-                <ChevronRight className="w-3 h-3 text-gray-400 shrink-0" />
-                <span className={activeTicket.status === 'resolved' ? 'font-bold text-emerald-600 dark:text-emerald-400' : 'text-gray-400'}>
-                  4. Solved
-                </span>
-              </div>
-
-              {/* Escalation Alert Callout */}
-              {activeTicket.escalationInfo && (
-                <div className="mx-5 mt-4 p-3.5 bg-red-50/80 dark:bg-red-950/30 border border-red-200 dark:border-red-500/40 rounded-xl text-xs text-red-900 dark:text-red-200 space-y-1">
-                  <div className="flex items-center gap-1.5 font-bold text-germany-red dark:text-[#FF6B7A]">
-                    <AlertTriangle className="w-4 h-4" />
-                    <span>Escalated to Admin Desk by {activeTicket.escalationInfo.escalatedBy}</span>
-                  </div>
-                  <p className="font-medium text-gray-800 dark:text-gray-200">
-                    <strong>Reason:</strong> {activeTicket.escalationInfo.reason}
-                  </p>
-                  {activeTicket.escalationInfo.adminNotes && (
-                    <div className="text-[11px] text-gray-600 dark:text-gray-300 bg-white/70 dark:bg-black/40 p-2 rounded-lg border border-red-100 dark:border-red-500/20">
-                      <strong>Counsellor Handover Note:</strong> {activeTicket.escalationInfo.adminNotes}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Resolution Summary Callout if resolved */}
-              {activeTicket.resolutionInfo && (
-                <div className="mx-5 mt-4 p-3.5 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-500/40 rounded-xl text-xs text-emerald-950 dark:text-emerald-200 space-y-1">
-                  <div className="flex items-center gap-1.5 font-bold text-emerald-700 dark:text-emerald-400">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Resolution Confirmed by {activeTicket.resolutionInfo.resolvedBy}</span>
-                  </div>
-                  <p className="font-medium text-emerald-900 dark:text-emerald-200 bg-white/70 dark:bg-black/40 p-2 rounded-lg border border-emerald-100 dark:border-emerald-500/20">
-                    {activeTicket.resolutionInfo.summary}
-                  </p>
-                </div>
-              )}
-
-              {/* Inline Resolve Form Popup */}
-              {showResolveForm && (
-                <div className="m-5 p-4 bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-500/40 rounded-xl space-y-2">
-                  <div className="flex items-center justify-between text-xs font-bold text-emerald-950 dark:text-emerald-200">
-                    <span className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      Enter Admin Resolution Summary
-                    </span>
+                    {/* Close Chat Window Button */}
                     <button
-                      type="button"
-                      onClick={() => setShowResolveForm(false)}
-                      className="text-gray-400 hover:text-gray-700 dark:hover:text-white cursor-pointer"
+                      onClick={() => {
+                        setSelectedTicketId(null);
+                        setTicketDetails(null);
+                      }}
+                      title="Close Chat Window"
+                      className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-200/60 rounded-lg transition-colors cursor-pointer ml-1"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
-                  <textarea
-                    rows={2}
-                    value={resolutionText}
-                    onChange={(e) => setResolutionText(e.target.value)}
-                    placeholder="Write official resolution notes (e.g. Affidavit issued, embassy slot confirmed, documents approved)..."
-                    className="w-full p-2.5 bg-white dark:bg-[#0E121A] border border-emerald-300 dark:border-emerald-500/40 rounded-xl text-xs focus:outline-none focus:border-emerald-600 font-medium resize-none text-gray-900 dark:text-white placeholder-gray-400"
-                  />
-                  <div className="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowResolveForm(false)}
-                      className="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white font-bold cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSingleResolve}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-xl text-xs font-bold shadow-xs cursor-pointer"
-                    >
-                      Confirm Resolution
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Conversation Messages */}
-              <div className="p-5 space-y-3 max-h-80 overflow-y-auto custom-scrollbar bg-[#FDFBF7]/30 dark:bg-transparent">
-                <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                  Conversation & Guidance History ({activeTicket.messages.length})
                 </div>
 
-                {activeTicket.messages.map((m) => {
-                  const isAdmin = m.sender.role === 'admin' || m.sender.role === 'superadmin';
-                  const isCounsellor = m.sender.role === 'counsellor';
+                <h2 className="text-sm font-bold text-germany-black">{ticketDetails.title}</h2>
 
-                  return (
-                    <div
-                      key={m.id}
-                      className={`p-3.5 rounded-xl border text-xs space-y-1.5 ${
-                        m.isInternalNote
-                          ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-500/40 text-amber-950 dark:text-amber-200'
-                          : isAdmin
-                          ? 'bg-red-50/70 dark:bg-[#1A1218] border-red-200 dark:border-germany-red/40 text-gray-900 dark:text-white'
-                          : isCounsellor
-                          ? 'bg-white dark:bg-[#111622] border-germany-gold/40 dark:border-germany-gold/40 shadow-2xs text-gray-800 dark:text-gray-100'
-                          : 'bg-white dark:bg-[#111622] border-gray-200 dark:border-gray-800/80 shadow-2xs text-gray-800 dark:text-gray-100'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between text-[11px]">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-germany-black dark:text-white">
-                            {isAdmin ? `${m.sender.name} (You)` : m.sender.name}
-                          </span>
-                          <span className={`text-[10px] font-bold capitalize ${
-                            isAdmin 
-                              ? 'text-germany-red dark:text-[#FF6B7A]' 
-                              : isCounsellor 
-                              ? 'text-amber-700 dark:text-germany-gold' 
-                              : 'text-gray-400 dark:text-gray-400'
-                          }`}>
-                            ({m.sender.role})
-                          </span>
-                          {m.isInternalNote && (
-                            <span className="text-[10px] text-amber-700 dark:text-amber-400 font-bold flex items-center gap-0.5">
-                              <Lock className="w-2.5 h-2.5" /> Staff Internal Note
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-gray-400 dark:text-gray-400 font-medium">{m.timestamp}</span>
-                      </div>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-gray-500 font-medium">
+                  <span>Student: <strong className="text-gray-800">{ticketDetails.student.name}</strong> ({ticketDetails.student.email})</span>
+                  <span>Counsellor: <strong className="text-gray-800">{ticketDetails.counsellor?.name || 'Unassigned'}</strong></span>
+                </div>
 
-                      <div className="whitespace-pre-line text-gray-800 dark:text-gray-100 pt-0.5 leading-relaxed font-medium">
-                        {m.content}
-                      </div>
+                {/* Escalation alert banner */}
+                {ticketDetails.status === 'escalated' && ticketDetails.escalationReason && (
+                  <div className="bg-red-50 border border-red-200 text-germany-red p-2.5 rounded-xl text-xs space-y-1 mt-2">
+                    <div className="font-bold flex items-center gap-1.5">
+                      <AlertTriangle className="w-4 h-4 text-germany-red" />
+                      <span>Escalated to Central Admin</span>
                     </div>
-                  );
-                })}
+                    <p className="text-[11px] text-red-900 font-medium pl-5.5">
+                      <strong>Reason:</strong> {ticketDetails.escalationReason}
+                    </p>
+                  </div>
+                )}
+
+                {/* Resolution Summary banner */}
+                {(ticketDetails.status === 'resolved' || ticketDetails.status === 'closed') && ticketDetails.resolutionSummary && (
+                  <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 p-2.5 rounded-xl text-xs space-y-1 mt-2">
+                    <div className="font-bold flex items-center gap-1.5 text-emerald-700">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <span>Resolution Summary</span>
+                    </div>
+                    <p className="text-[11px] font-medium pl-5.5">
+                      {ticketDetails.resolutionSummary}
+                    </p>
+                  </div>
+                )}
               </div>
 
-              {/* Reply Form */}
-              <div className="p-4 bg-white dark:bg-[#111622] border-t border-gray-200/80 dark:border-gray-800/80">
-                <form onSubmit={handleSendReply} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="flex items-center gap-1.5 text-[11px] text-gray-600 dark:text-gray-300 cursor-pointer font-medium">
-                      <input
-                        type="checkbox"
-                        checked={isInternalNote}
-                        onChange={(e) => setIsInternalNote(e.target.checked)}
-                        className="rounded border-gray-300 text-germany-red focus:ring-germany-red"
-                      />
-                      <span>Internal staff note (hidden from student)</span>
-                    </label>
-
-                    <span className="text-[11px] text-gray-400 dark:text-gray-400">Replying as Central Admin</span>
+              {/* Instagram-Style Conversation Messages Thread */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FAF8F5]">
+                {ticketDetails.messages.length === 0 ? (
+                  <div className="p-8 text-center text-xs text-gray-400">
+                    No messages recorded in this inquiry yet.
                   </div>
+                ) : (
+                  ticketDetails.messages.map((msg) => {
+                    // Confidential Staff Note
+                    if (msg.isInternalNote) {
+                      return (
+                        <div
+                          key={msg.id}
+                          className="mx-auto max-w-md bg-amber-50/90 border border-amber-300 text-amber-900 rounded-xl p-3 shadow-2xs space-y-1"
+                        >
+                          <div className="flex items-center justify-between text-[10px] font-bold text-amber-800">
+                            <span className="flex items-center gap-1">
+                              <Lock className="w-3 h-3 text-amber-700" />
+                              <span>CONFIDENTIAL STAFF NOTE</span>
+                            </span>
+                            <span>{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                          </div>
+                          <p className="text-xs font-medium text-amber-950 whitespace-pre-wrap">{msg.content}</p>
+                          <div className="text-[10px] text-amber-700 font-medium">By: {msg.senderName} ({msg.senderRole})</div>
+                        </div>
+                      );
+                    }
 
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={replyText}
-                      onChange={(e) => setReplyText(e.target.value)}
-                      placeholder={isInternalNote ? 'Type an internal staff note...' : 'Type response or guidance to student/counsellor...'}
-                      className="flex-1 px-3.5 py-2.5 rounded-xl text-xs border border-gray-200 dark:border-gray-800/80 focus:outline-none focus:border-germany-red bg-gray-50 dark:bg-[#0E121A] focus:bg-white dark:focus:bg-[#0E121A] text-germany-black dark:text-white font-medium transition-all"
-                    />
+                    // Instagram DM chat layout: Admin on right, Student/Counsellor on left
+                    const isAdmin = msg.senderRole === 'admin' || msg.senderRole === 'superadmin';
+
+                    return (
+                      <div
+                        key={msg.id}
+                        className={`flex flex-col ${isAdmin ? 'items-end' : 'items-start'}`}
+                      >
+                        <span className="text-[10px] font-bold text-gray-400 mb-0.5 px-1">
+                          {isAdmin ? 'You (Admin)' : `${msg.senderName} (${msg.senderRole})`}
+                        </span>
+
+                        <div
+                          className={`max-w-[78%] px-4 py-2.5 rounded-2xl text-xs font-medium shadow-2xs whitespace-pre-wrap ${
+                            isAdmin
+                              ? 'bg-slate-900 text-white rounded-br-xs'
+                              : msg.senderRole === 'counsellor'
+                              ? 'bg-red-50 text-germany-black border border-red-100 rounded-bl-xs'
+                              : 'bg-white text-gray-900 border border-gray-200/80 rounded-bl-xs'
+                          }`}
+                        >
+                          {msg.content}
+                        </div>
+
+                        <span className="text-[9px] text-gray-400 mt-0.5 px-1 font-mono">
+                          {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    );
+                  })
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Chat Input or Scope Lock Notice */}
+              <div className="p-4 border-t border-gray-200/80 bg-white shrink-0">
+                {ticketDetails.status === 'resolved' || ticketDetails.status === 'closed' ? (
+                  <div className="p-3 bg-gray-50 border border-gray-200 text-gray-500 rounded-xl text-xs text-center font-medium">
+                    🔒 This ticket is resolved and closed for new messages (read-only).
+                  </div>
+                ) : !ticketDetails.canChat ? (
+                  // Requirement 1: In All Student Inquiries, admin can open/view, but CANNOT chat until escalated to admin!
+                  <div className="p-3.5 bg-amber-50/70 border border-amber-200 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div className="space-y-0.5 text-center sm:text-left">
+                      <div className="text-xs font-bold text-amber-900 flex items-center justify-center sm:justify-start gap-1.5">
+                        <Lock className="w-3.5 h-3.5 text-amber-700" />
+                        <span>Counsellor Desk Scope (View-Only Mode)</span>
+                      </div>
+                      <p className="text-[11px] text-amber-800 font-medium">
+                        Admins can observe inquiry progress. Chat messaging is locked until this ticket is escalated to Admin.
+                      </p>
+                    </div>
+
                     <button
-                      type="submit"
-                      disabled={!replyText.trim()}
-                      className="bg-germany-red hover:bg-[#D62839] disabled:bg-gray-200 dark:disabled:bg-gray-800 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-xs"
+                      onClick={() => setShowEscalateModal(true)}
+                      className="bg-germany-red hover:bg-[#D62839] text-white px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-xs transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer"
                     >
-                      <Send className="w-3.5 h-3.5" />
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                      <span>Escalate to Admin</span>
                     </button>
                   </div>
-                </form>
+                ) : (
+                  // Requirement 2: Once escalated, Admin CAN chat!
+                  <form onSubmit={handleSendMessage} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center gap-1.5 text-[11px] font-bold text-gray-600 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={isInternalNote}
+                          onChange={(e) => setIsInternalNote(e.target.checked)}
+                          className="rounded text-amber-600 focus:ring-amber-500"
+                        />
+                        <span className="flex items-center gap-1">
+                          <Lock className="w-3 h-3 text-amber-600" />
+                          <span>Internal Staff Note (Never visible to student)</span>
+                        </span>
+                      </label>
+                      <span className="text-[10px] text-gray-400 font-medium">
+                        {isInternalNote ? 'Confidential Staff Audit' : 'Message to Student & Counsellor'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-end gap-2">
+                      <textarea
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        placeholder={
+                          isInternalNote
+                            ? "Add confidential administrative note..."
+                            : "Write official admin response..."
+                        }
+                        rows={2}
+                        className={`flex-1 p-2.5 border rounded-xl text-xs font-medium focus:outline-none transition-colors resize-none ${
+                          isInternalNote
+                            ? 'bg-amber-50/50 border-amber-300 focus:border-amber-500'
+                            : 'bg-white border-gray-200 focus:border-germany-red'
+                        }`}
+                      />
+                      <button
+                        type="submit"
+                        disabled={!replyText.trim() || isSending}
+                        className={`px-4 py-2.5 rounded-xl text-xs font-bold text-white shadow-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                          isInternalNote ? 'bg-amber-700 hover:bg-amber-800' : 'bg-slate-900 hover:bg-slate-800'
+                        }`}
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                        <span>Send</span>
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
-            </div>
-          ) : (
-            <div className="bg-white dark:bg-[#111622] rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 p-12 text-center text-gray-400 text-xs font-medium">
-              Select a query from the left list to view details and mark as resolved.
-            </div>
+            </>
           )}
         </div>
       </div>
 
+      {/* Escalate Modal */}
+      {showEscalateModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-2xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-gray-200/80 shadow-2xl max-w-lg w-full p-6 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-red-50 text-germany-red rounded-xl">
+                  <ArrowUpRight className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-germany-black">Escalate Query to Admin</h3>
+                  <p className="text-[11px] text-gray-500">Enable admin intervention and open direct admin chat</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowEscalateModal(false)}
+                className="p-1 text-gray-400 hover:text-gray-600 rounded-lg cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEscalateSubmit} className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Escalation Reason *
+                </label>
+                <select
+                  value={escalateReason}
+                  onChange={(e) => setEscalateReason(e.target.value)}
+                  className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-germany-red"
+                >
+                  {ESCALATION_REASONS.map((r) => (
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Administrative Note (Optional)
+                </label>
+                <textarea
+                  value={escalateAdminNotes}
+                  onChange={(e) => setEscalateAdminNotes(e.target.value)}
+                  placeholder="Provide context or instructions for administrative handling..."
+                  rows={3}
+                  className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-germany-red"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowEscalateModal(false)}
+                  className="px-3.5 py-2 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-xl cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isEscalating}
+                  className="px-4 py-2 bg-germany-red hover:bg-[#D62839] text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {isEscalating ? 'Escalating...' : 'Confirm Escalation'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Resolve Query Modal */}
+      {showResolveModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-2xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-gray-200/80 shadow-2xl max-w-lg w-full p-6 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-emerald-50 text-emerald-700 rounded-xl">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-germany-black">Mark Query as Resolved</h3>
+                  <p className="text-[11px] text-gray-500">Provide official closure summary for the audit trail</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowResolveModal(false)}
+                className="p-1 text-gray-400 hover:text-gray-600 rounded-lg cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleResolveSubmit} className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Resolution Summary *
+                </label>
+                <textarea
+                  value={resolutionSummary}
+                  onChange={(e) => setResolutionSummary(e.target.value)}
+                  placeholder="Detail the actions taken, approvals granted, or guidance provided to resolve this inquiry..."
+                  rows={4}
+                  required
+                  className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-germany-red"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowResolveModal(false)}
+                  className="px-3.5 py-2 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-xl cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!resolutionSummary.trim() || isResolving}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {isResolving ? 'Resolving...' : 'Confirm Resolution'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -91,6 +91,8 @@ export default function CounsellorHelpPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'open' | 'in_progress' | 'escalated' | 'resolved'>('all');
   const [search, setSearch] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [studentFilter, setStudentFilter] = useState('all');
+  const [scopeFilter, setScopeFilter] = useState<'mine' | 'all'>('mine');
 
   // Reply state (Instagram DM style)
   const [replyText, setReplyText] = useState('');
@@ -111,19 +113,20 @@ export default function CounsellorHelpPage() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Fetch tickets assigned to this counsellor
-  const fetchCounsellorTickets = async () => {
+  // Fetch tickets for counsellor portal (optionally all team queries)
+  const fetchCounsellorTickets = async (scope = scopeFilter) => {
     try {
       setLoadingTickets(true);
-      const res = await fetch(`${API_URL}/help/counsellor/queries`, {
+      const url = scope === 'all'
+        ? `${API_URL}/help/counsellor/queries?scope=all`
+        : `${API_URL}/help/counsellor/queries`;
+
+      const res = await fetch(url, {
         credentials: 'include',
       });
       if (res.ok) {
         const data = await res.json();
         setTickets(Array.isArray(data) ? data : []);
-        if (data.length > 0 && !selectedTicketId) {
-          setSelectedTicketId(data[0].id);
-        }
       }
     } catch (err) {
       console.error('Failed to load counsellor tickets:', err);
@@ -133,8 +136,8 @@ export default function CounsellorHelpPage() {
   };
 
   useEffect(() => {
-    fetchCounsellorTickets();
-  }, []);
+    fetchCounsellorTickets(scopeFilter);
+  }, [scopeFilter]);
 
   // Fetch ticket details & messages
   const fetchTicketDetails = async (id: string) => {
@@ -339,6 +342,8 @@ export default function CounsellorHelpPage() {
     }
   };
 
+  const uniqueStudents = Array.from(new Set(tickets.map((t) => t.student.name))).sort();
+
   const filteredTickets = tickets.filter((t) => {
     const matchesTab = activeTab === 'all' || t.status === activeTab;
     const matchesSearch =
@@ -347,7 +352,8 @@ export default function CounsellorHelpPage() {
       t.student.name.toLowerCase().includes(search.toLowerCase()) ||
       t.student.email.toLowerCase().includes(search.toLowerCase());
     const matchesPriority = priorityFilter === 'all' || t.priority === priorityFilter;
-    return matchesTab && matchesSearch && matchesPriority;
+    const matchesStudent = studentFilter === 'all' || t.student.name === studentFilter;
+    return matchesTab && matchesSearch && matchesPriority && matchesStudent;
   });
 
   return (
@@ -401,16 +407,42 @@ export default function CounsellorHelpPage() {
             ))}
           </div>
 
-          {/* Search bar */}
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search student, ticket #, or topic..."
-              className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-xs sm:text-sm text-germany-black font-medium focus:outline-none focus:border-germany-red shadow-2xs"
-            />
+          {/* Search bar & Filters */}
+          <div className="space-y-2">
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search student, ticket #, or topic..."
+                className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-xs sm:text-sm text-germany-black font-medium focus:outline-none focus:border-germany-red shadow-2xs"
+              />
+            </div>
+
+            {/* Counsellor Scope & Student Dropdowns */}
+            <div className="grid grid-cols-2 gap-2">
+              <ClaySelect
+                value={scopeFilter}
+                onChange={(val) => setScopeFilter(val as 'mine' | 'all')}
+                options={[
+                  { value: 'mine', label: 'My Inquiries' },
+                  { value: 'all', label: 'All Inquiries' },
+                ]}
+              />
+
+              <ClaySelect
+                value={studentFilter}
+                onChange={(val) => setStudentFilter(val)}
+                options={[
+                  { value: 'all', label: 'All Students' },
+                  ...uniqueStudents.map((name) => ({
+                    value: name,
+                    label: name,
+                  })),
+                ]}
+              />
+            </div>
           </div>
 
           {/* Ticket list */}
@@ -481,7 +513,7 @@ export default function CounsellorHelpPage() {
                   </p>
                 </div>
 
-                {/* Status action buttons */}
+                {/* Status action buttons & Close */}
                 <div className="flex items-center gap-2 shrink-0">
                   {ticketDetail.status !== 'resolved' && (
                     <>
@@ -502,6 +534,18 @@ export default function CounsellorHelpPage() {
                       </button>
                     </>
                   )}
+
+                  {/* Close Chat Window button */}
+                  <button
+                    onClick={() => {
+                      setSelectedTicketId(null);
+                      setTicketDetail(null);
+                    }}
+                    title="Close Chat Window"
+                    className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-200/60 rounded-xl transition-colors cursor-pointer ml-1"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
 
@@ -664,8 +708,12 @@ export default function CounsellorHelpPage() {
               )}
             </>
           ) : (
-            <div className="p-16 text-center text-sm font-medium text-gray-400 m-auto">
-              Select a student query from the list to view the conversation.
+            <div className="p-16 text-center text-sm font-medium text-gray-400 m-auto flex flex-col items-center gap-2">
+              <MessageSquare className="w-10 h-10 text-gray-300 mb-1" />
+              <p className="font-bold text-gray-700">No Inquiry Selected</p>
+              <p className="text-xs text-gray-400 max-w-xs">
+                Select a student query from the list on the left to view the conversation and reply.
+              </p>
             </div>
           )}
         </div>
