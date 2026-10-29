@@ -19,10 +19,12 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Sun,
-  Moon
+  Moon,
+  AlertTriangle,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
+import { useChatNotificationStore } from '@/store/useChatNotificationStore';
 
 const navItems = [
   { name: 'Dashboard', path: '/dashboard/admin', icon: LayoutDashboard },
@@ -46,6 +48,8 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
   const toggleCollapse = useAppStore((state) => state.toggleSidebarCollapsed);
   const isDarkMode = useAppStore((state) => state.isDarkMode);
   const toggleDarkMode = useAppStore((state) => state.toggleDarkMode);
+  const unreadCount = useChatNotificationStore((state) => state.unreadCount);
+  const escalatedCount = useChatNotificationStore((state) => state.escalatedCount);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -150,17 +154,37 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
                   : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/60 hover:text-germany-black dark:hover:text-white'
               }`}
             >
-              <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-2.5'}`}>
-                <div className={`p-1 rounded-lg transition-colors shrink-0 ${
+              <div className={`flex items-center ${isCollapsed ? 'justify-center relative' : 'gap-2.5 min-w-0'}`}>
+                <div className={`p-1 rounded-lg transition-colors shrink-0 relative ${
                   isActive ? 'text-white' : 'text-gray-500 dark:text-gray-400 group-hover:text-germany-red'
                 }`}>
                   <Icon className="w-4 h-4" />
+                  {isCollapsed && item.path === '/dashboard/admin/help' && (escalatedCount > 0 || unreadCount > 0) && (
+                    <span className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-[#111622] animate-pulse ${
+                      escalatedCount > 0 ? 'bg-germany-red' : 'bg-germany-gold'
+                    }`} />
+                  )}
                 </div>
-                {!isCollapsed && <span>{item.name}</span>}
+                {!isCollapsed && <span className="truncate">{item.name}</span>}
               </div>
-              {!isCollapsed && isActive ? (
-                <ChevronRight className="w-4 h-4 text-white/90 shrink-0" />
-              ) : null}
+              {!isCollapsed && (
+                item.path === '/dashboard/admin/help' ? (
+                  escalatedCount > 0 ? (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-germany-red text-white shadow-xs animate-pulse shrink-0 flex items-center gap-1 border border-red-400/40" title="Escalated Queries Awaiting Admin">
+                      <AlertTriangle className="w-3 h-3 text-germany-gold shrink-0" />
+                      <span>{escalatedCount}</span>
+                    </span>
+                  ) : unreadCount > 0 ? (
+                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-germany-red text-white shadow-xs animate-pulse shrink-0">
+                      {unreadCount}
+                    </span>
+                  ) : isActive ? (
+                    <ChevronRight className="w-4 h-4 text-white/90 shrink-0" />
+                  ) : null
+                ) : isActive ? (
+                  <ChevronRight className="w-4 h-4 text-white/90 shrink-0" />
+                ) : null
+              )}
             </Link>
           );
         })}

@@ -17,6 +17,7 @@ import {
   ShieldAlert
 } from 'lucide-react';
 import { ClaySelect } from '@/components/ClaySelect';
+import { getChatSocket } from '@/lib/socket';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
@@ -137,6 +138,15 @@ export default function CounsellorHelpPage() {
 
   useEffect(() => {
     fetchCounsellorTickets(scopeFilter);
+
+    const socket = getChatSocket();
+    const handleTicketListUpdated = () => {
+      fetchCounsellorTickets(scopeFilter);
+    };
+    socket.on('ticket_list_updated', handleTicketListUpdated);
+    return () => {
+      socket.off('ticket_list_updated', handleTicketListUpdated);
+    };
   }, [scopeFilter]);
 
   // Fetch ticket details & messages
@@ -158,11 +168,95 @@ export default function CounsellorHelpPage() {
   };
 
   useEffect(() => {
-    if (selectedTicketId) {
-      fetchTicketDetails(selectedTicketId);
-    } else {
+    if (!selectedTicketId) {
       setTicketDetail(null);
+      return;
     }
+
+    fetchTicketDetails(selectedTicketId);
+
+    const socket = getChatSocket();
+    socket.emit('join_ticket', { ticketId: selectedTicketId });
+
+    const handleIncomingMessage = (msg: any) => {
+      if (msg && msg.ticketId === selectedTicketId) {
+        setTicketDetail((prev) => {
+          if (!prev) return prev;
+          if (prev.messages.some((m) => m.id === msg.id)) return prev;
+          const isMe = msg.senderRole === 'counsellor';
+          return {
+            ...prev,
+            messages: [
+              ...prev.messages,
+              {
+                id: msg.id,
+                senderId: msg.senderUserId || (isMe ? 'me' : 'student'),
+                senderName: isMe ? 'You (Counsellor)' : msg.senderName || prev.student?.name || 'Student',
+                senderRole: msg.senderRole,
+                isInternalNote: Boolean(msg.isInternalNote || msg.isInternal),
+                content: msg.content,
+                isMe,
+                createdAt: msg.createdAt,
+              },
+            ],
+          };
+        });
+        socket.emit('mark_ticket_read', { ticketId: selectedTicketId });
+      }
+    };
+
+    const handleStatusUpdated = (data: any) => {
+      if (data && data.ticketId === selectedTicketId) {
+        setTicketDetail((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: data.status,
+                isTextable: data.isTextable,
+              }
+            : prev,
+        );
+        fetchCounsellorTickets(scopeFilter);
+      }
+    };
+
+    socket.on('new_message', handleIncomingMessage);
+    socket.on('new_internal_note', handleIncomingMessage);
+    socket.on('ticket_status_updated', handleStatusUpdated);
+
+    // Silent background poll to guarantee zero dropped messages
+    const pollInterval = setInterval(() => {
+      if (selectedTicketId) {
+        fetch(`${API_URL}/help/counsellor/queries/${selectedTicketId}`, { credentials: 'include' })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((data) => {
+            if (data && data.messages) {
+              setTicketDetail((prev) => {
+                if (!prev || prev.id !== data.id) return prev;
+                if (prev.messages.length !== data.messages.length) {
+                  const seen = new Set<string>();
+                  const deduped = data.messages.filter((m: any) => {
+                    if (seen.has(m.id)) return false;
+                    seen.add(m.id);
+                    return true;
+                  });
+                  return { ...prev, ...data, messages: deduped };
+                }
+                return prev;
+              });
+            }
+          })
+          .catch(() => {});
+      }
+    }, 3000);
+
+    return () => {
+      clearInterval(pollInterval);
+      socket.emit('leave_ticket', { ticketId: selectedTicketId });
+      socket.off('new_message', handleIncomingMessage);
+      socket.off('new_internal_note', handleIncomingMessage);
+      socket.off('ticket_status_updated', handleStatusUpdated);
+    };
   }, [selectedTicketId]);
 
   useEffect(() => {
@@ -191,15 +285,27 @@ export default function CounsellorHelpPage() {
       if (res.ok) {
         const newMsg = await res.json();
         setReplyText('');
-        setTicketDetail((prev) =>
-          prev
-            ? {
-                ...prev,
-                status: prev.status === 'open' ? 'in_progress' : prev.status,
-                messages: [...prev.messages, newMsg],
-              }
-            : null
-        );
+        setTicketDetail((prev) => {
+          if (!prev) return null;
+          if (prev.messages.some((m) => m.id === newMsg.id)) return prev;
+          return {
+            ...prev,
+            status: prev.status === 'open' ? 'in_progress' : prev.status,
+            messages: [
+              ...prev.messages,
+              {
+                id: newMsg.id,
+                senderId: 'me',
+                senderName: 'You (Counsellor)',
+                senderRole: 'counsellor',
+                isInternalNote: false,
+                content: newMsg.content || replyText.trim(),
+                isMe: true,
+                createdAt: newMsg.createdAt || new Date().toISOString(),
+              },
+            ],
+          };
+        });
         fetchCounsellorTickets();
       }
     } catch (err) {
@@ -229,14 +335,26 @@ export default function CounsellorHelpPage() {
       if (res.ok) {
         const newMsg = await res.json();
         setInternalNoteText('');
-        setTicketDetail((prev) =>
-          prev
-            ? {
-                ...prev,
-                messages: [...prev.messages, newMsg],
-              }
-            : null
-        );
+        setTicketDetail((prev) => {
+          if (!prev) return null;
+          if (prev.messages.some((m) => m.id === newMsg.id)) return prev;
+          return {
+            ...prev,
+            messages: [
+              ...prev.messages,
+              {
+                id: newMsg.id,
+                senderId: 'me',
+                senderName: 'You (Staff Note)',
+                senderRole: 'counsellor',
+                isInternalNote: true,
+                content: newMsg.content || internalNoteText.trim(),
+                isMe: true,
+                createdAt: newMsg.createdAt || new Date().toISOString(),
+              },
+            ],
+          };
+        });
         fetchCounsellorTickets();
       }
     } catch (err) {
@@ -570,15 +688,16 @@ export default function CounsellorHelpPage() {
 
               {/* Instagram-style Conversation Thread */}
               <div className="p-5 space-y-3.5 bg-[#FAF9F6] flex-1 overflow-y-auto max-h-[420px] flex flex-col">
-                {ticketDetail.messages.map((m) => {
+                {ticketDetail.messages.map((m, idx) => {
                   const isMe = m.isMe; // sent by counsellor
                   const isInternal = m.isInternalNote;
+                  const itemKey = m.id ? `${m.id}-${idx}` : `msg-${idx}`;
 
                   if (isInternal) {
                     // Internal Staff Note: Styled in amber box with lock icon
                     return (
                       <div
-                        key={m.id}
+                        key={itemKey}
                         className="p-3.5 rounded-xl bg-amber-50/90 border border-amber-300 text-amber-900 text-xs leading-relaxed max-w-[90%] self-center my-1.5"
                       >
                         <div className="flex items-center gap-1.5 font-bold text-amber-800 mb-1">
@@ -596,7 +715,7 @@ export default function CounsellorHelpPage() {
                   // Normal chat messages (Instagram layout)
                   return (
                     <div
-                      key={m.id}
+                      key={itemKey}
                       className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] ${
                         isMe ? 'self-end' : 'self-start'
                       }`}

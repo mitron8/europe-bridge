@@ -23,6 +23,7 @@ import {
   Check
 } from 'lucide-react';
 import { ClaySelect } from '@/components/ClaySelect';
+import { getChatSocket } from '@/lib/socket';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
@@ -151,6 +152,22 @@ export default function AdminHelpPage() {
 
   useEffect(() => {
     fetchTickets();
+
+    const socket = getChatSocket();
+    const handleEscalationNotice = (data: any) => {
+      if (data?.isEscalation || data?.type === 'escalation_alert') {
+        fetchTickets();
+      }
+    };
+    socket.on('new_notification', handleEscalationNotice);
+    socket.on('admin_escalations_updated', fetchTickets);
+    socket.on('ticket_list_updated', fetchTickets);
+
+    return () => {
+      socket.off('new_notification', handleEscalationNotice);
+      socket.off('admin_escalations_updated', fetchTickets);
+      socket.off('ticket_list_updated', fetchTickets);
+    };
   }, []);
 
   // 2. Fetch ticket details when selectedTicketId changes
@@ -181,8 +198,93 @@ export default function AdminHelpPage() {
     }
 
     loadDetails();
+
+    const socket = getChatSocket();
+    socket.emit('join_ticket', { ticketId: selectedTicketId });
+
+    const handleIncomingMessage = (msg: any) => {
+      if (msg && msg.ticketId === selectedTicketId) {
+        setTicketDetails((prev) => {
+          if (!prev) return prev;
+          if (prev.messages.some((m) => m.id === msg.id)) return prev;
+          const isAdmin = ['admin', 'superadmin'].includes(msg.senderRole);
+          return {
+            ...prev,
+            messages: [
+              ...prev.messages,
+              {
+                id: msg.id,
+                senderId: msg.senderUserId || 'other',
+                senderName: isAdmin
+                  ? 'You (Admin)'
+                  : msg.senderRole === 'counsellor'
+                  ? 'Counsellor'
+                  : prev.student.name || 'Student',
+                senderRole: msg.senderRole,
+                isInternalNote: Boolean(msg.isInternalNote || msg.isInternal),
+                content: msg.content,
+                isMe: isAdmin,
+                createdAt: msg.createdAt,
+              },
+            ],
+          };
+        });
+        socket.emit('mark_ticket_read', { ticketId: selectedTicketId });
+      }
+    };
+
+    const handleStatusUpdated = (data: any) => {
+      if (data && data.ticketId === selectedTicketId) {
+        setTicketDetails((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: data.status,
+                canChat: data.status === 'escalated',
+              }
+            : prev,
+        );
+        fetchTickets();
+      }
+    };
+
+    socket.on('new_message', handleIncomingMessage);
+    socket.on('new_internal_note', handleIncomingMessage);
+    socket.on('ticket_status_updated', handleStatusUpdated);
+
+    // Silent background poll to guarantee zero dropped messages
+    const pollInterval = setInterval(() => {
+      if (selectedTicketId) {
+        fetch(`${API_URL}/help/admin/queries/${selectedTicketId}`, { credentials: 'include' })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((data: AdminTicketDetails) => {
+            if (data && data.messages) {
+              setTicketDetails((prev) => {
+                if (!prev || prev.id !== data.id) return prev;
+                if (prev.messages.length !== data.messages.length) {
+                  const seen = new Set<string>();
+                  const deduped = data.messages.filter((m: any) => {
+                    if (seen.has(m.id)) return false;
+                    seen.add(m.id);
+                    return true;
+                  });
+                  return { ...prev, ...data, messages: deduped };
+                }
+                return prev;
+              });
+            }
+          })
+          .catch(() => {});
+      }
+    }, 3000);
+
     return () => {
       isMounted = false;
+      clearInterval(pollInterval);
+      socket.emit('leave_ticket', { ticketId: selectedTicketId });
+      socket.off('new_message', handleIncomingMessage);
+      socket.off('new_internal_note', handleIncomingMessage);
+      socket.off('ticket_status_updated', handleStatusUpdated);
     };
   }, [selectedTicketId]);
 
@@ -268,11 +370,27 @@ export default function AdminHelpPage() {
         throw new Error(errorData.message || 'Failed to post message');
       }
 
-      const newMsg: MessageItem = await res.json();
-      setTicketDetails((prev) => prev ? {
-        ...prev,
-        messages: [...prev.messages, newMsg],
-      } : null);
+      const newMsg = await res.json();
+      setTicketDetails((prev) => {
+        if (!prev) return null;
+        if (prev.messages.some((m) => m.id === newMsg.id)) return prev;
+        return {
+          ...prev,
+          messages: [
+            ...prev.messages,
+            {
+              id: newMsg.id,
+              senderId: 'me',
+              senderName: 'You (Admin)',
+              senderRole: 'admin',
+              isInternalNote,
+              content: newMsg.content || replyText.trim(),
+              isMe: true,
+              createdAt: newMsg.createdAt || new Date().toISOString(),
+            },
+          ],
+        };
+      });
 
       setReplyText('');
       setIsInternalNote(false);
@@ -733,12 +851,14 @@ export default function AdminHelpPage() {
                     No messages recorded in this inquiry yet.
                   </div>
                 ) : (
-                  ticketDetails.messages.map((msg) => {
+                  ticketDetails.messages.map((msg, idx) => {
+                    const itemKey = msg.id ? `${msg.id}-${idx}` : `msg-${idx}`;
+
                     // Confidential Staff Note
                     if (msg.isInternalNote) {
                       return (
                         <div
-                          key={msg.id}
+                          key={itemKey}
                           className="mx-auto max-w-md bg-amber-50/90 border border-amber-300 text-amber-900 rounded-xl p-3 shadow-2xs space-y-1"
                         >
                           <div className="flex items-center justify-between text-[10px] font-bold text-amber-800">
@@ -759,7 +879,7 @@ export default function AdminHelpPage() {
 
                     return (
                       <div
-                        key={msg.id}
+                        key={itemKey}
                         className={`flex flex-col ${isAdmin ? 'items-end' : 'items-start'}`}
                       >
                         <span className="text-[10px] font-bold text-gray-400 mb-0.5 px-1">

@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
+import { useChatNotificationStore } from '@/store/useChatNotificationStore';
 
 const mainNavItems = [
   { name: 'Dashboard', path: '/dashboard/student', icon: LayoutDashboard, step: 'Overview' },
@@ -56,6 +57,7 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
   const toggleCollapse = useAppStore((state) => state.toggleSidebarCollapsed);
   const isDarkMode = useAppStore((state) => state.isDarkMode);
   const toggleDarkMode = useAppStore((state) => state.toggleDarkMode);
+  const unreadCount = useChatNotificationStore((state) => state.unreadCount);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -162,17 +164,24 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/60 hover:text-germany-black dark:hover:text-white'
                 }`}
               >
-                <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-2.5 min-w-0'}`}>
-                  <div className={`p-1 rounded-lg transition-colors shrink-0 ${
+                <div className={`flex items-center ${isCollapsed ? 'justify-center relative' : 'gap-2.5 min-w-0'}`}>
+                  <div className={`p-1 rounded-lg transition-colors shrink-0 relative ${
                     isActive ? 'text-white' : 'text-gray-500 dark:text-gray-400 group-hover:text-germany-red'
                   }`}>
                     <Icon className="w-3.5 h-3.5" />
+                    {isCollapsed && item.path === '/dashboard/student/help' && unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-germany-red border-2 border-white dark:border-[#111622] animate-pulse" />
+                    )}
                   </div>
                   {!isCollapsed && <span className="truncate">{item.name}</span>}
                 </div>
                 
                 {!isCollapsed && (
-                  isActive ? (
+                  item.path === '/dashboard/student/help' && unreadCount > 0 ? (
+                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-germany-red text-white shadow-xs animate-pulse shrink-0">
+                      {unreadCount}
+                    </span>
+                  ) : isActive ? (
                     <ChevronRight className="w-3.5 h-3.5 text-white/90 shrink-0" />
                   ) : (
                     <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 group-hover:text-germany-red/70 shrink-0">
@@ -206,17 +215,24 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/60 hover:text-germany-black dark:hover:text-white'
                 }`}
               >
-                <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-2.5 min-w-0'}`}>
-                  <div className={`p-1 rounded-lg transition-colors shrink-0 ${
+                <div className={`flex items-center ${isCollapsed ? 'justify-center relative' : 'gap-2.5 min-w-0'}`}>
+                  <div className={`p-1 rounded-lg transition-colors shrink-0 relative ${
                     isActive ? 'text-white' : 'text-gray-500 dark:text-gray-400 group-hover:text-germany-red'
                   }`}>
                     <Icon className="w-3.5 h-3.5" />
+                    {isCollapsed && item.path === '/dashboard/student/help' && unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-germany-red border-2 border-white dark:border-[#111622] animate-pulse" />
+                    )}
                   </div>
                   {!isCollapsed && <span className="truncate">{item.name}</span>}
                 </div>
                 
                 {!isCollapsed && (
-                  isActive ? (
+                  item.path === '/dashboard/student/help' && unreadCount > 0 ? (
+                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-germany-red text-white shadow-xs animate-pulse shrink-0">
+                      {unreadCount}
+                    </span>
+                  ) : isActive ? (
                     <ChevronRight className="w-3.5 h-3.5 text-white/90 shrink-0" />
                   ) : (
                     <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 group-hover:text-germany-red/70 shrink-0">

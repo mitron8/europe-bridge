@@ -14,6 +14,7 @@ import {
   Lock
 } from 'lucide-react';
 import { ClaySelect } from '@/components/ClaySelect';
+import { getChatSocket } from '@/lib/socket';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
@@ -104,6 +105,15 @@ export default function StudentHelpPage() {
 
   useEffect(() => {
     fetchTickets();
+
+    const socket = getChatSocket();
+    const handleTicketListUpdated = () => {
+      fetchTickets();
+    };
+    socket.on('ticket_list_updated', handleTicketListUpdated);
+    return () => {
+      socket.off('ticket_list_updated', handleTicketListUpdated);
+    };
   }, []);
 
   // Fetch ticket details & messages when selected
@@ -125,11 +135,91 @@ export default function StudentHelpPage() {
   };
 
   useEffect(() => {
-    if (selectedTicketId) {
-      fetchTicketDetails(selectedTicketId);
-    } else {
+    if (!selectedTicketId) {
       setTicketDetail(null);
+      return;
     }
+
+    fetchTicketDetails(selectedTicketId);
+
+    const socket = getChatSocket();
+    socket.emit('join_ticket', { ticketId: selectedTicketId });
+
+    const handleNewMessage = (msg: any) => {
+      if (msg && msg.ticketId === selectedTicketId) {
+        setTicketDetail((prev) => {
+          if (!prev) return prev;
+          if (prev.messages.some((m) => m.id === msg.id)) return prev;
+          return {
+            ...prev,
+            messages: [
+              ...prev.messages,
+              {
+                id: msg.id,
+                senderId: msg.senderUserId || 'other',
+                senderName: msg.senderRole === 'student' ? 'You' : msg.senderName || 'Counsellor',
+                senderRole: msg.senderRole,
+                content: msg.content,
+                isMe: msg.senderRole === 'student',
+                createdAt: msg.createdAt,
+              },
+            ],
+          };
+        });
+        socket.emit('mark_ticket_read', { ticketId: selectedTicketId });
+      }
+    };
+
+    const handleStatusUpdated = (data: any) => {
+      if (data && data.ticketId === selectedTicketId) {
+        setTicketDetail((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: data.status,
+                isTextable: data.isTextable,
+              }
+            : prev,
+        );
+        fetchTickets();
+      }
+    };
+
+    socket.on('new_message', handleNewMessage);
+    socket.on('ticket_status_updated', handleStatusUpdated);
+
+    // Silent background poll to guarantee zero dropped messages
+    const pollInterval = setInterval(() => {
+      if (selectedTicketId) {
+        fetch(`${API_URL}/help/student/queries/${selectedTicketId}`, { credentials: 'include' })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((data) => {
+            if (data && data.messages) {
+              setTicketDetail((prev) => {
+                if (!prev || prev.id !== data.id) return prev;
+                if (prev.messages.length !== data.messages.length) {
+                  const seen = new Set<string>();
+                  const deduped = data.messages.filter((m: any) => {
+                    if (seen.has(m.id)) return false;
+                    seen.add(m.id);
+                    return true;
+                  });
+                  return { ...prev, ...data, messages: deduped };
+                }
+                return prev;
+              });
+            }
+          })
+          .catch(() => {});
+      }
+    }, 3000);
+
+    return () => {
+      clearInterval(pollInterval);
+      socket.emit('leave_ticket', { ticketId: selectedTicketId });
+      socket.off('new_message', handleNewMessage);
+      socket.off('ticket_status_updated', handleStatusUpdated);
+    };
   }, [selectedTicketId]);
 
   // Scroll to bottom of chat
@@ -202,25 +292,25 @@ export default function StudentHelpPage() {
       if (res.ok) {
         const newMsg = await res.json();
         setReplyText('');
-        setTicketDetail((prev) =>
-          prev
-            ? {
-                ...prev,
-                messages: [
-                  ...prev.messages,
-                  {
-                    id: newMsg.id,
-                    senderId: 'me',
-                    senderName: 'You',
-                    senderRole: 'student',
-                    content: newMsg.content,
-                    isMe: true,
-                    createdAt: newMsg.createdAt,
-                  },
-                ],
-              }
-            : null
-        );
+        setTicketDetail((prev) => {
+          if (!prev) return null;
+          if (prev.messages.some((m) => m.id === newMsg.id)) return prev;
+          return {
+            ...prev,
+            messages: [
+              ...prev.messages,
+              {
+                id: newMsg.id,
+                senderId: 'me',
+                senderName: 'You',
+                senderRole: 'student',
+                content: newMsg.content,
+                isMe: true,
+                createdAt: newMsg.createdAt,
+              },
+            ],
+          };
+        });
         fetchTickets(); // Update message count in list
       }
     } catch (err) {
@@ -495,11 +585,11 @@ export default function StudentHelpPage() {
                     No messages in this inquiry thread yet.
                   </div>
                 ) : (
-                  ticketDetail.messages.map((m) => {
+                  ticketDetail.messages.map((m, idx) => {
                     const isMe = m.isMe;
                     return (
                       <div
-                        key={m.id}
+                        key={m.id ? `${m.id}-${idx}` : `msg-${idx}`}
                         className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] ${
                           isMe ? 'self-end' : 'self-start'
                         }`}

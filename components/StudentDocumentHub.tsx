@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useCallback, useEffect } from 'react';
-import Link from 'next/link';
 import {
   CheckCircle2,
   Circle,
@@ -637,8 +636,8 @@ export function StudentDocumentHub() {
               </p>
             </div>
           </div>
-          <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-700 border border-emerald-500/30 self-start sm:self-auto">
-            Live &amp; Connected
+          <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-400/20 text-amber-900 border border-amber-300/40 self-start sm:self-auto">
+            Coming Soon
           </span>
         </div>
 
@@ -708,57 +707,43 @@ export function StudentDocumentHub() {
           </div>
         </div>
 
-        {/* SOP and LOR Live Writing Services */}
+        {/* SOP and LOR Placeholders (Remaining outside CV generator scope) */}
         <div className="space-y-3">
           {[
             {
               title: 'Statement of Purpose (SOP)',
-              description: 'Course-specific motivation essay demonstrating credit module alignment and academic intent for German university admissions.',
-              badge: 'Professional Writing Available',
-              href: '/services/sop-writing',
-              actionText: 'Draft My SOP',
+              description: 'Course-specific motivation essay demonstrating credit module alignment and academic intent.',
+              badge: 'Coming Soon',
             },
             {
               title: 'Letters of Recommendation (LOR)',
-              description: 'Official academic or professional recommendations tailored for faculty mentors and university admissions panels.',
-              badge: 'Professional Writing Available',
-              href: '/services/lor-writing',
-              actionText: 'Draft My LOR',
+              description: 'Official recommendations from university professors or research mentors.',
+              badge: 'Coming Soon',
             },
-          ].map((service) => (
+          ].map((placeholder) => (
             <div
-              key={service.title}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl border border-gray-200/90 dark:border-gray-800 bg-white dark:bg-[#111622] hover:border-gray-300 dark:hover:border-gray-700 transition-all shadow-xs"
+              key={placeholder.title}
+              className="flex items-center justify-between gap-4 p-4 rounded-2xl border border-dashed border-gray-200 bg-gray-50/60"
             >
               <div className="flex items-start gap-3">
-                <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5 border border-amber-200/50 dark:border-amber-800/40">
-                  <FileText className="w-4 h-4" />
+                <div className="p-2 rounded-xl bg-gray-100 text-gray-400 shrink-0 mt-0.5">
+                  <Clock className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-xs font-extrabold text-germany-black dark:text-white">{service.title}</p>
-                    <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                      {service.badge}
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-extrabold text-gray-700">{placeholder.title}</p>
+                    <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-gray-200/80 text-gray-600">
+                      {placeholder.badge}
                     </span>
                   </div>
-                  <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-0.5">{service.description}</p>
+                  <p className="text-[11px] font-bold text-gray-400 mt-0.5">{placeholder.description}</p>
                 </div>
               </div>
 
-              <div className="shrink-0 flex items-center gap-2 self-start sm:self-auto">
-                <Link
-                  href={service.href}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 text-white dark:text-slate-900 text-xs font-bold transition-colors shadow-xs"
-                >
-                  <span>{service.actionText}</span>
-                  <ExternalLink className="w-3 h-3 text-germany-gold dark:text-amber-600" />
-                </Link>
-                <Link
-                  href="/dashboard/student/services"
-                  className="text-[11px] font-bold text-gray-500 hover:text-germany-red dark:text-gray-400 transition-colors px-2 py-1"
-                >
-                  View Status
-                </Link>
+              <div className="shrink-0">
+                <span className="text-[11px] font-extrabold text-gray-400 italic">
+                  Guided during 1-on-1 consultations
+                </span>
               </div>
             </div>
           ))}
