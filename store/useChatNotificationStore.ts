@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getChatSocket } from '@/lib/socket';
+import { getChatSocket, disconnectChatSocket } from '@/lib/socket';
 
 export interface ChatNotificationAlert {
   type: 'student_message' | 'counsellor_message' | 'admin_message' | 'escalation_alert' | 'escalated_message';
@@ -22,6 +22,7 @@ interface ChatNotificationState {
   
   // Actions
   init: () => void;
+  reset: () => void;
   setCounts: (counts: { unreadCount: number; escalatedCount?: number; hasEscalations?: boolean }) => void;
   clearNotification: () => void;
   markTicketAsRead: (ticketId: string) => Promise<void>;
@@ -45,6 +46,17 @@ export const useChatNotificationStore = create<ChatNotificationState>((set, get)
 
   clearNotification: () => {
     set({ activeNotification: null });
+  },
+
+  reset: () => {
+    disconnectChatSocket();
+    set({
+      unreadCount: 0,
+      escalatedCount: 0,
+      hasEscalations: false,
+      activeNotification: null,
+      isInitialized: false,
+    });
   },
 
   refreshCounts: async () => {
@@ -129,4 +141,3 @@ export const useChatNotificationStore = create<ChatNotificationState>((set, get)
     });
   },
 }));
-

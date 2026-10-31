@@ -11,10 +11,21 @@ export function getSocketUrl(): string {
     return process.env.NEXT_PUBLIC_SOCKET_URL;
   }
 
-  // When running locally in browser, connect directly to NestJS backend on port 3001
   const hostname = window.location.hostname;
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return `http://${hostname}:3001`;
+  const isLocal =
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '::1' ||
+    hostname === '[::1]' ||
+    hostname.endsWith('.local') ||
+    hostname.endsWith('.localhost') ||
+    /^192\.168\.\d+\.\d+$/.test(hostname) ||
+    /^10\.\d+\.\d+\.\d+$/.test(hostname) ||
+    /^172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+$/.test(hostname);
+
+  if (isLocal) {
+    const host = hostname.includes(':') ? `[${hostname.replace(/[[\]]/g, '')}]` : hostname;
+    return `http://${host}:3001`;
   }
 
   if (process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL.startsWith('http')) {
@@ -54,6 +65,8 @@ export async function fetchSocketToken(): Promise<string | null> {
   } catch (err) {
     console.warn('[ChatSocket] Could not fetch socket handshake token:', err);
   }
+  cachedToken = null;
+  tokenExpiry = 0;
   return null;
 }
 
@@ -65,13 +78,25 @@ export function getChatSocket(): Socket {
       transports: ['websocket', 'polling'],
       autoConnect: true,
       reconnection: true,
-      reconnectionAttempts: Infinity,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 2000,
+      reconnectionDelayMax: 10000,
+      timeout: 10000,
       auth: (cb) => {
         fetchSocketToken()
-          .then((token) => cb(token ? { token } : {}))
-          .catch(() => cb({}));
+          .then((token) => {
+            if (!token) {
+              // Unauthenticated state: disconnect cleanly and do not spam server
+              if (socket) {
+                socket.disconnect();
+              }
+              return;
+            }
+            cb({ token });
+          })
+          .catch(() => {
+            if (socket) socket.disconnect();
+          });
       },
     });
 
@@ -79,15 +104,30 @@ export function getChatSocket(): Socket {
       console.log('[ChatSocket] Connected to server successfully:', socket?.id);
     });
 
+    socket.on('disconnect', (reason) => {
+      if (reason === 'io server disconnect') {
+        // Server rejected connection (invalid or expired token)
+        cachedToken = null;
+        tokenExpiry = 0;
+      }
+    });
+
     socket.on('connect_error', (err) => {
-      console.warn('[ChatSocket] Socket connection error:', err.message);
-      // Invalidate cache on connect error so next retry attempts a fresh token
-      cachedToken = null;
+      // Don't spam warnings if socket was intentionally disconnected due to unauthenticated state
+      if (socket?.connected || cachedToken) {
+        console.warn('[ChatSocket] Socket connection error:', err.message);
+      }
+      // If error indicates unauthorized or forbidden, clear cached token
+      if (err.message?.toLowerCase().includes('unauthor') || err.message?.toLowerCase().includes('forbidden')) {
+        cachedToken = null;
+        tokenExpiry = 0;
+        socket?.disconnect();
+      }
     });
   }
 
-  // If socket disconnected, trigger reconnect
-  if (socket && !socket.connected) {
+  // Only trigger manual connect if socket is disconnected and not currently attempting connection
+  if (socket && !socket.connected && !socket.active) {
     socket.connect();
   }
 
@@ -99,5 +139,6 @@ export function disconnectChatSocket() {
     socket.disconnect();
     socket = null;
     cachedToken = null;
+    tokenExpiry = 0;
   }
 }

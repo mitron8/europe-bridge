@@ -1,4 +1,6 @@
 import { useAppStore } from '@/store/useAppStore';
+import { useChatNotificationStore } from '@/store/useChatNotificationStore';
+import { disconnectChatSocket } from './socket';
 
 const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
@@ -59,6 +61,11 @@ export async function signup(firstName: string, lastName: string, email: string,
 }
 
 export async function logout() {
+  try {
+    disconnectChatSocket();
+    useChatNotificationStore.getState().reset();
+  } catch {}
+
   try {
     useAppStore.getState().setUser(null);
   } catch {}
