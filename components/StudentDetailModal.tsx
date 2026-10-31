@@ -478,6 +478,13 @@ export function StudentDetailModal({
         (u.name === r.universityName && u.program === r.programName)
     );
 
+    const isAddingNewShortlist = !existing || existing.status === 'recommended';
+    const maxShortlist = studentSubscription?.maxShortlistCount || 3;
+    if (isAddingNewShortlist && studentShortlistCount >= maxShortlist) {
+      alert(`Shortlist limit reached (${studentShortlistCount}/${maxShortlist} max for this plan). Please unshortlist an existing programme before adding another.`);
+      return;
+    }
+
     setTogglingShortlist(progIdStr);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
@@ -513,9 +520,10 @@ export function StudentDetailModal({
         );
         setStudentShortlistCount((prev) => prev + 1);
       } else {
+        const parsedScore = Math.round(Number(r.relevanceScore ?? 90));
         const payload = {
-          programmeId: r.programmeId ? Number(r.programmeId) : undefined,
-          universityId: r.universityId ? Number(r.universityId) : undefined,
+          programmeId: r.programmeId && !isNaN(Number(r.programmeId)) ? Number(r.programmeId) : undefined,
+          universityId: r.universityId && !isNaN(Number(r.universityId)) ? Number(r.universityId) : undefined,
           name: r.universityName,
           program: r.programName,
           degree: r.degree || 'Master',
@@ -523,7 +531,7 @@ export function StudentDetailModal({
           tuition: r.tuitionPerSemester || 'Free / None (public university)',
           deadline: r.nonEuDeadline || 'NA',
           type: r.universityType || 'Public University',
-          matchScore: r.relevanceScore || 90,
+          matchScore: Number.isFinite(parsedScore) ? parsedScore : 90,
           status: 'shortlisted',
         };
         const res = await fetch(`${API_URL}/counsellor/students/${effectiveId}/recommendations`, {
@@ -3630,6 +3638,8 @@ export function StudentDetailModal({
                             const isShortlisted = shortlistedProgIds.has(String(progId));
                             const uniName = matchItem?.universityName || curatedItem?.universityName || 'University';
                             const progName = matchItem?.programName || curatedItem?.programName || `Programme ID: ${progId}`;
+                            const maxShortlist = studentSubscription?.maxShortlistCount || 3;
+                            const isShortlistFull = studentShortlistCount >= maxShortlist;
 
                             return (
                               <div
@@ -3680,12 +3690,14 @@ export function StudentDetailModal({
                                         relevanceScore: matchItem?.relevanceScore || 90,
                                       })
                                     }
-                                    disabled={togglingShortlist === String(progId) || isMatchingLocked}
+                                    disabled={togglingShortlist === String(progId) || isMatchingLocked || (!isShortlisted && isShortlistFull)}
                                     className={`inline-flex items-center gap-1 text-[10px] font-extrabold py-1 px-2 rounded-lg transition-colors border ${
                                       isMatchingLocked
                                         ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
                                         : isShortlisted
                                         ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
+                                        : isShortlistFull
+                                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-50'
                                         : 'bg-white dark:bg-[#151B27] text-gray-700 dark:text-gray-300 border-gray-200/80 dark:border-gray-800 hover:border-blue-400 hover:text-blue-600 cursor-pointer'
                                     }`}
                                     title={
@@ -3693,6 +3705,8 @@ export function StudentDetailModal({
                                         ? 'Shortlist is locked. Unlock to modify.'
                                         : isShortlisted
                                         ? 'Click to remove from student shortlist'
+                                        : isShortlistFull
+                                        ? `Student shortlist limit reached (${studentShortlistCount}/${maxShortlist} max for ${studentSubscription?.planId || 'Plan'}). Remove an existing shortlisted programme first.`
                                         : 'Add to student shortlist'
                                     }
                                   >
@@ -3703,7 +3717,17 @@ export function StudentDetailModal({
                                     ) : (
                                       <Bookmark className={`w-2.5 h-2.5 ${isShortlisted ? 'fill-current text-blue-600' : ''}`} />
                                     )}
-                                    <span>{isMatchingLocked && isShortlisted ? 'Shortlisted (Locked)' : isMatchingLocked ? 'Locked' : isShortlisted ? 'Shortlisted' : 'Shortlist'}</span>
+                                    <span>
+                                      {isMatchingLocked && isShortlisted
+                                        ? 'Shortlisted (Locked)'
+                                        : isMatchingLocked
+                                        ? 'Locked'
+                                        : isShortlisted
+                                        ? 'Shortlisted'
+                                        : isShortlistFull
+                                        ? 'Limit Reached'
+                                        : 'Shortlist'}
+                                    </span>
                                   </button>
 
                                   {/* Remove from Curation / Display Button */}
