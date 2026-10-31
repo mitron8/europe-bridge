@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from 'react';
+import StudentStageGate from '@/components/StudentStageGate';
 import {
   CheckCircle2,
   Circle,
@@ -69,6 +70,7 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
 
 export default function ApsChecklist() {
   const [checklist, setChecklist] = useState<ChecklistResponse | null>(null);
+  const [gates, setGates] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [uploading, setUploading] = useState<string | null>(null); // documentType being uploaded
@@ -82,10 +84,19 @@ export default function ApsChecklist() {
     try {
       setIsLoading(true);
       setError('');
-      const data = await apiFetch<ChecklistResponse>('/aps/checklist');
+      const [data, gatesData] = await Promise.all([
+        apiFetch<ChecklistResponse>('/aps/checklist'),
+        apiFetch<any>('/student/gates').catch(() => null),
+      ]);
       setChecklist(data);
+      if (gatesData) setGates(gatesData);
     } catch (e: any) {
       setError(e.message || 'Failed to load APS checklist');
+      // If error occurred, attempt to fetch gates to know why
+      try {
+        const g = await apiFetch<any>('/student/gates');
+        setGates(g);
+      } catch {}
     } finally {
       setIsLoading(false);
     }
@@ -170,7 +181,11 @@ export default function ApsChecklist() {
       // fetch again so it actually shows up
       await loadChecklist();
     } catch (e: any) {
-      setActionError(e.message || 'Upload failed. Please try again.');
+      const msg = e.message || 'Upload failed. Please try again.';
+      setActionError(msg);
+      if (msg.includes('locked') || msg.includes('finalizes') || msg.includes('shortlist') || msg.includes('plan')) {
+        setError(msg);
+      }
     } finally {
       setUploading(null);
     }
@@ -183,7 +198,11 @@ export default function ApsChecklist() {
       await apiFetch(`/aps/document/${documentType}`, { method: 'DELETE' });
       await loadChecklist();
     } catch (e: any) {
-      setActionError(e.message || 'Failed to delete document');
+      const msg = e.message || 'Failed to delete document';
+      setActionError(msg);
+      if (msg.includes('locked') || msg.includes('finalizes') || msg.includes('shortlist') || msg.includes('plan')) {
+        setError(msg);
+      }
     } finally {
       setDeleting(null);
     }
@@ -212,7 +231,21 @@ export default function ApsChecklist() {
     );
   }
 
+  if (gates && !gates.apsUnlocked) {
+    if (!gates.hasActivePlan) {
+      return <StudentStageGate type="aps_plan_needed" />;
+    }
+    return <StudentStageGate type="aps_lock_needed" />;
+  }
+
   if (error) {
+    const errLower = error.toLowerCase();
+    if (errLower.includes('plan')) {
+      return <StudentStageGate type="aps_plan_needed" />;
+    }
+    if (errLower.includes('locked') || errLower.includes('finalizes') || errLower.includes('shortlist')) {
+      return <StudentStageGate type="aps_lock_needed" />;
+    }
     return (
       <div className="p-8 bg-red-50 rounded-2xl flex items-start gap-3 text-red-600">
         <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />

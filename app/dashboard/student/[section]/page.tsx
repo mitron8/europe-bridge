@@ -4,6 +4,7 @@ import React, { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProfileCompletionGate from '@/components/ProfileCompletionGate';
+import StudentStageGate from '@/components/StudentStageGate';
 import { StudentDocumentHub } from '@/components/StudentDocumentHub';
 import { StudentServicesHub } from '@/components/StudentServicesHub';
 import {
@@ -204,7 +205,12 @@ function MatchingSection() {
         credentials: 'include',
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message ?? 'Failed to remove from shortlist');
+      if (!res.ok) {
+        if (res.status === 403 && data.message?.includes('locked')) {
+          setIsLocked(true);
+        }
+        throw new Error(data.message ?? 'Failed to remove from shortlist');
+      }
       await fetchResults();
     } catch (err: any) {
       alert(err.message ?? 'Could not remove from shortlist');
@@ -224,7 +230,12 @@ function MatchingSection() {
         body: JSON.stringify({ programmeId }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message ?? 'Failed to shortlist programme');
+      if (!res.ok) {
+        if (res.status === 403 && data.message?.includes('locked')) {
+          setIsLocked(true);
+        }
+        throw new Error(data.message ?? 'Failed to shortlist programme');
+      }
 
       await fetchResults();
     } catch (err: any) {
@@ -802,7 +813,12 @@ function ShortlistSection() {
         credentials: 'include',
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message ?? 'Failed to remove from shortlist');
+      if (!res.ok) {
+        if (res.status === 403 && data.message?.includes('locked')) {
+          setIsLocked(true);
+        }
+        throw new Error(data.message ?? 'Failed to remove from shortlist');
+      }
 
       await fetchShortlist();
     } catch (err: any) {
@@ -1000,6 +1016,7 @@ export default function StudentSectionPage({ params }: { params: Promise<{ secti
   const isRestricted = RESTRICTED_SECTIONS.includes(section);
   const [completionPercentage, setCompletionPercentage] = useState<number | null>(null);
   const [userName, setUserName] = useState<string>('');
+  const [gates, setGates] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(isRestricted);
 
   useEffect(() => {
@@ -1014,6 +1031,7 @@ export default function StudentSectionPage({ params }: { params: Promise<{ secti
           const pct = typeof data.completionPercentage === 'number' ? data.completionPercentage : 0;
           setCompletionPercentage(pct);
           if (data.firstName) setUserName(data.firstName);
+          if (data.gates) setGates(data.gates);
         } else {
           setCompletionPercentage(0);
         }
@@ -1051,8 +1069,28 @@ export default function StudentSectionPage({ params }: { params: Promise<{ secti
       {(!isRestricted || (!isLoading && completionPercentage !== null && completionPercentage >= 100)) && (
         <>
           {section === 'matching' && <MatchingSection />}
-          {section === 'shortlist' && <ShortlistSection />}
-          {section === 'documents' && <StudentDocumentHub />}
+          {section === 'shortlist' && (
+            gates && !gates.shortlistUnlocked ? (
+              !gates.hasMatchingRun ? (
+                <StudentStageGate type="shortlist_matching_needed" userName={userName} />
+              ) : (
+                <StudentStageGate type="shortlist_plan_needed" userName={userName} />
+              )
+            ) : (
+              <ShortlistSection />
+            )
+          )}
+          {section === 'documents' && (
+            gates && !gates.documentsUnlocked ? (
+              !gates.hasActivePlan ? (
+                <StudentStageGate type="documents_plan_needed" userName={userName} />
+              ) : (
+                <StudentStageGate type="documents_lock_needed" userName={userName} />
+              )
+            ) : (
+              <StudentDocumentHub />
+            )
+          )}
           {section === 'services' && <StudentServicesHub />}
           {!['matching', 'shortlist', 'documents', 'aps', 'services'].includes(section) && (
             <div className="neu-card p-8 bg-white dark:bg-[#111622] text-center space-y-4">

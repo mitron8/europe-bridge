@@ -23,6 +23,7 @@ import { GENERAL_DOCUMENT_CATALOGUE } from '@/lib/documentCatalogue';
 import { StudentCvGenerator } from './StudentCvGenerator';
 import { StudentSopGenerator } from './StudentSopGenerator';
 import { StudentLorGenerator } from './StudentLorGenerator';
+import StudentStageGate from './StudentStageGate';
 
 type StudentNotification = {
   id: string;
@@ -214,7 +215,11 @@ export function StudentDocumentHub() {
       await loadDocuments();
       await loadNotifications();
     } catch (e: any) {
-      setActionError(e.message || 'Upload failed. Please try again.');
+      const msg = e.message || 'Upload failed. Please try again.';
+      setActionError(msg);
+      if (msg.includes('locked') || msg.includes('finalizes') || msg.includes('shortlist') || msg.includes('plan')) {
+        setError(msg);
+      }
     } finally {
       setUploading(null);
     }
@@ -234,7 +239,11 @@ export function StudentDocumentHub() {
       setTimeout(() => setActionSuccess(''), 4000);
       await loadDocuments();
     } catch (e: any) {
-      setActionError(e.message || 'Failed to delete document');
+      const msg = e.message || 'Failed to delete document';
+      setActionError(msg);
+      if (msg.includes('locked') || msg.includes('finalizes') || msg.includes('shortlist') || msg.includes('plan')) {
+        setError(msg);
+      }
     } finally {
       setDeleting(null);
     }
@@ -263,6 +272,13 @@ export function StudentDocumentHub() {
   }
 
   if (error) {
+    const errLower = error.toLowerCase();
+    if (errLower.includes('plan')) {
+      return <StudentStageGate type="documents_plan_needed" />;
+    }
+    if (errLower.includes('locked') || errLower.includes('finalizes') || errLower.includes('shortlist')) {
+      return <StudentStageGate type="documents_lock_needed" />;
+    }
     return (
       <div className="p-8 bg-red-50 rounded-2xl flex items-start gap-3 text-red-600 border border-red-200">
         <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />

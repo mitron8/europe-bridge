@@ -23,7 +23,8 @@ import {
   Bot,
   Sun,
   Moon,
-  Layers
+  Layers,
+  Lock,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
@@ -53,6 +54,12 @@ interface StudentSidebarProps {
 export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps) {
   const pathname = usePathname();
   const [user, setUser] = useState<{ firstName?: string; lastName?: string; role?: string } | null>(null);
+  const [gates, setGates] = useState<{
+    matchingUnlocked?: boolean;
+    shortlistUnlocked?: boolean;
+    documentsUnlocked?: boolean;
+    apsUnlocked?: boolean;
+  } | null>(null);
   const isCollapsed = useAppStore((state) => state.isSidebarCollapsed);
   const toggleCollapse = useAppStore((state) => state.toggleSidebarCollapsed);
   const isDarkMode = useAppStore((state) => state.isDarkMode);
@@ -60,20 +67,36 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
   const unreadCount = useChatNotificationStore((state) => state.unreadCount);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserAndGates = async () => {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
-        const res = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
-        if (res.ok) {
-          const data = await res.json();
+        const [meRes, gatesRes] = await Promise.all([
+          fetch(`${API_URL}/auth/me`, { credentials: 'include' }),
+          fetch(`${API_URL}/student/gates`, { credentials: 'include' }).catch(() => null),
+        ]);
+        if (meRes.ok) {
+          const data = await meRes.json();
           setUser(data.user);
         }
+        if (gatesRes && gatesRes.ok) {
+          const gData = await gatesRes.json();
+          setGates(gData);
+        }
       } catch (err) {
-        console.error('Failed to load user', err);
+        console.error('Failed to load user or gates', err);
       }
     };
-    fetchUser();
+    fetchUserAndGates();
   }, []);
+
+  const isItemLocked = (itemName: string): boolean => {
+    if (!gates) return false;
+    if (itemName === 'Matching Engine') return !gates.matchingUnlocked;
+    if (itemName === 'My Shortlist') return !gates.shortlistUnlocked;
+    if (itemName === 'Document Hub') return !gates.documentsUnlocked;
+    if (itemName === 'APS Checklist') return !gates.apsUnlocked;
+    return false;
+  };
 
   const initials = user 
     ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() 
@@ -153,11 +176,12 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
           {mainNavItems.map((item) => {
             const isActive = pathname === item.path;
             const Icon = item.icon;
+            const isLocked = isItemLocked(item.name);
             return (
               <Link
                 key={item.path}
                 href={item.path}
-                title={isCollapsed ? item.name : undefined}
+                title={isCollapsed ? (isLocked ? `${item.name} (Locked)` : item.name) : undefined}
                 className={`flex items-center ${isCollapsed ? 'justify-center px-2 py-2.5' : 'justify-between px-3 py-2'} rounded-xl text-xs font-bold transition-colors group ${
                   isActive
                     ? 'bg-germany-red text-white shadow-xs'
@@ -169,6 +193,9 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
                     isActive ? 'text-white' : 'text-gray-500 dark:text-gray-400 group-hover:text-germany-red'
                   }`}>
                     <Icon className="w-3.5 h-3.5" />
+                    {isCollapsed && isLocked && (
+                      <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-500 border border-white dark:border-[#111622]" />
+                    )}
                     {isCollapsed && item.path === '/dashboard/student/help' && unreadCount > 0 && (
                       <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-germany-red border-2 border-white dark:border-[#111622] animate-pulse" />
                     )}
@@ -183,6 +210,11 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
                     </span>
                   ) : isActive ? (
                     <ChevronRight className="w-3.5 h-3.5 text-white/90 shrink-0" />
+                  ) : isLocked ? (
+                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-amber-600 dark:text-amber-400 shrink-0" title="Locked">
+                      <Lock className="w-2.5 h-2.5 text-amber-500" />
+                      <span>{item.step}</span>
+                    </span>
                   ) : (
                     <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 group-hover:text-germany-red/70 shrink-0">
                       {item.step}
@@ -204,11 +236,12 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
           {admissionNavItems.map((item) => {
             const isActive = pathname === item.path;
             const Icon = item.icon;
+            const isLocked = isItemLocked(item.name);
             return (
               <Link
                 key={item.path}
                 href={item.path}
-                title={isCollapsed ? item.name : undefined}
+                title={isCollapsed ? (isLocked ? `${item.name} (Locked)` : item.name) : undefined}
                 className={`flex items-center ${isCollapsed ? 'justify-center px-2 py-2.5' : 'justify-between px-3 py-2'} rounded-xl text-xs font-bold transition-colors group ${
                   isActive
                     ? 'bg-germany-red text-white shadow-xs'
@@ -220,6 +253,9 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
                     isActive ? 'text-white' : 'text-gray-500 dark:text-gray-400 group-hover:text-germany-red'
                   }`}>
                     <Icon className="w-3.5 h-3.5" />
+                    {isCollapsed && isLocked && (
+                      <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-500 border border-white dark:border-[#111622]" />
+                    )}
                     {isCollapsed && item.path === '/dashboard/student/help' && unreadCount > 0 && (
                       <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-germany-red border-2 border-white dark:border-[#111622] animate-pulse" />
                     )}
@@ -234,6 +270,11 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
                     </span>
                   ) : isActive ? (
                     <ChevronRight className="w-3.5 h-3.5 text-white/90 shrink-0" />
+                  ) : isLocked ? (
+                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-amber-600 dark:text-amber-400 shrink-0" title="Locked">
+                      <Lock className="w-2.5 h-2.5 text-amber-500" />
+                      <span>{item.step}</span>
+                    </span>
                   ) : (
                     <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 group-hover:text-germany-red/70 shrink-0">
                       {item.step}

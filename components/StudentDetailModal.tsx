@@ -380,6 +380,11 @@ export function StudentDetailModal({
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to update lock state');
       setIsMatchingLocked(data.isLocked);
+      const newStatus = data.isLocked ? 'shortlist_locked' : 'plan_purchased';
+      if (student) {
+        student.status = newStatus;
+      }
+      setSummaryData((prev: any) => (prev ? { ...prev, status: newStatus } : prev));
     } catch (err: any) {
       alert(err.message || 'Failed to toggle lock');
     } finally {
@@ -569,6 +574,20 @@ export function StudentDetailModal({
     );
     return universities.filter((u: any) => {
       const uProgId = String(u.programmeId || u.id);
+      // Exclude programmes that are already shortlisted or on student display
+      if (
+        shortlistedProgIds.has(uProgId) ||
+        (u.programmeId && shortlistedProgIds.has(String(u.programmeId))) ||
+        (u.status && u.status !== 'recommended')
+      ) {
+        return false;
+      }
+      if (
+        curatedProgrammeIds.includes(uProgId) ||
+        (u.programmeId && curatedProgrammeIds.includes(String(u.programmeId)))
+      ) {
+        return false;
+      }
       if (u.programmeId && matchedProgIds.has(String(u.programmeId))) {
         return false;
       }
@@ -584,7 +603,7 @@ export function StudentDetailModal({
       });
       return !isMatchingResult;
     });
-  }, [universities, matchingResults]);
+  }, [universities, matchingResults, shortlistedProgIds, curatedProgrammeIds]);
 
 
   const handleDeleteMatchedProgramme = async (programmeId: string | number) => {
@@ -1257,6 +1276,12 @@ export function StudentDetailModal({
 
   const formatStatus = (status: string | null) => {
     if (!status) return 'Enrolled';
+    if (status === 'shortlist_locked') return 'Shortlist Locked';
+    if (status === 'plan_purchased') return 'Plan Purchased';
+    if (status === 'matching_completed') return 'Matching Engine Run';
+    if (status === 'profile_completed') return 'Profile Completed';
+    if (status === 'logged_in') return 'Logged In';
+    if (status === 'signed_up') return 'Signed Up';
     return status
       .split('_')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -1369,8 +1394,16 @@ export function StudentDetailModal({
                     <h2 className="text-xl sm:text-2xl font-display text-germany-black dark:text-white leading-tight">
                       {student.firstName} {student.lastName}
                     </h2>
-                    <span className="px-2.5 py-0.5 bg-germany-gold/20 dark:bg-amber-950/40 text-germany-black dark:text-amber-300 font-extrabold rounded-full text-[11px] border border-germany-gold/40 dark:border-amber-800/40">
-                      {formatStatus(student.status)}
+                    <span className={`px-2.5 py-0.5 font-extrabold rounded-full text-[11px] border ${
+                      (isMatchingLocked || student?.status === 'shortlist_locked' || summaryData?.status === 'shortlist_locked')
+                        ? 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-950/50 dark:text-purple-300 dark:border-purple-800'
+                        : (student?.status === 'plan_purchased' || summaryData?.status === 'plan_purchased')
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
+                        : 'bg-germany-gold/20 text-germany-black font-extrabold rounded-full text-[11px] border border-germany-gold/40'
+                    }`}>
+                      {isMatchingLocked || student?.status === 'shortlist_locked' || summaryData?.status === 'shortlist_locked'
+                        ? 'Shortlist Locked'
+                        : formatStatus(summaryData?.status || student?.status)}
                     </span>
                     <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-extrabold rounded-full text-[10px] flex items-center gap-1">
                       <CheckCircle2 className="w-3 h-3" />
@@ -1554,18 +1587,32 @@ export function StudentDetailModal({
                           { title: 'Profile Complete', stage: 'profile_completed' },
                           { title: 'Matching Engine', stage: 'matching_completed' },
                           { title: 'Plan / Subscription', stage: 'plan_purchased' },
+                          { title: 'Shortlist Finalized', stage: 'shortlist_locked' },
                           { title: 'Document Verification', stage: 'documents' },
                           { title: 'APS India Certificate', stage: 'aps' },
                           { title: 'Applications & Uni-Assist', stage: 'applications' },
                           { title: 'Visa & Blocked Account', stage: 'visa' },
                         ].map((step, idx) => {
-                          const statusOrder = ['signed_up', 'logged_in', 'profile_completed', 'matching_completed', 'plan_purchased', 'documents', 'aps', 'applications', 'visa'];
-                          const currentIdx = statusOrder.indexOf(summaryData?.status);
+                          const statusOrder = [
+                            'signed_up',
+                            'logged_in',
+                            'profile_completed',
+                            'matching_completed',
+                            'plan_purchased',
+                            'shortlist_locked',
+                            'documents',
+                            'aps',
+                            'applications',
+                            'visa',
+                          ];
+                          const activeStatus = isMatchingLocked
+                            ? 'shortlist_locked'
+                            : (summaryData?.status || student?.status || 'signed_up');
+                          const currentIdx = statusOrder.indexOf(activeStatus);
                           const stepIdx = statusOrder.indexOf(step.stage);
                           
                           let status = 'Pending';
-                          // For future stages not yet supported by backend, always show as Pending
-                          if (stepIdx > 3) {
+                          if (stepIdx > 4) {
                             status = 'Pending';
                           } else {
                             if (currentIdx > stepIdx) status = 'Completed';
@@ -3426,6 +3473,16 @@ export function StudentDetailModal({
                                 const maxDisplay = studentSubscription?.maxDisplayCount || 5;
                                 const isDisplayFull = curatedProgrammeIds.length >= maxDisplay;
 
+                                const uAny = uni as any;
+                                const uniName = uAny.universityName || uAny.name || 'German University';
+                                const progName = uAny.programName || uAny.program || 'University Programme';
+                                const uniType = uAny.universityType || uAny.type || 'Public University';
+                                const uniLocation = uAny.location || [uAny.city, uAny.country].filter(Boolean).join(', ') || 'Germany';
+                                const uniTuition = uAny.tuitionPerSemester || uAny.tuition || '€0 / semester fee only';
+                                const uniDeadline = uAny.nonEuDeadline || uAny.deadline || 'July 15';
+                                const uniLanguage = uAny.language || 'German';
+                                const uniUrl = uAny.programUrl || uAny.url;
+
                                 return (
                                   <div
                                     key={uni.id}
@@ -3441,27 +3498,29 @@ export function StudentDetailModal({
                                     <div className="flex items-start justify-between gap-2">
                                       <div className="space-y-0.5 min-w-0 flex-1">
                                         <span className="text-[10px] font-black uppercase tracking-wider text-germany-red">
-                                          #{idx + 1} • {uni.type || 'Public University'}
+                                          #{idx + 1} • {uniType}
                                         </span>
-                                        <h4 className="font-display text-sm sm:text-base text-germany-black dark:text-white leading-tight truncate">
-                                          {uni.name}
+                                        <h4 className="font-display text-sm sm:text-base text-germany-black dark:text-white leading-tight truncate" title={uniName}>
+                                          {uniName}
                                         </h4>
-                                        <p className="text-xs font-extrabold text-gray-600 dark:text-gray-300 leading-snug">
-                                          {uni.program}
+                                        <p className="text-xs font-extrabold text-gray-600 dark:text-gray-300 leading-snug" title={progName}>
+                                          {progName}
                                         </p>
-                                        <p className="text-[10px] text-gray-400 font-medium">{uni.degree}</p>
+                                        <p className="text-[10px] text-gray-400 font-medium">{uni.degree || 'Bachelor'}</p>
                                       </div>
 
                                       <div className="text-right shrink-0 flex flex-col items-end gap-1">
-                                        {isShortlisted ? (
-                                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200 border border-blue-300 dark:border-blue-700">
+                                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full border bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700">
+                                          {uni.status ? (uni.status === 'recommended' ? 'RECOMMENDED' : uni.status.toUpperCase()) : 'RECOMMENDED'}
+                                        </span>
+                                        {isShortlisted && (
+                                          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200 border border-blue-300 dark:border-blue-700">
                                             ★ Shortlisted
                                           </span>
-                                        ) : (
-                                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full border bg-germany-gold/20 text-germany-black dark:text-[#FDE68A] border-germany-gold/40">
-                                            {uni.status ? uni.status.toUpperCase() : 'SAVED'}
-                                          </span>
                                         )}
+                                        <span className="text-[10px] font-black text-gray-400">
+                                          Score: {uni.matchScore || 90}% Fit
+                                        </span>
                                       </div>
                                     </div>
 
@@ -3469,19 +3528,19 @@ export function StudentDetailModal({
                                     <div className="grid grid-cols-2 gap-2 text-[11px] p-2.5 rounded-xl bg-[#F4F1EA]/70 dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800/80">
                                       <div>
                                         <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Location</span>
-                                        <span className="font-bold text-gray-700 dark:text-gray-300">📍 {uni.location || 'Germany'}</span>
+                                        <span className="font-bold text-gray-700 dark:text-gray-300">📍 {uniLocation}</span>
                                       </div>
                                       <div>
                                         <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Tuition</span>
-                                        <span className="font-bold text-gray-700 dark:text-gray-300">{uni.tuition || '€0 / semester'}</span>
+                                        <span className="font-bold text-gray-700 dark:text-gray-300">{uniTuition}</span>
                                       </div>
                                       <div>
                                         <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Language</span>
-                                        <span className="font-bold text-gray-700 dark:text-gray-300">🌐 {uni.language || 'English'}</span>
+                                        <span className="font-bold text-gray-700 dark:text-gray-300">🌐 {uniLanguage}</span>
                                       </div>
                                       <div>
                                         <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Deadline</span>
-                                        <span className="font-bold text-gray-700 dark:text-gray-300">⏰ {uni.deadline || 'July 15'}</span>
+                                        <span className="font-bold text-gray-700 dark:text-gray-300">⏰ {uniDeadline}</span>
                                       </div>
                                     </div>
 
@@ -3494,9 +3553,9 @@ export function StudentDetailModal({
                                     {/* Action Footer */}
                                     <div className="pt-2 border-t border-gray-100 dark:border-gray-800/80 flex items-center justify-between gap-2 flex-wrap">
                                       <div className="flex items-center gap-2">
-                                        {uni.programUrl ? (
+                                        {uniUrl ? (
                                           <a
-                                            href={uni.programUrl}
+                                            href={uniUrl}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-germany-red hover:underline"

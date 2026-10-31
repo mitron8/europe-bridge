@@ -29,11 +29,14 @@ export function CounsellorLeads() {
     hasMore,
   } = usePaginatedList<StudentLead>('/counsellor/leads', 20);
 
-  const formatStatus = (status: string) => {
-    if (status === 'matching_completed') return 'Matching Engine Run (Unpurchased)';
-    if (status === 'logged_in') return 'Logged In';
-    if (status === 'profile_completed') return 'Profile Completed';
+  const formatStatus = (status: string | null) => {
+    if (!status) return 'Signed Up';
+    if (status === 'shortlist_locked') return 'Shortlist Locked';
     if (status === 'plan_purchased') return 'Plan Purchased';
+    if (status === 'matching_completed') return 'Matching Engine Run';
+    if (status === 'profile_completed') return 'Profile Completed';
+    if (status === 'logged_in') return 'Logged In';
+    if (status === 'signed_up') return 'Signed Up';
     return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
@@ -94,19 +97,25 @@ export function CounsellorLeads() {
               <td className="px-4 py-3 text-sm font-bold text-germany-black">
                 <div className="flex flex-col gap-1 items-start">
                   <span className={`px-2 py-0.5 rounded-full text-xs font-extrabold ${
-                    lead.status === 'plan_purchased'
+                    lead.status === 'shortlist_locked'
+                      ? 'bg-purple-100 text-purple-800 border border-purple-300'
+                      : lead.status === 'plan_purchased'
                       ? 'bg-emerald-100 text-emerald-800'
                       : lead.status === 'matching_completed'
-                      ? 'bg-purple-100 text-purple-800'
+                      ? 'bg-indigo-100 text-indigo-800'
                       : lead.status === 'profile_completed'
                       ? 'bg-blue-100 text-blue-800'
                       : 'bg-germany-gold/15 text-germany-black'
                   }`}>
                     {formatStatus(lead.status)}
                   </span>
-                  {lead.planName && (
+                  {lead.planName ? (
                     <span className="text-[10px] font-bold text-germany-red dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 px-1.5 py-0.5 rounded-md">
                       {lead.planName}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-gray-500 bg-gray-100 border border-gray-200 px-1.5 py-0.5 rounded-md">
+                      No Plan
                     </span>
                   )}
                 </div>
