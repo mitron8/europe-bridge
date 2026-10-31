@@ -44,6 +44,7 @@ import {
 } from 'lucide-react';
 import { AssignedStudent } from './CounsellorStudents';
 import { StudentFullProfileView } from './StudentFullProfileView';
+import { ProgrammeCard } from './cards/ProgrammeCard';
 
 export interface StudentDocument {
   id: string;
@@ -2794,177 +2795,72 @@ export function StudentDetailModal({
                                     const isDisplayFull = curatedProgrammeIds.length >= maxDisplay;
 
                                     return (
-                                      <div
+                                      <ProgrammeCard
                                         key={r.id}
-                                        className={`p-4 sm:p-5 rounded-2xl border transition-all space-y-3 shadow-xs ${
-                                          isMatchingLocked
-                                            ? 'bg-gray-50/70 dark:bg-[#0E121A]/60 border-gray-200/50 dark:border-gray-800/50 opacity-80'
-                                            : isShortlisted
-                                            ? 'bg-blue-50/20 dark:bg-[#0E121A] border-blue-400 dark:border-blue-700 ring-1 ring-blue-400/20'
-                                            : isCurated
-                                            ? 'bg-white dark:bg-[#0E121A] border-emerald-500/60 dark:border-emerald-500/40 ring-1 ring-emerald-500/20'
-                                            : 'bg-white dark:bg-[#0E121A] border-gray-200/80 dark:border-gray-800/80 hover:border-germany-red/30'
-                                        }`}
-                                      >
-                                        {/* Top: University, Program & Eligibility Status */}
-                                        <div className="flex items-start justify-between gap-2">
-                                          <div className="space-y-0.5 min-w-0">
-                                            <span className="text-[10px] font-black uppercase tracking-wider text-germany-red">
-                                              #{r.rank} • {r.universityType ?? 'University'}
-                                            </span>
-                                            <h4 className="font-display text-sm sm:text-base text-germany-black dark:text-white leading-tight truncate">
-                                              {r.universityName}
-                                            </h4>
-                                            <p className="text-xs font-extrabold text-gray-600 dark:text-gray-300 leading-snug">{r.programName}</p>
-                                            <p className="text-[10px] text-gray-400 font-medium">{r.degree}</p>
-                                          </div>
-
-                                          <div className="text-right shrink-0 flex flex-col items-end gap-1">
-                                            <span
-                                              className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
-                                                MATCH_ELIGIBILITY_STYLES[r.eligibilityStatus] ?? 'bg-gray-100 text-gray-600 border-gray-200'
-                                              }`}
-                                            >
-                                              {MATCH_ELIGIBILITY_LABELS[r.eligibilityStatus] ?? r.eligibilityStatus}
-                                            </span>
-                                            {isShortlisted && (
-                                              <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200 border border-blue-300 dark:border-blue-700">
-                                                ★ Shortlisted
-                                              </span>
-                                            )}
-                                            {typeof r.relevanceScore === 'number' && (
-                                              <span className="text-[10px] font-black text-gray-400">
-                                                Score: {r.relevanceScore}
-                                              </span>
-                                            )}
-                                          </div>
-                                        </div>
-
-                                        {/* Location, Tuition, Language & Deadline */}
-                                        <div className="grid grid-cols-2 gap-2 text-[11px] p-2.5 rounded-xl bg-[#F4F1EA]/70 dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800/80">
-                                          <div>
-                                            <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Location</span>
-                                            <span className="font-bold text-gray-700 dark:text-gray-300">
-                                              📍 {[r.city, r.country].filter(Boolean).join(', ') || 'NA'}
-                                            </span>
-                                          </div>
-                                          <div>
-                                            <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Tuition</span>
-                                            <span className="font-bold text-gray-700 dark:text-gray-300">{r.tuitionPerSemester ?? 'NA'}</span>
-                                          </div>
-                                          <div>
-                                            <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Language</span>
-                                            <span className="font-bold text-gray-700 dark:text-gray-300">🌐 {r.language ?? 'NA'}</span>
-                                          </div>
-                                          <div>
-                                            <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Deadline</span>
-                                            <span className="font-bold text-gray-700 dark:text-gray-300">⏰ {r.nonEuDeadline ?? 'NA'}</span>
-                                          </div>
-                                        </div>
-
-                                        {/* Why it matched */}
-                                        {r.matchedReasons?.length > 0 && (
-                                          <div className="pt-2 border-t border-[#EBE7E0] dark:border-gray-800/80">
-                                            <p className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-400 mb-0.5">✓ Why it matched</p>
-                                            <ul className="space-y-0.5">
-                                              {r.matchedReasons.slice(0, 2).map((reason: string, i: number) => (
-                                                <li key={i} className="text-[10px] text-gray-600 dark:text-gray-300 truncate">• {reason}</li>
-                                              ))}
-                                            </ul>
-                                          </div>
-                                        )}
-
-                                        {/* Requirement gaps */}
-                                        {r.requirementGaps?.length > 0 && (
-                                          <div>
-                                            <p className="text-[10px] font-extrabold text-amber-700 dark:text-amber-400 mb-0.5">⚠ Requirement Gaps</p>
-                                            <ul className="space-y-0.5">
-                                              {r.requirementGaps.slice(0, 2).map((gap: string, i: number) => (
-                                                <li key={i} className="text-[10px] text-gray-500 dark:text-gray-400 truncate">• {gap}</li>
-                                              ))}
-                                            </ul>
-                                          </div>
-                                        )}
-
-                                        {r.gpaFallbackUsed && (
-                                          <p className="text-[10px] text-gray-400 italic">GPA: platform fallback (≤ 3.0) applied</p>
-                                        )}
-
-                                        {/* Action Footer */}
-                                        <div className="pt-2 border-t border-gray-100 dark:border-gray-800/80 flex items-center justify-between gap-2 flex-wrap">
-                                          <div>
-                                            {r.programUrl ? (
-                                              <a
-                                                href={r.programUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-germany-red hover:underline"
-                                              >
-                                                <ExternalLink className="w-3 h-3" /> Programme Website
-                                              </a>
+                                        rank={r.rank}
+                                        universityType={r.universityType ?? 'University'}
+                                        universityName={r.universityName}
+                                        programName={r.programName}
+                                        degree={r.degree}
+                                        eligibilityStatus={r.eligibilityStatus}
+                                        isShortlisted={isShortlisted}
+                                        score={r.relevanceScore}
+                                        location={[r.city, r.country].filter(Boolean).join(', ') || 'NA'}
+                                        tuition={r.tuitionPerSemester ?? 'NA'}
+                                        language={r.language ?? 'NA'}
+                                        deadline={r.nonEuDeadline ?? 'NA'}
+                                        matchedReasons={r.matchedReasons}
+                                        requirementGaps={r.requirementGaps}
+                                        gpaFallbackUsed={r.gpaFallbackUsed}
+                                        programUrl={r.programUrl}
+                                        isLocked={isMatchingLocked}
+                                        isCurated={isCurated}
+                                        onDelete={() => handleDeleteMatchedProgramme(progIdStr)}
+                                        deleteTitle={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Dismiss / remove programme from matches'}
+                                        deleteDisabled={isMatchingLocked}
+                                        actionSlot={
+                                          <button
+                                            type="button"
+                                            onClick={() => handleToggleCuratedProgramme(progIdStr)}
+                                            disabled={savingCuration || isMatchingLocked || (!isCurated && (!studentSubscription || isDisplayFull))}
+                                            className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl transition-colors border ${
+                                              isMatchingLocked
+                                                ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
+                                                : isCurated
+                                                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
+                                                : 'bg-germany-black dark:bg-white text-white dark:text-germany-black border-transparent hover:opacity-90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
+                                            }`}
+                                            title={
+                                              isMatchingLocked
+                                                ? 'Shortlist and curation are locked. Unlock to modify.'
+                                                : !studentSubscription
+                                                ? 'Student must have an active subscription'
+                                                : !isCurated && isDisplayFull
+                                                ? `Plan display limit reached (${maxDisplay})`
+                                                : isCurated
+                                                ? 'Remove from student display'
+                                                : 'Add to student display'
+                                            }
+                                          >
+                                            {isMatchingLocked ? (
+                                              <>
+                                                <Lock className="w-3 h-3 text-gray-400" />
+                                                <span>Locked</span>
+                                              </>
+                                            ) : isCurated ? (
+                                              <>
+                                                <Check className="w-3 h-3 text-emerald-600" />
+                                                <span>On Student Display</span>
+                                              </>
                                             ) : (
-                                              <span />
+                                              <>
+                                                <Plus className="w-3 h-3" />
+                                                <span>Add to Display</span>
+                                              </>
                                             )}
-                                          </div>
-
-                                          <div className="flex items-center gap-2">
-                                            <button
-                                              type="button"
-                                              onClick={() => handleDeleteMatchedProgramme(progIdStr)}
-                                              disabled={isMatchingLocked}
-                                              className={`p-1.5 rounded-lg transition-colors ${
-                                                isMatchingLocked
-                                                  ? 'text-gray-300 dark:text-gray-700 cursor-not-allowed opacity-40'
-                                                  : 'text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer'
-                                              }`}
-                                              title={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Dismiss / remove programme from matches'}
-                                            >
-                                              <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
-
-                                            <button
-                                              type="button"
-                                              onClick={() => handleToggleCuratedProgramme(progIdStr)}
-                                              disabled={savingCuration || isMatchingLocked || (!isCurated && (!studentSubscription || isDisplayFull))}
-                                              className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl transition-colors border ${
-                                                isMatchingLocked
-                                                  ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
-                                                  : isCurated
-                                                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
-                                                  : 'bg-germany-black dark:bg-white text-white dark:text-germany-black border-transparent hover:opacity-90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
-                                              }`}
-                                              title={
-                                                isMatchingLocked
-                                                  ? 'Shortlist and curation are locked. Unlock to modify.'
-                                                  : !studentSubscription
-                                                  ? 'Student must have an active subscription'
-                                                  : !isCurated && isDisplayFull
-                                                  ? `Plan display limit reached (${maxDisplay})`
-                                                  : isCurated
-                                                  ? 'Remove from student display'
-                                                  : 'Add to student display'
-                                              }
-                                            >
-                                              {isMatchingLocked ? (
-                                                <>
-                                                  <Lock className="w-3 h-3 text-gray-400" />
-                                                  <span>Locked</span>
-                                                </>
-                                              ) : isCurated ? (
-                                                <>
-                                                  <Check className="w-3 h-3 text-emerald-600" />
-                                                  <span>On Student Display</span>
-                                                </>
-                                              ) : (
-                                                <>
-                                                  <Plus className="w-3 h-3" />
-                                                  <span>Add to Display</span>
-                                                </>
-                                              )}
-                                            </button>
-                                          </div>
-                                        </div>
-                                      </div>
+                                          </button>
+                                        }
+                                      />
                                     );
                                   })}
                                 </div>
@@ -3484,146 +3380,73 @@ export function StudentDetailModal({
                                 const uniUrl = uAny.programUrl || uAny.url;
 
                                 return (
-                                  <div
+                                  <ProgrammeCard
                                     key={uni.id}
-                                    className={`p-4 rounded-2xl border transition-all space-y-3 ${
-                                      isShortlisted
-                                        ? 'bg-blue-50/30 dark:bg-blue-950/20 border-blue-400 dark:border-blue-700 ring-1 ring-blue-400/20'
-                                        : isCurated
-                                        ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-500 ring-1 ring-emerald-500/20'
-                                        : 'bg-[#FCFBF8] dark:bg-[#151B27] border-gray-200/80 dark:border-gray-800/80 hover:border-germany-red/30'
-                                    }`}
-                                  >
-                                    {/* Header: Type, Rank & Status */}
-                                    <div className="flex items-start justify-between gap-2">
-                                      <div className="space-y-0.5 min-w-0 flex-1">
-                                        <span className="text-[10px] font-black uppercase tracking-wider text-germany-red">
-                                          #{idx + 1} • {uniType}
-                                        </span>
-                                        <h4 className="font-display text-sm sm:text-base text-germany-black dark:text-white leading-tight truncate" title={uniName}>
-                                          {uniName}
-                                        </h4>
-                                        <p className="text-xs font-extrabold text-gray-600 dark:text-gray-300 leading-snug" title={progName}>
-                                          {progName}
-                                        </p>
-                                        <p className="text-[10px] text-gray-400 font-medium">{uni.degree || 'Bachelor'}</p>
-                                      </div>
-
-                                      <div className="text-right shrink-0 flex flex-col items-end gap-1">
-                                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full border bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700">
-                                          {uni.status ? (uni.status === 'recommended' ? 'RECOMMENDED' : uni.status.toUpperCase()) : 'RECOMMENDED'}
-                                        </span>
-                                        {isShortlisted && (
-                                          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200 border border-blue-300 dark:border-blue-700">
-                                            ★ Shortlisted
-                                          </span>
-                                        )}
-                                        <span className="text-[10px] font-black text-gray-400">
-                                          Score: {uni.matchScore || 90}% Fit
-                                        </span>
-                                      </div>
-                                    </div>
-
-                                    {/* Location, Tuition, Language & Deadline */}
-                                    <div className="grid grid-cols-2 gap-2 text-[11px] p-2.5 rounded-xl bg-[#F4F1EA]/70 dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800/80">
-                                      <div>
-                                        <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Location</span>
-                                        <span className="font-bold text-gray-700 dark:text-gray-300">📍 {uniLocation}</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Tuition</span>
-                                        <span className="font-bold text-gray-700 dark:text-gray-300">{uniTuition}</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Language</span>
-                                        <span className="font-bold text-gray-700 dark:text-gray-300">🌐 {uniLanguage}</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Deadline</span>
-                                        <span className="font-bold text-gray-700 dark:text-gray-300">⏰ {uniDeadline}</span>
-                                      </div>
-                                    </div>
-
-                                    {uni.notes && (
-                                      <div className="p-2 bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 rounded-xl text-[11px] text-amber-900 dark:text-amber-200 font-medium italic">
-                                        &quot;{uni.notes}&quot;
-                                      </div>
-                                    )}
-
-                                    {/* Action Footer */}
-                                    <div className="pt-2 border-t border-gray-100 dark:border-gray-800/80 flex items-center justify-between gap-2 flex-wrap">
-                                      <div className="flex items-center gap-2">
-                                        {uniUrl ? (
-                                          <a
-                                            href={uniUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-germany-red hover:underline"
-                                          >
-                                            <ExternalLink className="w-3 h-3" /> Website
-                                          </a>
+                                    rank={idx + 1}
+                                    universityType={uniType}
+                                    universityName={uniName}
+                                    programName={progName}
+                                    degree={uni.degree || 'Bachelor'}
+                                    eligibilityLabel={uni.status ? (uni.status === 'recommended' ? 'RECOMMENDED' : uni.status.toUpperCase()) : 'RECOMMENDED'}
+                                    eligibilityStyle="bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700"
+                                    isShortlisted={isShortlisted}
+                                    score={`${uni.matchScore || 90}% Fit`}
+                                    scoreLabel="Score"
+                                    location={uniLocation}
+                                    tuition={uniTuition}
+                                    language={uniLanguage}
+                                    deadline={uniDeadline}
+                                    notes={uni.notes}
+                                    programUrl={uniUrl}
+                                    programUrlLabel="Website"
+                                    isLocked={isMatchingLocked}
+                                    isCurated={isCurated}
+                                    onDelete={() => handleDeleteRecommendation(uni.id)}
+                                    deleteTitle={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Remove programme from notepad'}
+                                    deleteDisabled={isMatchingLocked}
+                                    actionSlot={
+                                      <button
+                                        type="button"
+                                        onClick={() => handleToggleCuratedProgramme(progIdStr)}
+                                        disabled={savingCuration || isMatchingLocked || (!isCurated && (!studentSubscription || isDisplayFull))}
+                                        className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl transition-colors border ${
+                                          isMatchingLocked
+                                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
+                                            : isCurated
+                                            ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
+                                            : 'bg-germany-black dark:bg-white text-white dark:text-germany-black border-transparent hover:opacity-90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
+                                        }`}
+                                        title={
+                                          isMatchingLocked
+                                            ? 'Shortlist and curation are locked. Unlock to modify.'
+                                            : !studentSubscription
+                                            ? 'Student must have an active subscription'
+                                            : !isCurated && isDisplayFull
+                                            ? `Plan display limit reached (${maxDisplay}). Remove an item from Student Display Curation to make space.`
+                                            : isCurated
+                                            ? 'Remove from student display (frees up a display slot)'
+                                            : 'Add to student display'
+                                        }
+                                      >
+                                        {isMatchingLocked ? (
+                                          <>
+                                            <Lock className="w-3 h-3 text-gray-400" />
+                                            <span>Locked</span>
+                                          </>
+                                        ) : isCurated ? (
+                                          <>
+                                            <Check className="w-3 h-3 text-emerald-600" />
+                                            <span>On Display</span>
+                                          </>
                                         ) : (
-                                          <span />
+                                          <>
+                                            <Plus className="w-3 h-3" />
+                                            <span>Add to Display</span>
+                                          </>
                                         )}
-                                        <button
-                                          type="button"
-                                          onClick={() => handleDeleteRecommendation(uni.id)}
-                                          disabled={isMatchingLocked}
-                                          title={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Remove programme from notepad'}
-                                          className={`p-1.5 rounded-lg transition-colors ${
-                                            isMatchingLocked
-                                              ? 'text-gray-300 dark:text-gray-700 cursor-not-allowed opacity-40'
-                                              : 'text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer'
-                                          }`}
-                                        >
-                                          <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
-                                      </div>
-
-                                      <div className="flex items-center gap-2">
-                                        <button
-                                          type="button"
-                                          onClick={() => handleToggleCuratedProgramme(progIdStr)}
-                                          disabled={savingCuration || isMatchingLocked || (!isCurated && (!studentSubscription || isDisplayFull))}
-                                          className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl transition-colors border ${
-                                            isMatchingLocked
-                                              ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
-                                              : isCurated
-                                              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
-                                              : 'bg-germany-black dark:bg-white text-white dark:text-germany-black border-transparent hover:opacity-90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
-                                          }`}
-                                          title={
-                                            isMatchingLocked
-                                              ? 'Shortlist and curation are locked. Unlock to modify.'
-                                              : !studentSubscription
-                                              ? 'Student must have an active subscription'
-                                              : !isCurated && isDisplayFull
-                                              ? `Plan display limit reached (${maxDisplay}). Remove an item from Student Display Curation to make space.`
-                                              : isCurated
-                                              ? 'Remove from student display (frees up a display slot)'
-                                              : 'Add to student display'
-                                          }
-                                        >
-                                          {isMatchingLocked ? (
-                                            <>
-                                              <Lock className="w-3 h-3 text-gray-400" />
-                                              <span>Locked</span>
-                                            </>
-                                          ) : isCurated ? (
-                                            <>
-                                              <Check className="w-3 h-3 text-emerald-600" />
-                                              <span>On Display</span>
-                                            </>
-                                          ) : (
-                                            <>
-                                              <Plus className="w-3 h-3" />
-                                              <span>Add to Display</span>
-                                            </>
-                                          )}
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
+                                      </button>
+                                    }
+                                  />
                                 );
                               })}
                             </div>

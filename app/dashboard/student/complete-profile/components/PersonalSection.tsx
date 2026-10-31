@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { ProfileData } from '../types';
 import { ClaySelect } from '@/components/ClaySelect';
 import Select from 'react-select';
-import { Country, State, City } from 'country-state-city';
+import { getCountries, getStates, getCities, GeoOption } from '@/lib/geoData';
 import { useAppStore } from '@/store/useAppStore';
 import { getReactSelectStyles } from '@/lib/selectTheme';
 
@@ -21,32 +21,63 @@ export default function PersonalSection({ data, onChange, onNext }: Props) {
     onChange({ [e.target.name]: value });
   };
 
-  const countries = useMemo(() => Country.getAllCountries().map(c => ({
-    label: c.name,
-    value: c.name,
-    isoCode: c.isoCode
-  })), []);
+  const [countries, setCountries] = useState<GeoOption[]>([]);
+  const [states, setStates] = useState<GeoOption[]>([]);
+  const [cities, setCities] = useState<GeoOption[]>([]);
+  const [loadingStates, setLoadingStates] = useState(false);
+  const [loadingCities, setLoadingCities] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    getCountries().then((c) => {
+      if (active) setCountries(c);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const selectedCountry = useMemo(() => countries.find(c => c.value === data.country), [countries, data.country]);
-  
-  const states = useMemo(() => {
-    if (!selectedCountry) return [];
-    return State.getStatesOfCountry(selectedCountry.isoCode).map(s => ({
-      label: s.name,
-      value: s.name,
-      isoCode: s.isoCode
-    }));
-  }, [selectedCountry]);
+
+  useEffect(() => {
+    if (!selectedCountry?.isoCode) {
+      setStates([]);
+      return;
+    }
+    let active = true;
+    setLoadingStates(true);
+    getStates(selectedCountry.isoCode)
+      .then((s) => {
+        if (active) setStates(s);
+      })
+      .finally(() => {
+        if (active) setLoadingStates(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [selectedCountry?.isoCode]);
 
   const selectedState = useMemo(() => states.find(s => s.value === data.stateProvince), [states, data.stateProvince]);
 
-  const cities = useMemo(() => {
-    if (!selectedCountry || !selectedState) return [];
-    return City.getCitiesOfState(selectedCountry.isoCode, selectedState.isoCode).map(c => ({
-      label: c.name,
-      value: c.name
-    }));
-  }, [selectedCountry, selectedState]);
+  useEffect(() => {
+    if (!selectedCountry?.isoCode || !selectedState?.isoCode) {
+      setCities([]);
+      return;
+    }
+    let active = true;
+    setLoadingCities(true);
+    getCities(selectedCountry.isoCode, selectedState.isoCode)
+      .then((c) => {
+        if (active) setCities(c);
+      })
+      .finally(() => {
+        if (active) setLoadingCities(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [selectedCountry?.isoCode, selectedState?.isoCode]);
 
   return (
     <div>
@@ -83,7 +114,8 @@ export default function PersonalSection({ data, onChange, onNext }: Props) {
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Nationality *</label>
           <Select 
              options={countries}
-             value={countries.find(c => c.value === data.nationality) || null}
+             value={countries.find(c => c.value === data.nationality) || (data.nationality ? { label: data.nationality, value: data.nationality } : null)}
+             isLoading={countries.length === 0}
              onChange={(option) => onChange({ nationality: option?.value || '' })}
              isSearchable
              styles={selectStyles}
@@ -120,7 +152,8 @@ export default function PersonalSection({ data, onChange, onNext }: Props) {
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Country *</label>
           <Select 
              options={countries}
-             value={countries.find(c => c.value === data.country) || null}
+             value={countries.find(c => c.value === data.country) || (data.country ? { label: data.country, value: data.country } : null)}
+             isLoading={countries.length === 0}
              onChange={(option) => {
                  onChange({ country: option?.value || '', stateProvince: '', city: '' });
              }}
@@ -138,15 +171,16 @@ export default function PersonalSection({ data, onChange, onNext }: Props) {
           </label>
           <Select 
              options={states}
-             value={states.find(s => s.value === data.stateProvince) || null}
+             value={states.find(s => s.value === data.stateProvince) || (data.stateProvince ? { label: data.stateProvince, value: data.stateProvince } : null)}
              onChange={(option) => {
                  onChange({ stateProvince: option?.value || '', city: '' });
              }}
-             isDisabled={!data.country || states.length === 0}
+             isDisabled={!data.country || (states.length === 0 && !loadingStates)}
              isSearchable
              styles={selectStyles}
              classNamePrefix="neu-select"
-             placeholder={states.length === 0 && data.country ? "No states available" : "Select State"}
+             placeholder={loadingStates ? "Loading states..." : states.length === 0 && data.country ? "No states available" : "Select State"}
+             isLoading={loadingStates}
           />
         </div>
 
@@ -155,18 +189,19 @@ export default function PersonalSection({ data, onChange, onNext }: Props) {
             <span>City *</span>
             {!data.stateProvince && data.country && <em className="text-gray-400 font-normal normal-case lowercase text-[10px] italic">*(choose a state first)</em>}
           </label>
-          { data.stateProvince && cities.length === 0 ? (
+          { data.stateProvince && cities.length === 0 && !loadingCities ? (
              <input type="text" name="city" value={data.city} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold" placeholder="Type city name" />
           ) : (
             <Select 
                 options={cities}
-                value={cities.find(c => c.value === data.city) || null}
+                value={cities.find(c => c.value === data.city) || (data.city ? { label: data.city, value: data.city } : null)}
                 onChange={(option) => onChange({ city: option?.value || '' })}
-                isDisabled={!data.stateProvince}
+                isDisabled={!data.stateProvince || (cities.length === 0 && !loadingCities)}
                 isSearchable
                 styles={selectStyles}
                 classNamePrefix="neu-select"
-                placeholder="Select City"
+                placeholder={loadingCities ? "Loading cities..." : "Select City"}
+                isLoading={loadingCities}
             />
           )}
         </div>

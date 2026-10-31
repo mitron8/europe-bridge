@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { ProfileData, EducationRecord } from '../types';
 import { ClaySelect } from '@/components/ClaySelect';
 import { DEGREE_TYPE_OPTIONS, FIELD_OF_STUDY_OPTIONS } from '@/lib/education-constants';
 import Select from 'react-select';
-import { Country } from 'country-state-city';
+import { getCountries, GeoOption } from '@/lib/geoData';
 import { useAppStore } from '@/store/useAppStore';
 import { getReactSelectStyles } from '@/lib/selectTheme';
 
@@ -17,10 +17,17 @@ interface Props {
 export default function EducationSection({ data, onChange, onNext, onPrev }: Props) {
   const isDarkMode = useAppStore((state) => state.isDarkMode);
   const selectStyles = useMemo(() => getReactSelectStyles(isDarkMode), [isDarkMode]);
-  const countries = useMemo(() => Country.getAllCountries().map(c => ({
-    label: c.name,
-    value: c.name
-  })), []);
+  const [countries, setCountries] = useState<GeoOption[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    getCountries().then((c) => {
+      if (active) setCountries(c);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const addEducation = () => {
     const newRecord: EducationRecord = {
@@ -171,7 +178,8 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Institution Country *</label>
                   <Select 
                     options={countries}
-                    value={countries.find(c => c.value === record.institutionCountry) || null}
+                    value={countries.find(c => c.value === record.institutionCountry) || (record.institutionCountry ? { label: record.institutionCountry, value: record.institutionCountry } : null)}
+                    isLoading={countries.length === 0}
                     onChange={(option) => updateEducation(record.id, 'institutionCountry', option?.value || '')}
                     isSearchable
                     styles={selectStyles}
