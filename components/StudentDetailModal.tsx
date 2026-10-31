@@ -39,6 +39,7 @@ import {
   Lock,
   Unlock,
   Bookmark,
+  Sparkles,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
