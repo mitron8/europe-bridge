@@ -18,7 +18,7 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       {/* Top Banner Card */}
-      <div className="bg-white rounded-2xl border border-gray-200/80 shadow-[2px_2px_8px_rgba(71,85,105,0.04)] p-6 md:p-7 relative overflow-hidden">
+      <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-[2px_2px_8px_rgba(71,85,105,0.04)] p-6 md:p-7 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-[3px] flex">
           <div className="flex-1 bg-germany-black"></div>
           <div className="flex-1 bg-germany-red"></div>
@@ -31,7 +31,7 @@ export default function AdminDashboard() {
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Admin Operations Center</span>
             </div>
-            <h1 className="text-xl md:text-2xl lg:text-3xl font-display font-bold text-germany-black">
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-display font-bold text-germany-black dark:text-white">
               Admin Platform Overview
             </h1>
             <p className="text-xs md:text-sm font-medium text-gray-500 max-w-xl">
@@ -53,55 +53,55 @@ export default function AdminDashboard() {
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200/80 shadow-xs p-5 space-y-2">
+        <div className="bg-white dark:bg-[#111622] rounded-xl border border-gray-200/80 dark:border-gray-800 shadow-xs p-5 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-400">Total Registered Students</span>
             <div className="p-2 bg-germany-gold/20 rounded-xl text-germany-black">
               <Users className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-display font-bold text-germany-black">1,482</div>
+          <div className="text-2xl font-display font-bold text-germany-black dark:text-white">1,482</div>
           <p className="text-[11px] font-bold text-emerald-600">+18% this month</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200/80 shadow-xs p-5 space-y-2">
+        <div className="bg-white dark:bg-[#111622] rounded-xl border border-gray-200/80 dark:border-gray-800 shadow-xs p-5 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-400">Active Counsellors</span>
             <div className="p-2 bg-germany-red/10 rounded-xl text-germany-red">
               <UserCheck className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-display font-bold text-germany-black">28</div>
+          <div className="text-2xl font-display font-bold text-germany-black dark:text-white">28</div>
           <p className="text-[11px] font-medium text-gray-500">100% capacity filled</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200/80 shadow-xs p-5 space-y-2">
+        <div className="bg-white dark:bg-[#111622] rounded-xl border border-gray-200/80 dark:border-gray-800 shadow-xs p-5 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-400">German Universities</span>
             <div className="p-2 bg-blue-50 rounded-xl text-blue-700">
               <GraduationCap className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-display font-bold text-germany-black">180+</div>
+          <div className="text-2xl font-display font-bold text-germany-black dark:text-white">180+</div>
           <p className="text-[11px] font-medium text-gray-500">Public & TU9 listed</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200/80 shadow-xs p-5 space-y-2">
+        <div className="bg-white dark:bg-[#111622] rounded-xl border border-gray-200/80 dark:border-gray-800 shadow-xs p-5 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-400">APS Verifications</span>
             <div className="p-2 bg-amber-50 rounded-xl text-amber-700">
               <FileCheck className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-display font-bold text-germany-black">342</div>
+          <div className="text-2xl font-display font-bold text-germany-black dark:text-white">342</div>
           <p className="text-[11px] font-medium text-amber-700">92% approval rate</p>
         </div>
       </div>
 
       {/* Recent Student Applications Table */}
-      <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-6 space-y-4">
+      <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-xs p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-display font-bold text-base text-germany-black">Recent Student Applications</h3>
+          <h3 className="font-display font-bold text-base text-germany-black dark:text-white">Recent Student Applications</h3>
           <Link href="/dashboard/admin/students" className="text-xs font-bold text-germany-red hover:underline">
             View All Students
           </Link>

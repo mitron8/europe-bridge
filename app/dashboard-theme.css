@@ -771,3 +771,54 @@
 }
 
 
+
+
+/* ==============================================================================
+   AUTOMATIC GRADIENTS & SECONDARY BUTTON FIXES IN DARK MODE
+   ============================================================================== */
+.dark .dashboard-container [class*="from-white"] {
+  --tw-gradient-from: #111622 var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgb(17 22 34 / 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-from), var(--tw-gradient-to)) !important;
+}
+.dark .dashboard-container [class*="via-[#FCFBF9]"] {
+  --tw-gradient-via: #0E121A var(--tw-gradient-via-position) !important;
+}
+.dark .dashboard-container [class*="to-red-50/30"] {
+  --tw-gradient-to: rgba(226, 82, 96, 0.15) var(--tw-gradient-to-position) !important;
+}
+.dark .dashboard-container [class*="from-amber-500/10"] {
+  --tw-gradient-from: rgba(245, 158, 11, 0.15) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgba(245, 158, 11, 0) var(--tw-gradient-to-position) !important;
+}
+.dark .dashboard-container [class*="via-amber-500/5"] {
+  --tw-gradient-via: rgba(245, 158, 11, 0.05) var(--tw-gradient-via-position) !important;
+}
+.dark .dashboard-container [class*="shadow-[12px_12px_32px"] {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+}
+.dark .dashboard-container .neu-btn:not(.neu-btn-primary):not(.neu-btn-gold) {
+  background-color: #111622 !important;
+  color: #F8FAFC !important;
+  border-color: #1A2130 !important;
+}
+.dark .dashboard-container .neu-btn:not(.neu-btn-primary):not(.neu-btn-gold):hover {
+  background-color: #151B27 !important;
+  color: #FFFFFF !important;
+  border-color: #E63946 !important;
+}
+.dark .dashboard-container .neu-dropdown,
+.dark .neu-dropdown {
+  background-color: #111622 !important;
+  border-color: #1A2130 !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6) !important;
+}
+.dark .dashboard-container .neu-dropdown-item,
+.dark .neu-dropdown-item {
+  color: #E2E8F0 !important;
+}
+.dark .dashboard-container .neu-dropdown-item:hover,
+.dark .neu-dropdown-item:hover {
+  background-color: #1A2130 !important;
+  color: #FFFFFF !important;
+}

@@ -20,7 +20,7 @@ import {
   AlertCircle,
   RefreshCw,
   Award,
-  Sparkles,
+  GraduationCap,
   Layers,
 } from 'lucide-react';
 
@@ -99,7 +99,7 @@ const ELIGIBILITY_LABELS: Record<string, string> = {
 
 function EligibilityBadge({ status }: { status: string }) {
   return (
-    <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${ELIGIBILITY_STYLES[status] ?? 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+    <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${ELIGIBILITY_STYLES[status] ?? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'}`}>
       {ELIGIBILITY_LABELS[status] ?? status}
     </span>
   );
@@ -312,10 +312,10 @@ function MatchingSection() {
   return (
     <div className="space-y-6">
       {/* Action & Subscription Status Bar */}
-      <div className="neu-card p-5 bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="neu-card p-5 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-xs font-bold text-gray-700">
+            <p className="text-xs font-bold text-gray-700 dark:text-gray-200">
               {run?.status === 'completed'
                 ? `Last automated scan: ${new Date(run.completed_at || run.created_at).toLocaleDateString()} — ${run.candidates_evaluated ?? 0} evaluated (${run.results_generated ?? totalMatchedCount ?? results.length} matches found)`
                 : run?.status === 'running' || run?.status === 'pending'
@@ -323,29 +323,29 @@ function MatchingSection() {
                 : 'Evaluate your academic profile across all accredited German university programmes.'}
             </p>
             {subscription?.status === 'ACTIVE' && (
-              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800/60">
                 {subscription.plan?.name || 'Active Plan'} ({maxDisplayCount} Shown / {maxShortlistCount} Shortlist)
               </span>
             )}
             {isLocked && status === 'SUBSCRIPTION_REQUIRED' ? (
-              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 flex items-center gap-1">
+              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800/60 flex items-center gap-1">
                 🔒 Plan Required to Re-run
               </span>
             ) : isLocked ? (
-              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-300 flex items-center gap-1">
+              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950/50 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-800/60 flex items-center gap-1">
                 🔒 Shortlist Locked
               </span>
             ) : null}
           </div>
           {run?.status === 'failed' && (
-            <p className="text-[11px] text-red-600 font-medium mt-0.5">Last automated run timed out. You can re-run below.</p>
+            <p className="text-[11px] text-red-600 dark:text-red-400 font-medium mt-0.5">Last automated run timed out. You can re-run below.</p>
           )}
           {isLocked && status === 'SUBSCRIPTION_REQUIRED' ? (
-            <p className="text-[11px] text-amber-700 font-semibold mt-0.5">
+            <p className="text-[11px] text-amber-700 dark:text-amber-400 font-semibold mt-0.5">
               Matching engine scan complete. Select a matching plan below to unlock your full programme results and re-running.
             </p>
           ) : isLocked ? (
-            <p className="text-[11px] text-purple-700 font-semibold mt-0.5">
+            <p className="text-[11px] text-purple-700 dark:text-purple-400 font-semibold mt-0.5">
               Your Germany admissions counsellor has reviewed and locked your shortlist. Matching re-runs are disabled.
             </p>
           ) : null}
@@ -408,16 +408,16 @@ function MatchingSection() {
       ======================================================== */}
       {!loadingResults && !isRunning && status === 'SUBSCRIPTION_REQUIRED' && (
         <div className="space-y-6">
-          <div className="neu-card p-6 sm:p-8 bg-gradient-to-br from-white via-[#FCFBF9] to-red-50/30 border-2 border-germany-red/40 rounded-3xl space-y-6 relative overflow-hidden shadow-sm">
+          <div className="neu-card p-6 sm:p-8 bg-gradient-to-br from-white via-[#FCFBF9] to-red-50/30 dark:from-[#111622] dark:via-[#0E121A] dark:to-red-950/20 border-2 border-germany-red/40 dark:border-germany-red/40 rounded-3xl space-y-6 relative overflow-hidden shadow-sm">
             <div className="text-center max-w-2xl mx-auto space-y-3">
               <span className="text-[10px] font-black uppercase tracking-widest text-germany-red bg-red-100/80 px-3 py-1 rounded-full border border-germany-red/20 inline-flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-germany-red" />
+                <GraduationCap className="w-3.5 h-3.5 text-germany-red" />
                 Admission Matching Access
               </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-germany-black font-display tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-black text-germany-black dark:text-white font-display tracking-tight">
                 Unlock Your Tailored German University Programmes
               </h2>
-              <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-medium leading-relaxed">
                 {totalMatchedCount > 0
                   ? `Your profile has been evaluated against accredited German universities, and ${totalMatchedCount} potential programmes were identified. Select a matching plan to unlock your curated university list and build your application shortlist.`
                   : 'Select an admission matching plan to unlock your curated programme list, advisor review, and shortlisting tools.'}
@@ -448,11 +448,11 @@ function MatchingSection() {
                         <span className="text-[10px] font-extrabold uppercase tracking-wider text-gray-500">
                           {p.subtitle || p.name}
                         </span>
-                        <h3 className="text-lg font-black font-display text-germany-black mt-1">
+                        <h3 className="text-lg font-black font-display text-germany-black dark:text-white mt-1">
                           {p.name}
                         </h3>
                         <div className="mt-2 flex items-baseline gap-1">
-                          <span className="text-3xl font-black text-germany-black font-display">
+                          <span className="text-3xl font-black text-germany-black dark:text-white font-display">
                             ₹{p.priceInr.toLocaleString('en-IN')}
                           </span>
                           <span className="text-[11px] font-bold text-gray-400">/ one-time</span>
@@ -463,19 +463,19 @@ function MatchingSection() {
                       </div>
 
                       {/* Enforceable Limits Callout */}
-                      <div className="p-3 bg-[#FDFBF7] border border-[#EBE7E0] rounded-xl text-xs space-y-1">
-                        <div className="flex justify-between items-center text-germany-black font-extrabold">
+                      <div className="p-3 bg-[#FDFBF7] dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs space-y-1">
+                        <div className="flex justify-between items-center text-germany-black dark:text-gray-200 font-extrabold">
                           <span>Programmes Shown:</span>
                           <span className="text-germany-red">{p.maxDisplayCount} max</span>
                         </div>
-                        <div className="flex justify-between items-center text-germany-black font-extrabold">
+                        <div className="flex justify-between items-center text-germany-black dark:text-gray-200 font-extrabold">
                           <span>Shortlist Capacity:</span>
                           <span className="text-emerald-700">{p.maxShortlistCount} max</span>
                         </div>
                       </div>
 
                       {/* Features */}
-                      <ul className="space-y-2 text-[11px] text-gray-600 font-medium pt-1">
+                      <ul className="space-y-2 text-[11px] text-gray-600 dark:text-gray-300 font-medium pt-1">
                         {p.features?.map((f: string, idx: number) => (
                           <li key={idx} className="flex items-start gap-2">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
@@ -492,7 +492,7 @@ function MatchingSection() {
                         className={`w-full py-2.5 px-4 rounded-xl text-xs font-black flex items-center justify-center gap-2 cursor-pointer transition-all shadow-xs ${
                           isPopular
                             ? 'bg-germany-red hover:bg-[#D62839] text-white'
-                            : 'bg-germany-black hover:bg-gray-800 text-white'
+                            : 'bg-germany-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-100 dark:text-germany-black text-white'
                         } disabled:opacity-60 disabled:cursor-not-allowed`}
                       >
                         {checkoutLoading === p.id ? (
@@ -527,7 +527,7 @@ function MatchingSection() {
       ======================================================== */}
       {!loadingResults && !isRunning && status === 'ACTIVE' && recommendations.length > 0 && (
         <div className="space-y-4">
-          <div className="neu-card p-4 sm:p-5 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-300 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="neu-card p-4 sm:p-5 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent dark:from-amber-950/30 dark:via-amber-950/15 dark:to-transparent border border-amber-300 dark:border-amber-800/60 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-white flex items-center justify-center shrink-0 shadow-sm">
                 <Award className="w-5 h-5 text-white" />
@@ -568,7 +568,7 @@ function MatchingSection() {
               return (
                 <div
                   key={rec.id}
-                  className="neu-card p-5 bg-white border-2 border-amber-300/80 space-y-4 hover:-translate-y-1 transition-transform relative overflow-hidden"
+                  className="neu-card p-5 bg-white dark:bg-[#111622] border-2 border-amber-300/80 dark:border-amber-700/60 space-y-4 hover:-translate-y-1 transition-transform relative overflow-hidden"
                 >
                   <div className="absolute top-0 right-0 px-3 py-0.5 text-[9px] font-black uppercase tracking-wider bg-amber-400 text-germany-black rounded-bl-xl shadow-xs">
                     Counsellor Choice
@@ -590,10 +590,10 @@ function MatchingSection() {
                   </div>
 
                   {/* Facts */}
-                  <div className="text-[11px] text-gray-500 space-y-1 bg-[#FDFBF7] p-2.5 rounded-xl border border-[#EBE7E0]">
+                  <div className="text-[11px] text-gray-500 dark:text-gray-400 space-y-1 bg-[#FDFBF7] dark:bg-[#151B27] p-2.5 rounded-xl border border-[#EBE7E0] dark:border-gray-800">
                     <div className="flex justify-between">
                       <span>📍 {rec.location || 'Germany'}</span>
-                      <span className="font-extrabold text-germany-black">{rec.tuitionPerSemester || rec.tuition || '€0 / semester fee only'}</span>
+                      <span className="font-extrabold text-germany-black dark:text-gray-200">{rec.tuitionPerSemester || rec.tuition || '€0 / semester fee only'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>⏰ {rec.nonEuDeadline || rec.deadline || 'July 15, 2026'}</span>
@@ -613,16 +613,16 @@ function MatchingSection() {
 
                   {/* Counsellor Note */}
                   {rec.notes && (
-                    <div className="p-2.5 bg-amber-50/90 border border-amber-200 rounded-xl space-y-0.5">
-                      <p className="text-[10px] font-black uppercase text-amber-800">
+                    <div className="p-2.5 bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl space-y-0.5">
+                      <p className="text-[10px] font-black uppercase text-amber-800 dark:text-amber-300">
                         Advisor Note {rec.counsellorName ? `(${rec.counsellorName})` : ''}:
                       </p>
-                      <p className="text-[11px] text-amber-950 font-medium italic">&quot;{rec.notes}&quot;</p>
+                      <p className="text-[11px] text-amber-950 dark:text-amber-200 font-medium italic">&quot;{rec.notes}&quot;</p>
                     </div>
                   )}
 
                   {/* Status & Shortlist Button */}
-                  <div className="pt-2 border-t border-[#EBE7E0] flex items-center justify-between gap-2">
+                  <div className="pt-2 border-t border-[#EBE7E0] dark:border-gray-800 flex items-center justify-between gap-2">
                     <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${statusColors[rec.status] || 'bg-gray-100 text-gray-700'}`}>
                       {rec.status.replace('_', ' ').toUpperCase()}
                     </span>
@@ -662,7 +662,7 @@ function MatchingSection() {
 
       {/* No run yet & no recommendations yet */}
       {!loadingResults && !isRunning && !error && (status === 'NOT_RUN' || (!run && recommendations.length === 0)) && (
-        <div className="neu-card p-10 bg-white text-center space-y-3">
+        <div className="neu-card p-10 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 text-center space-y-3">
           <Compass className="w-10 h-10 text-gray-300 mx-auto" />
           <h3 className="font-display text-base text-germany-black">Run Matching to Discover Programmes</h3>
           <p className="text-xs font-medium text-gray-500 max-w-sm mx-auto">
@@ -700,10 +700,10 @@ function MatchingSection() {
       {/* Active Paid Curated Results Grid */}
       {!loadingResults && !isRunning && status === 'ACTIVE' && eligibleResults.length > 0 && (
         <div className="space-y-4 pt-2">
-          <div className="border-t border-[#EBE7E0] pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="border-t border-[#EBE7E0] dark:border-gray-800 pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-display text-base text-germany-black font-bold">
+                <h3 className="font-display text-base text-germany-black dark:text-white font-bold">
                   Curated Matching Programmes ({eligibleResults.length})
                 </h3>
                 <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-900 border border-blue-200">
@@ -728,14 +728,14 @@ function MatchingSection() {
               );
 
               return (
-                <div key={r.id} className="neu-card p-5 bg-white space-y-4 hover:-translate-y-1 transition-transform border border-gray-200/80">
+                <div key={r.id} className="neu-card p-5 bg-white dark:bg-[#111622] space-y-4 hover:-translate-y-1 transition-transform border border-gray-200/80 dark:border-gray-800">
                   <div className="flex items-start justify-between gap-2">
                     <div className="space-y-1 min-w-0">
                       <span className="text-[10px] font-extrabold text-germany-red uppercase tracking-wider">
                         #{r.rank} • {r.universityType ?? 'University'}
                       </span>
-                      <h3 className="font-display text-sm text-germany-black leading-tight truncate">{r.universityName}</h3>
-                      <p className="text-xs font-bold text-gray-500 leading-snug">{r.programName}</p>
+                      <h3 className="font-display text-sm text-germany-black dark:text-white leading-tight truncate">{r.universityName}</h3>
+                      <p className="text-xs font-bold text-gray-500 dark:text-gray-300 leading-snug">{r.programName}</p>
                       <p className="text-[10px] text-gray-400 font-medium">{r.degree}</p>
                     </div>
                     <EligibilityBadge status={r.eligibilityStatus} />
@@ -745,7 +745,7 @@ function MatchingSection() {
                   <div className="text-[11px] text-gray-500 space-y-1">
                     <div className="flex justify-between">
                       <span>📍 {[r.city, r.country].filter(Boolean).join(', ') || 'NA'}</span>
-                      <span className="font-extrabold text-germany-black">{r.tuitionPerSemester ?? 'NA'}</span>
+                      <span className="font-extrabold text-germany-black dark:text-white">{r.tuitionPerSemester ?? 'NA'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>🌐 {r.language ?? 'NA'}</span>
@@ -876,10 +876,10 @@ function ShortlistSection() {
   return (
     <div className="space-y-5">
       {/* Shortlist Header & Limits */}
-      <div className="neu-card p-5 bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="neu-card p-5 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-display text-base text-germany-black font-bold">Your University Shortlist</h3>
+            <h3 className="font-display text-base text-germany-black dark:text-white font-bold">Your University Shortlist</h3>
             {subInfo?.status === 'ACTIVE' && (
               <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-900 border border-blue-200">
                 Plan Capacity: {shortlistedItems.length} / {maxShortlistCount} Shortlisted
@@ -946,7 +946,7 @@ function ShortlistSection() {
           {allItems.map((rec: any) => (
             <div
               key={rec.id}
-              className="neu-card p-5 bg-white space-y-4 hover:-translate-y-1 transition-transform border border-[#EBE7E0]"
+              className="neu-card p-5 bg-white dark:bg-[#111622] space-y-4 hover:-translate-y-1 transition-transform border border-[#EBE7E0] dark:border-gray-800"
             >
               <div className="space-y-1 min-w-0">
                 <span className="text-[10px] font-extrabold text-germany-red uppercase tracking-wider">

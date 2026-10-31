@@ -13,7 +13,6 @@ import {
   ExternalLink,
   ChevronRight,
   RefreshCw,
-  Sparkles,
 } from 'lucide-react';
 
 const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';

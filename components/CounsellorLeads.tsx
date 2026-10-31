@@ -47,7 +47,7 @@ export function CounsellorLeads() {
             placeholder="Search leads..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 neu-input text-xs font-bold"
+            className="w-full pl-10 pr-4 py-2.5 neu-input text-xs font-bold bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800 text-germany-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
           />
         </div>
       </div>
@@ -78,7 +78,7 @@ export function CounsellorLeads() {
         </thead>
         <tbody>
           {leads.map((lead) => (
-            <tr key={lead.userId} className="border-b border-[#EBE7E0] hover:bg-[#FDFBF7] transition-colors">
+            <tr key={lead.userId} className="border-b border-[#EBE7E0] dark:border-gray-800/80 hover:bg-[#FDFBF7] dark:hover:bg-[#151B27]/60 transition-colors">
               <td className="px-4 py-3 text-sm font-bold text-germany-black">
                 {lead.firstName} {lead.lastName}
               </td>
@@ -105,7 +105,7 @@ export function CounsellorLeads() {
                     {formatStatus(lead.status)}
                   </span>
                   {lead.planName && (
-                    <span className="text-[10px] font-bold text-germany-red bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-md">
+                    <span className="text-[10px] font-bold text-germany-red dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 px-1.5 py-0.5 rounded-md">
                       {lead.planName}
                     </span>
                   )}

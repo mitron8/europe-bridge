@@ -67,7 +67,7 @@ export default function SuperAdminAdminsPage() {
   return (
     <div className="space-y-6">
       {/* Main Content */}
-      <div className="neu-card p-6 bg-white space-y-4">
+      <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="w-full md:w-96 relative">
             <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-gray-400" />
@@ -76,7 +76,7 @@ export default function SuperAdminAdminsPage() {
               placeholder="Search administrators..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 neu-input text-xs font-bold"
+              className="w-full pl-10 pr-4 py-2.5 neu-input text-xs font-bold bg-white dark:bg-[#0A0D14] text-germany-black dark:text-white border border-gray-200/80 dark:border-gray-800"
             />
           </div>
           <button 
@@ -140,7 +140,7 @@ export default function SuperAdminAdminsPage() {
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-sm">
-          <div className="bg-[#FDFBF7] neu-card w-full max-w-md p-6 relative border-none animate-in fade-in duration-200">
+          <div className="bg-[#FDFBF7] dark:bg-[#111622] neu-card w-full max-w-md p-6 relative border border-transparent dark:border-gray-800 animate-in fade-in duration-200">
             <button 
               onClick={() => setIsModalOpen(false)}
               className="absolute top-4 right-4 p-2 text-gray-400 hover:text-germany-black hover:bg-[#EBE7E0] rounded-full transition-colors"
@@ -148,7 +148,7 @@ export default function SuperAdminAdminsPage() {
               <X className="w-4 h-4" />
             </button>
             
-            <h2 className="text-xl font-display font-extrabold text-germany-black mb-6">Create Administrator</h2>
+            <h2 className="text-xl font-display font-extrabold text-germany-black dark:text-white mb-6">Create Administrator</h2>
             
             {submitError && (
               <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-xs font-bold flex items-center gap-2">

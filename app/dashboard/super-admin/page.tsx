@@ -18,7 +18,7 @@ export default function SuperAdminDashboard() {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="bg-white rounded-2xl border border-gray-200/80 shadow-[2px_2px_8px_rgba(71,85,105,0.04)] p-6 md:p-7 relative overflow-hidden">
+      <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-[2px_2px_8px_rgba(71,85,105,0.04)] p-6 md:p-7 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-[3px] flex">
           <div className="flex-1 bg-germany-black"></div>
           <div className="flex-1 bg-germany-red"></div>
@@ -31,7 +31,7 @@ export default function SuperAdminDashboard() {
               <ShieldAlert className="w-3.5 h-3.5 text-white" />
               <span>Super Administrator Portal</span>
             </div>
-            <h1 className="text-xl md:text-2xl lg:text-3xl font-display font-bold text-germany-black">
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-display font-bold text-germany-black dark:text-white">
               Executive System Command
             </h1>
             <p className="text-xs md:text-sm font-medium text-gray-500 max-w-xl">
@@ -53,40 +53,40 @@ export default function SuperAdminDashboard() {
 
       {/* Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200/80 shadow-xs p-5 space-y-2">
+        <div className="bg-white dark:bg-[#111622] rounded-xl border border-gray-200/80 dark:border-gray-800 shadow-xs p-5 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-400">Total Users</span>
             <div className="p-2 bg-germany-red/10 text-germany-red rounded-xl">
               <Users className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-display font-bold text-germany-black">1,540</div>
+          <div className="text-2xl font-display font-bold text-germany-black dark:text-white">1,540</div>
           <p className="text-[11px] font-bold text-emerald-600">Students, Staff & Admins</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200/80 shadow-xs p-5 space-y-2">
+        <div className="bg-white dark:bg-[#111622] rounded-xl border border-gray-200/80 dark:border-gray-800 shadow-xs p-5 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-400">Total Revenue</span>
             <div className="p-2 bg-emerald-50 rounded-xl text-emerald-700">
               <CreditCard className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-display font-bold text-germany-black">₹48.2L</div>
+          <div className="text-2xl font-display font-bold text-germany-black dark:text-white">₹48.2L</div>
           <p className="text-[11px] font-bold text-emerald-600">+24% vs last quarter</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200/80 shadow-xs p-5 space-y-2">
+        <div className="bg-white dark:bg-[#111622] rounded-xl border border-gray-200/80 dark:border-gray-800 shadow-xs p-5 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-400">Admissions Success</span>
             <div className="p-2 bg-germany-red/10 rounded-xl text-germany-red">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-display font-bold text-germany-black">98.4%</div>
+          <div className="text-2xl font-display font-bold text-germany-black dark:text-white">98.4%</div>
           <p className="text-[11px] font-medium text-gray-500">Public German Universities</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200/80 shadow-xs p-5 space-y-2">
+        <div className="bg-white dark:bg-[#111622] rounded-xl border border-gray-200/80 dark:border-gray-800 shadow-xs p-5 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-400">System Status</span>
             <div className="p-2 bg-emerald-50 rounded-xl text-emerald-700">

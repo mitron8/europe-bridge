@@ -75,7 +75,7 @@ function AssignCounsellorModal({ student, onClose, onSuccess }: { student: Stude
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-sm">
-      <div className="bg-[#FDFBF7] neu-card w-full max-w-md p-6 relative border-none animate-in fade-in duration-200">
+      <div className="bg-[#FDFBF7] dark:bg-[#111622] neu-card w-full max-w-md p-6 relative border border-transparent dark:border-gray-800 animate-in fade-in duration-200">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-2 text-gray-400 hover:text-germany-black hover:bg-[#EBE7E0] rounded-full transition-colors"
@@ -83,7 +83,7 @@ function AssignCounsellorModal({ student, onClose, onSuccess }: { student: Stude
           <X className="w-4 h-4" />
         </button>
 
-        <h2 className="text-xl font-display font-extrabold text-germany-black mb-5">Assign Counsellor</h2>
+        <h2 className="text-xl font-display font-extrabold text-germany-black dark:text-white mb-5">Assign Counsellor</h2>
 
         <div className="space-y-4">
           <div className="space-y-1">
@@ -242,7 +242,7 @@ export default function SuperAdminStudentsPage() {
   return (
     <div className="space-y-6">
       {/* Main Content */}
-      <div className="neu-card p-6 bg-white space-y-4">
+      <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="w-full md:w-96 relative">
             <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-gray-400" />
@@ -251,7 +251,7 @@ export default function SuperAdminStudentsPage() {
               placeholder="Search students..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 neu-input text-xs font-bold"
+              className="w-full pl-10 pr-4 py-2.5 neu-input text-xs font-bold bg-white dark:bg-[#0A0D14] text-germany-black dark:text-white border border-gray-200/80 dark:border-gray-800"
             />
           </div>
         </div>
@@ -303,16 +303,16 @@ export default function SuperAdminStudentsPage() {
                       : null;
 
                     return (
-                      <tr key={student.userId} className="hover:bg-[#FDFBF7] relative">
+                      <tr key={student.userId} className="hover:bg-[#FDFBF7] dark:hover:bg-white/5 relative">
                         <td className="py-3.5">{student.firstName} {student.lastName}</td>
                         <td className="py-3.5 text-gray-500">{student.email}</td>
                         <td className="py-3.5 text-gray-500">{student.phone || 'NA'}</td>
                         <td className="py-3.5 text-gray-500">{student.whatsapp || 'NA'}</td>
                         <td className="py-3.5">
                           {counsellorName ? (
-                            <span className="font-bold text-germany-black">{counsellorName}</span>
+                            <span className="font-bold text-germany-black dark:text-white">{counsellorName}</span>
                           ) : (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] bg-gray-100 text-gray-500 font-bold">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-300 font-bold">
                               Unassigned
                             </span>
                           )}

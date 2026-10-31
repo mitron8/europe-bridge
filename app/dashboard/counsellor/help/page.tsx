@@ -477,7 +477,7 @@ export default function CounsellorHelpPage() {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-6 relative overflow-hidden">
+      <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-xs p-6 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-[3px] flex">
           <div className="flex-1 bg-germany-black"></div>
           <div className="flex-1 bg-germany-red"></div>
@@ -486,17 +486,17 @@ export default function CounsellorHelpPage() {
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-display font-bold text-germany-black">
+            <h1 className="text-xl sm:text-2xl font-display font-bold text-germany-black dark:text-white">
               Student Inquiries & Helpdesk
             </h1>
-            <p className="text-xs sm:text-sm text-gray-500 font-medium mt-1">
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium mt-1">
               Live queries assigned exclusively to your student portfolio. Chats are encrypted and tamper-checked in the database.
             </p>
           </div>
 
           <button
             onClick={() => fetchCounsellorTickets()}
-            className="flex items-center gap-2 px-3.5 py-2 bg-gray-100 hover:bg-gray-200/70 text-gray-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-3.5 py-2 bg-gray-100 dark:bg-[#151B27] hover:bg-gray-200/70 dark:hover:bg-[#1E2638] text-gray-700 dark:text-gray-300 dark:border dark:border-gray-800 text-xs font-bold rounded-xl transition-colors cursor-pointer"
           >
             <RotateCw className="w-3.5 h-3.5" />
             <span>Refresh</span>
@@ -534,7 +534,7 @@ export default function CounsellorHelpPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search student, ticket #, or topic..."
-                className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-xs sm:text-sm text-germany-black font-medium focus:outline-none focus:border-germany-red shadow-2xs"
+                className="w-full pl-9 pr-4 py-2 bg-white dark:bg-[#111622] border border-gray-200 dark:border-gray-800 rounded-xl text-xs sm:text-sm text-germany-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 font-medium focus:outline-none focus:border-germany-red shadow-2xs"
               />
             </div>
 
@@ -687,7 +687,7 @@ export default function CounsellorHelpPage() {
               )}
 
               {/* Instagram-style Conversation Thread */}
-              <div className="p-5 space-y-3.5 bg-[#FAF9F6] flex-1 overflow-y-auto max-h-[420px] flex flex-col">
+              <div className="p-5 space-y-3.5 bg-[#FAF9F6] dark:bg-[#0A0D14] flex-1 overflow-y-auto max-h-[420px] flex flex-col">
                 {ticketDetail.messages.map((m, idx) => {
                   const isMe = m.isMe; // sent by counsellor
                   const isInternal = m.isInternalNote;
@@ -782,7 +782,7 @@ export default function CounsellorHelpPage() {
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
                         placeholder={`Reply to ${ticketDetail.student.name}...`}
-                        className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-full text-sm text-germany-black placeholder-gray-400 focus:bg-white focus:outline-none focus:border-blue-600 transition-all font-medium"
+                        className="flex-1 px-4 py-2.5 bg-gray-50 dark:bg-[#0A0D14] border border-gray-200 dark:border-gray-800 rounded-full text-sm text-germany-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#0E121A] focus:outline-none focus:border-blue-600 transition-all font-medium"
                       />
                       <button
                         type="submit"

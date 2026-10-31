@@ -234,13 +234,13 @@ export default function ApsChecklist() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="neu-card p-6 md:p-8 bg-white relative shadow-[12px_12px_30px_rgba(210,205,195,0.6)]">
+      <div className="neu-card p-6 md:p-8 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 relative shadow-[12px_12px_30px_rgba(210,205,195,0.6)] dark:shadow-none">
         
         {/* Notification Bell */}
         <div className="absolute top-6 right-6 z-10">
           <button 
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative p-2 bg-[#FDFBF7] border border-[#EBE7E0] rounded-xl hover:bg-gray-50 transition-colors shadow-xs"
+            className="relative p-2 bg-[#FDFBF7] dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl hover:bg-gray-50 dark:hover:bg-[#1E2638] transition-colors shadow-xs"
           >
             {notifications.length > 0 ? (
               <>
@@ -256,9 +256,9 @@ export default function ApsChecklist() {
           
           {/* Popover */}
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white border border-gray-200/80 rounded-2xl shadow-xl z-50 overflow-hidden">
-              <div className="p-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
-                <h3 className="text-xs font-extrabold text-germany-black">Notifications</h3>
+            <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 rounded-2xl shadow-xl z-50 overflow-hidden">
+              <div className="p-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-[#0E121A] flex items-center justify-between">
+                <h3 className="text-xs font-extrabold text-germany-black dark:text-white">Notifications</h3>
                 <span className="text-[10px] font-bold text-gray-400">{notifications.length} Unread</span>
               </div>
               <div className="max-h-64 overflow-y-auto">
@@ -307,15 +307,15 @@ export default function ApsChecklist() {
             <CheckCircle2 className="w-3.5 h-3.5 text-white" />
             <span>Step 5</span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-display text-germany-black">APS Checklist</h1>
-          <p className="text-xs md:text-sm font-bold text-gray-500">
+          <h1 className="text-2xl md:text-3xl font-display text-germany-black dark:text-white">APS Checklist</h1>
+          <p className="text-xs md:text-sm font-bold text-gray-500 dark:text-gray-400">
             Upload the required documents for your APS (Akademische Prüfstelle) application.
           </p>
         </div>
       </div>
 
       {/* progress bar. don't touch the math, it comes from backend */}
-      <div className="neu-card p-6 bg-white space-y-3">
+      <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-3">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-black uppercase tracking-wider text-gray-400">Required Documents</p>
@@ -331,7 +331,7 @@ export default function ApsChecklist() {
             </p>
           </div>
         </div>
-        <div className="w-full h-2.5 bg-[#EBE7E0] rounded-full overflow-hidden">
+        <div className="w-full h-2.5 bg-[#EBE7E0] dark:bg-gray-800 rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-germany-red to-germany-gold rounded-full transition-all duration-500"
             style={{ width: `${progress.percentage}%` }}
@@ -351,7 +351,7 @@ export default function ApsChecklist() {
       )}
 
       {/* render the list. simple loop, nothing crazy */}
-      <div className="neu-card p-6 bg-white space-y-2">
+      <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-2">
         <h2 className="text-xs font-black uppercase tracking-wider text-gray-400 mb-4">Documents</h2>
         <div className="space-y-3">
           {items.map((item) => {
@@ -384,7 +384,7 @@ export default function ApsChecklist() {
                 {/* Document info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-xs font-extrabold text-germany-black">{item.title}</p>
+                    <p className="text-xs font-extrabold text-germany-black dark:text-white">{item.title}</p>
                     {item.required && (
                       <span className="px-1.5 py-0.5 rounded-md text-[10px] font-extrabold bg-germany-red/10 text-germany-red">
                         Required

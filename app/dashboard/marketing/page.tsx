@@ -7,7 +7,7 @@ export default function MarketingOverviewPage() {
   return (
     <div className="space-y-6">
       {/* Header Card */}
-      <div className="bg-white rounded-2xl border border-gray-200/80 shadow-[2px_2px_8px_rgba(71,85,105,0.04)] p-6 md:p-7 relative overflow-hidden">
+      <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-[2px_2px_8px_rgba(71,85,105,0.04)] p-6 md:p-7 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-[3px] flex">
           <div className="flex-1 bg-germany-black"></div>
           <div className="flex-1 bg-germany-red"></div>
@@ -20,7 +20,7 @@ export default function MarketingOverviewPage() {
               <Briefcase className="w-3.5 h-3.5" />
               <span>Marketing Portal</span>
             </div>
-            <h1 className="text-xl md:text-2xl lg:text-3xl font-display font-bold text-germany-black">
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-display font-bold text-germany-black dark:text-white">
               Marketing Dashboard
             </h1>
             <p className="text-xs md:text-sm font-medium text-gray-500 max-w-xl">
@@ -39,17 +39,17 @@ export default function MarketingOverviewPage() {
 
       {/* Quick Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200/80 shadow-xs p-5 space-y-2">
+        <div className="bg-white dark:bg-[#111622] rounded-xl border border-gray-200/80 dark:border-gray-800 shadow-xs p-5 space-y-2">
           <span className="text-xs font-bold text-gray-400">Active Campaigns</span>
-          <div className="text-2xl font-display font-bold text-germany-black">NA</div>
+          <div className="text-2xl font-display font-bold text-germany-black dark:text-white">NA</div>
           <p className="text-[11px] font-medium text-gray-500">No data available</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200/80 shadow-xs p-5 space-y-2">
+        <div className="bg-white dark:bg-[#111622] rounded-xl border border-gray-200/80 dark:border-gray-800 shadow-xs p-5 space-y-2">
           <span className="text-xs font-bold text-gray-400">Total Leads Generated</span>
-          <div className="text-2xl font-display font-bold text-germany-black">NA</div>
+          <div className="text-2xl font-display font-bold text-germany-black dark:text-white">NA</div>
           <p className="text-[11px] font-medium text-gray-500">No data available</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200/80 shadow-xs p-5 space-y-2">
+        <div className="bg-white dark:bg-[#111622] rounded-xl border border-gray-200/80 dark:border-gray-800 shadow-xs p-5 space-y-2">
           <span className="text-xs font-bold text-gray-400">Conversion Rate</span>
           <div className="text-2xl font-display font-bold text-gray-400">—</div>
           <p className="text-[11px] font-medium text-gray-500">No data available</p>
@@ -57,8 +57,8 @@ export default function MarketingOverviewPage() {
       </div>
 
       {/* Workspace Area */}
-      <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-6 sm:p-8 space-y-4">
-        <h3 className="font-display font-bold text-base text-germany-black">Recent Marketing Activity</h3>
+      <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-xs p-6 sm:p-8 space-y-4">
+        <h3 className="font-display font-bold text-base text-germany-black dark:text-white">Recent Marketing Activity</h3>
         <div className="p-8 border-2 border-dashed border-gray-200 rounded-xl text-center text-gray-400 text-xs font-medium">
           No recent activity to display.
         </div>

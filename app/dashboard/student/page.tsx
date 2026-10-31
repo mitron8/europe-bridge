@@ -65,7 +65,7 @@ export default function StudentDashboard() {
       </div>
 
       {/* Germany Application Journey Stepper */}
-      <div className="neu-card p-6 bg-white relative overflow-hidden">
+      <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 relative overflow-hidden">
         <div className="flex items-center justify-between mb-5">
           <div>
             <h2 className="font-display text-lg text-germany-black dark:text-white">Your Germany Journey Roadmap</h2>
@@ -124,7 +124,7 @@ export default function StudentDashboard() {
 
       {/* Key Metric Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="neu-card p-5 bg-white space-y-2">
+        <div className="neu-card p-5 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-400">German GPA</span>
             <div className="p-2 bg-germany-gold/20 dark:bg-amber-950/40 rounded-xl text-germany-black dark:text-amber-300">
@@ -135,7 +135,7 @@ export default function StudentDashboard() {
           <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Top 10% competitive tier</p>
         </div>
 
-        <div className="neu-card p-5 bg-white space-y-2">
+        <div className="neu-card p-5 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-400">Matched Unis</span>
             <div className="p-2 bg-germany-red/10 rounded-xl text-germany-red">
@@ -146,7 +146,7 @@ export default function StudentDashboard() {
           <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400">Across 8 Public Universities</p>
         </div>
 
-        <div className="neu-card p-5 bg-white space-y-2">
+        <div className="neu-card p-5 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-400">APS Verification</span>
             <div className="p-2 bg-amber-100 dark:bg-amber-950/40 rounded-xl text-amber-700 dark:text-amber-300">
@@ -157,7 +157,7 @@ export default function StudentDashboard() {
           <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400">3 of 5 Documents Uploaded</p>
         </div>
 
-        <div className="neu-card p-5 bg-white space-y-2">
+        <div className="neu-card p-5 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-400">Next Deadline</span>
             <div className="p-2 bg-blue-100 dark:bg-blue-950/40 rounded-xl text-blue-700 dark:text-blue-300">
@@ -174,7 +174,7 @@ export default function StudentDashboard() {
         {/* Left 2 Cols: Shortlisted Universities & AI Picks */}
         <div className="lg:col-span-2 space-y-6">
           {/* Recommended Universities */}
-          <div className="neu-card p-6 bg-white space-y-4">
+          <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-display text-lg text-germany-black dark:text-white">AI-Matched Universities</h3>
@@ -254,7 +254,7 @@ export default function StudentDashboard() {
           </div>
 
           {/* Quick Document Status */}
-          <div className="neu-card p-6 bg-white space-y-4">
+          <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-display text-lg text-germany-black dark:text-white">Document Hub & APS Checklist</h3>
               <Link href="/dashboard/student/documents" className="text-xs font-extrabold text-germany-red hover:underline">
@@ -293,7 +293,7 @@ export default function StudentDashboard() {
         {/* Right 1 Col: Mascot Tip & Counsellor Quick Connect */}
         <div className="space-y-6">
           {/* Germany Admissions Insight Card */}
-          <div className="neu-card p-6 bg-white relative overflow-hidden">
+          <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 relative overflow-hidden">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-xl bg-germany-gold/20 border border-germany-gold/40 flex items-center justify-center text-germany-gold shrink-0">
                 <Lightbulb className="w-5 h-5" />
@@ -309,7 +309,7 @@ export default function StudentDashboard() {
           </div>
 
           {/* Assigned Counsellor Card */}
-          <div className="neu-card p-6 bg-white space-y-4">
+          <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-4">
             <h4 className="font-display text-base text-germany-black dark:text-white">Assigned Germany Expert</h4>
             
             <div className="flex items-center gap-3">
@@ -336,7 +336,7 @@ export default function StudentDashboard() {
           </div>
 
           {/* Quick Free Tools Links */}
-          <div className="neu-card p-5 bg-white space-y-3">
+          <div className="neu-card p-5 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-3">
             <h4 className="text-xs font-black uppercase tracking-wider text-gray-400 dark:text-gray-500">
               Interactive Tools
             </h4>

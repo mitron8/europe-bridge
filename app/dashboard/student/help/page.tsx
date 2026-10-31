@@ -377,7 +377,7 @@ export default function StudentHelpPage() {
 
         <div className="flex items-center justify-between gap-4">
           <div className="space-y-1">
-            <h1 className="text-xl sm:text-2xl font-display font-bold text-germany-black">
+            <h1 className="text-xl sm:text-2xl font-display font-bold text-germany-black dark:text-white">
               Help & Support Desk
             </h1>
             <p className="text-sm text-gray-500 font-medium">
@@ -396,7 +396,7 @@ export default function StudentHelpPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1.5 p-1.5 bg-gray-100 rounded-xl border border-gray-200 w-fit">
+      <div className="flex items-center gap-1.5 p-1.5 bg-gray-100 dark:bg-[#0E121A] rounded-xl border border-gray-200 dark:border-gray-800 w-fit">
         <button
           onClick={() => {
             setActiveTab('my_queries');
@@ -437,8 +437,8 @@ export default function StudentHelpPage() {
 
       {/* TAB 1: ASK COUNSELLOR FORM */}
       {activeTab === 'ask_counsellor' && (
-        <div className="bg-white rounded-2xl border border-gray-200/90 shadow-xs overflow-hidden">
-          <div className="p-5 sm:p-6 border-b border-gray-100 bg-gray-50/50">
+        <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/90 dark:border-gray-800 shadow-xs overflow-hidden">
+          <div className="p-5 sm:p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-[#0E121A]">
             <h2 className="text-lg font-bold text-germany-black">
               Send a Query to Your Counsellor
             </h2>
@@ -464,7 +464,7 @@ export default function StudentHelpPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-germany-black mb-1.5">
+                  <label className="block text-sm font-bold text-germany-black dark:text-gray-200 mb-1.5">
                     Category
                   </label>
                   <ClaySelect
@@ -475,7 +475,7 @@ export default function StudentHelpPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-germany-black mb-1.5">
+                  <label className="block text-sm font-bold text-germany-black dark:text-gray-200 mb-1.5">
                     Priority
                   </label>
                   <ClaySelect
@@ -492,7 +492,7 @@ export default function StudentHelpPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-germany-black mb-1.5">
+                <label className="block text-sm font-bold text-germany-black dark:text-gray-200 mb-1.5">
                   Subject / Topic
                 </label>
                 <input
@@ -501,12 +501,12 @@ export default function StudentHelpPage() {
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="e.g. APS Certificate marksheet name mismatch"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-germany-black font-medium focus:bg-white focus:outline-none focus:border-germany-red transition-all"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0A0D14] border border-gray-200 dark:border-gray-800 rounded-xl text-sm text-germany-black dark:text-white font-medium focus:bg-white dark:focus:bg-[#0E121A] focus:outline-none focus:border-germany-red transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-germany-black mb-1.5">
+                <label className="block text-sm font-bold text-germany-black dark:text-gray-200 mb-1.5">
                   Message / Details
                 </label>
                 <textarea
@@ -515,7 +515,7 @@ export default function StudentHelpPage() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Describe your question or difficulty in detail..."
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-germany-black font-medium focus:bg-white focus:outline-none focus:border-germany-red transition-all resize-y"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0A0D14] border border-gray-200 dark:border-gray-800 rounded-xl text-sm text-germany-black dark:text-white font-medium focus:bg-white dark:focus:bg-[#0E121A] focus:outline-none focus:border-germany-red transition-all resize-y"
                 />
               </div>
 
@@ -539,7 +539,7 @@ export default function StudentHelpPage() {
         <div className="space-y-4">
           {selectedTicketId && ticketDetail ? (
             /* Instagram-Style Conversation View */
-            <div className="bg-white rounded-2xl border border-gray-200/90 shadow-xs overflow-hidden flex flex-col">
+            <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/90 dark:border-gray-800 shadow-xs overflow-hidden flex flex-col">
               {/* Back Bar */}
               <div className="p-4 border-b border-gray-100 bg-gray-50/70 flex items-center justify-between gap-3">
                 <button
@@ -579,7 +579,7 @@ export default function StudentHelpPage() {
               )}
 
               {/* Instagram-Style Direct Message Thread */}
-              <div className="p-5 sm:p-6 space-y-3.5 bg-[#FAF9F6] min-h-[300px] max-h-[500px] overflow-y-auto flex flex-col">
+              <div className="p-5 sm:p-6 space-y-3.5 bg-[#FAF9F6] dark:bg-[#0A0D14] min-h-[300px] max-h-[500px] overflow-y-auto flex flex-col">
                 {ticketDetail.messages.length === 0 ? (
                   <div className="text-center py-10 text-gray-400 text-sm">
                     No messages in this inquiry thread yet.
@@ -660,7 +660,7 @@ export default function StudentHelpPage() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search query title or ticket..."
-                    className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-xs sm:text-sm text-germany-black font-medium focus:outline-none focus:border-germany-red shadow-2xs"
+                    className="w-full pl-9 pr-4 py-2 bg-white dark:bg-[#111622] border border-gray-200 dark:border-gray-800 rounded-xl text-xs sm:text-sm text-germany-black dark:text-white font-medium focus:outline-none focus:border-germany-red shadow-2xs"
                   />
                 </div>
 
@@ -710,7 +710,7 @@ export default function StudentHelpPage() {
                           {getStatusBadge(t.status)}
                         </div>
 
-                        <h3 className="text-base font-bold text-germany-black group-hover:text-germany-red transition-colors truncate">
+                        <h3 className="text-base font-bold text-germany-black dark:text-white group-hover:text-germany-red transition-colors truncate">
                           {t.title}
                         </h3>
 

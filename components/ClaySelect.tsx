@@ -92,7 +92,7 @@ export function ClaySelect<T extends string = string>({
           disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-gray-300'
         } ${isOpen ? 'ring-2 ring-germany-red/20 border-germany-red bg-white' : ''}`}
       >
-        <span className={`truncate ${!selectedOption?.label ? 'text-gray-400 font-medium' : 'text-germany-black'}`}>
+        <span className={`truncate ${!selectedOption?.label ? 'text-gray-400 dark:text-gray-500 font-medium' : 'text-germany-black dark:text-white'}`}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown
@@ -110,7 +110,7 @@ export function ClaySelect<T extends string = string>({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="absolute left-0 right-0 mt-1.5 p-1.5 bg-white border border-gray-200/80 rounded-xl shadow-lg z-50 max-h-64 flex flex-col overflow-hidden"
+            className="absolute left-0 right-0 mt-1.5 p-1.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800 rounded-xl shadow-lg dark:shadow-2xl z-50 max-h-64 flex flex-col overflow-hidden"
           >
             {/* Optional Search Bar */}
             {(searchable || normalizedOptions.length > 8) && (
@@ -121,7 +121,7 @@ export function ClaySelect<T extends string = string>({
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 text-xs font-bold bg-gray-50 border border-gray-200/80 rounded-lg text-germany-black placeholder:text-gray-400 focus:outline-none focus:border-germany-red focus:bg-white transition-colors"
+                  className="w-full pl-8 pr-3 py-1.5 text-xs font-bold bg-gray-50 dark:bg-[#111622] border border-gray-200/80 dark:border-gray-700 rounded-lg text-germany-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-germany-red focus:bg-white dark:focus:bg-[#111622] transition-colors"
                   autoFocus
                 />
               </div>
@@ -133,7 +133,7 @@ export function ClaySelect<T extends string = string>({
                 <button
                   type="button"
                   onClick={() => handleSelect('' as T)}
-                  className="w-full text-left px-3 py-2 text-xs font-medium text-gray-400 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="w-full text-left px-3 py-2 text-xs font-medium text-gray-400 dark:text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1E2638] transition-colors"
                 >
                   {placeholder}
                 </button>
@@ -154,7 +154,7 @@ export function ClaySelect<T extends string = string>({
                       className={`w-full text-left px-3 py-2 text-xs font-bold rounded-lg flex items-center justify-between transition-colors ${
                         isSelected
                           ? 'bg-germany-red text-white'
-                          : 'text-germany-black hover:bg-gray-100'
+                          : 'text-germany-black dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#1E2638]'
                       }`}
                     >
                       <div className="flex flex-col min-w-0 pr-2">

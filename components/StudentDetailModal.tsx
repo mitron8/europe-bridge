@@ -38,7 +38,6 @@ import {
   Trash2,
   Lock,
   Unlock,
-  Sparkles,
   Bookmark,
 } from 'lucide-react';
 import { AssignedStudent } from './CounsellorStudents';
@@ -55,6 +54,7 @@ export interface StudentDocument {
   rejectionReason?: string;
   verifiedAt?: string;
   previewSnippet?: string;
+  previewContent?: string;
   url?: string;
   mimeType?: string;
   originalFilename?: string;
@@ -124,7 +124,8 @@ function mapDbDocToStudentDocument(row: any): StudentDocument {
     status,
     rejectionReason: row.rejection_note || undefined,
     verifiedAt,
-    url: row.imagekit_url || undefined,
+    url: row.imagekit_url || (row.preview_content ? `data:text/plain;charset=utf-8,${encodeURIComponent(row.preview_content)}` : undefined),
+    previewContent: row.preview_content || undefined,
     mimeType: row.mime_type || undefined,
     originalFilename: row.original_filename || undefined,
     previewSnippet: row.original_filename ? `File: ${row.original_filename}` : undefined,
@@ -192,6 +193,43 @@ export function StudentDetailModal({
 
   const [fetchedStudent, setFetchedStudent] = useState<AssignedStudent | null>(null);
   const student = propStudent || fetchedStudent;
+  const effectiveStudentId = student?.userId || propStudent?.userId || studentId || '';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+
+  const handleGrantAttempts = async (documentType: 'sop' | 'lor') => {
+    if (!effectiveStudentId) return;
+    try {
+      setGrantingDocType(documentType);
+      setGrantStatusMessage(null);
+      const res = await fetch(`${API_URL}/counsellor/students/${effectiveStudentId}/grant-dossier-attempts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ documentType }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || `Failed to allot extra attempts for ${documentType.toUpperCase()}`);
+      }
+      setGrantStatusMessage({
+        text: `Success: Allotted +2 attempts for ${documentType.toUpperCase()}! Student now has ${data.newMaxGenerations - (dossierLimits?.[documentType]?.generationCount || 0)} attempts remaining.`,
+        type: 'success',
+      });
+      // Refresh limits
+      const refreshRes = await fetch(`${API_URL}/counsellor/students/${effectiveStudentId}/dossier-limits`, {
+        credentials: 'include',
+      });
+      if (refreshRes.ok) {
+        const freshData = await refreshRes.json();
+        setDossierLimits(freshData);
+      }
+      setTimeout(() => setGrantStatusMessage(null), 6000);
+    } catch (err: any) {
+      setGrantStatusMessage({ text: err.message || 'Network error occurred while allotting attempts', type: 'error' });
+    } finally {
+      setGrantingDocType(null);
+    }
+  };
 
   const [summaryData, setSummaryData] = useState<any>(null);
   const [summaryLoading, setSummaryLoading] = useState(true);
@@ -208,6 +246,14 @@ export function StudentDetailModal({
   const [previewDoc, setPreviewDoc] = useState<StudentDocument | null>(null);
   const [rejectingDoc, setRejectingDoc] = useState<StudentDocument | null>(null);
   const [rejectionReasonInput, setRejectionReasonInput] = useState('');
+
+  // AI Academic Dossier Quotas & Counsellor Allotments
+  const [dossierLimits, setDossierLimits] = useState<{
+    sop: { generationCount: number; maxGenerations: number; remainingAttempts: number; extraAttemptsGranted: boolean; canGrantExtra: boolean };
+    lor: { generationCount: number; maxGenerations: number; remainingAttempts: number; extraAttemptsGranted: boolean; canGrantExtra: boolean };
+  } | null>(null);
+  const [grantingDocType, setGrantingDocType] = useState<'sop' | 'lor' | null>(null);
+  const [grantStatusMessage, setGrantStatusMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   // University shortlist state & adding
   const [universities, setUniversities] = useState<UniversityMatch[]>([]);
@@ -516,6 +562,22 @@ export function StudentDetailModal({
     // Load counsellor notes
     const savedNote = localStorage.getItem(`eb_counsellor_notes_${effectiveStudentId}`);
     setNote(savedNote || '');
+
+    // Load Academic Dossier AI limits
+    const fetchDossierLimits = async () => {
+      try {
+        const res = await fetch(`${API_URL}/counsellor/students/${effectiveStudentId}/dossier-limits`, {
+          credentials: 'include',
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setDossierLimits(data);
+        }
+      } catch (err) {
+        console.error('Failed to load dossier limits', err);
+      }
+    };
+    fetchDossierLimits();
 
     // Load tasks
     const savedTasks = localStorage.getItem(`eb_student_tasks_${effectiveStudentId}`);
@@ -1026,10 +1088,10 @@ export function StudentDetailModal({
 
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-xl sm:text-2xl font-display text-germany-black leading-tight">
+                    <h2 className="text-xl sm:text-2xl font-display text-germany-black dark:text-white leading-tight">
                       {student.firstName} {student.lastName}
                     </h2>
-                    <span className="px-2.5 py-0.5 bg-germany-gold/20 text-germany-black font-extrabold rounded-full text-[11px] border border-germany-gold/40">
+                    <span className="px-2.5 py-0.5 bg-germany-gold/20 dark:bg-amber-950/40 text-germany-black dark:text-amber-300 font-extrabold rounded-full text-[11px] border border-germany-gold/40 dark:border-amber-800/40">
                       {formatStatus(student.status)}
                     </span>
                     <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-extrabold rounded-full text-[10px] flex items-center gap-1">
@@ -1063,7 +1125,7 @@ export function StudentDetailModal({
 
                 <button
                   onClick={handleCopyEmail}
-                  className="p-2 bg-white border border-gray-200/80 rounded-xl text-gray-600 hover:text-germany-red hover:bg-gray-50 cursor-pointer transition-colors shadow-xs"
+                  className="p-2 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-gray-600 dark:text-gray-300 hover:text-germany-red hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors shadow-xs"
                   title="Copy email address"
                 >
                   {copiedEmail ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
@@ -1396,16 +1458,221 @@ export function StudentDetailModal({
                 </div>
 
                 {/* If LOR, SOP & CV is selected, show informative banner */}
+                {/* AI Academic Dossier Quotas & Clearance Hub */}
                 {docCategory === 'lor_sop_cv' && (
-                  <div className="p-4 bg-amber-50/80 dark:bg-amber-950/30 rounded-2xl border border-amber-200/80 dark:border-amber-900/40 flex items-start gap-3 text-xs">
-                    <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-extrabold text-amber-900 dark:text-amber-200">
-                        Academic Dossier Clearance &amp; Verification
-                      </p>
-                      <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 mt-0.5">
-                        Generated Academic CVs submitted by the student appear below for verification and clearance. SOP and LOR drafting pipelines will be active in an upcoming release.
-                      </p>
+                  <div className="p-5 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm space-y-5">
+                    {/* German Tricolor Accent Line */}
+                    <div className="flex h-1 w-20 rounded-full overflow-hidden">
+                      <div className="w-1/3 bg-[#000000]" />
+                      <div className="w-1/3 bg-[#DD0000]" />
+                      <div className="w-1/3 bg-[#FFCC00]" />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div>
+                        <h4 className="text-sm font-black text-gray-900 dark:text-white flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-germany-red" />
+                          <span>AI Academic Dossier Quota &amp; Regeneration Management</span>
+                        </h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                          Standard student allowance is strictly 3 generations. Counsellors can allot exactly 2 bonus attempts only after the student has crossed the initial 3 attempts.
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={async () => {
+                          try {
+                            const res = await fetch(`${API_URL}/counsellor/students/${effectiveStudentId}/dossier-limits`, { credentials: 'include' });
+                            if (res.ok) setDossierLimits(await res.json());
+                          } catch {}
+                        }}
+                        className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-[11px] font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors"
+                        title="Refresh Quota Status"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>Refresh Quotas</span>
+                      </button>
+                    </div>
+
+                    {/* Feedback Toast */}
+                    {grantStatusMessage && (
+                      <div className={`p-3.5 rounded-xl text-xs font-bold flex items-center gap-2.5 ${
+                        grantStatusMessage.type === 'success'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                          : 'bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800'
+                      }`}>
+                        {grantStatusMessage.type === 'success' ? (
+                          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                        )}
+                        <span>{grantStatusMessage.text}</span>
+                      </div>
+                    )}
+
+                    {/* SOP & LOR Quota Cards Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Statement of Purpose (SOP) */}
+                      <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-germany-red" />
+                            <span className="text-xs font-black text-gray-900 dark:text-white">
+                              Statement of Purpose (SOP)
+                            </span>
+                          </div>
+                          {dossierLimits?.sop?.canGrantExtra ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800">
+                              Initial 3 Limit Reached
+                            </span>
+                          ) : dossierLimits?.sop?.extraAttemptsGranted ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                              +2 Bonus Allotted
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                              Active Quota
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-baseline justify-between pt-1">
+                          <div>
+                            <span className="text-2xl font-black text-gray-900 dark:text-white">
+                              {dossierLimits?.sop?.generationCount ?? 0}
+                            </span>
+                            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">
+                              {' '}/ {dossierLimits?.sop?.maxGenerations ?? 3} used
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">
+                              {dossierLimits?.sop?.remainingAttempts ?? 3} remaining
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
+                          <div
+                            className="bg-germany-red h-full transition-all duration-300"
+                            style={{
+                              width: `${Math.min(
+                                100,
+                                (((dossierLimits?.sop?.generationCount ?? 0) / (dossierLimits?.sop?.maxGenerations ?? 3)) * 100)
+                              )}%`,
+                            }}
+                          />
+                        </div>
+
+                        {/* Allot Button / Helper Info */}
+                        <div className="pt-2">
+                          {dossierLimits?.sop?.canGrantExtra ? (
+                            <button
+                              onClick={() => handleGrantAttempts('sop')}
+                              disabled={grantingDocType === 'sop'}
+                              className="w-full py-2 px-3 rounded-xl bg-germany-red hover:bg-[#D62839] text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-50"
+                            >
+                              {grantingDocType === 'sop' ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Plus className="w-3.5 h-3.5" />
+                              )}
+                              <span>Allot +2 SOP Attempts</span>
+                            </button>
+                          ) : dossierLimits?.sop?.extraAttemptsGranted ? (
+                            <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 text-center py-1">
+                              Max 2 extra attempts already allotted (Total quota: {dossierLimits?.sop?.maxGenerations}).
+                            </p>
+                          ) : (
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400 py-1 flex items-center gap-1.5">
+                              <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                              <span>Student has {dossierLimits?.sop?.remainingAttempts ?? 3} initial attempts left. +2 extra attempts can be allotted once initial 3 are crossed.</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Letter of Recommendation (LOR) */}
+                      <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-blue-600" />
+                            <span className="text-xs font-black text-gray-900 dark:text-white">
+                              Letter of Recommendation (LOR)
+                            </span>
+                          </div>
+                          {dossierLimits?.lor?.canGrantExtra ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800">
+                              Initial 3 Limit Reached
+                            </span>
+                          ) : dossierLimits?.lor?.extraAttemptsGranted ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                              +2 Bonus Allotted
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                              Active Quota
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-baseline justify-between pt-1">
+                          <div>
+                            <span className="text-2xl font-black text-gray-900 dark:text-white">
+                              {dossierLimits?.lor?.generationCount ?? 0}
+                            </span>
+                            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">
+                              {' '}/ {dossierLimits?.lor?.maxGenerations ?? 3} used
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">
+                              {dossierLimits?.lor?.remainingAttempts ?? 3} remaining
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
+                          <div
+                            className="bg-blue-600 h-full transition-all duration-300"
+                            style={{
+                              width: `${Math.min(
+                                100,
+                                (((dossierLimits?.lor?.generationCount ?? 0) / (dossierLimits?.lor?.maxGenerations ?? 3)) * 100)
+                              )}%`,
+                            }}
+                          />
+                        </div>
+
+                        {/* Allot Button / Helper Info */}
+                        <div className="pt-2">
+                          {dossierLimits?.lor?.canGrantExtra ? (
+                            <button
+                              onClick={() => handleGrantAttempts('lor')}
+                              disabled={grantingDocType === 'lor'}
+                              className="w-full py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-50"
+                            >
+                              {grantingDocType === 'lor' ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Plus className="w-3.5 h-3.5" />
+                              )}
+                              <span>Allot +2 LOR Attempts</span>
+                            </button>
+                          ) : dossierLimits?.lor?.extraAttemptsGranted ? (
+                            <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 text-center py-1">
+                              Max 2 extra attempts already allotted (Total quota: {dossierLimits?.lor?.maxGenerations}).
+                            </p>
+                          ) : (
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400 py-1 flex items-center gap-1.5">
+                              <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                              <span>Student has {dossierLimits?.lor?.remainingAttempts ?? 3} initial attempts left. +2 extra attempts can be allotted once initial 3 are crossed.</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -2200,7 +2467,7 @@ export function StudentDetailModal({
                           className="w-full flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-extrabold bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/30 rounded-xl transition-colors disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
                           title="Fill student display with the highest ranked eligible programmes up to plan limit"
                         >
-                          <Sparkles className="w-3.5 h-3.5 text-germany-gold" />
+                          <CheckCircle2 className="w-3.5 h-3.5 text-germany-gold" />
                           <span>Auto-fill Top Matches</span>
                         </button>
 
@@ -2958,7 +3225,29 @@ export function StudentDetailModal({
 
               {/* Real Document Preview Viewer */}
               <div className="rounded-xl overflow-hidden border border-gray-200/70 dark:border-gray-800/80 bg-[#FAF8F5] dark:bg-[#0A0D14]">
-                {previewDoc.url ? (
+                {previewDoc.previewContent ? (
+                  <div className="p-4 max-h-[50vh] overflow-y-auto space-y-3 bg-white dark:bg-[#0E121A]">
+                    <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-800 text-xs">
+                      <span className="font-bold text-gray-500">
+                        {previewDoc.previewContent.trim().split(/\s+/).length} words • Academic Text Document
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(previewDoc.previewContent || '');
+                          alert('Copied document text to clipboard!');
+                        }}
+                        className="text-xs font-bold text-germany-red hover:underline inline-flex items-center gap-1 cursor-pointer"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copy Text</span>
+                      </button>
+                    </div>
+                    <pre className="font-mono text-xs whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
+                      {previewDoc.previewContent}
+                    </pre>
+                  </div>
+                ) : previewDoc.url ? (
                   previewDoc.mimeType?.startsWith('image/') || /\.(jpe?g|png|webp)$/i.test(previewDoc.url) ? (
                     <div className="p-3 max-h-[50vh] flex items-center justify-center overflow-auto bg-black/5 dark:bg-black/30">
                       <img src={previewDoc.url} alt={previewDoc.name} className="max-h-[46vh] w-auto object-contain rounded-lg" />

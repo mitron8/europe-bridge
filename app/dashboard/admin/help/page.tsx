@@ -810,7 +810,7 @@ export default function AdminHelpPage() {
                   </div>
                 </div>
 
-                <h2 className="text-sm font-bold text-germany-black">{ticketDetails.title}</h2>
+                <h2 className="text-sm font-bold text-germany-black dark:text-white">{ticketDetails.title}</h2>
 
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-gray-500 font-medium">
                   <span>Student: <strong className="text-gray-800">{ticketDetails.student.name}</strong> ({ticketDetails.student.email})</span>
@@ -845,7 +845,7 @@ export default function AdminHelpPage() {
               </div>
 
               {/* Instagram-Style Conversation Messages Thread */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FAF8F5]">
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FAF8F5] dark:bg-[#0B0E14]">
                 {ticketDetails.messages.length === 0 ? (
                   <div className="p-8 text-center text-xs text-gray-400">
                     No messages recorded in this inquiry yet.

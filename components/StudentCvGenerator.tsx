@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   FileText,
-  Sparkles,
   CheckCircle2,
   Clock,
   AlertCircle,
@@ -532,7 +531,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="neu-card p-6 md:p-8 bg-white relative shadow-[12px_12px_30px_rgba(210,205,195,0.6)]">
+      <div className="neu-card p-6 md:p-8 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 relative shadow-[12px_12px_30px_rgba(210,205,195,0.6)] dark:shadow-none">
         {/* German Tricolor Header Line */}
         <div className="absolute top-0 left-0 w-full h-2 flex">
           <div className="flex-1 bg-germany-black"></div>
@@ -546,21 +545,21 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
               {onBack && (
                 <button
                   onClick={onBack}
-                  className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-600 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
                   title="Back to Document Hub"
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </button>
               )}
               <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-germany-black text-white rounded-full font-extrabold text-[11px]">
-                <Sparkles className="w-3.5 h-3.5 text-germany-gold" />
+                <FileText className="w-3.5 h-3.5 text-germany-gold" />
                 <span>AI CV Generator</span>
               </div>
             </div>
-            <h1 className="text-2xl md:text-3xl font-display text-germany-black">
+            <h1 className="text-2xl md:text-3xl font-display text-germany-black dark:text-white">
               Academic Curriculum Vitae (CV)
             </h1>
-            <p className="text-xs md:text-sm font-bold text-gray-500 max-w-2xl">
+            <p className="text-xs md:text-sm font-bold text-gray-500 dark:text-gray-400 max-w-2xl">
               German university format (Europass two-column standard). Profile data is automatically synchronized, and your final generated PDF is reviewed and verified by your assigned EuroBridge counsellor.
             </p>
           </div>
@@ -570,7 +569,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
             <button
               onClick={() => handleSave(true)}
               disabled={isSaving || isGenerating}
-              className="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-gray-200 hover:border-gray-400 text-gray-700 rounded-xl text-xs font-extrabold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+              className="flex items-center gap-1.5 px-4 py-2.5 bg-white dark:bg-[#151B27] border border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600 text-gray-700 dark:text-gray-200 rounded-xl text-xs font-extrabold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
             >
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin text-germany-red" /> : <Save className="w-4 h-4 text-gray-500" />}
               <span>{isSaving ? 'Saving...' : 'Save Draft'}</span>
@@ -588,7 +587,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4 text-germany-gold" />
+                  <FileText className="w-4 h-4 text-germany-gold" />
                   <span>Generate CV</span>
                 </>
               )}
@@ -714,7 +713,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
       )}
 
       {/* Tab Navigation for CV Sections */}
-      <div className="flex items-center gap-1 overflow-x-auto pb-1 border-b border-[#EBE7E0]">
+      <div className="flex items-center gap-1 overflow-x-auto pb-1 border-b border-[#EBE7E0] dark:border-gray-800">
         {[
           { id: 'profile', label: '1. Personal & Summary', icon: User },
           { id: 'education', label: '2. Education', icon: GraduationCap },
@@ -732,7 +731,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-xs font-extrabold transition-all whitespace-nowrap cursor-pointer ${
                 isActive
-                  ? 'bg-white text-germany-black border-t-2 border-t-germany-red border-x border-[#EBE7E0] shadow-xs'
+                  ? 'bg-white dark:bg-[#151B27] text-germany-black dark:text-white border-t-2 border-t-germany-red border-x border-[#EBE7E0] dark:border-gray-800 shadow-xs'
                   : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100/60'
               }`}
             >
@@ -749,7 +748,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
       {activeTab === 'profile' && (
         <div className="space-y-6">
           {/* Identity & Canonical Profile */}
-          <div className="neu-card p-6 bg-white space-y-4">
+          <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-4">
             <div className="border-b border-gray-100 pb-3">
               <h2 className="text-xs font-black uppercase tracking-wider text-gray-400">
                 Contact &amp; Location (Synced with Profile)
@@ -771,7 +770,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                       personalInfo: { ...formData.personalInfo, firstName: e.target.value },
                     })
                   }
-                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800 focus:outline-none focus:border-germany-red"
+                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 focus:outline-none focus:border-germany-red"
                   placeholder="e.g. Anshul"
                 />
               </div>
@@ -787,7 +786,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                       personalInfo: { ...formData.personalInfo, lastName: e.target.value },
                     })
                   }
-                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800 focus:outline-none focus:border-germany-red"
+                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 focus:outline-none focus:border-germany-red"
                   placeholder="e.g. Khandar"
                 />
               </div>
@@ -813,7 +812,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                       personalInfo: { ...formData.personalInfo, phone: e.target.value },
                     })
                   }
-                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800 focus:outline-none focus:border-germany-red"
+                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 focus:outline-none focus:border-germany-red"
                   placeholder="+91 98765 43210"
                 />
               </div>
@@ -829,7 +828,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                       personalInfo: { ...formData.personalInfo, city: e.target.value },
                     })
                   }
-                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800 focus:outline-none focus:border-germany-red"
+                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 focus:outline-none focus:border-germany-red"
                   placeholder="e.g. Pune"
                 />
               </div>
@@ -845,7 +844,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                       personalInfo: { ...formData.personalInfo, country: e.target.value },
                     })
                   }
-                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800 focus:outline-none focus:border-germany-red"
+                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 focus:outline-none focus:border-germany-red"
                   placeholder="e.g. India"
                 />
               </div>
@@ -861,7 +860,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                       cvDetails: { ...formData.cvDetails, linkedin: e.target.value },
                     })
                   }
-                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800 focus:outline-none focus:border-germany-red"
+                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 focus:outline-none focus:border-germany-red"
                   placeholder="https://linkedin.com/in/username"
                 />
               </div>
@@ -877,7 +876,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                       cvDetails: { ...formData.cvDetails, portfolio: e.target.value },
                     })
                   }
-                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800 focus:outline-none focus:border-germany-red"
+                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 focus:outline-none focus:border-germany-red"
                   placeholder="https://github.com/username"
                 />
               </div>
@@ -885,7 +884,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
           </div>
 
           {/* Professional Headline & Summary */}
-          <div className="neu-card p-6 bg-white space-y-4">
+          <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-4">
             <div className="border-b border-gray-100 pb-3">
               <h2 className="text-xs font-black uppercase tracking-wider text-gray-400">
                 Professional Headline &amp; Summary
@@ -915,7 +914,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                       cvDetails: { ...formData.cvDetails, headline: e.target.value },
                     })
                   }
-                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800 focus:outline-none focus:border-germany-red"
+                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 focus:outline-none focus:border-germany-red"
                   placeholder="e.g. Software Developer Focused on Cloud Systems"
                 />
               </div>
@@ -939,7 +938,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                       cvDetails: { ...formData.cvDetails, keywords: e.target.value },
                     })
                   }
-                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800 focus:outline-none focus:border-germany-red"
+                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 focus:outline-none focus:border-germany-red"
                   placeholder="e.g. TypeScript · React · PostgreSQL · Docker · Cloud Architecture"
                 />
               </div>
@@ -963,7 +962,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                       cvDetails: { ...formData.cvDetails, profileSummary: e.target.value },
                     })
                   }
-                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800 focus:outline-none focus:border-germany-red leading-relaxed"
+                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 focus:outline-none focus:border-germany-red leading-relaxed"
                   placeholder="Summarize your academic focus, core technical capabilities, and preparation for rigorous graduate study in Germany..."
                 />
               </div>
@@ -976,7 +975,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
           TAB 2: EDUCATION (SYNCED)
       ======================================================== */}
       {activeTab === 'education' && (
-        <div className="neu-card p-6 bg-white space-y-5">
+        <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-5">
           <div className="flex items-center justify-between border-b border-gray-100 pb-3">
             <div>
               <h2 className="text-xs font-black uppercase tracking-wider text-gray-400">
@@ -1063,7 +1062,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                           updated[idx] = { ...updated[idx], institutionName: e.target.value };
                           setFormData({ ...formData, education: updated });
                         }}
-                        className="w-full px-3 py-2 bg-white border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800"
+                        className="w-full px-3 py-2 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200"
                         placeholder="e.g. Pune University"
                       />
                     </div>
@@ -1080,7 +1079,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                           updated[idx] = { ...updated[idx], degreeType: e.target.value };
                           setFormData({ ...formData, education: updated });
                         }}
-                        className="w-full px-3 py-2 bg-white border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800"
+                        className="w-full px-3 py-2 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200"
                         placeholder="e.g. Bachelor of Engineering"
                       />
                     </div>
@@ -1097,7 +1096,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                           updated[idx] = { ...updated[idx], fieldOfStudy: e.target.value };
                           setFormData({ ...formData, education: updated });
                         }}
-                        className="w-full px-3 py-2 bg-white border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800"
+                        className="w-full px-3 py-2 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200"
                         placeholder="e.g. Computer Science"
                       />
                     </div>
@@ -1114,7 +1113,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                           updated[idx] = { ...updated[idx], startYear: Number(e.target.value) || null };
                           setFormData({ ...formData, education: updated });
                         }}
-                        className="w-full px-3 py-2 bg-white border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800"
+                        className="w-full px-3 py-2 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200"
                         placeholder="2019"
                       />
                     </div>
@@ -1131,7 +1130,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                           updated[idx] = { ...updated[idx], endYear: Number(e.target.value) || null };
                           setFormData({ ...formData, education: updated });
                         }}
-                        className="w-full px-3 py-2 bg-white border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800"
+                        className="w-full px-3 py-2 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200"
                         placeholder="2023"
                       />
                     </div>
@@ -1147,7 +1146,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
           TAB 3: EXPERIENCE & INTERNSHIPS (SYNCED)
       ======================================================== */}
       {activeTab === 'experience' && (
-        <div className="neu-card p-6 bg-white space-y-5">
+        <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-5">
           <div className="flex items-center justify-between border-b border-gray-100 pb-3">
             <div>
               <h2 className="text-xs font-black uppercase tracking-wider text-gray-400">
@@ -1234,7 +1233,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                           updated[idx] = { ...updated[idx], companyName: e.target.value };
                           setFormData({ ...formData, experience: updated });
                         }}
-                        className="w-full px-3 py-2 bg-white border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800"
+                        className="w-full px-3 py-2 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200"
                         placeholder="e.g. EuroBridge Tech"
                       />
                     </div>
@@ -1251,7 +1250,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                           updated[idx] = { ...updated[idx], jobTitle: e.target.value };
                           setFormData({ ...formData, experience: updated });
                         }}
-                        className="w-full px-3 py-2 bg-white border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800"
+                        className="w-full px-3 py-2 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200"
                         placeholder="e.g. Software Engineer Intern"
                       />
                     </div>
@@ -1268,7 +1267,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                           updated[idx] = { ...updated[idx], startDate: e.target.value };
                           setFormData({ ...formData, experience: updated });
                         }}
-                        className="w-full px-3 py-2 bg-white border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800"
+                        className="w-full px-3 py-2 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200"
                         placeholder="2023-01"
                       />
                     </div>
@@ -1301,7 +1300,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                           updated[idx] = { ...updated[idx], endDate: e.target.value };
                           setFormData({ ...formData, experience: updated });
                         }}
-                        className="w-full px-3 py-2 bg-white border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800 disabled:bg-gray-100"
+                        className="w-full px-3 py-2 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 disabled:bg-gray-100"
                         placeholder="2023-06"
                       />
                     </div>
@@ -1319,7 +1318,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                         updated[idx] = { ...updated[idx], description: e.target.value };
                         setFormData({ ...formData, experience: updated });
                       }}
-                      className="w-full px-3 py-2 bg-white border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800 leading-relaxed"
+                      className="w-full px-3 py-2 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 leading-relaxed"
                       placeholder="Built backend REST APIs with NestJS, optimized database queries, collaborated with senior engineers..."
                     />
                   </div>
@@ -1334,7 +1333,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
           TAB 4: PROJECTS (VARIABLE LENGTH)
       ======================================================== */}
       {activeTab === 'projects' && (
-        <div className="neu-card p-6 bg-white space-y-5">
+        <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-5">
           <div className="flex items-center justify-between border-b border-gray-100 pb-3">
             <div>
               <h2 className="text-xs font-black uppercase tracking-wider text-gray-400">
@@ -1421,7 +1420,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                           updated[idx] = { ...updated[idx], title: e.target.value };
                           setFormData({ ...formData, projects: updated });
                         }}
-                        className="w-full px-3 py-2 bg-white border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800"
+                        className="w-full px-3 py-2 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200"
                         placeholder="e.g. Distributed Task Queue"
                       />
                     </div>
@@ -1442,7 +1441,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                           updated[idx] = { ...updated[idx], technologies: e.target.value };
                           setFormData({ ...formData, projects: updated });
                         }}
-                        className="w-full px-3 py-2 bg-white border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800"
+                        className="w-full px-3 py-2 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200"
                         placeholder="e.g. Node.js, Redis, Docker, TypeScript"
                       />
                     </div>
@@ -1459,7 +1458,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                           updated[idx] = { ...updated[idx], startDate: e.target.value };
                           setFormData({ ...formData, projects: updated });
                         }}
-                        className="w-full px-3 py-2 bg-white border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800"
+                        className="w-full px-3 py-2 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200"
                         placeholder="e.g. 2024-01 – 2024-04"
                       />
                     </div>
@@ -1476,7 +1475,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                           updated[idx] = { ...updated[idx], url: e.target.value };
                           setFormData({ ...formData, projects: updated });
                         }}
-                        className="w-full px-3 py-2 bg-white border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800"
+                        className="w-full px-3 py-2 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200"
                         placeholder="https://github.com/..."
                       />
                     </div>
@@ -1494,7 +1493,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                         updated[idx] = { ...updated[idx], description: e.target.value };
                         setFormData({ ...formData, projects: updated });
                       }}
-                      className="w-full px-3 py-2 bg-white border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800 leading-relaxed"
+                      className="w-full px-3 py-2 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 leading-relaxed"
                       placeholder="Designed resilient background jobs with atomic row locking, built REST API gateway..."
                     />
                   </div>
@@ -1511,7 +1510,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
       {activeTab === 'skills' && (
         <div className="space-y-6">
           {/* Technical Skills */}
-          <div className="neu-card p-6 bg-white space-y-4">
+          <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-4">
             <div className="border-b border-gray-100 pb-3">
               <h2 className="text-xs font-black uppercase tracking-wider text-gray-400">
                 Skills (Synced with Profile)
@@ -1538,7 +1537,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                     }
                   }
                 }}
-                className="flex-1 px-3.5 py-2.5 bg-[#FDFBF7] border border-[#EBE7E0] rounded-xl text-xs font-bold text-gray-800 focus:outline-none focus:border-germany-red"
+                className="flex-1 px-3.5 py-2.5 bg-[#FDFBF7] dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 focus:outline-none focus:border-germany-red"
                 placeholder="Type a skill and press Enter or Add..."
               />
               <button
@@ -1562,7 +1561,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
               {formData.skills.map((skill, sIdx) => (
                 <span
                   key={sIdx}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FDFBF7] border border-[#EBE7E0] rounded-xl text-xs font-extrabold text-gray-700 shadow-2xs"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FDFBF7] dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-extrabold text-gray-700 shadow-2xs"
                 >
                   <span>{skill}</span>
                   <button
@@ -1578,7 +1577,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
           </div>
 
           {/* Languages */}
-          <div className="neu-card p-6 bg-white space-y-4">
+          <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-4">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <div>
                 <h2 className="text-xs font-black uppercase tracking-wider text-gray-400">
@@ -1605,7 +1604,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
 
             <div className="space-y-3">
               {formData.languages.map((lang, lIdx) => (
-                <div key={lIdx} className="flex items-center gap-3 p-3 bg-[#FDFBF7] border border-[#EBE7E0] rounded-xl">
+                <div key={lIdx} className="flex items-center gap-3 p-3 bg-[#FDFBF7] dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl">
                   <div className="flex-1">
                     <input
                       type="text"
@@ -1615,7 +1614,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                         updated[lIdx] = { ...updated[lIdx], name: e.target.value };
                         setFormData({ ...formData, languages: updated });
                       }}
-                      className="w-full px-3 py-1.5 bg-white border border-[#EBE7E0] rounded-lg text-xs font-bold text-gray-800"
+                      className="w-full px-3 py-1.5 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-lg text-xs font-bold text-gray-800 dark:text-gray-200"
                       placeholder="Language (e.g. German, English, Hindi)"
                     />
                   </div>
@@ -1628,7 +1627,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                         updated[lIdx] = { ...updated[lIdx], level: e.target.value };
                         setFormData({ ...formData, languages: updated });
                       }}
-                      className="w-full px-3 py-1.5 bg-white border border-[#EBE7E0] rounded-lg text-xs font-bold text-gray-800"
+                      className="w-full px-3 py-1.5 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-lg text-xs font-bold text-gray-800 dark:text-gray-200"
                       placeholder="Level (e.g. B2, Native, IELTS 7.5)"
                     />
                   </div>
@@ -1652,7 +1651,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
       {activeTab === 'extras' && (
         <div className="space-y-6">
           {/* Certifications */}
-          <div className="neu-card p-6 bg-white space-y-4">
+          <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-4">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <div>
                 <h2 className="text-xs font-black uppercase tracking-wider text-gray-400">
@@ -1689,7 +1688,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                 <p className="text-xs font-bold text-gray-400 italic">No certifications added yet.</p>
               ) : (
                 formData.certifications.map((cert, cIdx) => (
-                  <div key={cert.id || cIdx} className="p-3 bg-[#FDFBF7] border border-[#EBE7E0] rounded-xl space-y-2">
+                  <div key={cert.id || cIdx} className="p-3 bg-[#FDFBF7] dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl space-y-2">
                     <div className="flex items-center justify-between">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
@@ -1723,7 +1722,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                           setFormData({ ...formData, certifications: updated });
                         }}
                         placeholder="Certification Title"
-                        className="sm:col-span-2 px-3 py-1.5 bg-white border border-[#EBE7E0] rounded-lg text-xs font-bold text-gray-800"
+                        className="sm:col-span-2 px-3 py-1.5 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-lg text-xs font-bold text-gray-800 dark:text-gray-200"
                       />
                       <input
                         type="text"
@@ -1734,7 +1733,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                           setFormData({ ...formData, certifications: updated });
                         }}
                         placeholder="Issuing Organization"
-                        className="px-3 py-1.5 bg-white border border-[#EBE7E0] rounded-lg text-xs font-bold text-gray-800"
+                        className="px-3 py-1.5 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-lg text-xs font-bold text-gray-800 dark:text-gray-200"
                       />
                     </div>
                   </div>
@@ -1744,7 +1743,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
           </div>
 
           {/* Achievements */}
-          <div className="neu-card p-6 bg-white space-y-4">
+          <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-4">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <div>
                 <h2 className="text-xs font-black uppercase tracking-wider text-gray-400">
@@ -1781,7 +1780,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                 <p className="text-xs font-bold text-gray-400 italic">No achievements added yet.</p>
               ) : (
                 formData.achievements.map((ach, aIdx) => (
-                  <div key={ach.id || aIdx} className="p-3 bg-[#FDFBF7] border border-[#EBE7E0] rounded-xl space-y-2">
+                  <div key={ach.id || aIdx} className="p-3 bg-[#FDFBF7] dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl space-y-2">
                     <div className="flex items-center justify-between">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
@@ -1815,7 +1814,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                           setFormData({ ...formData, achievements: updated });
                         }}
                         placeholder="Award / Competition Title"
-                        className="sm:col-span-2 px-3 py-1.5 bg-white border border-[#EBE7E0] rounded-lg text-xs font-bold text-gray-800"
+                        className="sm:col-span-2 px-3 py-1.5 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-lg text-xs font-bold text-gray-800 dark:text-gray-200"
                       />
                       <input
                         type="text"
@@ -1826,7 +1825,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                           setFormData({ ...formData, achievements: updated });
                         }}
                         placeholder="Date (e.g. 2023-10)"
-                        className="px-3 py-1.5 bg-white border border-[#EBE7E0] rounded-lg text-xs font-bold text-gray-800"
+                        className="px-3 py-1.5 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-lg text-xs font-bold text-gray-800 dark:text-gray-200"
                       />
                     </div>
                   </div>
@@ -1985,7 +1984,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
       )}
 
       {/* Sticky Bottom Actions Bar */}
-      <div className="neu-card p-4 bg-white/95 backdrop-blur-md sticky bottom-4 z-20 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-[#EBE7E0]">
+      <div className="neu-card p-4 bg-white/95 dark:bg-[#111622]/95 backdrop-blur-md sticky bottom-4 z-20 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-[#EBE7E0] dark:border-gray-800">
         <div className="flex items-center gap-2">
           {isGenerating ? (
             <span className="flex items-center gap-2 text-xs font-extrabold text-blue-600">
@@ -2031,7 +2030,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4 text-germany-gold" />
+                <FileText className="w-4 h-4 text-germany-gold" />
                 <span>Generate CV</span>
               </>
             )}

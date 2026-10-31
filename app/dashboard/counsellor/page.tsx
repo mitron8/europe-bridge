@@ -239,7 +239,7 @@ export default function CounsellorDashboard() {
             <span className="text-xs font-bold text-gray-400 dark:text-gray-400 group-hover:text-germany-red transition-colors">
               Services Queue (FIFO)
             </span>
-            <div className={`p-2 rounded-xl ${urgentOrders.length > 0 ? 'bg-red-500/15 text-red-600' : 'bg-germany-gold/20 text-germany-black dark:text-amber-300'}`}>
+            <div className={`p-2 rounded-xl ${urgentOrders.length > 0 ? 'bg-red-500/15 dark:bg-red-950/40 text-red-600 dark:text-red-400' : 'bg-germany-gold/20 dark:bg-amber-950/40 text-germany-black dark:text-amber-300'}`}>
               <Layers className="w-4 h-4" />
             </div>
           </div>
