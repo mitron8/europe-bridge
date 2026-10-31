@@ -22,6 +22,8 @@ import {
   Award,
   GraduationCap,
   Layers,
+  Trash2,
+  Lock,
 } from 'lucide-react';
 
 const VALID_SECTIONS = [
@@ -120,7 +122,6 @@ function MatchingSection() {
   const [loadingResults, setLoadingResults] = useState(true);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [updatingRecId, setUpdatingRecId] = useState<string | null>(null);
   const [shortlistingProgId, setShortlistingProgId] = useState<string | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
@@ -176,6 +177,8 @@ function MatchingSection() {
     if (isLocked) return;
     setRunning(true);
     setError(null);
+    setRecommendations([]);
+    setResults([]);
     try {
       const res = await fetch(`${API_URL}/matching/run`, {
         method: 'POST',
@@ -192,26 +195,21 @@ function MatchingSection() {
     }
   };
 
-  const handleUpdateRecStatus = async (recId: string, newStatus: string) => {
+  const handleRemoveShortlist = async (programmeId: string | number) => {
     if (isLocked) return;
-    setUpdatingRecId(recId);
+    setShortlistingProgId(String(programmeId));
     try {
-      const res = await fetch(`${API_URL}/student/recommendations/${recId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(`${API_URL}/student/recommendations/${programmeId}`, {
+        method: 'DELETE',
         credentials: 'include',
-        body: JSON.stringify({ status: newStatus }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message ?? 'Failed to update shortlist status');
-
-      setRecommendations((prev) =>
-        prev.map((r) => (r.id === recId ? { ...r, status: newStatus } : r)),
-      );
+      if (!res.ok) throw new Error(data.message ?? 'Failed to remove from shortlist');
+      await fetchResults();
     } catch (err: any) {
-      alert(err.message ?? 'Failed to update shortlist status');
+      alert(err.message ?? 'Could not remove from shortlist');
     } finally {
-      setUpdatingRecId(null);
+      setShortlistingProgId(null);
     }
   };
 
@@ -358,12 +356,18 @@ function MatchingSection() {
             isLocked && status === 'SUBSCRIPTION_REQUIRED'
               ? 'Select a matching plan below to unlock re-running the engine'
               : isLocked
-              ? 'Matching is locked by counsellor'
+              ? 'Matching and shortlist are locked by your counsellor'
               : undefined
           }
-          className="flex items-center gap-2 bg-germany-red hover:bg-[#D62839] disabled:opacity-50 text-white py-2.5 px-5 text-xs font-extrabold rounded-xl shadow-xs transition-colors cursor-pointer shrink-0 disabled:cursor-not-allowed"
+          className={`flex items-center gap-2 py-2.5 px-5 text-xs font-extrabold rounded-xl shadow-xs transition-colors shrink-0 ${
+            isLocked
+              ? 'bg-purple-100 text-purple-700 border border-purple-300 cursor-not-allowed opacity-80'
+              : 'bg-germany-red hover:bg-[#D62839] disabled:opacity-50 text-white cursor-pointer disabled:cursor-not-allowed'
+          }`}
         >
-          {running ? (
+          {isLocked ? (
+            <><Lock className="w-3.5 h-3.5 text-purple-700" /> Shortlist Locked</>
+          ) : running ? (
             <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Starting…</>
           ) : run?.status === 'running' || run?.status === 'pending' ? (
             <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Re-start Matching</>
@@ -374,6 +378,32 @@ function MatchingSection() {
           )}
         </button>
       </div>
+
+      {/* Shortlist Locked Callout Banner */}
+      {isLocked && status !== 'SUBSCRIPTION_REQUIRED' && (
+        <div className="neu-card p-4 bg-purple-50/90 border border-purple-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-purple-900">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-purple-200/80 text-purple-800 flex items-center justify-center shrink-0">
+              <Lock className="w-4 h-4 text-purple-800" />
+            </div>
+            <div>
+              <p className="text-xs font-black uppercase tracking-wider text-purple-800">
+                Shortlist &amp; Matching Finalized by Your Advisor
+              </p>
+              <p className="text-xs text-purple-700 font-medium">
+                Your application programmes are locked for processing. All modifications and matching re-runs are disabled.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/dashboard/student/shortlist"
+            className="text-xs font-black px-3.5 py-1.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white shadow-xs shrink-0 transition-colors inline-flex items-center gap-1.5 self-start sm:self-auto"
+          >
+            <Bookmark className="w-3 h-3 text-white" />
+            <span>View Locked Shortlist</span>
+          </Link>
+        </div>
+      )}
 
       {/* Global Error Banner */}
       {error && (
@@ -522,146 +552,8 @@ function MatchingSection() {
         </div>
       )}
 
-      {/* ========================================================
-          COUNSELLOR RECOMMENDATIONS SECTION (Primary Prominence)
-      ======================================================== */}
-      {!loadingResults && !isRunning && status === 'ACTIVE' && recommendations.length > 0 && (
-        <div className="space-y-4">
-          <div className="neu-card p-4 sm:p-5 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent dark:from-amber-950/30 dark:via-amber-950/15 dark:to-transparent border border-amber-300 dark:border-amber-800/60 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-                <Award className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-display text-base font-bold text-germany-black">
-                    Handpicked by Your EuropeBridge Counsellor
-                  </h3>
-                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-900 border border-amber-500/30">
-                    {recommendations.length} Recommended
-                  </span>
-                </div>
-                <p className="text-xs text-gray-500 font-medium">
-                  These programmes have been personally reviewed and recommended for your academic background and intake goals.
-                </p>
-              </div>
-            </div>
-            <Link
-              href="/dashboard/student/shortlist"
-              className="text-xs font-extrabold text-germany-black hover:text-germany-red px-3 py-1.5 rounded-xl border border-gray-300 hover:bg-gray-50 transition-colors shadow-xs inline-flex items-center gap-1 shrink-0"
-            >
-              <span>View Shortlist ({shortlistedItems.length}/{maxShortlistCount})</span>
-              <Bookmark className="w-3.5 h-3.5 text-germany-red" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-            {recommendations.map((rec: any) => {
-              const statusColors: Record<string, string> = {
-                recommended: 'bg-amber-100 text-amber-900 border-amber-300',
-                shortlisted: 'bg-blue-100 text-blue-900 border-blue-300',
-                applied: 'bg-purple-100 text-purple-900 border-purple-300',
-                offer_received: 'bg-emerald-100 text-emerald-900 border-emerald-300 font-black',
-                waitlisted: 'bg-amber-100 text-amber-900 border-amber-300',
-              };
-
-              return (
-                <div
-                  key={rec.id}
-                  className="neu-card p-5 bg-white dark:bg-[#111622] border-2 border-amber-300/80 dark:border-amber-700/60 space-y-4 hover:-translate-y-1 transition-transform relative overflow-hidden"
-                >
-                  <div className="absolute top-0 right-0 px-3 py-0.5 text-[9px] font-black uppercase tracking-wider bg-amber-400 text-germany-black rounded-bl-xl shadow-xs">
-                    Counsellor Choice
-                  </div>
-
-                  <div className="flex items-start justify-between gap-2 pr-16">
-                    <div className="space-y-1 min-w-0">
-                      <span className="text-[10px] font-extrabold text-germany-red uppercase tracking-wider">
-                        {rec.universityType || rec.type || 'Public University'}
-                      </span>
-                      <h3 className="font-display text-sm text-germany-black leading-tight truncate">
-                        {rec.universityName || rec.name}
-                      </h3>
-                      <p className="text-xs font-bold text-gray-700 leading-snug">
-                        {rec.programName || rec.program}
-                      </p>
-                      <p className="text-[10px] text-gray-400 font-medium">{rec.degree || 'Master of Science'}</p>
-                    </div>
-                  </div>
-
-                  {/* Facts */}
-                  <div className="text-[11px] text-gray-500 dark:text-gray-400 space-y-1 bg-[#FDFBF7] dark:bg-[#151B27] p-2.5 rounded-xl border border-[#EBE7E0] dark:border-gray-800">
-                    <div className="flex justify-between">
-                      <span>📍 {rec.location || 'Germany'}</span>
-                      <span className="font-extrabold text-germany-black dark:text-gray-200">{rec.tuitionPerSemester || rec.tuition || '€0 / semester fee only'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>⏰ {rec.nonEuDeadline || rec.deadline || 'July 15, 2026'}</span>
-                      {rec.matchScore && (
-                        <span className="font-extrabold text-emerald-700">{rec.matchScore}% Fit</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Requirements if specified */}
-                  {(rec.bavarianGpaReq || rec.ieltsReq) && (
-                    <div className="text-[10px] text-gray-500 space-y-0.5">
-                      {rec.bavarianGpaReq && <p>• German GPA: <span className="font-bold text-gray-700">{rec.bavarianGpaReq}</span></p>}
-                      {rec.ieltsReq && <p>• IELTS: <span className="font-bold text-gray-700">{rec.ieltsReq}</span></p>}
-                    </div>
-                  )}
-
-                  {/* Counsellor Note */}
-                  {rec.notes && (
-                    <div className="p-2.5 bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl space-y-0.5">
-                      <p className="text-[10px] font-black uppercase text-amber-800 dark:text-amber-300">
-                        Advisor Note {rec.counsellorName ? `(${rec.counsellorName})` : ''}:
-                      </p>
-                      <p className="text-[11px] text-amber-950 dark:text-amber-200 font-medium italic">&quot;{rec.notes}&quot;</p>
-                    </div>
-                  )}
-
-                  {/* Status & Shortlist Button */}
-                  <div className="pt-2 border-t border-[#EBE7E0] dark:border-gray-800 flex items-center justify-between gap-2">
-                    <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${statusColors[rec.status] || 'bg-gray-100 text-gray-700'}`}>
-                      {rec.status.replace('_', ' ').toUpperCase()}
-                    </span>
-
-                    {rec.status === 'recommended' ? (
-                      <button
-                        onClick={() => handleUpdateRecStatus(rec.id, 'shortlisted')}
-                        disabled={updatingRecId === rec.id || isLocked || isShortlistFull}
-                        title={
-                          isLocked
-                            ? 'Shortlist is locked by your counsellor'
-                            : isShortlistFull
-                            ? `Shortlist limit of ${maxShortlistCount} reached`
-                            : undefined
-                        }
-                        className="flex items-center gap-1.5 text-[11px] font-extrabold text-white bg-germany-red hover:bg-[#D62839] disabled:opacity-50 py-1.5 px-3 rounded-xl shadow-xs transition-colors cursor-pointer disabled:cursor-not-allowed"
-                      >
-                        {updatingRecId === rec.id ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                        ) : (
-                          <Bookmark className="w-3 h-3 text-white" />
-                        )}
-                        <span>{isShortlistFull ? 'Shortlist Full' : 'Add to Shortlist'}</span>
-                      </button>
-                    ) : (
-                      <span className="text-[11px] font-extrabold text-blue-700 flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Shortlisted
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* No run yet & no recommendations yet */}
-      {!loadingResults && !isRunning && !error && (status === 'NOT_RUN' || (!run && recommendations.length === 0)) && (
+      {/* No run yet */}
+      {!loadingResults && !isRunning && !error && (status === 'NOT_RUN' || (!run && eligibleResults.length === 0)) && (
         <div className="neu-card p-10 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 text-center space-y-3">
           <Compass className="w-10 h-10 text-gray-300 mx-auto" />
           <h3 className="font-display text-base text-germany-black">Run Matching to Discover Programmes</h3>
@@ -683,14 +575,10 @@ function MatchingSection() {
                 Admissions Team in Action
               </span>
               <h3 className="font-display text-base sm:text-lg text-germany-black font-bold leading-tight">
-                {recommendations.length > 0
-                  ? 'Counsellor Curated Programmes Available'
-                  : 'Our Germany Specialists are Handpicking Programmes for You'}
+                Our Germany Specialists are Handpicking Programmes for You
               </h3>
               <p className="text-xs text-gray-500 font-medium leading-relaxed">
-                {recommendations.length > 0
-                  ? `Automated matching evaluated ${run.candidates_evaluated ?? 0} programmes. To bypass strict automated filters, your advisor has handpicked the programmes highlighted above for you.`
-                  : 'Because German universities have specific faculty criteria, our senior admissions counsellors are personally evaluating your profile to match you with specialized programs, pathway options, and strategic partner universities.'}
+                Because German universities have specific faculty criteria, our senior admissions counsellors are personally evaluating your profile to match you with specialized programs, pathway options, and strategic partner universities.
               </p>
             </div>
           </div>
@@ -728,7 +616,22 @@ function MatchingSection() {
               );
 
               return (
-                <div key={r.id} className="neu-card p-5 bg-white dark:bg-[#111622] space-y-4 hover:-translate-y-1 transition-transform border border-gray-200/80 dark:border-gray-800">
+                <div
+                  key={r.id}
+                  className={`neu-card p-5 space-y-4 hover:-translate-y-1 transition-all border relative overflow-hidden ${
+                    isAlreadyShortlisted
+                      ? 'bg-emerald-50/80 dark:bg-emerald-950/30 border-2 border-emerald-500 ring-2 ring-emerald-500/20 shadow-md'
+                      : isLocked
+                      ? 'bg-gray-50/60 dark:bg-gray-900/60 border-gray-200 dark:border-gray-800 opacity-75'
+                      : 'bg-white dark:bg-[#111622] border-gray-200/80 dark:border-gray-800'
+                  }`}
+                >
+                  {isAlreadyShortlisted && (
+                    <div className="absolute top-0 right-0 px-3 py-0.5 text-[9px] font-black uppercase tracking-wider bg-emerald-600 text-white rounded-bl-xl shadow-xs flex items-center gap-1 z-10">
+                      <CheckCircle2 className="w-2.5 h-2.5" />
+                      <span>Shortlisted</span>
+                    </div>
+                  )}
                   <div className="flex items-start justify-between gap-2">
                     <div className="space-y-1 min-w-0">
                       <span className="text-[10px] font-extrabold text-germany-red uppercase tracking-wider">
@@ -797,11 +700,29 @@ function MatchingSection() {
                     )}
 
                     {isAlreadyShortlisted ? (
-                      <span className="text-[11px] font-extrabold text-emerald-700 flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Shortlisted
-                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveShortlist(progId)}
+                        disabled={shortlistingProgId === String(progId) || isLocked}
+                        title={isLocked ? 'Shortlist is locked by your counsellor' : 'Click to remove from shortlist'}
+                        className={`flex items-center gap-1.5 text-[11px] font-extrabold py-1.5 px-3 rounded-xl shadow-xs transition-colors ${
+                          isLocked
+                            ? 'bg-emerald-600/80 text-white cursor-not-allowed opacity-90'
+                            : 'text-white bg-emerald-600 hover:bg-emerald-700 cursor-pointer'
+                        }`}
+                      >
+                        {shortlistingProgId === String(progId) ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : isLocked ? (
+                          <Lock className="w-3 h-3 text-white" />
+                        ) : (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                        )}
+                        <span>{isLocked ? 'Shortlisted (Locked)' : 'Shortlisted'}</span>
+                      </button>
                     ) : (
                       <button
+                        type="button"
                         onClick={() => handleShortlistMatchedProgramme(progId)}
                         disabled={shortlistingProgId === String(progId) || isLocked || isShortlistFull}
                         title={
@@ -811,14 +732,20 @@ function MatchingSection() {
                             ? `Shortlist limit of ${maxShortlistCount} reached for your plan`
                             : undefined
                         }
-                        className="flex items-center gap-1.5 text-[11px] font-extrabold text-white bg-germany-black hover:bg-gray-800 disabled:opacity-50 py-1.5 px-3 rounded-xl shadow-xs transition-colors cursor-pointer disabled:cursor-not-allowed"
+                        className={`flex items-center gap-1.5 text-[11px] font-extrabold py-1.5 px-3 rounded-xl shadow-xs transition-colors ${
+                          isLocked
+                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed opacity-60'
+                            : 'text-white bg-germany-black hover:bg-gray-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
+                        }`}
                       >
                         {shortlistingProgId === String(progId) ? (
                           <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : isLocked ? (
+                          <Lock className="w-3 h-3 text-gray-400" />
                         ) : (
                           <Bookmark className="w-3 h-3 text-germany-gold" />
                         )}
-                        <span>{isShortlistFull ? 'Shortlist Full' : 'Shortlist'}</span>
+                        <span>{isLocked ? 'Locked' : isShortlistFull ? 'Shortlist Full' : 'Shortlist'}</span>
                       </button>
                     )}
                   </div>
@@ -840,6 +767,7 @@ function ShortlistSection() {
   const [isLocked, setIsLocked] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const fetchShortlist = async () => {
     setLoading(true);
@@ -862,6 +790,25 @@ function ShortlistSection() {
       setError(err.message ?? 'Failed to load shortlist');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteShortlist = async (recId: string) => {
+    if (isLocked) return;
+    setDeletingId(recId);
+    try {
+      const res = await fetch(`${API_URL}/student/recommendations/${recId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message ?? 'Failed to remove from shortlist');
+
+      await fetchShortlist();
+    } catch (err: any) {
+      alert(err.message ?? 'Could not remove from shortlist');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -946,19 +893,43 @@ function ShortlistSection() {
           {allItems.map((rec: any) => (
             <div
               key={rec.id}
-              className="neu-card p-5 bg-white dark:bg-[#111622] space-y-4 hover:-translate-y-1 transition-transform border border-[#EBE7E0] dark:border-gray-800"
+              className="neu-card p-5 bg-white dark:bg-[#111622] space-y-4 hover:-translate-y-1 transition-transform border border-[#EBE7E0] dark:border-gray-800 relative"
             >
-              <div className="space-y-1 min-w-0">
-                <span className="text-[10px] font-extrabold text-germany-red uppercase tracking-wider">
-                  {rec.universityType || rec.type || 'Public University'}
-                </span>
-                <h3 className="font-display text-sm text-germany-black leading-tight truncate">
-                  {rec.universityName || rec.name}
-                </h3>
-                <p className="text-xs font-bold text-gray-700 leading-snug">
-                  {rec.programName || rec.program}
-                </p>
-                <p className="text-[10px] text-gray-400 font-medium">{rec.degree || 'Master of Science'}</p>
+              <div className="flex items-start justify-between gap-2">
+                <div className="space-y-1 min-w-0 pr-2">
+                  <span className="text-[10px] font-extrabold text-germany-red uppercase tracking-wider">
+                    {rec.universityType || rec.type || 'Public University'}
+                  </span>
+                  <h3 className="font-display text-sm text-germany-black leading-tight truncate">
+                    {rec.universityName || rec.name}
+                  </h3>
+                  <p className="text-xs font-bold text-gray-700 leading-snug">
+                    {rec.programName || rec.program}
+                  </p>
+                  <p className="text-[10px] text-gray-400 font-medium">{rec.degree || 'Master of Science'}</p>
+                </div>
+                {isLocked ? (
+                  <span
+                    title="Shortlist is locked by your counsellor"
+                    className="p-1.5 text-purple-600 bg-purple-50 rounded-lg border border-purple-200 cursor-not-allowed shrink-0"
+                  >
+                    <Lock className="w-3.5 h-3.5 text-purple-600" />
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteShortlist(rec.id)}
+                    disabled={deletingId === rec.id}
+                    title="Remove from shortlist"
+                    className="p-1.5 text-gray-400 hover:text-germany-red hover:bg-red-50 rounded-lg transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                  >
+                    {deletingId === rec.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-germany-red" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                  </button>
+                )}
               </div>
 
               <div className="text-[11px] text-gray-500 space-y-1 bg-[#FDFBF7] p-2.5 rounded-xl border border-[#EBE7E0]">
@@ -981,9 +952,26 @@ function ShortlistSection() {
                 <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-900 border border-blue-200">
                   {rec.status.replace('_', ' ')}
                 </span>
-                <span className="text-[11px] font-bold text-gray-400">
-                  {rec.counsellorName ? `Recommended by ${rec.counsellorName}` : 'Counsellor Selected'}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-[11px] font-bold text-gray-400">
+                    {rec.counsellorName ? `Recommended by ${rec.counsellorName}` : 'Counsellor Selected'}
+                  </span>
+                  {isLocked ? (
+                    <span className="flex items-center gap-1 text-[10px] font-black text-purple-700 bg-purple-100/70 border border-purple-200 px-2 py-0.5 rounded-md">
+                      <Lock className="w-2.5 h-2.5" /> Locked
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteShortlist(rec.id)}
+                      disabled={deletingId === rec.id}
+                      title="Remove from shortlist"
+                      className="flex items-center gap-1 text-[11px] font-extrabold text-red-600 hover:text-red-700 hover:underline cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <span>{deletingId === rec.id ? 'Removing…' : 'Remove'}</span>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}

@@ -39,6 +39,8 @@ import {
   Lock,
   Unlock,
   Bookmark,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { AssignedStudent } from './CounsellorStudents';
 import { StudentFullProfileView } from './StudentFullProfileView';
@@ -143,6 +145,9 @@ export interface UniversityMatch {
   bavarianGpaReq: string;
   ieltsReq: string;
   tuition: string;
+  language?: string;
+  programUrl?: string;
+  subject?: string;
   status: 'recommended' | 'shortlisted' | 'applied' | 'offer_received' | 'waitlisted';
   deadline: string;
   type: string;
@@ -285,6 +290,7 @@ export function StudentDetailModal({
   const [matchingResults, setMatchingResults] = useState<any[]>([]);
   const [studentSubscription, setStudentSubscription] = useState<any>(null);
   const [curatedProgrammeIds, setCuratedProgrammeIds] = useState<string[]>([]);
+  const [curatedProgrammes, setCuratedProgrammes] = useState<any[]>([]);
   const [isMatchingLocked, setIsMatchingLocked] = useState(false);
   const [studentShortlistCount, setStudentShortlistCount] = useState(0);
   const [loadingMatching, setLoadingMatching] = useState(false);
@@ -292,6 +298,7 @@ export function StudentDetailModal({
   const [matchingError, setMatchingError] = useState<string | null>(null);
   const [savingCuration, setSavingCuration] = useState(false);
   const [togglingLock, setTogglingLock] = useState(false);
+  const [togglingShortlist, setTogglingShortlist] = useState<string | null>(null);
   const [showCurationPanel, setShowCurationPanel] = useState(true);
 
   const fetchMatchingResults = async () => {
@@ -312,6 +319,7 @@ export function StudentDetailModal({
       setMatchingRun(data.run ?? null);
       setMatchingResults(data.results ?? []);
       setStudentSubscription(data.subscription ?? null);
+      setCuratedProgrammes(data.curatedProgrammes ?? []);
       setCuratedProgrammeIds(data.curatedProgrammeIds ?? []);
       setIsMatchingLocked(Boolean(data.isLocked));
       setStudentShortlistCount(data.shortlistCount ?? 0);
@@ -328,8 +336,18 @@ export function StudentDetailModal({
   const handleRunMatching = async () => {
     const effectiveStudentId = propStudent?.userId || studentId;
     if (!effectiveStudentId) return;
+    if (isMatchingLocked) {
+      alert('Shortlist and matching are locked for this student. Please unlock the shortlist first before re-running matching.');
+      return;
+    }
     setRunningMatching(true);
     setMatchingError(null);
+    setUniversities([]);
+    setCuratedProgrammeIds([]);
+    setCuratedProgrammes([]);
+    setStudentShortlistCount(0);
+    setIsMatchingLocked(false);
+    localStorage.removeItem(`eb_student_unis_${effectiveStudentId}`);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
       const res = await fetch(`${API_URL}/matching/students/${effectiveStudentId}/run`, {
@@ -370,6 +388,10 @@ export function StudentDetailModal({
   };
 
   const handleToggleCuratedProgramme = async (programmeId: string | number) => {
+    if (isMatchingLocked) {
+      alert('Shortlist and curation are locked for this student. Please unlock first to make modifications.');
+      return;
+    }
     const idStr = String(programmeId);
     let nextIds: string[];
     const maxDisplay = studentSubscription?.maxDisplayCount || 10;
@@ -378,7 +400,7 @@ export function StudentDetailModal({
       nextIds = curatedProgrammeIds.filter((id) => id !== idStr);
     } else {
       if (curatedProgrammeIds.length >= maxDisplay) {
-        alert(`Cannot select more than ${maxDisplay} programmes under this student's plan.`);
+        alert(`Display curation limit reached (${curatedProgrammeIds.length}/${maxDisplay}). Please remove an existing programme from the Student Display Curation panel on the right (or click "On Student Display" on any card) to make space.`);
         return;
       }
       nextIds = [...curatedProgrammeIds, idStr];
@@ -389,6 +411,10 @@ export function StudentDetailModal({
   };
 
   const handleAutoFillTopMatches = async () => {
+    if (isMatchingLocked) {
+      alert('Shortlist and curation are locked for this student. Please unlock first before auto-filling matches.');
+      return;
+    }
     const maxDisplay = studentSubscription?.maxDisplayCount || 5;
     const topEligible = matchingResults
       .filter((r) => r.eligibilityStatus !== 'NOT_ELIGIBLE')
@@ -419,12 +445,102 @@ export function StudentDetailModal({
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to save curated programmes');
       if (data.curatedProgrammes) {
+        setCuratedProgrammes(data.curatedProgrammes);
         setCuratedProgrammeIds(data.curatedProgrammes.map((c: any) => String(c.programmeId)));
       }
+      const idSet = new Set(programmeIds.map(String));
+      setMatchingResults((prev: any[]) =>
+        prev.map((r) => ({
+          ...r,
+          isDisplayed: idSet.has(String(r.programmeId || r.id)),
+        }))
+      );
     } catch (err: any) {
       alert(err.message || 'Failed to save curation');
     } finally {
       setSavingCuration(false);
+    }
+  };
+
+  const handleToggleShortlist = async (r: any) => {
+    if (isMatchingLocked) {
+      alert('Shortlist and curation are locked for this student. Unlock first before modifying the shortlist.');
+      return;
+    }
+    const progIdStr = String(r.programmeId || r.id);
+    const effectiveId = propStudent?.userId || studentId;
+    if (!effectiveId) return;
+
+    const existing = universities.find(
+      (u) =>
+        String(u.programmeId) === progIdStr ||
+        String(u.id) === progIdStr ||
+        (u.name === r.universityName && u.program === r.programName)
+    );
+
+    setTogglingShortlist(progIdStr);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+      if (existing && (existing.status === 'shortlisted' || (existing.status && existing.status !== 'recommended'))) {
+        const isMatched = matchingResults.some((m: any) => String(m.programmeId || m.id) === progIdStr);
+        if (isMatched) {
+          await fetch(`${API_URL}/counsellor/students/${effectiveId}/recommendations/${existing.id}`, {
+            method: 'DELETE',
+            credentials: 'include',
+          });
+          setUniversities((prev) => prev.filter((u) => u.id !== existing.id));
+        } else {
+          await fetch(`${API_URL}/counsellor/students/${effectiveId}/recommendations/${existing.id}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ status: 'recommended' }),
+          });
+          setUniversities((prev) =>
+            prev.map((u) => (u.id === existing.id ? { ...u, status: 'recommended' } : u))
+          );
+        }
+        setStudentShortlistCount((prev) => Math.max(0, prev - 1));
+      } else if (existing) {
+        await fetch(`${API_URL}/counsellor/students/${effectiveId}/recommendations/${existing.id}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ status: 'shortlisted' }),
+        });
+        setUniversities((prev) =>
+          prev.map((u) => (u.id === existing.id ? { ...u, status: 'shortlisted' } : u))
+        );
+        setStudentShortlistCount((prev) => prev + 1);
+      } else {
+        const payload = {
+          programmeId: r.programmeId ? Number(r.programmeId) : undefined,
+          universityId: r.universityId ? Number(r.universityId) : undefined,
+          name: r.universityName,
+          program: r.programName,
+          degree: r.degree || 'Master',
+          location: [r.city, r.country].filter(Boolean).join(', ') || 'Germany',
+          tuition: r.tuitionPerSemester || 'Free / None (public university)',
+          deadline: r.nonEuDeadline || 'NA',
+          type: r.universityType || 'Public University',
+          matchScore: r.relevanceScore || 90,
+          status: 'shortlisted',
+        };
+        const res = await fetch(`${API_URL}/counsellor/students/${effectiveId}/recommendations`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to shortlist programme');
+        setUniversities((prev) => [data, ...prev]);
+        setStudentShortlistCount((prev) => prev + 1);
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to update shortlist');
+    } finally {
+      setTogglingShortlist(null);
     }
   };
 
@@ -438,6 +554,149 @@ export function StudentDetailModal({
     });
     return set;
   }, [universities]);
+
+  const notepadProgrammes = useMemo(() => {
+    const matchedProgIds = new Set(
+      matchingResults.map((m: any) => String(m.programmeId || m.id))
+    );
+    return universities.filter((u: any) => {
+      const uProgId = String(u.programmeId || u.id);
+      if (u.programmeId && matchedProgIds.has(String(u.programmeId))) {
+        return false;
+      }
+      if (matchedProgIds.has(uProgId)) {
+        return false;
+      }
+      const uProg = (u.program || '').toLowerCase().trim();
+      const uUni = (u.name || '').toLowerCase().trim();
+      const isMatchingResult = matchingResults.some((m: any) => {
+        const mProg = (m.programName || '').toLowerCase().trim();
+        const mUni = (m.universityName || '').toLowerCase().trim();
+        return mProg === uProg && (mUni.includes(uUni) || uUni.includes(mUni));
+      });
+      return !isMatchingResult;
+    });
+  }, [universities, matchingResults]);
+
+
+  const handleDeleteMatchedProgramme = async (programmeId: string | number) => {
+    if (isMatchingLocked) {
+      alert('Shortlist and curation are locked. Unlock first before removing matched programmes.');
+      return;
+    }
+    const effectiveId = propStudent?.userId || studentId;
+    if (!effectiveId) return;
+    const idStr = String(programmeId);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+      await fetch(`${API_URL}/counsellor/students/${effectiveId}/matches/${idStr}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      setMatchingResults((prev) => prev.filter((r) => String(r.programmeId || r.id) !== idStr));
+      if (curatedProgrammeIds.includes(idStr)) {
+        const nextIds = curatedProgrammeIds.filter((id) => id !== idStr);
+        setCuratedProgrammeIds(nextIds);
+        setCuratedProgrammes((prev) => prev.filter((c) => String(c.programmeId) !== idStr));
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to remove matched programme');
+    }
+  };
+
+  const handleSaveProgrammeToNotepad = async (p: any) => {
+    if (isMatchingLocked) {
+      alert('Shortlist and curation are locked. Unlock first before adding programmes to notepad.');
+      return;
+    }
+    const effectiveId = propStudent?.userId || studentId;
+    if (!effectiveId) return;
+    setSavingRecommendation(true);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+      const uniCity = selectedUniversity?.city || p.city || 'Germany';
+      const payload = {
+        programmeId: p.id,
+        universityId: p.universityId || (selectedUniversity as any)?.id || null,
+        name: p.universityName || selectedUniversity?.name || 'German University',
+        program: p.programName,
+        degree: p.degree || 'Master',
+        location: [p.city, p.country].filter(Boolean).join(', ') || uniCity,
+        tuition: p.tuition || '€0 / semester fee only',
+        deadline: p.deadline || 'July 15',
+        language: p.language || 'English',
+        programUrl: p.programUrl || null,
+        subject: p.subject || null,
+        type: p.universityType || (selectedUniversity as any)?.type || 'Public University',
+        matchScore: 90,
+        status: 'recommended',
+        notes: p.relevanceLabel || '',
+      };
+      const res = await fetch(`${API_URL}/counsellor/students/${effectiveId}/recommendations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to save programme to notepad');
+      setUniversities((prev) => [data, ...prev.filter((u) => u.id !== data.id && String(u.programmeId) !== String(p.id))]);
+      setRecommendSuccessMsg(`Saved "${p.programName}" to Counsellor Notepad!`);
+      setTimeout(() => setRecommendSuccessMsg(null), 3500);
+    } catch (err: any) {
+      alert(err.message || 'Failed to save programme to notepad');
+    } finally {
+      setSavingRecommendation(false);
+    }
+  };
+
+  // Sub-navigation & Lazy Pagination for Matching Results
+  const [matchingSubTab, setMatchingSubTab] = useState<'matches' | 'catalogue'>('matches');
+  const [matchSearchQuery, setMatchSearchQuery] = useState('');
+  const [matchUniFilter, setMatchUniFilter] = useState('ALL');
+  const [matchPage, setMatchPage] = useState(1);
+  const MATCH_PAGE_SIZE = 12;
+
+  // Unique universities in the matched set with counts
+  const matchedUniversities = useMemo(() => {
+    const counts = new Map<string, number>();
+    matchingResults
+      .filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE')
+      .forEach((r: any) => {
+        const uName = r.universityName || 'Other';
+        counts.set(uName, (counts.get(uName) || 0) + 1);
+      });
+    return Array.from(counts.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [matchingResults]);
+
+  // Filtered matching results
+  const filteredMatchingResults = useMemo(() => {
+    return matchingResults
+      .filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE')
+      .filter((r: any) => {
+        if (matchUniFilter !== 'ALL' && r.universityName !== matchUniFilter) {
+          return false;
+        }
+        if (matchSearchQuery.trim()) {
+          const q = matchSearchQuery.toLowerCase().trim();
+          const matchesProg = r.programName?.toLowerCase().includes(q);
+          const matchesUni = r.universityName?.toLowerCase().includes(q);
+          const matchesCity = r.city?.toLowerCase().includes(q);
+          const matchesDeg = r.degree?.toLowerCase().includes(q);
+          const matchesLang = r.language?.toLowerCase().includes(q);
+          return matchesProg || matchesUni || matchesCity || matchesDeg || matchesLang;
+        }
+        return true;
+      });
+  }, [matchingResults, matchUniFilter, matchSearchQuery]);
+
+  const totalMatchPages = Math.max(1, Math.ceil(filteredMatchingResults.length / MATCH_PAGE_SIZE));
+  const paginatedMatchingResults = useMemo(() => {
+    const start = (matchPage - 1) * MATCH_PAGE_SIZE;
+    return filteredMatchingResults.slice(start, start + MATCH_PAGE_SIZE);
+  }, [filteredMatchingResults, matchPage]);
 
   // Poll matching results while in progress
   useEffect(() => {
@@ -727,8 +986,19 @@ export function StudentDetailModal({
   };
 
   const handleDeleteRecommendation = async (uniId: string) => {
+    if (isMatchingLocked) {
+      alert('Shortlist and curation are locked for this student. Unlock first before deleting programmes.');
+      return;
+    }
+    const toDelete = universities.find((u) => u.id === uniId);
     const updated = universities.filter((u) => u.id !== uniId);
     setUniversities(updated);
+
+    if (toDelete && toDelete.programmeId && curatedProgrammeIds.includes(String(toDelete.programmeId))) {
+      const nextIds = curatedProgrammeIds.filter((id) => id !== String(toDelete.programmeId));
+      setCuratedProgrammeIds(nextIds);
+      setCuratedProgrammes((prev) => prev.filter((c) => String(c.programmeId) !== String(toDelete.programmeId)));
+    }
     const effectiveId = student?.userId || propStudent?.userId || studentId;
     if (effectiveId) {
       localStorage.setItem(`eb_student_unis_${effectiveId}`, JSON.stringify(updated));
@@ -1175,7 +1445,9 @@ export function StudentDetailModal({
                 <Building2 className="w-3.5 h-3.5" />
                 <span>University Eligibility</span>
                 <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">
-                  {universities.length}
+                  {curatedProgrammeIds.length > 0
+                    ? curatedProgrammeIds.length
+                    : matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length || 0}
                 </span>
               </button>
 
@@ -2145,10 +2417,17 @@ export function StudentDetailModal({
                     <button
                       id="counsellor-run-matching-btn"
                       onClick={handleRunMatching}
-                      disabled={runningMatching}
-                      className="flex items-center gap-1.5 bg-germany-red hover:bg-[#D62839] disabled:opacity-60 text-white py-2 px-3.5 text-xs font-extrabold rounded-xl shadow-xs transition-colors cursor-pointer"
+                      disabled={runningMatching || isMatchingLocked}
+                      title={isMatchingLocked ? 'Shortlist and matching are locked. Unlock before re-running matching.' : undefined}
+                      className={`flex items-center gap-1.5 py-2 px-3.5 text-xs font-extrabold rounded-xl shadow-xs transition-colors ${
+                        isMatchingLocked
+                          ? 'bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800 cursor-not-allowed opacity-75'
+                          : 'bg-germany-red hover:bg-[#D62839] disabled:opacity-60 text-white cursor-pointer'
+                      }`}
                     >
-                      {runningMatching ? (
+                      {isMatchingLocked ? (
+                        <><Lock className="w-3.5 h-3.5 text-purple-700 dark:text-purple-300" /> Shortlist Locked</>
+                      ) : runningMatching ? (
                         <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Starting…</>
                       ) : matchingRun?.status === 'running' || matchingRun?.status === 'pending' ? (
                         <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Re-start Matching</>
@@ -2158,15 +2437,27 @@ export function StudentDetailModal({
                         <><Compass className="w-3.5 h-3.5" /> Run Matching Engine</>
                       )}
                     </button>
-                    <button
-                      onClick={() => setShowAddUni(!showAddUni)}
-                      className="neu-btn-primary py-2 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Recommend</span>
-                    </button>
                   </div>
                 </div>
+
+                {/* Lock Status Alert Banner */}
+                {isMatchingLocked && (
+                  <div className="p-3.5 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/60 rounded-2xl flex items-center justify-between gap-3 text-purple-900 dark:text-purple-200">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-purple-200 dark:bg-purple-900/60 flex items-center justify-center shrink-0">
+                        <Lock className="w-4 h-4 text-purple-800 dark:text-purple-200" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-wider text-purple-800 dark:text-purple-300">
+                          Shortlist &amp; Display Curation Locked
+                        </p>
+                        <p className="text-[11px] text-purple-700 dark:text-purple-400 font-medium">
+                          Programmes are finalized for university application submission. Re-running matching, curation modifications, and shortlist changes are locked. Click &quot;Shortlist Locked&quot; to unlock.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Subscription & Shortlist Lock Control Bar */}
                 <div className="p-4 bg-gradient-to-r from-amber-500/10 via-transparent to-red-500/10 dark:from-amber-500/5 dark:to-red-500/5 rounded-2xl border border-amber-500/20 dark:border-amber-500/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -2243,772 +2534,1218 @@ export function StudentDetailModal({
                   </div>
                 )}
 
-                {/* Loading State */}
-                {(loadingMatching || runningMatching || matchingRun?.status === 'running' || matchingRun?.status === 'pending') && !matchingError && (
-                  <div className="p-8 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-3 animate-pulse">
-                    <Loader2 className="w-7 h-7 text-germany-red mx-auto animate-spin" />
-                    <p className="text-xs font-bold text-gray-400">
-                      {runningMatching || matchingRun?.status === 'running' || matchingRun?.status === 'pending'
-                        ? 'Running matching engine across all programmes for this student…'
-                        : 'Loading matching results…'}
-                    </p>
+                {/* Sub-navigation Tabs: Matched Programmes vs Other Universities / Catalogue */}
+                <div className="flex items-center justify-between border-b border-gray-200/80 dark:border-gray-800/80 pb-3 gap-2 flex-wrap">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => setMatchingSubTab('matches')}
+                      className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                        matchingSubTab === 'matches'
+                          ? 'bg-germany-red text-white shadow-xs'
+                          : 'bg-gray-100 dark:bg-[#151B27] text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      }`}
+                    >
+                      <Compass className="w-3.5 h-3.5" />
+                      <span>Matched Programmes</span>
+                      <span
+                        className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${
+                          matchingSubTab === 'matches'
+                            ? 'bg-white/20 text-white'
+                            : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                        }`}
+                      >
+                        {matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setMatchingSubTab('catalogue')}
+                      className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                        matchingSubTab === 'catalogue'
+                          ? 'bg-germany-red text-white shadow-xs'
+                          : 'bg-gray-100 dark:bg-[#151B27] text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      }`}
+                    >
+                      <Building2 className="w-3.5 h-3.5" />
+                      <span>Other Universities / Catalogue</span>
+                      {notepadProgrammes.length > 0 && (
+                        <span
+                          className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${
+                            matchingSubTab === 'catalogue'
+                              ? 'bg-white/20 text-white'
+                              : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
+                          }`}
+                        >
+                          {notepadProgrammes.length} in Notepad
+                        </span>
+                      )}
+                    </button>
                   </div>
-                )}
 
-                {/* No run yet */}
-                {!loadingMatching && !runningMatching && matchingRun?.status !== 'running' && matchingRun?.status !== 'pending' && !matchingError && !matchingRun && (
-                  <div className="p-8 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-2">
-                    <Compass className="w-8 h-8 text-gray-300 mx-auto" />
-                    <h4 className="font-display text-sm text-germany-black dark:text-white">No Matching Run Yet</h4>
-                    <p className="text-xs text-gray-500 max-w-sm mx-auto">
-                      Click &quot;Run Matching Engine&quot; above to evaluate this student&apos;s qualifications against German university programmes.
-                    </p>
-                  </div>
-                )}
+                  <p className="text-[11px] font-bold text-gray-400">
+                    {matchingSubTab === 'matches'
+                      ? `${filteredMatchingResults.length} matches • Page ${matchPage} of ${totalMatchPages}`
+                      : `Search German universities above • ${notepadProgrammes.length} saved in notepad below`}
+                  </p>
+                </div>
 
-                {/* Completed but 0 results */}
-                {!loadingMatching && !runningMatching && matchingRun?.status === 'completed' && matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length === 0 && !matchingError && (
-                  <div className="p-8 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-2">
-                    <Compass className="w-8 h-8 text-germany-red mx-auto" />
-                    <h4 className="font-display text-sm text-germany-black dark:text-white">Profile Under Manual Advising Review</h4>
-                    <p className="text-xs text-gray-500 max-w-sm mx-auto">
-                      No direct automated matches passed the strict criteria. Use the &quot;Recommend&quot; button above to handpick specialized universities, private partner options, or pathway programs for this student.
-                    </p>
-                  </div>
-                )}
-
-                {/* Matched Programmes + Right-side Curation Panel Container */}
-                {!loadingMatching && !runningMatching && matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length > 0 && (
-                  <div className="flex flex-col xl:flex-row items-start gap-4">
-                    {/* Left: Matching Results Grid */}
-                    <div className="flex-1 min-w-0 w-full">
-                      <div className={`grid grid-cols-1 ${showCurationPanel ? 'md:grid-cols-1 xl:grid-cols-2' : 'md:grid-cols-2'} gap-4`}>
-                        {matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').map((r: any) => {
-                          const progIdStr = String(r.programmeId || r.id);
-                          const isCurated = curatedProgrammeIds.includes(progIdStr);
-                          const isShortlisted = shortlistedProgIds.has(progIdStr);
-                          const maxDisplay = studentSubscription?.maxDisplayCount || 5;
-                          const isDisplayFull = curatedProgrammeIds.length >= maxDisplay;
-
-                          return (
-                            <div
-                              key={r.id}
-                              className={`p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border transition-colors space-y-3 shadow-xs ${
-                                isCurated
-                                  ? 'border-emerald-500/60 dark:border-emerald-500/40 ring-1 ring-emerald-500/20'
-                                  : 'border-gray-200/80 dark:border-gray-800/80 hover:border-germany-red/30'
-                              }`}
-                            >
-                              {/* Top: University, Program & Eligibility Status */}
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="space-y-0.5 min-w-0">
-                                  <span className="text-[10px] font-black uppercase tracking-wider text-germany-red">
-                                    #{r.rank} • {r.universityType ?? 'University'}
-                                  </span>
-                                  <h4 className="font-display text-sm sm:text-base text-germany-black dark:text-white leading-tight truncate">
-                                    {r.universityName}
-                                  </h4>
-                                  <p className="text-xs font-extrabold text-gray-600 dark:text-gray-300 leading-snug">{r.programName}</p>
-                                  <p className="text-[10px] text-gray-400 font-medium">{r.degree}</p>
-                                </div>
-
-                                <div className="text-right shrink-0 flex flex-col items-end gap-1">
-                                  <span
-                                    className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
-                                      MATCH_ELIGIBILITY_STYLES[r.eligibilityStatus] ?? 'bg-gray-100 text-gray-600 border-gray-200'
-                                    }`}
-                                  >
-                                    {MATCH_ELIGIBILITY_LABELS[r.eligibilityStatus] ?? r.eligibilityStatus}
-                                  </span>
-                                  {typeof r.relevanceScore === 'number' && (
-                                    <span className="text-[10px] font-black text-gray-400">
-                                      Score: {r.relevanceScore}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Location, Tuition, Language & Deadline */}
-                              <div className="grid grid-cols-2 gap-2 text-[11px] p-2.5 rounded-xl bg-[#F4F1EA]/70 dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800/80">
-                                <div>
-                                  <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Location</span>
-                                  <span className="font-bold text-gray-700 dark:text-gray-300">
-                                    📍 {[r.city, r.country].filter(Boolean).join(', ') || 'NA'}
-                                  </span>
-                                </div>
-                                <div>
-                                  <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Tuition</span>
-                                  <span className="font-bold text-gray-700 dark:text-gray-300">{r.tuitionPerSemester ?? 'NA'}</span>
-                                </div>
-                                <div>
-                                  <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Language</span>
-                                  <span className="font-bold text-gray-700 dark:text-gray-300">🌐 {r.language ?? 'NA'}</span>
-                                </div>
-                                <div>
-                                  <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Deadline</span>
-                                  <span className="font-bold text-gray-700 dark:text-gray-300">⏰ {r.nonEuDeadline ?? 'NA'}</span>
-                                </div>
-                              </div>
-
-                              {/* Why it matched */}
-                              {r.matchedReasons?.length > 0 && (
-                                <div className="pt-2 border-t border-[#EBE7E0] dark:border-gray-800/80">
-                                  <p className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-400 mb-0.5">✓ Why it matched</p>
-                                  <ul className="space-y-0.5">
-                                    {r.matchedReasons.slice(0, 2).map((reason: string, i: number) => (
-                                      <li key={i} className="text-[10px] text-gray-600 dark:text-gray-300 truncate">• {reason}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-
-                              {/* Requirement gaps */}
-                              {r.requirementGaps?.length > 0 && (
-                                <div>
-                                  <p className="text-[10px] font-extrabold text-amber-700 dark:text-amber-400 mb-0.5">⚠ Requirement Gaps</p>
-                                  <ul className="space-y-0.5">
-                                    {r.requirementGaps.slice(0, 2).map((gap: string, i: number) => (
-                                      <li key={i} className="text-[10px] text-gray-500 dark:text-gray-400 truncate">• {gap}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-
-                              {r.gpaFallbackUsed && (
-                                <p className="text-[10px] text-gray-400 italic">GPA: platform fallback (≤ 3.0) applied</p>
-                              )}
-
-                              {/* Action Footer: Website link, Shortlist indicator & Curation button */}
-                              <div className="pt-2 border-t border-gray-100 dark:border-gray-800/80 flex items-center justify-between gap-2 flex-wrap">
-                                <div>
-                                  {r.programUrl ? (
-                                    <a
-                                      href={r.programUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-germany-red hover:underline"
-                                    >
-                                      <ExternalLink className="w-3 h-3" /> Programme Website
-                                    </a>
-                                  ) : (
-                                    <span />
-                                  )}
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                  {isShortlisted && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60">
-                                      <Bookmark className="w-2.5 h-2.5 text-blue-600" />
-                                      <span>Student Shortlisted</span>
-                                    </span>
-                                  )}
-
-                                  <button
-                                    type="button"
-                                    onClick={() => handleToggleCuratedProgramme(progIdStr)}
-                                    disabled={savingCuration || (!isCurated && (!studentSubscription || isDisplayFull))}
-                                    className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed border ${
-                                      isCurated
-                                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300'
-                                        : 'bg-germany-black dark:bg-white text-white dark:text-germany-black border-transparent hover:opacity-90'
-                                    }`}
-                                    title={
-                                      !studentSubscription
-                                        ? 'Student must have an active subscription'
-                                        : !isCurated && isDisplayFull
-                                        ? `Plan display limit reached (${maxDisplay})`
-                                        : isCurated
-                                        ? 'Remove from student display'
-                                        : 'Add to student display'
-                                    }
-                                  >
-                                    {isCurated ? (
-                                      <>
-                                        <Check className="w-3 h-3 text-emerald-600" />
-                                        <span>On Student Display</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Plus className="w-3 h-3" />
-                                        <span>Add to Display</span>
-                                      </>
-                                    )}
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Right: Dedicated Programme Curation Panel */}
-                    {showCurationPanel && (
-                      <div className="w-full xl:w-80 shrink-0 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 p-4 shadow-xs space-y-4 xl:sticky xl:top-4">
-                        <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800">
-                          <div>
-                            <h4 className="font-display text-sm text-germany-black dark:text-white flex items-center gap-1.5">
-                              <span>Student Display Curation</span>
-                            </h4>
-                            <p className="text-[10px] font-bold text-gray-400">
-                              Programmes visible to student
+                {/* Main Content Area: Left (Matches / Catalogue) + Right (Student Display Curation) */}
+                <div className="flex flex-col xl:flex-row items-start gap-4">
+                  {/* Left Column */}
+                  <div className="flex-1 min-w-0 w-full">
+                    {matchingSubTab === 'matches' ? (
+                      <div className="space-y-4">
+                        {/* Loading State */}
+                        {(loadingMatching || runningMatching || matchingRun?.status === 'running' || matchingRun?.status === 'pending') && (
+                          <div className="p-8 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-3 animate-pulse">
+                            <Loader2 className="w-7 h-7 text-germany-red mx-auto animate-spin" />
+                            <p className="text-xs font-bold text-gray-400">
+                              {runningMatching || matchingRun?.status === 'running' || matchingRun?.status === 'pending'
+                                ? 'Running matching engine across all German university programmes for this student…'
+                                : 'Loading matching results…'}
                             </p>
                           </div>
-                          <span className="text-xs font-black px-2 py-0.5 rounded-full bg-germany-black text-white dark:bg-white dark:text-germany-black">
-                            {curatedProgrammeIds.length} / {studentSubscription?.maxDisplayCount || 5}
-                          </span>
-                        </div>
+                        )}
 
-                        {/* Auto-fill Button */}
-                        <button
-                          type="button"
-                          onClick={handleAutoFillTopMatches}
-                          disabled={savingCuration || !studentSubscription || matchingResults.length === 0}
-                          className="w-full flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-extrabold bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/30 rounded-xl transition-colors disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
-                          title="Fill student display with the highest ranked eligible programmes up to plan limit"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5 text-germany-gold" />
-                          <span>Auto-fill Top Matches</span>
-                        </button>
-
-                        {/* Curated Items List */}
-                        <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1">
-                          {curatedProgrammeIds.length === 0 ? (
-                            <div className="p-6 text-center text-xs text-gray-400 space-y-1 bg-gray-50 dark:bg-[#151B27] rounded-xl border border-dashed border-gray-200 dark:border-gray-800">
-                              <p className="font-bold text-gray-500 dark:text-gray-400">No programmes curated</p>
-                              <p className="text-[11px]">Click &quot;Add to Display&quot; on any match or use auto-fill above.</p>
-                            </div>
-                          ) : (
-                            curatedProgrammeIds.map((progId, idx) => {
-                              const matchItem = matchingResults.find(
-                                (r) => String(r.programmeId || r.id) === String(progId)
-                              );
-                              const isShortlisted = shortlistedProgIds.has(String(progId));
-
-                              return (
-                                <div
-                                  key={progId}
-                                  className="p-2.5 bg-gray-50 dark:bg-[#151B27] rounded-xl border border-gray-200/60 dark:border-gray-800/60 flex items-start justify-between gap-2 text-xs"
-                                >
-                                  <div className="min-w-0 space-y-0.5 flex-1">
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="text-[10px] font-black text-germany-red shrink-0">
-                                        #{idx + 1}
-                                      </span>
-                                      <span className="font-extrabold text-germany-black dark:text-white truncate block">
-                                        {matchItem?.universityName || 'University Programme'}
-                                      </span>
-                                    </div>
-                                    <p className="text-[11px] text-gray-600 dark:text-gray-300 truncate">
-                                      {matchItem?.programName || `Programme ID: ${progId}`}
-                                    </p>
-                                    <div className="flex items-center gap-1.5 pt-0.5">
-                                      {isShortlisted && (
-                                        <span className="text-[9px] font-extrabold px-1.5 py-0.2 bg-blue-100 text-blue-800 rounded">
-                                          ★ Shortlisted
-                                        </span>
-                                      )}
-                                      {matchItem?.relevanceScore && (
-                                        <span className="text-[9px] font-bold text-gray-400">
-                                          Score: {matchItem.relevanceScore}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  <button
-                                    type="button"
-                                    onClick={() => handleToggleCuratedProgramme(progId)}
-                                    title="Remove from student display"
-                                    className="p-1 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer shrink-0"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              );
-                            })
-                          )}
-                        </div>
-
-                        {/* Footer status */}
-                        <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-[10px] text-gray-400 font-bold">
-                          {savingCuration ? (
-                            <span className="flex items-center gap-1 text-amber-600">
-                              <Loader2 className="w-3 h-3 animate-spin" /> Saving changes…
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-1 text-emerald-600">
-                              <Check className="w-3 h-3" /> Synced to student
-                            </span>
-                          )}
-                          <span>Max {studentSubscription?.maxDisplayCount || 5}</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Add University Form Drawer / Autocomplete + Relevance Assist */}
-                {showAddUni && (
-                  <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-md space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Building2 className="w-4 h-4 text-germany-red" />
-                        <h4 className="text-xs font-extrabold text-germany-black dark:text-white uppercase tracking-wider">
-                          Recommend University Programme
-                        </h4>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setIsManualUniEntry(!isManualUniEntry)}
-                        className="text-[11px] font-bold text-gray-500 hover:text-germany-red dark:hover:text-germany-gold underline cursor-pointer"
-                      >
-                        {isManualUniEntry ? 'Switch to Catalog Search' : 'Manual Entry Fallback'}
-                      </button>
-                    </div>
-
-                    {/* Success Toast */}
-                    {recommendSuccessMsg && (
-                      <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl text-xs font-bold text-emerald-800 dark:text-emerald-200 flex items-center justify-between">
-                        <span>{recommendSuccessMsg}</span>
-                        <button type="button" onClick={() => setRecommendSuccessMsg(null)}>
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    )}
-
-                    {!isManualUniEntry ? (
-                      <div className="space-y-4">
-                        {/* Step 1: Searchable University Combobox */}
-                        <div className="relative">
-                          <label className="block text-[11px] font-black uppercase tracking-wider text-gray-500 mb-1">
-                            Step 1: Select University (Search Database)
-                          </label>
-
-                          <div className="relative">
-                            <input
-                              type="text"
-                              value={uniSearchQuery}
-                              onChange={(e) => {
-                                setUniSearchQuery(e.target.value);
-                                if (selectedUniversity && e.target.value !== selectedUniversity.name) {
-                                  setSelectedUniversity(null);
-                                  setUniProgrammes([]);
-                                  setSelectedProg(null);
-                                }
-                              }}
-                              onFocus={() => {
-                                if (uniSearchResults.length > 0) setShowUniDropdown(true);
-                              }}
-                              placeholder="Type university name (e.g. Technical University of Munich, TU Darmstadt, RWTH Aachen)..."
-                              className="w-full pl-9 pr-9 py-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
-                            />
-                            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3 pointer-events-none" />
-                            {loadingUniSearch && (
-                              <Loader2 className="w-4 h-4 text-germany-red animate-spin absolute right-3 top-3" />
-                            )}
-                            {!loadingUniSearch && uniSearchQuery && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setUniSearchQuery('');
-                                  setSelectedUniversity(null);
-                                  setUniSearchResults([]);
-                                  setUniProgrammes([]);
-                                  setSelectedProg(null);
-                                }}
-                                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            )}
+                        {/* No Run Yet */}
+                        {!loadingMatching && !runningMatching && matchingRun?.status !== 'running' && matchingRun?.status !== 'pending' && !matchingRun && (
+                          <div className="p-8 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-2">
+                            <Compass className="w-8 h-8 text-gray-300 mx-auto" />
+                            <h4 className="font-display text-sm text-germany-black dark:text-white">No Matching Run Yet</h4>
+                            <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                              Click &quot;Run Matching Engine&quot; above to evaluate this student&apos;s qualifications against German university programmes.
+                            </p>
                           </div>
+                        )}
 
-                          {/* Autocomplete suggestions dropdown */}
-                          {showUniDropdown && uniSearchResults.length > 0 && (
-                            <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-[#151B27] border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl z-30 max-h-56 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800/60">
-                              {uniSearchResults.map((u, i) => (
-                                <button
-                                  key={`${u.name}-${i}`}
-                                  type="button"
-                                  onClick={() => handleSelectUniversity(u)}
-                                  className="w-full text-left p-2.5 hover:bg-gray-50 dark:hover:bg-[#1C2436] transition-colors flex items-center justify-between cursor-pointer"
-                                >
-                                  <div>
-                                    <div className="text-xs font-extrabold text-germany-black dark:text-white">{u.name}</div>
-                                    <div className="text-[10px] font-medium text-gray-400">
-                                      {u.city ? `${u.city}, ` : ''}{u.country || 'Germany'}
-                                    </div>
-                                  </div>
-                                  <span className="text-[10px] font-black uppercase text-germany-red">Select →</span>
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
+                        {/* Completed with 0 Results */}
+                        {!loadingMatching && !runningMatching && matchingRun?.status === 'completed' && matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length === 0 && (
+                          <div className="p-8 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-3">
+                            <Compass className="w-8 h-8 text-germany-red mx-auto" />
+                            <h4 className="font-display text-sm text-germany-black dark:text-white">Profile Under Manual Advising Review</h4>
+                            <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                              No direct automated matches passed the strict criteria. Switch to &quot;Other Universities / Catalogue&quot; to handpick specialized universities or pathway programs.
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => setMatchingSubTab('catalogue')}
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-germany-red text-white text-xs font-extrabold rounded-xl hover:bg-germany-red/90 cursor-pointer"
+                            >
+                              <Building2 className="w-3.5 h-3.5" />
+                              <span>Explore University Catalogue</span>
+                            </button>
+                          </div>
+                        )}
 
-                        {/* Step 2: University Programmes with Relevance Assist */}
-                        {selectedUniversity && (
-                          <div className="space-y-3 pt-2 border-t border-gray-100 dark:border-gray-800/60">
-                            {/* University Header & Badges */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-gray-50 dark:bg-[#151B27] rounded-xl border border-gray-200/60 dark:border-gray-800/60">
-                              <div>
-                                <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">
-                                  Selected University
-                                </span>
-                                <h5 className="text-xs font-extrabold text-germany-black dark:text-white flex items-center gap-1.5">
-                                  <span>{selectedUniversity.name}</span>
-                                  {selectedUniversity.city && (
-                                    <span className="text-[11px] font-medium text-gray-400">({selectedUniversity.city})</span>
-                                  )}
-                                </h5>
-                              </div>
-
-                              {uniMeta && (
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-1">
-                                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                    <span>{uniMeta.relevantCount} Relevant</span>
-                                  </span>
-                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800/60 flex items-center gap-1">
-                                    <Ban className="w-3 h-3 text-red-600" />
-                                    <span>{uniMeta.disqualifiedCount} Disqualified</span>
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Programmes Loading */}
-                            {loadingProgrammes && (
-                              <div className="p-8 text-center space-y-2">
-                                <Loader2 className="w-6 h-6 text-germany-red animate-spin mx-auto" />
-                                <p className="text-xs font-bold text-gray-400">Loading university programmes &amp; checking relevance...</p>
-                              </div>
-                            )}
-
-                            {/* Programmes Error */}
-                            {programmesError && (
-                              <div className="p-3 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 text-xs font-bold rounded-xl border border-red-200 dark:border-red-900/40">
-                                {programmesError}
-                              </div>
-                            )}
-
-                            {/* Programmes List */}
-                            {!loadingProgrammes && !programmesError && uniProgrammes.length > 0 && (
-                              <div className="space-y-2.5">
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                                  <label className="text-[11px] font-black uppercase tracking-wider text-gray-500">
-                                    Step 2: Choose Programme (Green = Selectable • Red = Disqualified)
-                                  </label>
-
-                                  <div className="flex items-center gap-2">
-                                    {/* Tab Toggle */}
-                                    <button
-                                      type="button"
-                                      onClick={() => setProgFilterOnlyRelevant(false)}
-                                      className={`px-2 py-1 rounded-lg text-[10px] font-extrabold transition-colors cursor-pointer ${
-                                        !progFilterOnlyRelevant
-                                          ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black'
-                                          : 'bg-gray-100 dark:bg-[#1E2638] text-gray-600 dark:text-gray-300'
-                                      }`}
-                                    >
-                                      All ({uniProgrammes.length})
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => setProgFilterOnlyRelevant(true)}
-                                      className={`px-2 py-1 rounded-lg text-[10px] font-extrabold transition-colors cursor-pointer ${
-                                        progFilterOnlyRelevant
-                                          ? 'bg-emerald-600 text-white'
-                                          : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
-                                      }`}
-                                    >
-                                      Relevant Only ({uniProgrammes.filter(p => p.isRelevant).length})
-                                    </button>
-                                  </div>
-                                </div>
-
-                                {/* Programme Quick Filter Text Input */}
+                        {/* Matching Results Present */}
+                        {!loadingMatching && !runningMatching && matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length > 0 && (
+                          <div className="space-y-4">
+                            {/* Search & Filter Toolbar */}
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs">
+                              {/* Search input */}
+                              <div className="relative flex-1 min-w-[200px]">
                                 <input
                                   type="text"
-                                  value={progFilterText}
-                                  onChange={(e) => setProgFilterText(e.target.value)}
-                                  placeholder="Filter by keyword (e.g. Data, AI, Software, Systems)..."
-                                  className="w-full px-3 py-1.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 placeholder:text-gray-400 focus:outline-none focus:border-germany-red"
+                                  value={matchSearchQuery}
+                                  onChange={(e) => {
+                                    setMatchSearchQuery(e.target.value);
+                                    setMatchPage(1);
+                                  }}
+                                  placeholder="Search by programme, university, city, language..."
+                                  className="w-full pl-8 pr-8 py-2 bg-[#F8F9FA] dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 placeholder:text-gray-400 focus:outline-none focus:border-germany-red"
                                 />
+                                <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5 pointer-events-none" />
+                                {matchSearchQuery && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setMatchSearchQuery('');
+                                      setMatchPage(1);
+                                    }}
+                                    className="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
 
-                                {/* Scrollable List */}
-                                <div className="max-h-72 overflow-y-auto space-y-2 pr-1 divide-y divide-gray-100 dark:divide-gray-800/50">
-                                  {uniProgrammes
-                                    .filter((p) => {
-                                      if (progFilterOnlyRelevant && !p.isRelevant) return false;
-                                      if (progFilterText) {
-                                        const q = progFilterText.toLowerCase();
-                                        return (
-                                          p.programName.toLowerCase().includes(q) ||
-                                          (p.subject && p.subject.toLowerCase().includes(q))
-                                        );
-                                      }
-                                      return true;
-                                    })
-                                    .map((p) => {
-                                      const isSelected = selectedProg?.id === p.id;
-                                      return (
-                                        <div
-                                          key={p.id}
-                                          onClick={() => {
-                                            if (p.isRelevant) {
-                                              setSelectedProg(p);
-                                            }
-                                          }}
-                                          className={`pt-2.5 pb-2.5 px-3 rounded-xl transition-all border ${
-                                            p.isRelevant
-                                              ? isSelected
-                                                ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-500 ring-2 ring-emerald-500/20 cursor-pointer'
-                                                : 'bg-white dark:bg-[#151B27] border-gray-200/80 dark:border-gray-800/80 hover:border-emerald-400/80 hover:bg-emerald-50/20 dark:hover:bg-emerald-950/10 cursor-pointer'
-                                              : 'bg-gray-50/50 dark:bg-[#0B0E14] border-red-200/40 dark:border-red-950/40 opacity-55 cursor-not-allowed select-none'
-                                          }`}
-                                          title={
-                                            p.isRelevant
-                                              ? 'Click to select this relevant programme'
-                                              : 'Disqualified: This programme does not match the student\'s academic background'
-                                          }
-                                        >
-                                          <div className="flex items-start justify-between gap-3">
-                                            <div className="flex items-start gap-2.5 min-w-0">
-                                              {/* Radio Indicator */}
-                                              <div className="pt-0.5 shrink-0">
-                                                {p.isRelevant ? (
-                                                  <div
-                                                    className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
-                                                      isSelected
-                                                        ? 'border-emerald-600 bg-emerald-600 text-white'
-                                                        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111622]'
-                                                    }`}
-                                                  >
-                                                    {isSelected && <Check className="w-2.5 h-2.5" />}
-                                                  </div>
-                                                ) : (
-                                                  <Ban className="w-4 h-4 text-red-500/80 shrink-0" />
-                                                )}
-                                              </div>
+                              {/* University Filter Dropdown */}
+                              <div className="flex items-center gap-2">
+                                <select
+                                  value={matchUniFilter}
+                                  onChange={(e) => {
+                                    setMatchUniFilter(e.target.value);
+                                    setMatchPage(1);
+                                  }}
+                                  className="text-xs font-extrabold bg-[#F8F9FA] dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl px-3 py-2 text-gray-700 dark:text-gray-300 focus:outline-none focus:border-germany-red max-w-[220px] truncate cursor-pointer"
+                                >
+                                  <option value="ALL">
+                                    All Universities ({matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length})
+                                  </option>
+                                  {matchedUniversities.map((u) => (
+                                    <option key={u.name} value={u.name}>
+                                      {u.name} ({u.count})
+                                    </option>
+                                  ))}
+                                </select>
 
-                                              <div className="min-w-0">
-                                                <div className="text-xs font-extrabold text-germany-black dark:text-white leading-tight">
-                                                  {p.programName}
-                                                </div>
-                                                <div className="text-[11px] font-bold text-gray-500 flex items-center gap-2 pt-0.5 flex-wrap">
-                                                  <span>{p.degree}</span>
-                                                  <span>•</span>
-                                                  <span>🗣️ {p.language}</span>
-                                                  <span>•</span>
-                                                  <span>{p.tuition}</span>
-                                                </div>
-                                              </div>
-                                            </div>
+                                {(matchSearchQuery || matchUniFilter !== 'ALL') && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setMatchSearchQuery('');
+                                      setMatchUniFilter('ALL');
+                                      setMatchPage(1);
+                                    }}
+                                    className="text-xs font-bold text-germany-red hover:underline whitespace-nowrap cursor-pointer px-1"
+                                  >
+                                    Reset
+                                  </button>
+                                )}
+                              </div>
+                            </div>
 
-                                            {/* Relevance Badge */}
-                                            <div className="shrink-0 text-right">
-                                              {p.isRelevant ? (
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
-                                                  <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-                                                  <span>Relevant</span>
-                                                </span>
-                                              ) : (
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/40">
-                                                  <Ban className="w-3 h-3 text-red-500 shrink-0" />
-                                                  <span>Disqualified</span>
-                                                </span>
-                                              )}
-                                              <div className="text-[9px] font-medium text-gray-400 pt-0.5 truncate max-w-[140px]">
-                                                {p.subject ? p.subject : ''}
-                                              </div>
-                                            </div>
+                            {/* Empty Filter State */}
+                            {filteredMatchingResults.length === 0 ? (
+                              <div className="p-8 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-2">
+                                <Filter className="w-8 h-8 text-gray-300 mx-auto" />
+                                <h4 className="font-display text-sm text-germany-black dark:text-white">No Matching Programmes Found</h4>
+                                <p className="text-xs text-gray-500">
+                                  No programmes match your current filter criteria.
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setMatchSearchQuery('');
+                                    setMatchUniFilter('ALL');
+                                    setMatchPage(1);
+                                  }}
+                                  className="inline-flex items-center gap-1 text-xs font-extrabold text-germany-red hover:underline pt-2 cursor-pointer"
+                                >
+                                  Clear All Filters
+                                </button>
+                              </div>
+                            ) : (
+                              <>
+                                {/* Paginated Grid (12 items) */}
+                                <div className={`grid grid-cols-1 ${showCurationPanel ? 'md:grid-cols-1 xl:grid-cols-2' : 'md:grid-cols-2'} gap-4`}>
+                                  {paginatedMatchingResults.map((r: any) => {
+                                    const progIdStr = String(r.programmeId || r.id);
+                                    const isCurated = curatedProgrammeIds.includes(progIdStr);
+                                    const isShortlisted = shortlistedProgIds.has(progIdStr);
+                                    const maxDisplay = studentSubscription?.maxDisplayCount || 5;
+                                    const isDisplayFull = curatedProgrammeIds.length >= maxDisplay;
+
+                                    return (
+                                      <div
+                                        key={r.id}
+                                        className={`p-4 sm:p-5 rounded-2xl border transition-all space-y-3 shadow-xs ${
+                                          isMatchingLocked
+                                            ? 'bg-gray-50/70 dark:bg-[#0E121A]/60 border-gray-200/50 dark:border-gray-800/50 opacity-80'
+                                            : isShortlisted
+                                            ? 'bg-blue-50/20 dark:bg-[#0E121A] border-blue-400 dark:border-blue-700 ring-1 ring-blue-400/20'
+                                            : isCurated
+                                            ? 'bg-white dark:bg-[#0E121A] border-emerald-500/60 dark:border-emerald-500/40 ring-1 ring-emerald-500/20'
+                                            : 'bg-white dark:bg-[#0E121A] border-gray-200/80 dark:border-gray-800/80 hover:border-germany-red/30'
+                                        }`}
+                                      >
+                                        {/* Top: University, Program & Eligibility Status */}
+                                        <div className="flex items-start justify-between gap-2">
+                                          <div className="space-y-0.5 min-w-0">
+                                            <span className="text-[10px] font-black uppercase tracking-wider text-germany-red">
+                                              #{r.rank} • {r.universityType ?? 'University'}
+                                            </span>
+                                            <h4 className="font-display text-sm sm:text-base text-germany-black dark:text-white leading-tight truncate">
+                                              {r.universityName}
+                                            </h4>
+                                            <p className="text-xs font-extrabold text-gray-600 dark:text-gray-300 leading-snug">{r.programName}</p>
+                                            <p className="text-[10px] text-gray-400 font-medium">{r.degree}</p>
+                                          </div>
+
+                                          <div className="text-right shrink-0 flex flex-col items-end gap-1">
+                                            <span
+                                              className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                                                MATCH_ELIGIBILITY_STYLES[r.eligibilityStatus] ?? 'bg-gray-100 text-gray-600 border-gray-200'
+                                              }`}
+                                            >
+                                              {MATCH_ELIGIBILITY_LABELS[r.eligibilityStatus] ?? r.eligibilityStatus}
+                                            </span>
+                                            {isShortlisted && (
+                                              <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200 border border-blue-300 dark:border-blue-700">
+                                                ★ Shortlisted
+                                              </span>
+                                            )}
+                                            {typeof r.relevanceScore === 'number' && (
+                                              <span className="text-[10px] font-black text-gray-400">
+                                                Score: {r.relevanceScore}
+                                              </span>
+                                            )}
                                           </div>
                                         </div>
-                                      );
-                                    })}
-                                </div>
-                              </div>
-                            )}
 
-                            {!loadingProgrammes && !programmesError && uniProgrammes.length === 0 && (
-                              <div className="p-4 bg-gray-50 dark:bg-[#151B27] rounded-xl text-center text-xs font-bold text-gray-400">
-                                No programmes found for this university in the database.
-                              </div>
+                                        {/* Location, Tuition, Language & Deadline */}
+                                        <div className="grid grid-cols-2 gap-2 text-[11px] p-2.5 rounded-xl bg-[#F4F1EA]/70 dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800/80">
+                                          <div>
+                                            <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Location</span>
+                                            <span className="font-bold text-gray-700 dark:text-gray-300">
+                                              📍 {[r.city, r.country].filter(Boolean).join(', ') || 'NA'}
+                                            </span>
+                                          </div>
+                                          <div>
+                                            <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Tuition</span>
+                                            <span className="font-bold text-gray-700 dark:text-gray-300">{r.tuitionPerSemester ?? 'NA'}</span>
+                                          </div>
+                                          <div>
+                                            <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Language</span>
+                                            <span className="font-bold text-gray-700 dark:text-gray-300">🌐 {r.language ?? 'NA'}</span>
+                                          </div>
+                                          <div>
+                                            <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Deadline</span>
+                                            <span className="font-bold text-gray-700 dark:text-gray-300">⏰ {r.nonEuDeadline ?? 'NA'}</span>
+                                          </div>
+                                        </div>
+
+                                        {/* Why it matched */}
+                                        {r.matchedReasons?.length > 0 && (
+                                          <div className="pt-2 border-t border-[#EBE7E0] dark:border-gray-800/80">
+                                            <p className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-400 mb-0.5">✓ Why it matched</p>
+                                            <ul className="space-y-0.5">
+                                              {r.matchedReasons.slice(0, 2).map((reason: string, i: number) => (
+                                                <li key={i} className="text-[10px] text-gray-600 dark:text-gray-300 truncate">• {reason}</li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        )}
+
+                                        {/* Requirement gaps */}
+                                        {r.requirementGaps?.length > 0 && (
+                                          <div>
+                                            <p className="text-[10px] font-extrabold text-amber-700 dark:text-amber-400 mb-0.5">⚠ Requirement Gaps</p>
+                                            <ul className="space-y-0.5">
+                                              {r.requirementGaps.slice(0, 2).map((gap: string, i: number) => (
+                                                <li key={i} className="text-[10px] text-gray-500 dark:text-gray-400 truncate">• {gap}</li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        )}
+
+                                        {r.gpaFallbackUsed && (
+                                          <p className="text-[10px] text-gray-400 italic">GPA: platform fallback (≤ 3.0) applied</p>
+                                        )}
+
+                                        {/* Action Footer */}
+                                        <div className="pt-2 border-t border-gray-100 dark:border-gray-800/80 flex items-center justify-between gap-2 flex-wrap">
+                                          <div>
+                                            {r.programUrl ? (
+                                              <a
+                                                href={r.programUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-germany-red hover:underline"
+                                              >
+                                                <ExternalLink className="w-3 h-3" /> Programme Website
+                                              </a>
+                                            ) : (
+                                              <span />
+                                            )}
+                                          </div>
+
+                                          <div className="flex items-center gap-2">
+                                            <button
+                                              type="button"
+                                              onClick={() => handleDeleteMatchedProgramme(progIdStr)}
+                                              disabled={isMatchingLocked}
+                                              className={`p-1.5 rounded-lg transition-colors ${
+                                                isMatchingLocked
+                                                  ? 'text-gray-300 dark:text-gray-700 cursor-not-allowed opacity-40'
+                                                  : 'text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer'
+                                              }`}
+                                              title={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Dismiss / remove programme from matches'}
+                                            >
+                                              <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+
+                                            <button
+                                              type="button"
+                                              onClick={() => handleToggleCuratedProgramme(progIdStr)}
+                                              disabled={savingCuration || isMatchingLocked || (!isCurated && (!studentSubscription || isDisplayFull))}
+                                              className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl transition-colors border ${
+                                                isMatchingLocked
+                                                  ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
+                                                  : isCurated
+                                                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
+                                                  : 'bg-germany-black dark:bg-white text-white dark:text-germany-black border-transparent hover:opacity-90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
+                                              }`}
+                                              title={
+                                                isMatchingLocked
+                                                  ? 'Shortlist and curation are locked. Unlock to modify.'
+                                                  : !studentSubscription
+                                                  ? 'Student must have an active subscription'
+                                                  : !isCurated && isDisplayFull
+                                                  ? `Plan display limit reached (${maxDisplay})`
+                                                  : isCurated
+                                                  ? 'Remove from student display'
+                                                  : 'Add to student display'
+                                              }
+                                            >
+                                              {isMatchingLocked ? (
+                                                <>
+                                                  <Lock className="w-3 h-3 text-gray-400" />
+                                                  <span>Locked</span>
+                                                </>
+                                              ) : isCurated ? (
+                                                <>
+                                                  <Check className="w-3 h-3 text-emerald-600" />
+                                                  <span>On Student Display</span>
+                                                </>
+                                              ) : (
+                                                <>
+                                                  <Plus className="w-3 h-3" />
+                                                  <span>Add to Display</span>
+                                                </>
+                                              )}
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+
+                                {/* Pagination Controls */}
+                                {totalMatchPages > 1 && (
+                                  <div className="flex items-center justify-between pt-3 border-t border-gray-200/80 dark:border-gray-800/80">
+                                    <button
+                                      type="button"
+                                      onClick={() => setMatchPage((p) => Math.max(1, p - 1))}
+                                      disabled={matchPage <= 1}
+                                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-gray-200/80 dark:border-gray-800/80 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#151B27] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                                    >
+                                      <ChevronLeft className="w-3.5 h-3.5" />
+                                      <span>Previous</span>
+                                    </button>
+
+                                    <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500">
+                                      <span>
+                                        Page <strong className="text-germany-black dark:text-white">{matchPage}</strong> of{' '}
+                                        <strong className="text-germany-black dark:text-white">{totalMatchPages}</strong>
+                                      </span>
+                                      <span className="text-gray-300 dark:text-gray-700">•</span>
+                                      <span>({filteredMatchingResults.length} total)</span>
+                                    </div>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => setMatchPage((p) => Math.min(totalMatchPages, p + 1))}
+                                      disabled={matchPage >= totalMatchPages}
+                                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-gray-200/80 dark:border-gray-800/80 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#151B27] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                                    >
+                                      <span>Next</span>
+                                      <ChevronRight className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                )}
+                              </>
                             )}
                           </div>
                         )}
                       </div>
                     ) : (
-                      /* Manual Entry Fallback */
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <input
-                          type="text"
-                          placeholder="University (e.g. TU Darmstadt)"
-                          value={newUniName}
-                          onChange={(e) => setNewUniName(e.target.value)}
-                          className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
-                          required
-                        />
-                        <input
-                          type="text"
-                          placeholder="Program (e.g. M.Sc. Distributed Systems)"
-                          value={newUniProgram}
-                          onChange={(e) => setNewUniProgram(e.target.value)}
-                          className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
-                          required
-                        />
-                        <input
-                          type="text"
-                          placeholder="City / State (e.g. Darmstadt, Hesse)"
-                          value={newUniLocation}
-                          onChange={(e) => setNewUniLocation(e.target.value)}
-                          className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
-                        />
-                      </div>
-                    )}
+                      /* Other Universities / Catalogue Explorer & Notepad Below */
+                      <div className="space-y-6">
+                        {/* Catalogue Explorer Box */}
+                      <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-4">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div>
+                            <h4 className="font-display text-sm text-germany-black dark:text-white flex items-center gap-2">
+                              <Building2 className="w-4 h-4 text-germany-red" />
+                              <span>University Programme Catalogue Explorer</span>
+                            </h4>
+                            <p className="text-[11px] font-bold text-gray-400">
+                              Search any German university to evaluate all its programmes with student background alignment
+                            </p>
+                          </div>
 
-                    {/* Counsellor Note / Rationale Input */}
-                    <div className="pt-1">
-                      <input
-                        type="text"
-                        placeholder="Advisor fit note or rationale (optional, e.g. Perfect match for your 120 ECTS in CS)"
-                        value={recommendNote}
-                        onChange={(e) => setRecommendNote(e.target.value)}
-                        className="w-full p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
-                      />
-                    </div>
+                          <button
+                            type="button"
+                            onClick={() => setIsManualUniEntry(!isManualUniEntry)}
+                            className="text-xs font-bold text-germany-red hover:underline cursor-pointer"
+                          >
+                            {isManualUniEntry ? '← Back to Catalogue Search' : '+ Manual Entry Fallback'}
+                          </button>
+                        </div>
 
-                    {/* Drawer Footer Actions */}
-                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-gray-100 dark:border-gray-800/60">
-                      <div>
-                        {selectedProg && !isManualUniEntry && (
-                          <span className="text-xs font-extrabold text-emerald-700 dark:text-emerald-400 truncate max-w-xs block">
-                            Selected: {selectedProg.programName}
-                          </span>
+                        {recommendSuccessMsg && (
+                          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl text-xs font-bold text-emerald-800 dark:text-emerald-200 flex items-center justify-between">
+                            <span>{recommendSuccessMsg}</span>
+                            <button type="button" onClick={() => setRecommendSuccessMsg(null)}>
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
+
+                        {!isManualUniEntry ? (
+                          <div className="space-y-4">
+                            {/* Popular University Chips */}
+                            <div>
+                              <span className="text-[10px] font-black uppercase tracking-wider text-gray-400 block mb-1.5">
+                                Popular Universities:
+                              </span>
+                              <div className="flex flex-wrap gap-1.5">
+                                {[
+                                  'Munich University of Technology',
+                                  'RWTH Aachen University',
+                                  'Technical University of Berlin',
+                                  'Heidelberg University',
+                                  'Karlsruhe Institute of Technology',
+                                  'University of Stuttgart',
+                                ].map((quickUni) => (
+                                  <button
+                                    key={quickUni}
+                                    type="button"
+                                    onClick={() => handleSelectUniversity({ name: quickUni })}
+                                    className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
+                                      selectedUniversity?.name === quickUni
+                                        ? 'bg-germany-red text-white border-germany-red shadow-xs'
+                                        : 'bg-[#F8F9FA] dark:bg-[#151B27] text-gray-700 dark:text-gray-300 border-gray-200/80 dark:border-gray-800/80 hover:border-germany-red/50'
+                                    }`}
+                                  >
+                                    {quickUni}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Search Input */}
+                            <div className="relative">
+                              <label className="block text-[11px] font-black uppercase tracking-wider text-gray-500 mb-1">
+                                Search University (Live Database)
+                              </label>
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  value={uniSearchQuery}
+                                  onChange={(e) => {
+                                    setUniSearchQuery(e.target.value);
+                                    if (selectedUniversity && e.target.value !== selectedUniversity.name) {
+                                      setSelectedUniversity(null);
+                                      setUniProgrammes([]);
+                                      setSelectedProg(null);
+                                    }
+                                  }}
+                                  onFocus={() => {
+                                    if (uniSearchResults.length > 0) setShowUniDropdown(true);
+                                  }}
+                                  placeholder="Type university name (e.g. Technical University of Munich, RWTH Aachen)..."
+                                  className="w-full pl-9 pr-9 py-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
+                                />
+                                <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3 pointer-events-none" />
+                                {loadingUniSearch && (
+                                  <Loader2 className="w-4 h-4 text-germany-red animate-spin absolute right-3 top-3" />
+                                )}
+                                {!loadingUniSearch && uniSearchQuery && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setUniSearchQuery('');
+                                      setSelectedUniversity(null);
+                                      setUniSearchResults([]);
+                                      setUniProgrammes([]);
+                                      setSelectedProg(null);
+                                    }}
+                                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Autocomplete Dropdown */}
+                              {showUniDropdown && uniSearchResults.length > 0 && (
+                                <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-[#151B27] border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl z-20 max-h-56 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800/60">
+                                  {uniSearchResults.map((uni, idx) => (
+                                    <button
+                                      key={idx}
+                                      type="button"
+                                      onClick={() => handleSelectUniversity(uni)}
+                                      className="w-full text-left px-3.5 py-2.5 hover:bg-gray-50 dark:hover:bg-[#1E2638] transition-colors flex items-center justify-between gap-2"
+                                    >
+                                      <div>
+                                        <div className="text-xs font-extrabold text-germany-black dark:text-white">
+                                          {uni.name}
+                                        </div>
+                                        {(uni.city || uni.country) && (
+                                          <div className="text-[10px] text-gray-400">
+                                            📍 {[uni.city, uni.country].filter(Boolean).join(', ')}
+                                          </div>
+                                        )}
+                                      </div>
+                                      <span className="text-[10px] font-bold text-gray-400">Select →</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Selected University Details & Programmes List */}
+                            {selectedUniversity && (
+                              <div className="space-y-3 pt-2">
+                                <div className="p-3 bg-gray-50 dark:bg-[#151B27] rounded-xl border border-gray-200/80 dark:border-gray-800/80 flex items-center justify-between flex-wrap gap-2">
+                                  <div>
+                                    <span className="text-[10px] font-black uppercase text-germany-red block">Selected University</span>
+                                    <h5 className="font-display text-sm text-germany-black dark:text-white">{selectedUniversity.name}</h5>
+                                    {selectedUniversity.city && (
+                                      <span className="text-[11px] text-gray-400">📍 {selectedUniversity.city}</span>
+                                    )}
+                                  </div>
+
+                                  {uniMeta && (
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-1">
+                                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                        <span>{uniMeta.relevantCount} Relevant ({uniMeta.studentField || 'Field'})</span>
+                                      </span>
+                                      <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800/60 flex items-center gap-1">
+                                        <Ban className="w-3 h-3 text-red-600" />
+                                        <span>{uniMeta.disqualifiedCount} Disqualified</span>
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {loadingProgrammes && (
+                                  <div className="p-8 text-center space-y-2">
+                                    <Loader2 className="w-6 h-6 text-germany-red animate-spin mx-auto" />
+                                    <p className="text-xs font-bold text-gray-400">Loading university programmes & evaluating academic field...</p>
+                                  </div>
+                                )}
+
+                                {programmesError && (
+                                  <div className="p-3 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 text-xs font-bold rounded-xl border border-red-200 dark:border-red-900/40">
+                                    {programmesError}
+                                  </div>
+                                )}
+
+                                {!loadingProgrammes && !programmesError && uniProgrammes.length > 0 && (
+                                  <div className="space-y-2.5">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                      <input
+                                        type="text"
+                                        value={progFilterText}
+                                        onChange={(e) => setProgFilterText(e.target.value)}
+                                        placeholder="Filter by keyword (e.g. Data, AI, Systems)..."
+                                        className="px-3 py-1.5 bg-[#F8F9FA] dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 placeholder:text-gray-400 focus:outline-none focus:border-germany-red flex-1"
+                                      />
+
+                                      <div className="flex items-center gap-1.5 shrink-0">
+                                        <button
+                                          type="button"
+                                          onClick={() => setProgFilterOnlyRelevant(false)}
+                                          className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold transition-colors cursor-pointer ${
+                                            !progFilterOnlyRelevant
+                                              ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black'
+                                              : 'bg-gray-100 dark:bg-[#1E2638] text-gray-600 dark:text-gray-300'
+                                          }`}
+                                        >
+                                          All ({uniProgrammes.length})
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => setProgFilterOnlyRelevant(true)}
+                                          className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold transition-colors cursor-pointer ${
+                                            progFilterOnlyRelevant
+                                              ? 'bg-emerald-600 text-white'
+                                              : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
+                                          }`}
+                                        >
+                                          Relevant Only ({uniProgrammes.filter((p) => p.isRelevant).length})
+                                        </button>
+                                      </div>
+                                    </div>
+
+                                    {/* Scrollable list of programmes */}
+                                    <div className="max-h-[500px] overflow-y-auto space-y-2.5 pr-1">
+                                      {uniProgrammes
+                                        .filter((p) => {
+                                          if (progFilterOnlyRelevant && !p.isRelevant) return false;
+                                          if (progFilterText) {
+                                            const q = progFilterText.toLowerCase();
+                                            return (
+                                              p.programName?.toLowerCase().includes(q) ||
+                                              (p.subject && p.subject.toLowerCase().includes(q))
+                                            );
+                                          }
+                                          return true;
+                                        })
+                                        .map((p) => {
+                                          const progIdStr = String(p.id);
+                                          const isCurated = curatedProgrammeIds.includes(progIdStr);
+                                          const maxDisplay = studentSubscription?.maxDisplayCount || 5;
+                                          const isDisplayFull = curatedProgrammeIds.length >= maxDisplay;
+
+                                          // Check if this programme is already in the matchingResults
+                                          const isAlreadyMatched = matchingResults.some((m: any) => {
+                                            if (m.eligibilityStatus === 'NOT_ELIGIBLE') return false;
+                                            const matchProgId = String(m.programmeId || m.id);
+                                            if (matchProgId === progIdStr) return true;
+                                            const matchProgName = (m.programName || '').toLowerCase().trim();
+                                            const pProgName = (p.programName || '').toLowerCase().trim();
+                                            const matchUniName = (m.universityName || '').toLowerCase().trim();
+                                            const selectedUniName = (selectedUniversity?.name || '').toLowerCase().trim();
+                                            return (
+                                              matchProgName === pProgName &&
+                                              (matchUniName.includes(selectedUniName) || selectedUniName.includes(matchUniName))
+                                            );
+                                          });
+
+                                          // Check if already saved in Counsellor Notepad
+                                          const isAlreadyInNotepad = notepadProgrammes.some((u: any) => {
+                                            if (String(u.programmeId) === progIdStr) return true;
+                                            const uProg = (u.program || '').toLowerCase().trim();
+                                            const pProg = (p.programName || '').toLowerCase().trim();
+                                            const uUni = (u.name || '').toLowerCase().trim();
+                                            const sUni = (selectedUniversity?.name || '').toLowerCase().trim();
+                                            return uProg === pProg && (uUni.includes(sUni) || sUni.includes(uUni));
+                                          });
+
+                                          return (
+                                            <div
+                                              key={p.id}
+                                              className={`p-3.5 rounded-xl transition-all border ${
+                                                isMatchingLocked
+                                                  ? 'bg-gray-50/50 dark:bg-[#0B0E14] border-gray-200/50 dark:border-gray-800/50 opacity-70'
+                                                  : isAlreadyMatched
+                                                  ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-700/80 ring-1 ring-amber-400/20'
+                                                  : isAlreadyInNotepad
+                                                  ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-400 dark:border-emerald-700/80 ring-1 ring-emerald-500/20'
+                                                  : p.isRelevant
+                                                  ? 'bg-white dark:bg-[#151B27] border-gray-200/80 dark:border-gray-800/80 hover:border-emerald-400/80'
+                                                  : 'bg-gray-50/50 dark:bg-[#0B0E14] border-red-200/40 dark:border-red-950/40 opacity-60'
+                                              }`}
+                                            >
+                                              <div className="flex items-start justify-between gap-3">
+                                                <div className="min-w-0 space-y-1 flex-1">
+                                                  <div className="flex items-center gap-2 flex-wrap">
+                                                    <span className="text-xs font-extrabold text-germany-black dark:text-white leading-tight">
+                                                      {p.programName}
+                                                    </span>
+                                                    {isAlreadyMatched ? (
+                                                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-extrabold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700">
+                                                        <AlertCircle className="w-2.5 h-2.5 text-amber-600" />
+                                                        <span>Already in Matching List</span>
+                                                      </span>
+                                                    ) : isAlreadyInNotepad ? (
+                                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                                                        <Bookmark className="w-2.5 h-2.5 text-emerald-600" />
+                                                        <span>Saved in Notepad</span>
+                                                      </span>
+                                                    ) : p.isRelevant ? (
+                                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+                                                        <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+                                                        <span>Relevant to {uniMeta?.studentField || 'Field'}</span>
+                                                      </span>
+                                                    ) : (
+                                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/40">
+                                                        <Ban className="w-2.5 h-2.5 text-red-500" />
+                                                        <span>Disqualified (Non-matching field)</span>
+                                                      </span>
+                                                    )}
+                                                  </div>
+
+                                                  <div className="text-[11px] font-bold text-gray-500 flex items-center gap-2 pt-0.5 flex-wrap">
+                                                    <span>{p.degree}</span>
+                                                    <span>•</span>
+                                                    <span>🌐 {p.language}</span>
+                                                    <span>•</span>
+                                                    <span>💶 {p.tuition || 'Public tuition free'}</span>
+                                                    {p.deadline && (
+                                                      <>
+                                                        <span>•</span>
+                                                        <span>⏰ {p.deadline}</span>
+                                                      </>
+                                                    )}
+                                                  </div>
+                                                  {p.subject && (
+                                                    <p className="text-[10px] text-gray-400">Subject: {p.subject}</p>
+                                                  )}
+                                                </div>
+
+                                                {/* Action Buttons for Catalogue Programmes */}
+                                                <div className="shrink-0 flex items-center gap-1.5 flex-wrap justify-end">
+                                                  {isAlreadyMatched ? (
+                                                    <button
+                                                      disabled
+                                                      type="button"
+                                                      className="inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl bg-amber-100/70 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-300/60 dark:border-amber-800/60 cursor-not-allowed opacity-85"
+                                                      title="This programme was already evaluated by the matching engine and is in your Matched Programmes list"
+                                                    >
+                                                      <Check className="w-3 h-3 text-amber-600" />
+                                                      <span>Already in Matches</span>
+                                                    </button>
+                                                  ) : isAlreadyInNotepad ? (
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => { const el = document.getElementById('counsellor-notepad-section'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }}
+                                                      className="inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors cursor-pointer"
+                                                      title="Saved in your notepad. Click to view notepad."
+                                                    >
+                                                      <Check className="w-3 h-3 text-emerald-600" />
+                                                      <span>Saved in Notepad</span>
+                                                    </button>
+                                                  ) : p.isRelevant ? (
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => handleSaveProgrammeToNotepad(p)}
+                                                      disabled={savingRecommendation || isMatchingLocked}
+                                                      className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl border border-transparent transition-colors ${
+                                                        isMatchingLocked
+                                                          ? 'bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed opacity-50'
+                                                          : 'bg-germany-black dark:bg-white text-white dark:text-germany-black hover:opacity-90 cursor-pointer disabled:opacity-40'
+                                                      }`}
+                                                      title={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Save this programme to your Counsellor Notepad'}
+                                                    >
+                                                      {savingRecommendation ? (
+                                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                                      ) : isMatchingLocked ? (
+                                                        <Lock className="w-3 h-3 text-gray-400" />
+                                                      ) : (
+                                                        <Plus className="w-3 h-3" />
+                                                      )}
+                                                      <span>{isMatchingLocked ? 'Locked' : 'Add to Notepad'}</span>
+                                                    </button>
+                                                  ) : null}
+                                                </div>
+                                              </div>
+                                            </div>
+                                          );
+                                        })}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {!loadingProgrammes && !programmesError && uniProgrammes.length === 0 && (
+                                  <div className="p-6 bg-gray-50 dark:bg-[#151B27] rounded-xl text-center text-xs font-bold text-gray-400">
+                                    No programmes found in database for {selectedUniversity.name}. You can use manual entry fallback above.
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          /* Manual Entry Form */
+                          <form onSubmit={handleSaveRecommendation} className="space-y-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              <input
+                                type="text"
+                                placeholder="University (e.g. TU Darmstadt)"
+                                value={newUniName}
+                                onChange={(e) => setNewUniName(e.target.value)}
+                                className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
+                                required
+                              />
+                              <input
+                                type="text"
+                                placeholder="Program (e.g. M.Sc. Distributed Systems)"
+                                value={newUniProgram}
+                                onChange={(e) => setNewUniProgram(e.target.value)}
+                                className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
+                                required
+                              />
+                              <input
+                                type="text"
+                                placeholder="City / State (e.g. Darmstadt, Hesse)"
+                                value={newUniLocation}
+                                onChange={(e) => setNewUniLocation(e.target.value)}
+                                className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
+                              />
+                            </div>
+
+                            <input
+                              type="text"
+                              placeholder="Advisor fit note or rationale (optional)"
+                              value={recommendNote}
+                              onChange={(e) => setRecommendNote(e.target.value)}
+                              className="w-full p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
+                            />
+
+                            <div className="flex justify-end gap-2">
+                              <button
+                                type="submit"
+                                disabled={savingRecommendation || !newUniName.trim() || !newUniProgram.trim()}
+                                className="flex items-center gap-1.5 px-4 py-2 bg-germany-red text-white text-xs font-extrabold rounded-xl hover:bg-germany-red/90 cursor-pointer disabled:opacity-40"
+                              >
+                                {savingRecommendation ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                                <span>Add Programme to Recommendations</span>
+                              </button>
+                            </div>
+                          </form>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowAddUni(false);
-                            setSelectedUniversity(null);
-                            setSelectedProg(null);
-                            setRecommendNote('');
-                          }}
-                          className="py-1.5 px-3 text-xs font-extrabold bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-[#1E2638] shadow-xs cursor-pointer"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="button"
-                          disabled={
-                            savingRecommendation ||
-                            (isManualUniEntry
-                              ? !newUniName.trim() || !newUniProgram.trim()
-                              : !selectedProg || !selectedProg.isRelevant)
-                          }
-                          onClick={() => handleSaveRecommendation()}
-                          className="neu-btn-primary py-1.5 px-4 text-xs font-extrabold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1.5"
-                        >
-                          {savingRecommendation ? (
-                            <>
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              <span>Saving…</span>
-                            </>
+                        {/* Counsellor Saved Programmes / Notepad View (Below Catalogue) */}
+                        <div id="counsellor-notepad-section" className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-4">
+                          <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-gray-100 dark:border-gray-800">
+                            <div>
+                              <h4 className="font-display text-sm text-germany-black dark:text-white flex items-center gap-1.5">
+                                <Bookmark className="w-4 h-4 text-germany-red" />
+                                <span>Counsellor Saved Programmes &amp; Notepad</span>
+                              </h4>
+                              <p className="text-[11px] font-bold text-gray-400">
+                                Your candidate scratchpad. Click &quot;+ Add to Display&quot; on any card below to curate it into the student display.
+                              </p>
+                            </div>
+                            <span className="text-xs font-black px-2.5 py-1 rounded-full bg-germany-black text-white dark:bg-white dark:text-germany-black">
+                              {notepadProgrammes.length} saved
+                            </span>
+                          </div>
+
+                          {notepadProgrammes.length === 0 ? (
+                            <div className="p-8 text-center space-y-2 bg-gray-50/60 dark:bg-[#151B27]/40 rounded-xl border border-dashed border-gray-200 dark:border-gray-800">
+                              <Bookmark className="w-7 h-7 text-gray-400 mx-auto" />
+                              <h5 className="font-display text-xs text-gray-600 dark:text-gray-300">Your Notepad is Empty</h5>
+                              <p className="text-[11px] text-gray-400 max-w-sm mx-auto">
+                                Search any university in the box above and click &quot;+ Add to Notepad&quot; to save candidate programmes here.
+                              </p>
+                            </div>
                           ) : (
-                            <span>Save Recommendation</span>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {notepadProgrammes.map((uni, idx) => {
+                                const progIdStr = String(uni.programmeId || uni.id);
+                                const isCurated = curatedProgrammeIds.includes(progIdStr);
+                                const isShortlisted = shortlistedProgIds.has(progIdStr);
+                                const maxDisplay = studentSubscription?.maxDisplayCount || 5;
+                                const isDisplayFull = curatedProgrammeIds.length >= maxDisplay;
+
+                                return (
+                                  <div
+                                    key={uni.id}
+                                    className={`p-4 rounded-2xl border transition-all space-y-3 ${
+                                      isShortlisted
+                                        ? 'bg-blue-50/30 dark:bg-blue-950/20 border-blue-400 dark:border-blue-700 ring-1 ring-blue-400/20'
+                                        : isCurated
+                                        ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-500 ring-1 ring-emerald-500/20'
+                                        : 'bg-[#FCFBF8] dark:bg-[#151B27] border-gray-200/80 dark:border-gray-800/80 hover:border-germany-red/30'
+                                    }`}
+                                  >
+                                    {/* Header: Type, Rank & Status */}
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="space-y-0.5 min-w-0 flex-1">
+                                        <span className="text-[10px] font-black uppercase tracking-wider text-germany-red">
+                                          #{idx + 1} • {uni.type || 'Public University'}
+                                        </span>
+                                        <h4 className="font-display text-sm sm:text-base text-germany-black dark:text-white leading-tight truncate">
+                                          {uni.name}
+                                        </h4>
+                                        <p className="text-xs font-extrabold text-gray-600 dark:text-gray-300 leading-snug">
+                                          {uni.program}
+                                        </p>
+                                        <p className="text-[10px] text-gray-400 font-medium">{uni.degree}</p>
+                                      </div>
+
+                                      <div className="text-right shrink-0 flex flex-col items-end gap-1">
+                                        {isShortlisted ? (
+                                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200 border border-blue-300 dark:border-blue-700">
+                                            ★ Shortlisted
+                                          </span>
+                                        ) : (
+                                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full border bg-germany-gold/20 text-germany-black dark:text-[#FDE68A] border-germany-gold/40">
+                                            {uni.status ? uni.status.toUpperCase() : 'SAVED'}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Location, Tuition, Language & Deadline */}
+                                    <div className="grid grid-cols-2 gap-2 text-[11px] p-2.5 rounded-xl bg-[#F4F1EA]/70 dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800/80">
+                                      <div>
+                                        <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Location</span>
+                                        <span className="font-bold text-gray-700 dark:text-gray-300">📍 {uni.location || 'Germany'}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Tuition</span>
+                                        <span className="font-bold text-gray-700 dark:text-gray-300">{uni.tuition || '€0 / semester'}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Language</span>
+                                        <span className="font-bold text-gray-700 dark:text-gray-300">🌐 {uni.language || 'English'}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-400 font-extrabold block text-[10px] uppercase">Deadline</span>
+                                        <span className="font-bold text-gray-700 dark:text-gray-300">⏰ {uni.deadline || 'July 15'}</span>
+                                      </div>
+                                    </div>
+
+                                    {uni.notes && (
+                                      <div className="p-2 bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 rounded-xl text-[11px] text-amber-900 dark:text-amber-200 font-medium italic">
+                                        &quot;{uni.notes}&quot;
+                                      </div>
+                                    )}
+
+                                    {/* Action Footer */}
+                                    <div className="pt-2 border-t border-gray-100 dark:border-gray-800/80 flex items-center justify-between gap-2 flex-wrap">
+                                      <div className="flex items-center gap-2">
+                                        {uni.programUrl ? (
+                                          <a
+                                            href={uni.programUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-germany-red hover:underline"
+                                          >
+                                            <ExternalLink className="w-3 h-3" /> Website
+                                          </a>
+                                        ) : (
+                                          <span />
+                                        )}
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteRecommendation(uni.id)}
+                                          disabled={isMatchingLocked}
+                                          title={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Remove programme from notepad'}
+                                          className={`p-1.5 rounded-lg transition-colors ${
+                                            isMatchingLocked
+                                              ? 'text-gray-300 dark:text-gray-700 cursor-not-allowed opacity-40'
+                                              : 'text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer'
+                                          }`}
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+
+                                      <div className="flex items-center gap-2">
+                                        <button
+                                          type="button"
+                                          onClick={() => handleToggleCuratedProgramme(progIdStr)}
+                                          disabled={savingCuration || isMatchingLocked || (!isCurated && (!studentSubscription || isDisplayFull))}
+                                          className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl transition-colors border ${
+                                            isMatchingLocked
+                                              ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
+                                              : isCurated
+                                              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
+                                              : 'bg-germany-black dark:bg-white text-white dark:text-germany-black border-transparent hover:opacity-90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
+                                          }`}
+                                          title={
+                                            isMatchingLocked
+                                              ? 'Shortlist and curation are locked. Unlock to modify.'
+                                              : !studentSubscription
+                                              ? 'Student must have an active subscription'
+                                              : !isCurated && isDisplayFull
+                                              ? `Plan display limit reached (${maxDisplay}). Remove an item from Student Display Curation to make space.`
+                                              : isCurated
+                                              ? 'Remove from student display (frees up a display slot)'
+                                              : 'Add to student display'
+                                          }
+                                        >
+                                          {isMatchingLocked ? (
+                                            <>
+                                              <Lock className="w-3 h-3 text-gray-400" />
+                                              <span>Locked</span>
+                                            </>
+                                          ) : isCurated ? (
+                                            <>
+                                              <Check className="w-3 h-3 text-emerald-600" />
+                                              <span>On Display</span>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <Plus className="w-3 h-3" />
+                                              <span>Add to Display</span>
+                                            </>
+                                          )}
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           )}
-                        </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right: Dedicated Programme Curation Panel */}
+                  {showCurationPanel && (
+                    <div className="w-full xl:w-80 shrink-0 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 p-4 shadow-xs space-y-4 xl:sticky xl:top-4">
+                      <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800">
+                        <div>
+                          <h4 className="font-display text-sm text-germany-black dark:text-white flex items-center gap-1.5">
+                            <span>Student Display Curation</span>
+                          </h4>
+                          <p className="text-[10px] font-bold text-gray-400">
+                            Programmes visible to student
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-0.5">
+                          <span className="text-xs font-black px-2 py-0.5 rounded-full bg-germany-black text-white dark:bg-white dark:text-germany-black">
+                            {curatedProgrammeIds.length} / {studentSubscription?.maxDisplayCount || 5}
+                          </span>
+                          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                            ★ {studentShortlistCount} / {studentSubscription?.maxShortlistCount || 3} shortlisted
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Auto-fill Button */}
+                      <button
+                        type="button"
+                        onClick={handleAutoFillTopMatches}
+                        disabled={savingCuration || isMatchingLocked || !studentSubscription || matchingResults.length === 0}
+                        className={`w-full flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-extrabold rounded-xl transition-colors ${
+                          isMatchingLocked
+                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
+                            : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/30 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
+                        }`}
+                        title={
+                          isMatchingLocked
+                            ? 'Shortlist and curation are locked. Unlock to modify.'
+                            : 'Fill student display with the highest ranked eligible programmes up to plan limit'
+                        }
+                      >
+                        {isMatchingLocked ? (
+                          <Lock className="w-3.5 h-3.5 text-gray-400" />
+                        ) : (
+                          <Sparkles className="w-3.5 h-3.5 text-germany-gold" />
+                        )}
+                        <span>{isMatchingLocked ? 'Auto-fill Locked' : 'Auto-fill Top Matches'}</span>
+                      </button>
+
+                      {/* Curated Items List */}
+                      <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1">
+                        {curatedProgrammeIds.length === 0 ? (
+                          <div className="p-6 text-center text-xs text-gray-400 space-y-1 bg-gray-50 dark:bg-[#151B27] rounded-xl border border-dashed border-gray-200 dark:border-gray-800">
+                            <p className="font-bold text-gray-500 dark:text-gray-400">No programmes curated</p>
+                            <p className="text-[11px]">Click &quot;Add to Display&quot; on any match or use auto-fill above.</p>
+                          </div>
+                        ) : (
+                          curatedProgrammeIds.map((progId, idx) => {
+                            const matchItem = matchingResults.find(
+                              (r) => String(r.programmeId || r.id) === String(progId)
+                            );
+                            const curatedItem = curatedProgrammes.find(
+                              (cp) => String(cp.programmeId) === String(progId)
+                            );
+                            const isShortlisted = shortlistedProgIds.has(String(progId));
+                            const uniName = matchItem?.universityName || curatedItem?.universityName || 'University';
+                            const progName = matchItem?.programName || curatedItem?.programName || `Programme ID: ${progId}`;
+
+                            return (
+                              <div
+                                key={progId}
+                                className="p-2.5 bg-gray-50 dark:bg-[#151B27] rounded-xl border border-gray-200/60 dark:border-gray-800/60 flex items-start justify-between gap-2 text-xs"
+                              >
+                                <div className="min-w-0 space-y-0.5 flex-1">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[10px] font-black text-germany-red shrink-0">
+                                      #{idx + 1}
+                                    </span>
+                                    <span className="font-extrabold text-germany-black dark:text-white truncate block">
+                                      {uniName}
+                                    </span>
+                                  </div>
+                                  <p className="text-[11px] text-gray-600 dark:text-gray-300 truncate">
+                                    {progName}
+                                  </p>
+                                  <div className="flex items-center gap-1.5 pt-0.5">
+                                    {isShortlisted && (
+                                      <span className="text-[9px] font-extrabold px-1.5 py-0.2 bg-blue-100 text-blue-800 rounded">
+                                        ★ Shortlisted
+                                      </span>
+                                    )}
+                                    {matchItem?.relevanceScore && (
+                                      <span className="text-[9px] font-bold text-gray-400">
+                                        Score: {matchItem.relevanceScore}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
+                                  {/* Shortlist Toggle Button on the Student Display Curation card */}
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleToggleShortlist({
+                                        programmeId: Number(progId),
+                                        universityName: uniName,
+                                        programName: progName,
+                                        degree: matchItem?.degree || curatedItem?.degree || 'Master',
+                                        city: matchItem?.city || curatedItem?.city || 'Germany',
+                                        country: matchItem?.country || curatedItem?.country || 'Germany',
+                                        tuitionPerSemester: matchItem?.tuitionPerSemester || curatedItem?.tuitionPerSemester || 'Free / None',
+                                        nonEuDeadline: matchItem?.nonEuDeadline || curatedItem?.nonEuDeadline || 'NA',
+                                        universityType: matchItem?.universityType || curatedItem?.universityType || 'Public University',
+                                        relevanceScore: matchItem?.relevanceScore || 90,
+                                      })
+                                    }
+                                    disabled={togglingShortlist === String(progId) || isMatchingLocked}
+                                    className={`inline-flex items-center gap-1 text-[10px] font-extrabold py-1 px-2 rounded-lg transition-colors border ${
+                                      isMatchingLocked
+                                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
+                                        : isShortlisted
+                                        ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
+                                        : 'bg-white dark:bg-[#151B27] text-gray-700 dark:text-gray-300 border-gray-200/80 dark:border-gray-800 hover:border-blue-400 hover:text-blue-600 cursor-pointer'
+                                    }`}
+                                    title={
+                                      isMatchingLocked
+                                        ? 'Shortlist is locked. Unlock to modify.'
+                                        : isShortlisted
+                                        ? 'Click to remove from student shortlist'
+                                        : 'Add to student shortlist'
+                                    }
+                                  >
+                                    {togglingShortlist === String(progId) ? (
+                                      <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                                    ) : isMatchingLocked ? (
+                                      <Lock className="w-2.5 h-2.5 text-gray-400" />
+                                    ) : (
+                                      <Bookmark className={`w-2.5 h-2.5 ${isShortlisted ? 'fill-current text-blue-600' : ''}`} />
+                                    )}
+                                    <span>{isMatchingLocked && isShortlisted ? 'Shortlisted (Locked)' : isMatchingLocked ? 'Locked' : isShortlisted ? 'Shortlisted' : 'Shortlist'}</span>
+                                  </button>
+
+                                  {/* Remove from Curation / Display Button */}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleCuratedProgramme(progId)}
+                                    disabled={isMatchingLocked}
+                                    title={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Remove from student display (frees up a display slot)'}
+                                    className={`p-1 rounded-lg transition-colors shrink-0 ${
+                                      isMatchingLocked
+                                        ? 'text-gray-300 dark:text-gray-700 cursor-not-allowed opacity-40'
+                                        : 'text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer'
+                                    }`}
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+
+                      {/* Footer status */}
+                      <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-[10px] text-gray-400 font-bold">
+                        {savingCuration ? (
+                          <span className="flex items-center gap-1 text-amber-600">
+                            <Loader2 className="w-3 h-3 animate-spin" /> Saving changes…
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1 text-emerald-600">
+                            <Check className="w-3 h-3" /> Synced to student
+                          </span>
+                        )}
+                        <span>Max {studentSubscription?.maxDisplayCount || 5}</span>
                       </div>
                     </div>
-                  </div>
-                )}
-
-                {/* Custom Counsellor Recommendations (if any) */}
-                {universities.length > 0 && (
-                  <div className="space-y-3 pt-3">
-                    <h4 className="text-xs font-extrabold text-germany-black dark:text-white uppercase tracking-wider">
-                      Counsellor Manual Recommendations ({universities.length})
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {universities.map((uni) => {
-                        const statusColors = {
-                          recommended: 'bg-germany-gold/20 text-germany-black dark:text-[#FDE68A] border-germany-gold/40',
-                          shortlisted: 'bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800/60',
-                          applied: 'bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-800/60',
-                          offer_received: 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/60 font-black',
-                          waitlisted: 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/60',
-                        };
-
-                        return (
-                          <div key={uni.id} className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs hover:border-germany-red/30 space-y-3 transition-colors">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="space-y-0.5 min-w-0">
-                                <span className="text-[10px] font-black uppercase tracking-wider text-germany-red">
-                                  {uni.type}
-                                </span>
-                                <h4 className="font-display text-sm sm:text-base text-germany-black dark:text-white leading-tight">
-                                  {uni.name}
-                                </h4>
-                                <p className="text-xs font-extrabold text-gray-600 dark:text-gray-300">{uni.program}</p>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteRecommendation(uni.id)}
-                                title="Remove recommendation"
-                                className="p-1 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer shrink-0"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-
-                            <div className="flex items-center justify-between text-xs font-bold text-gray-500 pt-1">
-                              <span>📍 {uni.location}</span>
-                              <span className="text-germany-black dark:text-white font-extrabold">{uni.tuition}</span>
-                            </div>
-
-                            {uni.notes && (
-                              <div className="p-2 bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 rounded-xl text-[11px] text-amber-900 dark:text-amber-200 font-medium italic">
-                                &quot;{uni.notes}&quot;
-                              </div>
-                            )}
-
-                            <div className="pt-2 border-t border-[#EBE7E0] dark:border-gray-800/80 flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Status:</span>
-                                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${statusColors[uni.status]}`}>
-                                  {uni.status.replace('_', ' ').toUpperCase()}
-                                </span>
-                              </div>
-
-                              <select
-                                value={uni.status}
-                                onChange={(e) => handleUpdateUniStatus(uni.id, e.target.value as UniversityMatch['status'])}
-                                className="text-[11px] font-extrabold py-1 px-2.5 text-germany-black dark:text-white cursor-pointer bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl shadow-xs"
-                              >
-                                <option value="recommended">Recommended</option>
-                                <option value="shortlisted">Shortlisted</option>
-                                <option value="applied">Applied</option>
-                                <option value="offer_received">Offer Letter Received 🎓</option>
-                                <option value="waitlisted">Waitlisted</option>
-                              </select>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             )}
 
-            {/* ========================================================
-                TAB 4: STRATEGY NOTES & TASKS
-            ======================================================== */}
             {/* ========================================================
                 TAB 4: STRATEGY NOTES & TASKS
             ======================================================== */}
