@@ -14,6 +14,7 @@ import {
   AlertCircle 
 } from 'lucide-react';
 import { login, googleAuth } from '@/lib/auth';
+import { getSafeRedirectUrl } from '@/lib/safeRedirect';
 import { GoogleLogin } from '@react-oauth/google';
 import "@/app/components/landing/landing.css";
 import { playfair, madisonSauvage, celinda } from "@/app/components/landing/fonts";
@@ -35,15 +36,11 @@ export default function Login() {
 
     try {
       const data = await login(email, password);
-      const redirectUrl = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('redirect') : null;
-      if (redirectUrl && redirectUrl.startsWith('/')) {
-        router.push(redirectUrl);
-      } else if (data.user.role === 'student') {
-        router.push('/dashboard/student');
-      } else {
-        const targetDashboard = data.user.role === 'superadmin' ? 'super-admin' : data.user.role;
-        router.push(`/dashboard/${targetDashboard}`);
-      }
+      const defaultDashboard = data.user.role === 'student'
+        ? '/dashboard/student'
+        : `/dashboard/${data.user.role === 'superadmin' ? 'super-admin' : data.user.role}`;
+      const rawRedirect = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('redirect') : null;
+      router.push(getSafeRedirectUrl(rawRedirect, defaultDashboard));
     } catch (err: any) {
       setError(err.message || 'Invalid email or password. Please check your credentials.');
     } finally {
@@ -59,15 +56,11 @@ export default function Login() {
     
     try {
       const data = await googleAuth(credentialResponse.credential);
-      const redirectUrl = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('redirect') : null;
-      if (redirectUrl && redirectUrl.startsWith('/')) {
-        router.push(redirectUrl);
-      } else if (data.user.role === 'student') {
-        router.push('/dashboard/student');
-      } else {
-        const targetDashboard = data.user.role === 'superadmin' ? 'super-admin' : data.user.role;
-        router.push(`/dashboard/${targetDashboard}`);
-      }
+      const defaultDashboard = data.user.role === 'student'
+        ? '/dashboard/student'
+        : `/dashboard/${data.user.role === 'superadmin' ? 'super-admin' : data.user.role}`;
+      const rawRedirect = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('redirect') : null;
+      router.push(getSafeRedirectUrl(rawRedirect, defaultDashboard));
     } catch (err: any) {
       setError(err.message || 'Google authentication failed.');
     } finally {

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { signup, googleAuth } from '@/lib/auth';
+import { getSafeRedirectUrl, isSafeRedirectUrl } from '@/lib/safeRedirect';
 
 export default function Signup() {
   const [firstName, setFirstName] = useState('');
@@ -31,8 +32,9 @@ export default function Signup() {
       // fire off the signup request
       await signup(firstName, lastName, email, password);
       
-      const redirectUrl = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('redirect') : null;
-      router.push(redirectUrl ? `/login?redirect=${encodeURIComponent(redirectUrl)}` : '/login');
+      const rawRedirect = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('redirect') : null;
+      const safeRedirect = isSafeRedirectUrl(rawRedirect) ? rawRedirect.trim() : null;
+      router.push(safeRedirect ? `/login?redirect=${encodeURIComponent(safeRedirect)}` : '/login');
     } catch (err: any) {
       // just echo whatever the backend complained about
       setError(err.message || 'Signup failed. Please try again.');
@@ -49,15 +51,11 @@ export default function Signup() {
     
     try {
       const data = await googleAuth(credentialResponse.credential);
-      const redirectUrl = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('redirect') : null;
-      if (redirectUrl && redirectUrl.startsWith('/')) {
-        router.push(redirectUrl);
-      } else if (data.user.role === 'student') {
-        router.push('/dashboard/student');
-      } else {
-        const targetDashboard = data.user.role === 'superadmin' ? 'super-admin' : data.user.role;
-        router.push(`/dashboard/${targetDashboard}`);
-      }
+      const defaultDashboard = data.user.role === 'student'
+        ? '/dashboard/student'
+        : `/dashboard/${data.user.role === 'superadmin' ? 'super-admin' : data.user.role}`;
+      const rawRedirect = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('redirect') : null;
+      router.push(getSafeRedirectUrl(rawRedirect, defaultDashboard));
     } catch (err: any) {
       setError(err.message || 'Google signup failed.');
     } finally {

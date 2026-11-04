@@ -89,7 +89,6 @@ export const DHLBookingForm = () => {
 
       const success = await startServiceCheckout({
         planKey: 'DHL_EXPRESS',
-        customAmount: totalPrice,
         studentInputs: {
           packetCount,
           destinationType,
@@ -104,7 +103,6 @@ export const DHLBookingForm = () => {
           state,
           pincode,
           pickupDate,
-          totalPrice,
         },
         returnUrl: '/services/dhl-express#booking',
       });

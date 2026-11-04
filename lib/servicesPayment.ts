@@ -5,7 +5,6 @@ const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost
 export interface ServiceCheckoutOptions {
   planKey: string;
   studentInputs?: Record<string, any>;
-  customAmount?: number;
   returnUrl?: string;
   onSuccess?: (result: any) => void;
   onError?: (error: Error) => void;
@@ -56,7 +55,6 @@ export function clearPendingServiceOrder() {
 export async function startServiceCheckout({
   planKey,
   studentInputs = {},
-  customAmount,
   returnUrl,
   onSuccess,
   onError,
@@ -74,7 +72,6 @@ export async function startServiceCheckout({
           JSON.stringify({
             planKey,
             studentInputs,
-            customAmount,
             redirectUrl: currentPath,
             savedAt: Date.now(),
           }),
@@ -104,7 +101,6 @@ export async function startServiceCheckout({
       body: JSON.stringify({
         planKey,
         studentInputs,
-        customAmount,
       }),
     });
 
