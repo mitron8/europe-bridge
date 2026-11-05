@@ -42,6 +42,8 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
+  BookOpen,
+  Info,
 } from 'lucide-react';
 import { AssignedStudent } from './CounsellorStudents';
 import { StudentFullProfileView } from './StudentFullProfileView';
@@ -51,7 +53,7 @@ export interface StudentDocument {
   id: string;
   name: string;
   category: string;
-  section: 'aps' | 'general' | 'lor_sop_cv';
+  section: 'aps' | 'general' | 'cv' | 'sop' | 'lor' | 'lor_sop_cv';
   size: string;
   uploadDate: string;
   status: 'verified' | 'pending' | 'rejected';
@@ -81,7 +83,7 @@ function mapDbDocToStudentDocument(row: any): StudentDocument {
         category: 'General',
       };
 
-  let section: 'aps' | 'general' | 'lor_sop_cv' = 'general';
+  let section: 'aps' | 'general' | 'cv' | 'sop' | 'lor' = 'general';
   if (row.section) {
     section = row.section;
   } else if ([
@@ -101,7 +103,10 @@ function mapDbDocToStudentDocument(row: any): StudentDocument {
   ].includes(row.document_type)) {
     section = 'aps';
   } else if (['cv', 'sop', 'lor'].includes(row.document_type)) {
-    section = 'lor_sop_cv';
+    if (row.document_type === 'cv') section = 'cv';
+    else if (row.document_type === 'sop') section = 'sop';
+    else if (row.document_type === 'lor') section = 'lor';
+    else section = 'general';
   }
 
   const statusLower = (row.status || '').toLowerCase();
@@ -191,7 +196,7 @@ export function StudentDetailModal({
   onClose,
   isPage = false,
 }: StudentDetailModalProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'universities' | 'notes'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'sop' | 'universities' | 'notes'>('overview');
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
   const [note, setNote] = useState('');
@@ -247,12 +252,33 @@ export function StudentDetailModal({
   const [docsLoading, setDocsLoading] = useState(true);
   const [docsError, setDocsError] = useState<string | null>(null);
   const [docActionLoading, setDocActionLoading] = useState<string | null>(null);
-  const [docCategory, setDocCategory] = useState<'all' | 'aps' | 'general' | 'lor_sop_cv'>('all');
+  const [docCategory, setDocCategory] = useState<'all' | 'aps' | 'general' | 'cv' | 'lor'>('all');
   const [docFilter, setDocFilter] = useState<'all' | 'pending' | 'verified' | 'rejected' | 'not_uploaded'>('all');
   const [docActionFeedback, setDocActionFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [previewDoc, setPreviewDoc] = useState<StudentDocument | null>(null);
   const [rejectingDoc, setRejectingDoc] = useState<StudentDocument | null>(null);
   const [rejectionReasonInput, setRejectionReasonInput] = useState('');
+  const [studentSops, setStudentSops] = useState<any[]>([]);
+  const [sopsLoading, setSopsLoading] = useState(false);
+  const [sopsError, setSopsError] = useState<string | null>(null);
+  const sopPendingCount = studentSops.filter((s) => s.documentId && s.status === 'PENDING').length;
+
+  const fetchStudentSops = async () => {
+    if (!effectiveStudentId) return;
+    try {
+      setSopsLoading(true);
+      setSopsError(null);
+      const res = await fetch(`${API_URL}/counsellor/students/${effectiveStudentId}/sops`, { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch SOP documents');
+      const data = await res.json();
+      setStudentSops(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      setSopsError(err.message || 'Error loading SOP documents');
+      setStudentSops([]);
+    } finally {
+      setSopsLoading(false);
+    }
+  };
 
   // AI Academic Dossier Quotas & Counsellor Allotments
   const [dossierLimits, setDossierLimits] = useState<{
@@ -813,6 +839,7 @@ export function StudentDetailModal({
       }
     };
     fetchDocuments();
+    fetchStudentSops();
 
     // Fetch matching engine results
     fetchMatchingResults();
@@ -911,6 +938,7 @@ export function StudentDetailModal({
       const updatedRow = await res.json();
       const mapped = mapDbDocToStudentDocument(updatedRow);
       setDocuments((prev) => prev.map((d) => (d.id === docId ? mapped : d)));
+      setStudentSops((prev) => prev.map((s) => s.documentId === docId ? { ...s, status: 'VERIFIED', verifiedAt: new Date().toISOString() } : s));
 
       if (previewDoc?.id === docId) {
         setPreviewDoc(mapped);
@@ -966,6 +994,7 @@ export function StudentDetailModal({
       const updatedRow = await res.json();
       const mapped = mapDbDocToStudentDocument(updatedRow);
       setDocuments((prev) => prev.map((d) => (d.id === mapped.id ? mapped : d)));
+      setStudentSops((prev) => prev.map((s) => s.documentId === rejectingDoc.id ? { ...s, status: 'REJECTED', rejectionNote: reason } : s));
 
       if (previewDoc?.id === mapped.id) {
         setPreviewDoc(mapped);
@@ -1295,7 +1324,7 @@ export function StudentDetailModal({
   // Deduplicate documents by documentType so historical replacements or multiple records never inflate counts
   const distinctUploadedDocs = React.useMemo(() => {
     const map = new Map<string, StudentDocument>();
-    documents.forEach((doc) => {
+    documents.filter((doc) => doc.documentType !== 'sop' && doc.section !== 'sop').forEach((doc) => {
       const key = doc.documentType || doc.id;
       if (!map.has(key) || doc.status === 'verified') {
         map.set(key, doc);
@@ -1307,20 +1336,23 @@ export function StudentDetailModal({
   const allCatalogueDocs = DOCUMENT_CATALOGUE;
   const apsCatalogueDocs = DOCUMENT_CATALOGUE.filter((d) => d.section === 'aps');
   const generalCatalogueDocs = DOCUMENT_CATALOGUE.filter((d) => d.section === 'general');
-  const lorSopCvCatalogueDocs = DOCUMENT_CATALOGUE.filter((d) => d.section === 'lor_sop_cv');
+  const cvCatalogueDocs = DOCUMENT_CATALOGUE.filter((d) => d.type === 'cv');
+  const lorCatalogueDocs = DOCUMENT_CATALOGUE.filter((d) => d.type === 'lor');
 
   // Filtered by current category
   const currentCategoryCatalogue = React.useMemo(() => {
     if (docCategory === 'aps') return apsCatalogueDocs;
     if (docCategory === 'general') return generalCatalogueDocs;
-    if (docCategory === 'lor_sop_cv') return lorSopCvCatalogueDocs;
+    if (docCategory === 'cv') return cvCatalogueDocs;
+        if (docCategory === 'lor') return lorCatalogueDocs;
     return allCatalogueDocs;
-  }, [docCategory, allCatalogueDocs, apsCatalogueDocs, generalCatalogueDocs, lorSopCvCatalogueDocs]);
+  }, [docCategory, allCatalogueDocs, apsCatalogueDocs, generalCatalogueDocs, cvCatalogueDocs, lorCatalogueDocs]);
 
   const currentCategoryUploadedDocs = React.useMemo(() => {
     if (docCategory === 'aps') return distinctUploadedDocs.filter((d) => d.section === 'aps');
     if (docCategory === 'general') return distinctUploadedDocs.filter((d) => d.section === 'general');
-    if (docCategory === 'lor_sop_cv') return distinctUploadedDocs.filter((d) => d.section === 'lor_sop_cv');
+    if (docCategory === 'cv') return distinctUploadedDocs.filter((d) => d.section === 'cv');
+        if (docCategory === 'lor') return distinctUploadedDocs.filter((d) => d.section === 'lor');
     return distinctUploadedDocs;
   }, [docCategory, distinctUploadedDocs]);
 
@@ -1342,7 +1374,9 @@ export function StudentDetailModal({
   const allUploadedCount = distinctUploadedDocs.length;
   const apsUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'aps').length;
   const generalUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'general').length;
-  const lorSopCvUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'lor_sop_cv').length;
+  const cvUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'cv').length;
+  const sopUploadedCount = studentSops.filter((s) => s.documentId).length;
+  const lorUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'lor').length;
   const pendingDocsCount = distinctUploadedDocs.filter((d) => d.status === 'pending').length;
 
   // Documents to render based on docFilter
@@ -1473,6 +1507,26 @@ export function StudentDetailModal({
                 {pendingDocsCount > 0 && (
                   <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-amber-400 text-slate-900">
                     {pendingDocsCount}
+                  </span>
+                )}
+              </button>
+
+              <button
+                onClick={() => {
+                  setActiveTab('sop');
+                  fetchStudentSops();
+                }}
+                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${
+                  activeTab === 'sop'
+                    ? 'bg-germany-red text-white shadow-md'
+                    : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>SOP Documents</span>
+                {sopPendingCount > 0 && (
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-amber-400 text-slate-900">
+                    {sopPendingCount}
                   </span>
                 )}
               </button>
@@ -1763,23 +1817,40 @@ export function StudentDetailModal({
 
                     <button
                       onClick={() => {
-                        setDocCategory('lor_sop_cv');
+                        setDocCategory('cv');
                         if (docFilter === 'not_uploaded') setDocFilter('all');
                       }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all inline-flex items-center gap-2 ${
-                        docCategory === 'lor_sop_cv'
+                      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all inline-flex items-center gap-1.5 ${
+                        docCategory === 'cv'
                           ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black shadow-xs'
                           : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
                       }`}
                     >
-                      <span>LOR, SOP &amp; CV ({lorSopCvUploadedCount})</span>
-                      {lorSopCvUploadedCount > 0 ? (
-                        <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-800 dark:text-emerald-300">
-                          {lorSopCvUploadedCount} Uploaded
+                      <span>Academic CV ({cvUploadedCount})</span>
+                      {cvUploadedCount > 0 && (
+                        <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/20 text-emerald-800 dark:text-emerald-300">
+                          {cvUploadedCount}
                         </span>
-                      ) : (
-                        <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-400/30 text-amber-900 dark:text-amber-200">
-                          Pending
+                      )}
+                    </button>
+
+                    
+
+                    <button
+                      onClick={() => {
+                        setDocCategory('lor');
+                        if (docFilter === 'not_uploaded') setDocFilter('all');
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all inline-flex items-center gap-1.5 ${
+                        docCategory === 'lor'
+                          ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black shadow-xs'
+                          : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
+                      }`}
+                    >
+                      <span>LOR Documents ({lorUploadedCount})</span>
+                      {lorUploadedCount > 0 && (
+                        <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/20 text-emerald-800 dark:text-emerald-300">
+                          {lorUploadedCount}
                         </span>
                       )}
                     </button>
@@ -1788,7 +1859,7 @@ export function StudentDetailModal({
 
                 {/* If LOR, SOP & CV is selected, show informative banner */}
                 {/* AI Academic Dossier Quotas & Clearance Hub */}
-                {docCategory === 'lor_sop_cv' && (
+                {(docCategory === 'cv' || docCategory === 'lor') && (
                   <div className="p-5 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm space-y-5">
                     {/* German Tricolor Accent Line */}
                     <div className="flex h-1 w-20 rounded-full overflow-hidden">
@@ -2016,8 +2087,10 @@ export function StudentDetailModal({
                               ? 'All Categories'
                               : docCategory === 'aps'
                               ? 'APS Checklist'
-                              : docCategory === 'lor_sop_cv'
-                              ? 'LOR, SOP & CV'
+                              : docCategory === 'cv'
+                              ? 'Academic CV'
+                                                            : docCategory === 'lor'
+                              ? 'LOR Documents'
                               : 'General Documents'}
                             )
                           </h4>
@@ -2126,8 +2199,10 @@ export function StudentDetailModal({
                             ? 'All Categories'
                             : docCategory === 'aps'
                             ? 'APS Checklist'
-                            : docCategory === 'lor_sop_cv'
-                            ? 'LOR, SOP & CV'
+                            : docCategory === 'cv'
+                            ? 'Academic CV'
+                                                        : docCategory === 'lor'
+                            ? 'LOR Documents'
                             : 'General Documents'}
                         </span>
                       </div>
@@ -2452,6 +2527,243 @@ export function StudentDetailModal({
             {/* ========================================================
                 TAB 3: UNIVERSITY ELIGIBILITY & RECOMMENDATIONS
             ======================================================== */}
+            {/* ========================================================
+                TAB: STATEMENT OF PURPOSE (SOP) VERIFICATION WORKSPACE
+            ======================================================== */}
+            {activeTab === 'sop' && (
+              <div className="space-y-4">
+                {/* Header Banner */}
+                <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-germany-red" />
+                      <h3 className="font-display text-base text-germany-black dark:text-white">
+                        SOP Documents Verification Workspace
+                      </h3>
+                    </div>
+                    <p className="text-xs font-bold text-gray-500 mt-0.5">
+                      Review, preview, verify, or request revisions on programme-specific Statement of Purpose documents.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleGrantAttempts('sop')}
+                      disabled={grantingDocType === 'sop'}
+                      className="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      title="Allot +2 extra SOP generation attempts to student"
+                    >
+                      {grantingDocType === 'sop' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-amber-600" />}
+                      <span>+ Allot Extra Attempts</span>
+                    </button>
+
+                    <button
+                      onClick={fetchStudentSops}
+                      className="p-2 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
+                      title="Refresh SOP Documents"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${sopsLoading ? 'animate-spin text-germany-red' : ''}`} />
+                    </button>
+                  </div>
+                </div>
+
+                {grantStatusMessage && (
+                  <div
+                    className={`p-3.5 rounded-xl text-xs font-bold flex items-center gap-2 ${
+                      grantStatusMessage.type === 'success'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                        : 'bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800'
+                    }`}
+                  >
+                    <Info className="w-4 h-4 shrink-0" />
+                    <span>{grantStatusMessage.text}</span>
+                  </div>
+                )}
+
+                {/* SOP Documents List */}
+                {sopsLoading ? (
+                  <div className="p-12 text-center space-y-3">
+                    <Loader2 className="w-6 h-6 animate-spin text-germany-red mx-auto" />
+                    <p className="text-xs font-bold text-gray-500">Loading student&apos;s SOP documents...</p>
+                  </div>
+                ) : sopsError ? (
+                  <div className="p-6 bg-red-50 dark:bg-red-950/40 rounded-2xl border border-red-200 dark:border-red-800 text-center space-y-2">
+                    <p className="text-xs font-bold text-red-800 dark:text-red-300">{sopsError}</p>
+                    <button
+                      onClick={fetchStudentSops}
+                      className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold cursor-pointer"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ) : studentSops.length === 0 ? (
+                  <div className="p-12 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-2">
+                    <BookOpen className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto" />
+                    <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">No Shortlisted Programmes Found</h4>
+                    <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                      This student does not have any shortlisted programmes yet. Add shortlisted programmes from the University Eligibility tab to enable SOP generation.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {studentSops.map((sop: any, idx: number) => {
+                      const isApproved = sop.status === 'VERIFIED';
+                      const isPending = sop.status === 'PENDING';
+                      const isRejected = sop.status === 'REJECTED';
+                      const isGenerating = sop.status === 'GENERATING';
+                      const isFailed = sop.status === 'FAILED';
+
+                      return (
+                        <div
+                          key={sop.recommendationId || idx}
+                          className="p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4"
+                        >
+                          <div className="space-y-1.5 flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                                #{idx + 1}
+                              </span>
+
+                              {isApproved ? (
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 flex items-center gap-1">
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                  <span>Approved &amp; Verified</span>
+                                </span>
+                              ) : isRejected ? (
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-red-50 text-red-800 border border-red-200 dark:bg-red-950/50 dark:text-red-300 flex items-center gap-1">
+                                  <AlertCircle className="w-3 h-3 text-red-600" />
+                                  <span>Revision Requested</span>
+                                </span>
+                              ) : isPending ? (
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 flex items-center gap-1">
+                                  <Clock className="w-3 h-3 text-amber-600" />
+                                  <span>Awaiting Counsellor Review</span>
+                                </span>
+                              ) : isFailed ? (
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 text-red-900 border border-red-300 dark:bg-red-950/60 dark:text-red-300 flex items-center gap-1">
+                                  <AlertCircle className="w-3 h-3 text-red-600" />
+                                  <span>Generation Failed</span>
+                                </span>
+                              ) : isGenerating ? (
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 flex items-center gap-1">
+                                  <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
+                                  <span>Generating...</span>
+                                </span>
+                              ) : (
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                                  Not Generated
+                                </span>
+                              )}
+                            </div>
+
+                            <h4 className="text-sm font-black text-gray-900 dark:text-gray-100 leading-snug">
+                              {sop.universityName}
+                            </h4>
+                            <p className="text-xs font-bold text-gray-600 dark:text-gray-400">
+                              {sop.programName}
+                            </p>
+
+                            <div className="flex flex-wrap gap-3 text-[11px] text-gray-500 pt-0.5">
+                              {sop.degree && <span>{sop.degree}</span>}
+                              {sop.location && <span>• {sop.location}</span>}
+                              {sop.uploadedAt && (
+                                <span>• Submitted: {new Date(sop.uploadedAt).toLocaleDateString()}</span>
+                              )}
+                            </div>
+
+                            {isRejected && sop.rejectionNote && (
+                              <div className="p-2.5 bg-red-50/80 dark:bg-red-950/40 rounded-xl border border-red-200/80 dark:border-red-800 text-xs text-red-800 dark:text-red-300 mt-2">
+                                <span className="font-bold">Your Revision Notes: </span>
+                                {sop.rejectionNote}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex items-center gap-2 shrink-0">
+                            {sop.documentId ? (
+                              <>
+                                <button
+                                  onClick={() =>
+                                    setPreviewDoc({
+                                      id: sop.documentId,
+                                      documentType: 'sop',
+                                      name: `SOP: ${sop.universityName} - ${sop.programName}`,
+                                      category: 'Academic Dossier',
+                                      section: 'sop',
+                                      size: 'A4 PDF',
+                                      uploadDate: sop.uploadedAt ? new Date(sop.uploadedAt).toLocaleDateString() : 'Recent',
+                                      status: (sop.status || 'pending').toLowerCase() as any,
+                                      rejectionReason: sop.rejectionNote || undefined,
+                                      url: sop.imagekitUrl || undefined,
+                                      previewContent: sop.generatedSop || undefined,
+                                      mimeType: 'application/pdf',
+                                      originalFilename: sop.originalFilename || `SOP_${sop.programName}.pdf`,
+                                    })
+                                  }
+                                  className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                                  title="Preview SOP Document"
+                                >
+                                  <FileText className="w-3.5 h-3.5 text-germany-red" />
+                                  <span>Preview</span>
+                                </button>
+
+                                {!isApproved && (
+                                  <button
+                                    onClick={() => handleVerifyDoc(sop.documentId)}
+                                    disabled={docActionLoading === sop.documentId}
+                                    className="px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                                    title="Approve SOP and release to student"
+                                  >
+                                    {docActionLoading === sop.documentId ? (
+                                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    ) : (
+                                      <CheckCircle2 className="w-3.5 h-3.5" />
+                                    )}
+                                    <span>Approve</span>
+                                  </button>
+                                )}
+
+                                {!isRejected && (
+                                  <button
+                                    onClick={() =>
+                                      handleOpenRejectModal({
+                                        id: sop.documentId,
+                                        documentType: 'sop',
+                                        name: `SOP: ${sop.universityName} - ${sop.programName}`,
+                                        category: 'Academic Dossier',
+                                        section: 'sop',
+                                        size: 'A4 PDF',
+                                        uploadDate: sop.uploadedAt ? new Date(sop.uploadedAt).toLocaleDateString() : 'Recent',
+                                        status: (sop.status || 'pending').toLowerCase() as any,
+                                        rejectionReason: sop.rejectionNote || undefined,
+                                        url: sop.imagekitUrl || undefined,
+                                        previewContent: sop.generatedSop || undefined,
+                                      })
+                                    }
+                                    disabled={docActionLoading === sop.documentId}
+                                    className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-red-50 hover:bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300 border border-red-200 dark:border-red-800 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                                    title="Request revisions on this SOP"
+                                  >
+                                    <AlertCircle className="w-3.5 h-3.5 text-red-600" />
+                                    <span>Request Changes</span>
+                                  </button>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-xs text-gray-400 italic font-medium px-2 py-1">
+                                Awaiting student generation
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
             {activeTab === 'universities' && (
               <div className="space-y-4">
                 {/* Header with Run Matching & Add Recommendation */}
