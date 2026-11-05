@@ -85,7 +85,13 @@ function mapDbDocToStudentDocument(row: any): StudentDocument {
       };
 
   let section: 'aps' | 'general' | 'cv' | 'sop' | 'lor' = 'general';
-  if (row.section) {
+  if (row.document_type === 'cv' || row.section === 'cv') {
+    section = 'cv';
+  } else if (row.document_type === 'sop' || row.section === 'sop') {
+    section = 'sop';
+  } else if (row.document_type === 'lor' || row.section === 'lor') {
+    section = 'lor';
+  } else if (row.section && row.section !== 'lor_sop_cv') {
     section = row.section;
   } else if ([
     'passport',
@@ -103,11 +109,6 @@ function mapDbDocToStudentDocument(row: any): StudentDocument {
     'student_authorization_letter',
   ].includes(row.document_type)) {
     section = 'aps';
-  } else if (['cv', 'sop', 'lor'].includes(row.document_type)) {
-    if (row.document_type === 'cv') section = 'cv';
-    else if (row.document_type === 'sop') section = 'sop';
-    else if (row.document_type === 'lor') section = 'lor';
-    else section = 'general';
   }
 
   const statusLower = (row.status || '').toLowerCase();
@@ -1510,8 +1511,8 @@ export function StudentDetailModal({
   const currentCategoryUploadedDocs = React.useMemo(() => {
     if (docCategory === 'aps') return distinctUploadedDocs.filter((d) => d.section === 'aps');
     if (docCategory === 'general') return distinctUploadedDocs.filter((d) => d.section === 'general');
-    if (docCategory === 'cv') return distinctUploadedDocs.filter((d) => d.section === 'cv');
-        if (docCategory === 'lor') return distinctUploadedDocs.filter((d) => d.section === 'lor');
+    if (docCategory === 'cv') return distinctUploadedDocs.filter((d) => d.section === 'cv' || d.documentType === 'cv');
+    if (docCategory === 'lor') return distinctUploadedDocs.filter((d) => d.section === 'lor' || d.documentType === 'lor');
     if (docCategory === 'sop') return [];
     return distinctUploadedDocs;
   }, [docCategory, distinctUploadedDocs]);
@@ -1534,9 +1535,9 @@ export function StudentDetailModal({
   const allUploadedCount = distinctUploadedDocs.length;
   const apsUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'aps').length;
   const generalUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'general').length;
-  const cvUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'cv').length;
+  const cvUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'cv' || d.documentType === 'cv').length;
   const sopUploadedCount = studentSops.filter((s) => s.documentId).length;
-  const lorUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'lor').length;
+  const lorUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'lor' || d.documentType === 'lor').length;
   const pendingDocsCount = distinctUploadedDocs.filter((d) => d.status === 'pending').length;
 
   // Documents to render based on docFilter
@@ -2333,6 +2334,53 @@ export function StudentDetailModal({
                 ) : (
                   <>
                 {/* If LOR, SOP & CV is selected, show informative banner */}
+                {/* Academic CV Verification Workspace Header */}
+                {docCategory === 'cv' && (
+                  <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-amber-600" />
+                        <h3 className="font-display text-base text-germany-black dark:text-white">
+                          Academic CV Verification Workspace
+                        </h3>
+                      </div>
+                      <p className="text-xs font-bold text-gray-500 mt-0.5">
+                        Review, verify, download Word (.docx), upload corrected version, re-generate, or allot extra attempt.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        onClick={handleRegenerateCv}
+                        disabled={regeneratingCv}
+                        className="px-3 py-1.5 rounded-xl text-xs font-black bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-50"
+                        title="Re-generate CV from scratch"
+                      >
+                        {regeneratingCv ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                        <span>Re-generate CV</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleGrantAttempts('cv')}
+                        disabled={grantingDocType === 'cv' || Boolean(dossierLimits?.cv?.extraAttemptsGranted)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-colors shadow-xs ${
+                          dossierLimits?.cv?.extraAttemptsGranted
+                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed'
+                            : 'bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 cursor-pointer'
+                        }`}
+                        title={
+                          dossierLimits?.cv?.extraAttemptsGranted
+                            ? 'Max 1 extra attempt already allotted'
+                            : 'Allot +1 extra CV generation attempt to student'
+                        }
+                      >
+                        {grantingDocType === 'cv' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-amber-600" />}
+                        <span>+ Allot Extra</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* AI Academic Dossier Quotas & Clearance Hub */}
                 {(docCategory === 'cv' || docCategory === 'lor') && (
                   <div className="p-5 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm space-y-5">
@@ -2603,28 +2651,36 @@ export function StudentDetailModal({
                         </div>
 
                         {/* Allot Button / Helper Info */}
-                        <div className="pt-2">
-                          {dossierLimits?.cv?.canGrantExtra ? (
-                            <button
-                              onClick={() => handleGrantAttempts('cv')}
-                              disabled={grantingDocType === 'cv'}
-                              className="w-full py-2 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-50"
-                            >
-                              {grantingDocType === 'cv' ? (
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              ) : (
-                                <Plus className="w-3.5 h-3.5" />
-                              )}
-                              <span>Allot +1 CV Attempt</span>
-                            </button>
-                          ) : dossierLimits?.cv?.extraAttemptsGranted ? (
-                            <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 text-center py-1">
-                              Max 1 extra attempt already allotted (Total quota: {dossierLimits?.cv?.maxGenerations}).
-                            </p>
-                          ) : (
-                            <div className="text-[11px] text-gray-500 dark:text-gray-400 py-1 flex items-center gap-1.5">
+                        <div className="pt-2 space-y-1.5">
+                          <button
+                            onClick={() => handleGrantAttempts('cv')}
+                            disabled={grantingDocType === 'cv' || Boolean(dossierLimits?.cv?.extraAttemptsGranted)}
+                            className={`w-full py-2 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 shadow-xs transition-colors ${
+                              dossierLimits?.cv?.extraAttemptsGranted
+                                ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed'
+                                : 'bg-amber-600 hover:bg-amber-700 text-white cursor-pointer disabled:opacity-50'
+                            }`}
+                            title={
+                              dossierLimits?.cv?.extraAttemptsGranted
+                                ? 'Max 1 extra attempt already allotted'
+                                : 'Allot +1 extra CV generation attempt to student'
+                            }
+                          >
+                            {grantingDocType === 'cv' ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Sparkles className="w-3.5 h-3.5" />
+                            )}
+                            <span>
+                              {dossierLimits?.cv?.extraAttemptsGranted
+                                ? 'Max 1 Extra Allotted'
+                                : 'Allot +1 CV Attempt'}
+                            </span>
+                          </button>
+                          {!dossierLimits?.cv?.extraAttemptsGranted && !dossierLimits?.cv?.canGrantExtra && (
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400 py-0.5 flex items-center gap-1.5">
                               <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                              <span>Student has {dossierLimits?.cv?.remainingAttempts ?? 3} initial attempts left. +1 extra attempt can be allotted once initial 3 are crossed.</span>
+                              <span>Student has {dossierLimits?.cv?.remainingAttempts ?? 3} initial attempts left. +1 extra can be allotted once initial 3 are crossed.</span>
                             </div>
                           )}
                         </div>
@@ -3086,21 +3142,27 @@ export function StudentDetailModal({
                                         </button>
 
                                         {/* Allot Extra CV attempt */}
-                                        {dossierLimits?.cv?.canGrantExtra && (
-                                          <button
-                                            onClick={() => handleGrantAttempts('cv')}
-                                            disabled={grantingDocType === 'cv'}
-                                            className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 transition-colors cursor-pointer shadow-xs"
-                                            title="Allot +1 extra CV generation attempt to student"
-                                          >
-                                            {grantingDocType === 'cv' ? (
-                                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                            ) : (
-                                              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                                            )}
-                                            <span>+ Allot Extra</span>
-                                          </button>
-                                        )}
+                                        <button
+                                          onClick={() => handleGrantAttempts('cv')}
+                                          disabled={grantingDocType === 'cv' || Boolean(dossierLimits?.cv?.extraAttemptsGranted)}
+                                          className={`py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl border transition-colors shadow-xs ${
+                                            dossierLimits?.cv?.extraAttemptsGranted
+                                              ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed'
+                                              : 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 cursor-pointer'
+                                          }`}
+                                          title={
+                                            dossierLimits?.cv?.extraAttemptsGranted
+                                              ? 'Max 1 extra attempt already allotted'
+                                              : 'Allot +1 extra CV generation attempt to student'
+                                          }
+                                        >
+                                          {grantingDocType === 'cv' ? (
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                          ) : (
+                                            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                                          )}
+                                          <span>+ Allot Extra</span>
+                                        </button>
                                       </>
                                     ) : doc.documentType === 'sop' ? null : (
                                       /* Non-AI Documents: Reject / Edit Reason / Request Re-upload Actions */
@@ -4587,7 +4649,17 @@ export function StudentDetailModal({
 
               {/* Real Document Preview Viewer */}
               <div className="rounded-xl overflow-hidden border border-gray-200/70 dark:border-gray-800/80 bg-[#FAF8F5] dark:bg-[#0A0D14]">
-                {previewDoc.previewContent ? (
+                {previewDoc.url ? (
+                  previewDoc.mimeType?.startsWith('image/') || /\.(jpe?g|png|webp)$/i.test(previewDoc.url) ? (
+                    <div className="p-3 max-h-[50vh] flex items-center justify-center overflow-auto bg-black/5 dark:bg-black/30">
+                      <img src={previewDoc.url} alt={previewDoc.name} className="max-h-[46vh] w-auto object-contain rounded-lg" />
+                    </div>
+                  ) : (
+                    <div className="w-full h-[60vh] bg-white dark:bg-[#0E121A]">
+                      <iframe src={previewDoc.url} title={previewDoc.name} className="w-full h-full border-none" />
+                    </div>
+                  )
+                ) : previewDoc.previewContent ? (
                   <div className="p-4 max-h-[50vh] overflow-y-auto space-y-3 bg-white dark:bg-[#0E121A]">
                     <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-800 text-xs">
                       <span className="font-bold text-gray-500">
@@ -4609,16 +4681,6 @@ export function StudentDetailModal({
                       {previewDoc.previewContent}
                     </pre>
                   </div>
-                ) : previewDoc.url ? (
-                  previewDoc.mimeType?.startsWith('image/') || /\.(jpe?g|png|webp)$/i.test(previewDoc.url) ? (
-                    <div className="p-3 max-h-[50vh] flex items-center justify-center overflow-auto bg-black/5 dark:bg-black/30">
-                      <img src={previewDoc.url} alt={previewDoc.name} className="max-h-[46vh] w-auto object-contain rounded-lg" />
-                    </div>
-                  ) : (
-                    <div className="w-full h-80 bg-white dark:bg-[#0E121A]">
-                      <iframe src={previewDoc.url} title={previewDoc.name} className="w-full h-full border-none" />
-                    </div>
-                  )
                 ) : (
                   <div className="p-8 text-center text-xs font-bold text-gray-400">
                     No preview URL available for this file.

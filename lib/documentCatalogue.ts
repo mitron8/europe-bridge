@@ -32,8 +32,8 @@ export const GENERAL_DOCUMENT_CATALOGUE: CatalogueDocument[] = [
 ];
 
 export const LOR_SOP_CV_DOCUMENT_CATALOGUE: CatalogueDocument[] = [
-  { type: 'cv', name: 'Curriculum Vitae (CV)', section: 'lor_sop_cv', category: 'Application Dossier', description: 'Academic Curriculum Vitae generated in German Europass format', required: true },
-  { type: 'lor', name: 'Letter of Recommendation (LOR)', section: 'lor_sop_cv', category: 'Application Dossier', description: 'Academic recommendation letter from university faculty or research mentor', required: false },
+  { type: 'cv', name: 'Curriculum Vitae (CV)', section: 'cv', category: 'Application Dossier', description: 'Academic Curriculum Vitae generated in German Europass format', required: true },
+  { type: 'lor', name: 'Letter of Recommendation (LOR)', section: 'lor', category: 'Application Dossier', description: 'Academic recommendation letter from university faculty or research mentor', required: false },
 ];
 
 export const DOCUMENT_CATALOGUE: CatalogueDocument[] = [
