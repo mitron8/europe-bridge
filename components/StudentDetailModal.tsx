@@ -44,6 +44,7 @@ import {
   ChevronRight,
   BookOpen,
   Info,
+  Upload,
 } from 'lucide-react';
 import { AssignedStudent } from './CounsellorStudents';
 import { StudentFullProfileView } from './StudentFullProfileView';
@@ -263,6 +264,12 @@ export function StudentDetailModal({
   const [sopsError, setSopsError] = useState<string | null>(null);
   const sopPendingCount = studentSops.filter((s) => s.documentId && s.status === 'PENDING').length;
 
+  const [selectedSopRecIds, setSelectedSopRecIds] = useState<string[]>([]);
+  const [regeneratingSops, setRegeneratingSops] = useState(false);
+  const [regeneratingCv, setRegeneratingCv] = useState(false);
+  const [uploadingCorrectedId, setUploadingCorrectedId] = useState<string | null>(null);
+  const [downloadingWordId, setDownloadingWordId] = useState<string | null>(null);
+
   const fetchStudentSops = async () => {
     if (!effectiveStudentId) return;
     try {
@@ -277,6 +284,27 @@ export function StudentDetailModal({
       setStudentSops([]);
     } finally {
       setSopsLoading(false);
+    }
+  };
+
+  const fetchDocuments = async () => {
+    if (!effectiveStudentId) return;
+    try {
+      setDocsLoading(true);
+      setDocsError(null);
+      const res = await fetch(`${API_URL}/counsellor/students/${effectiveStudentId}/documents`, { credentials: 'include' });
+      if (!res.ok) {
+        if (res.status === 403) throw new Error("Access Denied");
+        throw new Error("Failed to fetch documents");
+      }
+      const data = await res.json();
+      const rows = Array.isArray(data) ? data : (data.items || []);
+      setDocuments(rows.map(mapDbDocToStudentDocument));
+    } catch (err: any) {
+      setDocsError(err.message || 'Error loading student documents');
+      setDocuments([]);
+    } finally {
+      setDocsLoading(false);
     }
   };
 
@@ -819,25 +847,6 @@ export function StudentDetailModal({
     fetchSummary();
 
     // Fetch real documents from student_documents table via backend API
-    const fetchDocuments = async () => {
-      try {
-        setDocsLoading(true);
-        setDocsError(null);
-        const res = await fetch(`${API_URL}/counsellor/students/${effectiveStudentId}/documents`, { credentials: 'include' });
-        if (!res.ok) {
-          if (res.status === 403) throw new Error("Access Denied");
-          throw new Error("Failed to fetch documents");
-        }
-        const data = await res.json();
-        const rows = Array.isArray(data) ? data : (data.items || []);
-        setDocuments(rows.map(mapDbDocToStudentDocument));
-      } catch (err: any) {
-        setDocsError(err.message || 'Error loading student documents');
-        setDocuments([]);
-      } finally {
-        setDocsLoading(false);
-      }
-    };
     fetchDocuments();
     fetchStudentSops();
 
@@ -955,6 +964,153 @@ export function StudentDetailModal({
       });
     } finally {
       setDocActionLoading(null);
+    }
+  };
+
+  // Download Word document helper
+  const handleDownloadWord = async (type: 'sop' | 'cv', recId?: string, filename?: string) => {
+    const effectiveStudentId = student?.userId || propStudent?.userId || studentId;
+    if (!effectiveStudentId) return;
+    const targetId = type === 'sop' ? recId || 'sop' : 'cv';
+    setDownloadingWordId(targetId);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+      const url = type === 'sop'
+        ? `${API_URL}/counsellor/students/${effectiveStudentId}/sop/${recId}/download-docx`
+        : `${API_URL}/counsellor/students/${effectiveStudentId}/cv/download-docx`;
+      const res = await fetch(url, { credentials: 'include' });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to download Word document');
+      }
+      const blob = await res.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename || (type === 'sop' ? 'Statement_of_Purpose.docx' : 'Curriculum_Vitae.docx');
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(blobUrl);
+      setDocActionFeedback({
+        type: 'success',
+        message: 'Word (.docx) document downloaded successfully.',
+      });
+      setTimeout(() => setDocActionFeedback(null), 3500);
+    } catch (err: any) {
+      setDocActionFeedback({
+        type: 'error',
+        message: err.message || 'Failed to download Word document',
+      });
+    } finally {
+      setDownloadingWordId(null);
+    }
+  };
+
+  // Upload corrected document helper (PDF or Word)
+  const handleUploadCorrected = async (type: 'sop' | 'cv', file: File, recId?: string) => {
+    const effectiveStudentId = student?.userId || propStudent?.userId || studentId;
+    if (!effectiveStudentId || !file) return;
+    const targetId = type === 'sop' ? recId || 'sop' : 'cv';
+    setUploadingCorrectedId(targetId);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+      const formData = new FormData();
+      formData.append('file', file);
+      const url = type === 'sop'
+        ? `${API_URL}/counsellor/students/${effectiveStudentId}/sop/${recId}/upload-corrected`
+        : `${API_URL}/counsellor/students/${effectiveStudentId}/cv/upload-corrected`;
+      const res = await fetch(url, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to upload corrected file');
+      }
+      setDocActionFeedback({
+        type: 'success',
+        message: `Corrected ${type.toUpperCase()} uploaded and marked as approved & verified!`,
+      });
+      setTimeout(() => setDocActionFeedback(null), 3500);
+      if (type === 'sop') {
+        fetchStudentSops();
+      }
+      fetchDocuments();
+    } catch (err: any) {
+      setDocActionFeedback({
+        type: 'error',
+        message: err.message || 'Failed to upload corrected file',
+      });
+    } finally {
+      setUploadingCorrectedId(null);
+    }
+  };
+
+  // Re-generate CV helper
+  const handleRegenerateCv = async () => {
+    const effectiveStudentId = student?.userId || propStudent?.userId || studentId;
+    if (!effectiveStudentId) return;
+    setRegeneratingCv(true);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+      const res = await fetch(`${API_URL}/counsellor/students/${effectiveStudentId}/cv/regenerate`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to re-generate CV');
+      }
+      setDocActionFeedback({
+        type: 'success',
+        message: 'CV regeneration queued from scratch.',
+      });
+      setTimeout(() => setDocActionFeedback(null), 3500);
+      fetchDocuments();
+    } catch (err: any) {
+      setDocActionFeedback({
+        type: 'error',
+        message: err.message || 'Failed to re-generate CV',
+      });
+    } finally {
+      setRegeneratingCv(false);
+    }
+  };
+
+  // Re-generate SOP helper (selective or all)
+  const handleRegenerateSops = async (recIds?: string[]) => {
+    const effectiveStudentId = student?.userId || propStudent?.userId || studentId;
+    if (!effectiveStudentId) return;
+    setRegeneratingSops(true);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+      const res = await fetch(`${API_URL}/counsellor/students/${effectiveStudentId}/sop/regenerate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ recommendationIds: recIds && recIds.length > 0 ? recIds : undefined }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to re-generate SOPs');
+      }
+      const data = await res.json();
+      setDocActionFeedback({
+        type: 'success',
+        message: data.message || `Re-generation started for ${data.count || 0} SOP(s).`,
+      });
+      setTimeout(() => setDocActionFeedback(null), 3500);
+      setSelectedSopRecIds([]);
+      fetchStudentSops();
+    } catch (err: any) {
+      setDocActionFeedback({
+        type: 'error',
+        message: err.message || 'Failed to re-generate SOPs',
+      });
+    } finally {
+      setRegeneratingSops(false);
     }
   };
 
@@ -1871,24 +2027,67 @@ export function StudentDetailModal({
                         </h3>
                       </div>
                       <p className="text-xs font-bold text-gray-500 mt-0.5">
-                        Review, preview, verify, or request revisions on programme-specific Statement of Purpose documents.
+                        Verify, preview, download Word (.docx), upload corrected versions, or re-generate programme SOPs.
                       </p>
                     </div>
-  
-                    <div className="flex items-center gap-2">
+
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {studentSops.length > 0 && (
+                        <button
+                          onClick={() => {
+                            if (selectedSopRecIds.length === studentSops.length) {
+                              setSelectedSopRecIds([]);
+                            } else {
+                              setSelectedSopRecIds(studentSops.map((s) => s.recommendationId));
+                            }
+                          }}
+                          className="px-2.5 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                          title="Toggle select all SOPs"
+                        >
+                          {selectedSopRecIds.length === studentSops.length && studentSops.length > 0 ? (
+                            <CheckSquare className="w-3.5 h-3.5 text-germany-red" />
+                          ) : (
+                            <Square className="w-3.5 h-3.5 text-gray-400" />
+                          )}
+                          <span>Select All</span>
+                        </button>
+                      )}
+
+                      {selectedSopRecIds.length > 0 && (
+                        <button
+                          onClick={() => handleRegenerateSops(selectedSopRecIds)}
+                          disabled={regeneratingSops}
+                          className="px-3 py-1.5 rounded-xl text-xs font-black bg-germany-red hover:bg-[#D62839] text-white flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-50"
+                          title="Re-generate selected SOPs from scratch"
+                        >
+                          {regeneratingSops ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                          <span>Re-generate Selected ({selectedSopRecIds.length})</span>
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => handleRegenerateSops()}
+                        disabled={regeneratingSops || studentSops.length === 0}
+                        className="px-3 py-1.5 rounded-xl text-xs font-black bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-50"
+                        title="Re-generate all shortlisted programme SOPs from scratch"
+                      >
+                        {regeneratingSops && selectedSopRecIds.length === 0 ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                        <span>Re-generate All SOPs</span>
+                      </button>
+
                       <button
                         onClick={() => handleGrantAttempts('sop')}
                         disabled={grantingDocType === 'sop'}
-                        className="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
                         title="Allot +2 extra SOP generation attempts to student"
                       >
                         {grantingDocType === 'sop' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-amber-600" />}
-                        <span>+ Allot Extra Attempts</span>
+                        <span>+ Allot Extra</span>
                       </button>
-  
+
                       <button
                         onClick={fetchStudentSops}
-                        className="p-2 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
                         title="Refresh SOP Documents"
                       >
                         <RefreshCw className={`w-3.5 h-3.5 ${sopsLoading ? 'animate-spin text-germany-red' : ''}`} />
@@ -1947,143 +2146,181 @@ export function StudentDetailModal({
                             key={sop.recommendationId || idx}
                             className="p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4"
                           >
-                            <div className="space-y-1.5 flex-1 min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
-                                  #{idx + 1}
-                                </span>
-  
-                                {isApproved ? (
-                                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 flex items-center gap-1">
-                                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                    <span>Approved &amp; Verified</span>
-                                  </span>
-                                ) : isRejected ? (
-                                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-red-50 text-red-800 border border-red-200 dark:bg-red-950/50 dark:text-red-300 flex items-center gap-1">
-                                    <AlertCircle className="w-3 h-3 text-red-600" />
-                                    <span>Revision Requested</span>
-                                  </span>
-                                ) : isPending ? (
-                                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 flex items-center gap-1">
-                                    <Clock className="w-3 h-3 text-amber-600" />
-                                    <span>Awaiting Counsellor Review</span>
-                                  </span>
-                                ) : isFailed ? (
-                                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 text-red-900 border border-red-300 dark:bg-red-950/60 dark:text-red-300 flex items-center gap-1">
-                                    <AlertCircle className="w-3 h-3 text-red-600" />
-                                    <span>Generation Failed</span>
-                                  </span>
-                                ) : isGenerating ? (
-                                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 flex items-center gap-1">
-                                    <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
-                                    <span>Generating...</span>
-                                  </span>
+                            <div className="flex items-start gap-3 flex-1 min-w-0">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedSopRecIds((prev) =>
+                                    prev.includes(sop.recommendationId)
+                                      ? prev.filter((id) => id !== sop.recommendationId)
+                                      : [...prev, sop.recommendationId]
+                                  );
+                                }}
+                                className="mt-1 text-gray-400 hover:text-germany-black dark:hover:text-white cursor-pointer shrink-0 transition-colors"
+                                title="Select for re-generation"
+                              >
+                                {selectedSopRecIds.includes(sop.recommendationId) ? (
+                                  <CheckSquare className="w-4 h-4 text-germany-red" />
                                 ) : (
-                                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-                                    Not Generated
+                                  <Square className="w-4 h-4 text-gray-300 dark:text-gray-600" />
+                                )}
+                              </button>
+
+                              <div className="space-y-1.5 flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                                    #{idx + 1}
                                   </span>
-                                )}
-                              </div>
-  
-                              <h4 className="text-sm font-black text-gray-900 dark:text-gray-100 leading-snug">
-                                {sop.universityName}
-                              </h4>
-                              <p className="text-xs font-bold text-gray-600 dark:text-gray-400">
-                                {sop.programName}
-                              </p>
-  
-                              <div className="flex flex-wrap gap-3 text-[11px] text-gray-500 pt-0.5">
-                                {sop.degree && <span>{sop.degree}</span>}
-                                {sop.location && <span>• {sop.location}</span>}
-                                {sop.uploadedAt && (
-                                  <span>• Submitted: {new Date(sop.uploadedAt).toLocaleDateString()}</span>
-                                )}
-                              </div>
-  
-                              {isRejected && sop.rejectionNote && (
-                                <div className="p-2.5 bg-red-50/80 dark:bg-red-950/40 rounded-xl border border-red-200/80 dark:border-red-800 text-xs text-red-800 dark:text-red-300 mt-2">
-                                  <span className="font-bold">Your Revision Notes: </span>
-                                  {sop.rejectionNote}
+
+                                  {isApproved ? (
+                                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 flex items-center gap-1">
+                                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                      <span>Approved &amp; Verified</span>
+                                    </span>
+                                  ) : isPending ? (
+                                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 flex items-center gap-1">
+                                      <Clock className="w-3 h-3 text-amber-600" />
+                                      <span>Awaiting Counsellor Review</span>
+                                    </span>
+                                  ) : isFailed ? (
+                                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 text-red-900 border border-red-300 dark:bg-red-950/60 dark:text-red-300 flex items-center gap-1">
+                                      <AlertCircle className="w-3 h-3 text-red-600" />
+                                      <span>Generation Failed</span>
+                                    </span>
+                                  ) : isGenerating ? (
+                                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 flex items-center gap-1">
+                                      <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
+                                      <span>Generating...</span>
+                                    </span>
+                                  ) : (
+                                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                                      Not Generated
+                                    </span>
+                                  )}
                                 </div>
-                              )}
+
+                                <h4 className="text-sm font-black text-gray-900 dark:text-gray-100 leading-snug">
+                                  {sop.universityName}
+                                </h4>
+                                <p className="text-xs font-bold text-gray-600 dark:text-gray-400">
+                                  {sop.programName}
+                                </p>
+
+                                <div className="flex flex-wrap gap-3 text-[11px] text-gray-500 pt-0.5">
+                                  {sop.degree && <span>{sop.degree}</span>}
+                                  {sop.location && <span>• {sop.location}</span>}
+                                  {sop.uploadedAt && (
+                                    <span>• Submitted: {new Date(sop.uploadedAt).toLocaleDateString()}</span>
+                                  )}
+                                  {sop.originalFilename && (
+                                    <span className="font-mono text-[10px] text-gray-400">({sop.originalFilename})</span>
+                                  )}
+                                </div>
+                              </div>
                             </div>
-  
+
                             {/* Action Buttons */}
-                            <div className="flex items-center gap-2 shrink-0">
-                              {sop.documentId ? (
-                                <>
-                                  <button
-                                    onClick={() =>
-                                      setPreviewDoc({
-                                        id: sop.documentId,
-                                        documentType: 'sop',
-                                        name: `SOP: ${sop.universityName} - ${sop.programName}`,
-                                        category: 'Academic Dossier',
-                                        section: 'sop',
-                                        size: 'A4 PDF',
-                                        uploadDate: sop.uploadedAt ? new Date(sop.uploadedAt).toLocaleDateString() : 'Recent',
-                                        status: (sop.status || 'pending').toLowerCase() as any,
-                                        rejectionReason: sop.rejectionNote || undefined,
-                                        url: sop.imagekitUrl || undefined,
-                                        previewContent: sop.generatedSop || undefined,
-                                        mimeType: 'application/pdf',
-                                        originalFilename: sop.originalFilename || `SOP_${sop.programName}.pdf`,
-                                      })
-                                    }
-                                    className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
-                                    title="Preview SOP Document"
-                                  >
-                                    <FileText className="w-3.5 h-3.5 text-germany-red" />
-                                    <span>Preview</span>
-                                  </button>
-  
-                                  {!isApproved && (
-                                    <button
-                                      onClick={() => handleVerifyDoc(sop.documentId)}
-                                      disabled={docActionLoading === sop.documentId}
-                                      className="px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
-                                      title="Approve SOP and release to student"
-                                    >
-                                      {docActionLoading === sop.documentId ? (
-                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                      ) : (
-                                        <CheckCircle2 className="w-3.5 h-3.5" />
-                                      )}
-                                      <span>Approve</span>
-                                    </button>
-                                  )}
-  
-                                  {!isRejected && (
-                                    <button
-                                      onClick={() =>
-                                        handleOpenRejectModal({
-                                          id: sop.documentId,
-                                          documentType: 'sop',
-                                          name: `SOP: ${sop.universityName} - ${sop.programName}`,
-                                          category: 'Academic Dossier',
-                                          section: 'sop',
-                                          size: 'A4 PDF',
-                                          uploadDate: sop.uploadedAt ? new Date(sop.uploadedAt).toLocaleDateString() : 'Recent',
-                                          status: (sop.status || 'pending').toLowerCase() as any,
-                                          rejectionReason: sop.rejectionNote || undefined,
-                                          url: sop.imagekitUrl || undefined,
-                                          previewContent: sop.generatedSop || undefined,
-                                        })
-                                      }
-                                      disabled={docActionLoading === sop.documentId}
-                                      className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-red-50 hover:bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300 border border-red-200 dark:border-red-800 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
-                                      title="Request revisions on this SOP"
-                                    >
-                                      <AlertCircle className="w-3.5 h-3.5 text-red-600" />
-                                      <span>Request Changes</span>
-                                    </button>
-                                  )}
-                                </>
-                              ) : (
-                                <span className="text-xs text-gray-400 italic font-medium px-2 py-1">
-                                  Awaiting student generation
-                                </span>
+                            <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                              {sop.documentId && (
+                                <button
+                                  onClick={() =>
+                                    setPreviewDoc({
+                                      id: sop.documentId,
+                                      documentType: 'sop',
+                                      name: `SOP: ${sop.universityName} - ${sop.programName}`,
+                                      category: 'Academic Dossier',
+                                      section: 'sop',
+                                      size: 'A4 PDF',
+                                      uploadDate: sop.uploadedAt ? new Date(sop.uploadedAt).toLocaleDateString() : 'Recent',
+                                      status: (sop.status || 'pending').toLowerCase() as any,
+                                      rejectionReason: undefined,
+                                      url: sop.imagekitUrl || undefined,
+                                      previewContent: sop.generatedSop || undefined,
+                                      mimeType: 'application/pdf',
+                                      originalFilename: sop.originalFilename || `SOP_${sop.programName}.pdf`,
+                                    })
+                                  }
+                                  className="px-2.5 py-1.5 rounded-xl text-xs font-extrabold bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors flex items-center gap-1 cursor-pointer shadow-xs"
+                                  title="Preview SOP Document"
+                                >
+                                  <FileText className="w-3.5 h-3.5 text-germany-red" />
+                                  <span>Preview</span>
+                                </button>
                               )}
+
+                              {/* Approve button */}
+                              {isApproved ? (
+                                <div
+                                  className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1 rounded-xl bg-emerald-100/80 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60"
+                                  title="SOP approved and verified"
+                                >
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                  <span>Approved</span>
+                                </div>
+                              ) : sop.documentId ? (
+                                <button
+                                  onClick={() => handleVerifyDoc(sop.documentId)}
+                                  disabled={docActionLoading === sop.documentId}
+                                  className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center gap-1 cursor-pointer shadow-xs"
+                                  title="Approve SOP and release to student"
+                                >
+                                  {docActionLoading === sop.documentId ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  ) : (
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                  )}
+                                  <span>Approve</span>
+                                </button>
+                              ) : null}
+
+                              {/* Download Word (.docx) */}
+                              <button
+                                onClick={() =>
+                                  handleDownloadWord(
+                                    'sop',
+                                    sop.recommendationId,
+                                    `SOP_${(sop.universityName || 'Uni').replace(/[^a-zA-Z0-9]/g, '_')}_${(sop.programName || 'Prog').replace(/[^a-zA-Z0-9]/g, '_')}.docx`,
+                                  )
+                                }
+                                disabled={downloadingWordId === sop.recommendationId}
+                                className="px-2.5 py-1.5 rounded-xl text-xs font-extrabold bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-colors flex items-center gap-1 cursor-pointer shadow-xs"
+                                title="Download editable Microsoft Word (.docx) document"
+                              >
+                                {downloadingWordId === sop.recommendationId ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <Download className="w-3.5 h-3.5 text-blue-600" />
+                                )}
+                                <span>Word (.docx)</span>
+                              </button>
+
+                              {/* Upload Corrected */}
+                              <label
+                                className={`px-2.5 py-1.5 rounded-xl text-xs font-extrabold bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 transition-colors flex items-center gap-1 cursor-pointer shadow-xs ${
+                                  uploadingCorrectedId === sop.recommendationId ? 'opacity-60 pointer-events-none' : ''
+                                }`}
+                                title="Upload corrected SOP (marks as approved, replaces generated document)"
+                              >
+                                {uploadingCorrectedId === sop.recommendationId ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <Upload className="w-3.5 h-3.5 text-purple-600" />
+                                )}
+                                <span>Upload Corrected</span>
+                                <input
+                                  type="file"
+                                  accept=".pdf,.docx,.doc"
+                                  className="hidden"
+                                  disabled={uploadingCorrectedId === sop.recommendationId}
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      handleUploadCorrected('sop', file, sop.recommendationId);
+                                      e.target.value = '';
+                                    }
+                                  }}
+                                />
+                              </label>
                             </div>
                           </div>
                         );
@@ -2695,44 +2932,116 @@ export function StudentDetailModal({
                                       </button>
                                     )}
 
-                                    {/* Reject / Edit Reason / Request Re-upload Actions */}
-                                    {isRejected ? (
+                                    {/* AI Documents: CV / SOP specific actions (Download Word, Upload Corrected, Re-generate) */}
+                                    {doc.documentType === 'cv' ? (
                                       <>
+                                        {/* Download Word (.docx) */}
                                         <button
-                                          onClick={() => handleOpenRejectModal(doc)}
-                                          disabled={docActionLoading === doc.id}
-                                          className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-white dark:bg-[#151B27] border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 shadow-xs"
-                                          title="Update rejection feedback"
+                                          onClick={() => {
+                                            const studentName = student
+                                              ? [student.firstName, student.lastName].filter(Boolean).join('_')
+                                              : 'Applicant';
+                                            handleDownloadWord(
+                                              'cv',
+                                              undefined,
+                                              `CV_${studentName || 'Applicant'}.docx`,
+                                            );
+                                          }}
+                                          disabled={downloadingWordId === 'cv'}
+                                          className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-colors cursor-pointer shadow-xs"
+                                          title="Download editable Microsoft Word (.docx) CV"
                                         >
-                                          <AlertTriangle className="w-3.5 h-3.5" />
-                                          <span>Edit Reason</span>
+                                          {downloadingWordId === 'cv' ? (
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                          ) : (
+                                            <Download className="w-3.5 h-3.5 text-blue-600" />
+                                          )}
+                                          <span>Word (.docx)</span>
                                         </button>
-                                        <button
-                                          onClick={() => handleOpenRejectModal(doc)}
-                                          disabled={docActionLoading === doc.id}
-                                          className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-red-600 hover:bg-red-700 text-white shadow-xs"
-                                          title="Re-request student re-upload"
+
+                                        {/* Upload Corrected */}
+                                        <label
+                                          className={`py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 transition-colors cursor-pointer shadow-xs ${
+                                            uploadingCorrectedId === 'cv' ? 'opacity-60 pointer-events-none' : ''
+                                          }`}
+                                          title="Upload corrected CV (marks as verified and replaces generated CV)"
                                         >
-                                          <AlertCircle className="w-3.5 h-3.5" />
-                                          <span>Request Re-upload</span>
+                                          {uploadingCorrectedId === 'cv' ? (
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                          ) : (
+                                            <Upload className="w-3.5 h-3.5 text-purple-600" />
+                                          )}
+                                          <span>Upload Corrected</span>
+                                          <input
+                                            type="file"
+                                            accept=".pdf,.docx,.doc"
+                                            className="hidden"
+                                            disabled={uploadingCorrectedId === 'cv'}
+                                            onChange={(e) => {
+                                              const file = e.target.files?.[0];
+                                              if (file) {
+                                                handleUploadCorrected('cv', file);
+                                                e.target.value = '';
+                                              }
+                                            }}
+                                          />
+                                        </label>
+
+                                        {/* Re-generate CV */}
+                                        <button
+                                          onClick={handleRegenerateCv}
+                                          disabled={regeneratingCv}
+                                          className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors cursor-pointer shadow-xs"
+                                          title="Re-generate CV from scratch"
+                                        >
+                                          {regeneratingCv ? (
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                          ) : (
+                                            <RefreshCw className="w-3.5 h-3.5" />
+                                          )}
+                                          <span>Re-generate</span>
                                         </button>
                                       </>
-                                    ) : (
-                                      <button
-                                        onClick={() => handleOpenRejectModal(doc)}
-                                        disabled={docActionLoading === doc.id}
-                                        className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 shadow-xs"
-                                        title="Reject document and request revision"
-                                      >
-                                        <AlertTriangle className="w-3.5 h-3.5" />
-                                        <span>Reject</span>
-                                      </button>
+                                    ) : doc.documentType === 'sop' ? null : (
+                                      /* Non-AI Documents: Reject / Edit Reason / Request Re-upload Actions */
+                                      isRejected ? (
+                                        <>
+                                          <button
+                                            onClick={() => handleOpenRejectModal(doc)}
+                                            disabled={docActionLoading === doc.id}
+                                            className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-white dark:bg-[#151B27] border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 shadow-xs"
+                                            title="Update rejection feedback"
+                                          >
+                                            <AlertTriangle className="w-3.5 h-3.5" />
+                                            <span>Edit Reason</span>
+                                          </button>
+                                          <button
+                                            onClick={() => handleOpenRejectModal(doc)}
+                                            disabled={docActionLoading === doc.id}
+                                            className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-red-600 hover:bg-red-700 text-white shadow-xs"
+                                            title="Re-request student re-upload"
+                                          >
+                                            <AlertCircle className="w-3.5 h-3.5" />
+                                            <span>Request Re-upload</span>
+                                          </button>
+                                        </>
+                                      ) : (
+                                        <button
+                                          onClick={() => handleOpenRejectModal(doc)}
+                                          disabled={docActionLoading === doc.id}
+                                          className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 shadow-xs"
+                                          title="Reject document and request revision"
+                                        >
+                                          <AlertTriangle className="w-3.5 h-3.5" />
+                                          <span>Reject</span>
+                                        </button>
+                                      )
                                     )}
                                   </div>
                                 </div>
 
-                                {/* Rejection Note Display - Prominent & Distinguished */}
-                                {doc.rejectionReason && (
+                                {/* Rejection Note Display (for non-AI uploaded documents) */}
+                                {doc.rejectionReason && doc.documentType !== 'cv' && doc.documentType !== 'sop' && (
                                   <div className="ml-10 p-3 rounded-xl bg-red-50/90 dark:bg-red-950/40 border-l-4 border-l-red-600 border-y border-r border-red-200/80 dark:border-red-900/40 text-xs text-red-900 dark:text-red-200 flex items-start gap-2.5 shadow-2xs">
                                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600 dark:text-red-400" />
                                     <div className="space-y-0.5 flex-1">
@@ -4261,16 +4570,18 @@ export function StudentDetailModal({
                     )}
                     <span>Verify / Accept</span>
                   </button>
-                  <button
-                    onClick={() => {
-                      handleOpenRejectModal(previewDoc);
-                    }}
-                    disabled={docActionLoading === previewDoc.id}
-                    className="py-1.5 px-3 text-xs font-extrabold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl flex items-center gap-1 shadow-xs cursor-pointer"
-                  >
-                    <AlertTriangle className="w-3.5 h-3.5" />
-                    <span>Reject</span>
-                  </button>
+                  {previewDoc.documentType !== 'cv' && previewDoc.documentType !== 'sop' && (
+                    <button
+                      onClick={() => {
+                        handleOpenRejectModal(previewDoc);
+                      }}
+                      disabled={docActionLoading === previewDoc.id}
+                      className="py-1.5 px-3 text-xs font-extrabold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl flex items-center gap-1 shadow-xs cursor-pointer"
+                    >
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      <span>Reject</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>
