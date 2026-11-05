@@ -615,7 +615,31 @@ export function StudentDocumentHub() {
 
                 {/* Actions */}
                 <div className="shrink-0 flex items-center gap-2">
-                  {isUploaded || isRejected ? (
+                  {['cv', 'sop', 'lor'].includes(item.type) ? (
+                    <div className="flex items-center gap-2">
+                      {isVerified ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                          <span>Approved</span>
+                        </span>
+                      ) : isPending ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shadow-2xs">
+                          <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                          <span>Under Review</span>
+                        </span>
+                      ) : isRejected ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 shadow-2xs">
+                          <AlertCircle className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+                          <span>Revision Needed</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
+                          <Circle className="w-3.5 h-3.5 text-gray-400" />
+                          <span>Not Generated</span>
+                        </span>
+                      )}
+                    </div>
+                  ) : isUploaded || isRejected ? (
                     <>
                       {/* Replace / Re-upload Button */}
                       <button

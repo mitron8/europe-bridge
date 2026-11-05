@@ -27,6 +27,7 @@ import {
   Camera,
   UploadCloud,
   Image as ImageIcon,
+  Layers,
 } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
@@ -142,6 +143,13 @@ interface CvFormData {
     isPendingVerification?: boolean;
     isRejected?: boolean;
   } | null;
+  quota?: {
+    generationCount: number;
+    maxGenerations: number;
+    remainingAttempts: number;
+    extraAttemptsGranted: boolean;
+    canGrantExtra: boolean;
+  };
 }
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
@@ -161,6 +169,8 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [maxGenerations, setMaxGenerations] = useState(3);
+  const [remainingAttempts, setRemainingAttempts] = useState(3);
   const [statusMessage, setStatusMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [activeTab, setActiveTab] = useState<'profile' | 'education' | 'experience' | 'projects' | 'skills' | 'extras' | 'photo'>('profile');
   const [newSkillInput, setNewSkillInput] = useState('');
@@ -175,6 +185,11 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
       if (!isPolling) setIsLoading(true);
       const data = await apiFetch<CvFormData>('/student/cv');
       setFormData(data);
+
+      if (data.quota) {
+        setMaxGenerations(data.quota.maxGenerations || 3);
+        setRemainingAttempts(data.quota.remainingAttempts);
+      }
 
       const jobStatus = data.latestJob?.status;
       if (jobStatus === 'pending' || jobStatus === 'processing') {
@@ -203,7 +218,19 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
           const statusRes = await apiFetch<{
             job: CvFormData['latestJob'];
             document: CvFormData['document'];
+            quota?: {
+              generationCount: number;
+              maxGenerations: number;
+              remainingAttempts: number;
+              extraAttemptsGranted: boolean;
+              canGrantExtra: boolean;
+            };
           }>('/student/cv/status');
+
+          if (statusRes.quota) {
+            setMaxGenerations(statusRes.quota.maxGenerations || 3);
+            setRemainingAttempts(statusRes.quota.remainingAttempts);
+          }
 
           if (statusRes.job) {
             const status = statusRes.job.status;
@@ -487,6 +514,13 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
 
   const handleGenerate = async () => {
     if (!formData) return;
+    if (remainingAttempts <= 0) {
+      setStatusMessage({
+        text: `You have reached your limit of ${maxGenerations} generation chances. Please ask your counsellor for additional attempts.`,
+        type: 'error',
+      });
+      return;
+    }
     setIsGenerating(true);
     setStatusMessage(null);
 
@@ -499,6 +533,8 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
+
+      setRemainingAttempts((prev) => Math.max(0, prev - 1));
 
       setStatusMessage({
         text: 'Your CV is being generated in the background. You can safely close your browser or navigate away. Your progress is saved.',
@@ -555,6 +591,10 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                 <FileText className="w-3.5 h-3.5 text-germany-gold" />
                 <span>AI CV Generator</span>
               </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shadow-xs">
+                <Layers className="w-3.5 h-3.5 text-germany-red" />
+                <span>{remainingAttempts} of {maxGenerations} generation chances left</span>
+              </div>
             </div>
             <h1 className="text-2xl md:text-3xl font-display text-germany-black dark:text-white">
               Academic Curriculum Vitae (CV)
@@ -577,7 +617,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
 
             <button
               onClick={handleGenerate}
-              disabled={isSaving || isGenerating}
+              disabled={isSaving || isGenerating || remainingAttempts <= 0}
               className="flex items-center gap-2 px-5 py-2.5 neu-btn-primary text-xs font-extrabold shadow-md disabled:opacity-60 cursor-pointer"
             >
               {isGenerating ? (
@@ -588,7 +628,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
               ) : (
                 <>
                   <FileText className="w-4 h-4 text-germany-gold" />
-                  <span>Generate CV</span>
+                  <span>{remainingAttempts <= 0 ? 'Limit Reached (0 left)' : 'Generate CV'}</span>
                 </>
               )}
             </button>
@@ -2020,7 +2060,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
 
           <button
             onClick={handleGenerate}
-            disabled={isSaving || isGenerating}
+            disabled={isSaving || isGenerating || remainingAttempts <= 0}
             className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-6 py-2 neu-btn-primary text-xs font-extrabold shadow-md disabled:opacity-60 cursor-pointer"
           >
             {isGenerating ? (
@@ -2031,7 +2071,7 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
             ) : (
               <>
                 <FileText className="w-4 h-4 text-germany-gold" />
-                <span>Generate CV</span>
+                <span>{remainingAttempts <= 0 ? 'Limit Reached (0 left)' : 'Generate CV'}</span>
               </>
             )}
           </button>

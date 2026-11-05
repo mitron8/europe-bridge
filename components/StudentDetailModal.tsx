@@ -209,7 +209,7 @@ export function StudentDetailModal({
   const effectiveStudentId = student?.userId || propStudent?.userId || studentId || '';
   const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
-  const handleGrantAttempts = async (documentType: 'sop' | 'lor') => {
+  const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
     if (!effectiveStudentId) return;
     try {
       setGrantingDocType(documentType);
@@ -224,8 +224,9 @@ export function StudentDetailModal({
       if (!res.ok) {
         throw new Error(data.message || `Failed to allot extra attempts for ${documentType.toUpperCase()}`);
       }
+      const addedCount = documentType === 'cv' ? 1 : 2;
       setGrantStatusMessage({
-        text: `Success: Allotted +2 attempts for ${documentType.toUpperCase()}! Student now has ${data.newMaxGenerations - (dossierLimits?.[documentType]?.generationCount || 0)} attempts remaining.`,
+        text: `Success: Allotted +${addedCount} attempt${addedCount > 1 ? 's' : ''} for ${documentType.toUpperCase()}! Student now has ${data.newMaxGenerations - (dossierLimits?.[documentType]?.generationCount || 0)} attempts remaining.`,
         type: 'success',
       });
       // Refresh limits
@@ -312,8 +313,9 @@ export function StudentDetailModal({
   const [dossierLimits, setDossierLimits] = useState<{
     sop: { generationCount: number; maxGenerations: number; remainingAttempts: number; extraAttemptsGranted: boolean; canGrantExtra: boolean };
     lor: { generationCount: number; maxGenerations: number; remainingAttempts: number; extraAttemptsGranted: boolean; canGrantExtra: boolean };
+    cv?: { generationCount: number; maxGenerations: number; remainingAttempts: number; extraAttemptsGranted: boolean; canGrantExtra: boolean };
   } | null>(null);
-  const [grantingDocType, setGrantingDocType] = useState<'sop' | 'lor' | null>(null);
+  const [grantingDocType, setGrantingDocType] = useState<'sop' | 'lor' | 'cv' | null>(null);
   const [grantStatusMessage, setGrantStatusMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   // University shortlist state & adding
@@ -2383,8 +2385,8 @@ export function StudentDetailModal({
                       </div>
                     )}
 
-                    {/* SOP & LOR Quota Cards Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* SOP, LOR & CV Quota Cards Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {/* Statement of Purpose (SOP) */}
                       <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800 space-y-3">
                         <div className="flex items-center justify-between">
@@ -2542,6 +2544,87 @@ export function StudentDetailModal({
                             <div className="text-[11px] text-gray-500 dark:text-gray-400 py-1 flex items-center gap-1.5">
                               <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                               <span>Student has {dossierLimits?.lor?.remainingAttempts ?? 3} initial attempts left. +2 extra attempts can be allotted once initial 3 are crossed.</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Curriculum Vitae (CV) */}
+                      <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-germany-gold" />
+                            <span className="text-xs font-black text-gray-900 dark:text-white">
+                              Curriculum Vitae (CV)
+                            </span>
+                          </div>
+                          {dossierLimits?.cv?.canGrantExtra ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800">
+                              Initial 3 Limit Reached
+                            </span>
+                          ) : dossierLimits?.cv?.extraAttemptsGranted ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                              +1 Bonus Allotted
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                              Active Quota
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-baseline justify-between pt-1">
+                          <div>
+                            <span className="text-2xl font-black text-gray-900 dark:text-white">
+                              {dossierLimits?.cv?.generationCount ?? 0}
+                            </span>
+                            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">
+                              {' '}/ {dossierLimits?.cv?.maxGenerations ?? 3} used
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">
+                              {dossierLimits?.cv?.remainingAttempts ?? 3} remaining
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
+                          <div
+                            className="bg-amber-500 h-full transition-all duration-300"
+                            style={{
+                              width: `${Math.min(
+                                100,
+                                (((dossierLimits?.cv?.generationCount ?? 0) / (dossierLimits?.cv?.maxGenerations ?? 3)) * 100)
+                              )}%`,
+                            }}
+                          />
+                        </div>
+
+                        {/* Allot Button / Helper Info */}
+                        <div className="pt-2">
+                          {dossierLimits?.cv?.canGrantExtra ? (
+                            <button
+                              onClick={() => handleGrantAttempts('cv')}
+                              disabled={grantingDocType === 'cv'}
+                              className="w-full py-2 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-50"
+                            >
+                              {grantingDocType === 'cv' ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Plus className="w-3.5 h-3.5" />
+                              )}
+                              <span>Allot +1 CV Attempt</span>
+                            </button>
+                          ) : dossierLimits?.cv?.extraAttemptsGranted ? (
+                            <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 text-center py-1">
+                              Max 1 extra attempt already allotted (Total quota: {dossierLimits?.cv?.maxGenerations}).
+                            </p>
+                          ) : (
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400 py-1 flex items-center gap-1.5">
+                              <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                              <span>Student has {dossierLimits?.cv?.remainingAttempts ?? 3} initial attempts left. +1 extra attempt can be allotted once initial 3 are crossed.</span>
                             </div>
                           )}
                         </div>
@@ -3001,6 +3084,23 @@ export function StudentDetailModal({
                                           )}
                                           <span>Re-generate</span>
                                         </button>
+
+                                        {/* Allot Extra CV attempt */}
+                                        {dossierLimits?.cv?.canGrantExtra && (
+                                          <button
+                                            onClick={() => handleGrantAttempts('cv')}
+                                            disabled={grantingDocType === 'cv'}
+                                            className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 transition-colors cursor-pointer shadow-xs"
+                                            title="Allot +1 extra CV generation attempt to student"
+                                          >
+                                            {grantingDocType === 'cv' ? (
+                                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            ) : (
+                                              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                                            )}
+                                            <span>+ Allot Extra</span>
+                                          </button>
+                                        )}
                                       </>
                                     ) : doc.documentType === 'sop' ? null : (
                                       /* Non-AI Documents: Reject / Edit Reason / Request Re-upload Actions */
