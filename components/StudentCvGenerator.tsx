@@ -38,6 +38,8 @@ export interface CvGeneratorProps {
 
 interface EducationItem {
   id?: string;
+  degree?: string;
+  course?: string;
   educationLevel?: string;
   degreeType?: string;
   fieldOfStudy?: string;
@@ -656,17 +658,30 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
       {isPendingVerification && !isGenerating && (
         <div className="neu-card p-5 bg-amber-50/90 border border-amber-200 text-amber-900 rounded-2xl flex items-start gap-3.5 shadow-sm">
           <Clock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h3 className="text-xs font-black uppercase tracking-wider text-amber-800">CV Generated • Pending Counsellor Review</h3>
-              <span className="px-2 py-0.5 bg-amber-200 text-amber-900 rounded-full text-[10px] font-extrabold">In Review</span>
+          <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xs font-black uppercase tracking-wider text-amber-800">CV Generated • Pending Counsellor Review</h3>
+                <span className="px-2 py-0.5 bg-amber-200 text-amber-900 rounded-full text-[10px] font-extrabold">In Review</span>
+              </div>
+              <p className="text-xs font-bold text-amber-700 mt-1">
+                Your academic CV has been generated and queued for counsellor verification. To maintain strict German application quality standards, official downloads are released upon counsellor sign-off.
+              </p>
+              <p className="text-[11px] font-medium text-amber-600 mt-1">
+                Generated: {formData.document?.uploadedAt ? new Date(formData.document.uploadedAt).toLocaleString() : 'Recently'}
+              </p>
             </div>
-            <p className="text-xs font-bold text-amber-700 mt-1">
-              Your academic CV has been generated and queued for counsellor verification. To maintain strict German application quality standards, official downloads are released upon counsellor sign-off.
-            </p>
-            <p className="text-[11px] font-medium text-amber-600 mt-1">
-              Generated: {formData.document?.uploadedAt ? new Date(formData.document.uploadedAt).toLocaleString() : 'Recently'}
-            </p>
+            {formData.document?.url && (
+              <a
+                href={formData.document.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold rounded-xl transition-colors shadow-xs shrink-0"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Preview Draft PDF</span>
+              </a>
+            )}
           </div>
         </div>
       )}
@@ -1022,15 +1037,15 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
                 Education Records
               </h2>
               <p className="text-xs font-bold text-gray-500">
-                Synced with your student education history. Uncheck &quot;Include in CV&quot; to omit from this CV without deleting from your profile.
+                Independent CV education details. Enter your degree and course as you wish them to appear on your CV without affecting your profile.
               </p>
             </div>
             <button
               onClick={() => {
                 const newEdu: EducationItem = {
                   institutionName: '',
-                  degreeType: "Bachelor's",
-                  fieldOfStudy: '',
+                  degree: '',
+                  course: '',
                   startYear: new Date().getFullYear() - 4,
                   endYear: new Date().getFullYear(),
                   score: null,
@@ -1109,35 +1124,35 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
 
                     <div>
                       <label className="block text-[10px] font-extrabold text-gray-500 uppercase mb-1">
-                        Degree / Qualification
+                        Degree
                       </label>
                       <input
                         type="text"
-                        value={edu.degreeType || ''}
+                        value={edu.degree || ''}
                         onChange={(e) => {
                           const updated = [...formData.education];
-                          updated[idx] = { ...updated[idx], degreeType: e.target.value };
+                          updated[idx] = { ...updated[idx], degree: e.target.value };
                           setFormData({ ...formData, education: updated });
                         }}
                         className="w-full px-3 py-2 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200"
-                        placeholder="e.g. Bachelor of Engineering"
+                        placeholder="e.g. B.Tech, B.E., B.Com"
                       />
                     </div>
 
                     <div>
                       <label className="block text-[10px] font-extrabold text-gray-500 uppercase mb-1">
-                        Field of Study
+                        Course
                       </label>
                       <input
                         type="text"
-                        value={edu.fieldOfStudy || ''}
+                        value={edu.course || ''}
                         onChange={(e) => {
                           const updated = [...formData.education];
-                          updated[idx] = { ...updated[idx], fieldOfStudy: e.target.value };
+                          updated[idx] = { ...updated[idx], course: e.target.value };
                           setFormData({ ...formData, education: updated });
                         }}
                         className="w-full px-3 py-2 bg-white dark:bg-[#151B27] border border-[#EBE7E0] dark:border-gray-800 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200"
-                        placeholder="e.g. Computer Science"
+                        placeholder="e.g. Computer Science, Information Technology"
                       />
                     </div>
 

@@ -4626,7 +4626,7 @@ export function StudentDetailModal({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-[#111622] rounded-2xl max-w-xl w-full p-6 space-y-4 relative border border-gray-200/80 dark:border-gray-800/80 shadow-2xl"
+              className="bg-white dark:bg-[#111622] rounded-2xl max-w-4xl w-full p-6 space-y-4 relative border border-gray-200/80 dark:border-gray-800/80 shadow-2xl"
             >
               <button
                 onClick={() => setPreviewDoc(null)}

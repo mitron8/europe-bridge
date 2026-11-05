@@ -388,7 +388,7 @@ export default function ApsChecklist() {
       <div className="neu-card p-6 bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 space-y-2">
         <h2 className="text-xs font-black uppercase tracking-wider text-gray-400 mb-4">Documents</h2>
         <div className="space-y-3">
-          {items.map((item) => {
+          {items.filter((item) => !['cv', 'sop', 'lor'].includes(item.type)).map((item) => {
             const isAiDoc = ['cv', 'sop', 'lor'].includes(item.type);
             const isUploaded = ['UPLOADED', 'PENDING', 'VERIFIED'].includes(item.status);
             const isVerified = item.status === 'VERIFIED';
