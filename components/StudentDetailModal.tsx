@@ -202,7 +202,7 @@ export function StudentDetailModal({
   onClose,
   isPage = false,
 }: StudentDetailModalProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'universities' | 'notes' | 'admission'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'universities' | 'notes' | 'admission' | 'visa'>('overview');
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
   const [note, setNote] = useState('');
@@ -373,7 +373,200 @@ export function StudentDetailModal({
     }
   };
 
-  const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
+    // ── Visa Assistance Management State ────────────────────────────────────────
+  const [visaChecklist, setVisaChecklist] = useState<any[]>([]);
+  const [visaProgress, setVisaProgress] = useState<any>(null);
+  const [visaGeneralNotes, setVisaGeneralNotes] = useState<string>('');
+  const [visaLoading, setVisaLoading] = useState(false);
+  const [visaError, setVisaError] = useState<string | null>(null);
+  const [visaActionLoading, setVisaActionLoading] = useState<string | null>(null);
+  const [visaNotesEditing, setVisaNotesEditing] = useState<Record<string, string>>({});
+  const [visaNotesSavingId, setVisaNotesSavingId] = useState<string | null>(null);
+  const [visaSuccessMsg, setVisaSuccessMsg] = useState<Record<string, string>>({});
+  const [visaGeneralNotesSaving, setVisaGeneralNotesSaving] = useState(false);
+
+  // Exemption Modal State
+  const [visaExemptItem, setVisaExemptItem] = useState<any | null>(null);
+  const [visaExemptReason, setVisaExemptReason] = useState('');
+
+  // Rejection Modal State
+  const [visaRejectItem, setVisaRejectItem] = useState<any | null>(null);
+  const [visaRejectReason, setVisaRejectReason] = useState('');
+
+  const loadVisaChecklist = useCallback(async (stId: string) => {
+    if (!stId) return;
+    try {
+      setVisaLoading(true);
+      setVisaError(null);
+      const res = await fetch(`${API_URL}/visa/counsellor/students/${stId}/checklist`, {
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        throw new Error('Failed to load student visa checklist');
+      }
+      const data = await res.json();
+      setVisaChecklist(data.items || []);
+      setVisaProgress(data.progress || null);
+      setVisaGeneralNotes(data.generalCounsellorNotes || '');
+
+      const initialNotes: Record<string, string> = {};
+      for (const item of (data.items || [])) {
+        initialNotes[item.key] = item.counsellorNotes || '';
+      }
+      setVisaNotesEditing(initialNotes);
+    } catch (err: any) {
+      setVisaError(err.message || 'Error loading visa checklist');
+    } finally {
+      setVisaLoading(false);
+    }
+  }, [API_URL]);
+
+  useEffect(() => {
+    if (activeTab === 'visa' && effectiveStudentId) {
+      loadVisaChecklist(effectiveStudentId);
+    }
+  }, [activeTab, effectiveStudentId, loadVisaChecklist]);
+
+  const handleVerifyVisaDoc = async (documentId: string) => {
+    if (!effectiveStudentId || !documentId) return;
+    try {
+      setVisaActionLoading(documentId);
+      const res = await fetch(`${API_URL}/visa/counsellor/students/${effectiveStudentId}/documents/${documentId}/verify`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to verify document');
+      await loadVisaChecklist(effectiveStudentId);
+    } catch (err: any) {
+      alert(err.message || 'Failed to verify document');
+    } finally {
+      setVisaActionLoading(null);
+    }
+  };
+
+  const handleConfirmVisaReject = async () => {
+    if (!effectiveStudentId || !visaRejectItem || !visaRejectItem.documentId) return;
+    const reason = visaRejectReason.trim();
+    if (!reason) {
+      alert('Please provide feedback explaining why this document must be corrected.');
+      return;
+    }
+
+    try {
+      setVisaActionLoading(visaRejectItem.documentId);
+      const res = await fetch(`${API_URL}/visa/counsellor/students/${effectiveStudentId}/documents/${visaRejectItem.documentId}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ rejectionNote: reason }),
+      });
+      if (!res.ok) throw new Error('Failed to request document re-upload');
+      setVisaRejectItem(null);
+      setVisaRejectReason('');
+      await loadVisaChecklist(effectiveStudentId);
+    } catch (err: any) {
+      alert(err.message || 'Error requesting correction');
+    } finally {
+      setVisaActionLoading(null);
+    }
+  };
+
+  const handleToggleVisaApplicability = async (item: any) => {
+    if (!effectiveStudentId) return;
+    if (item.isApplicable) {
+      // Open modal to capture reason for exemption
+      setVisaExemptItem(item);
+      setVisaExemptReason('');
+    } else {
+      // Re-enable applicability
+      try {
+        setVisaActionLoading(item.key);
+        const res = await fetch(`${API_URL}/visa/counsellor/students/${effectiveStudentId}/requirements/${item.key}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ isApplicable: true }),
+        });
+        if (!res.ok) throw new Error('Failed to update requirement');
+        await loadVisaChecklist(effectiveStudentId);
+      } catch (err: any) {
+        alert(err.message || 'Error updating requirement');
+      } finally {
+        setVisaActionLoading(null);
+      }
+    }
+  };
+
+  const handleConfirmVisaExemption = async () => {
+    if (!effectiveStudentId || !visaExemptItem) return;
+    const reason = visaExemptReason.trim();
+    if (!reason) {
+      alert('Please state the exemption reason (e.g. DAAD scholarship holder, English waiver).');
+      return;
+    }
+
+    try {
+      setVisaActionLoading(visaExemptItem.key);
+      const res = await fetch(`${API_URL}/visa/counsellor/students/${effectiveStudentId}/requirements/${visaExemptItem.key}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ isApplicable: false, notApplicableReason: reason }),
+      });
+      if (!res.ok) throw new Error('Failed to mark requirement as not applicable');
+      setVisaExemptItem(null);
+      setVisaExemptReason('');
+      await loadVisaChecklist(effectiveStudentId);
+    } catch (err: any) {
+      alert(err.message || 'Error saving exemption');
+    } finally {
+      setVisaActionLoading(null);
+    }
+  };
+
+  const handleSaveVisaItemNote = async (key: string) => {
+    if (!effectiveStudentId) return;
+    const noteText = visaNotesEditing[key] || '';
+    try {
+      setVisaNotesSavingId(key);
+      const res = await fetch(`${API_URL}/visa/counsellor/students/${effectiveStudentId}/requirements/${key}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ counsellorNotes: noteText }),
+      });
+      if (!res.ok) throw new Error('Failed to save advice');
+      setVisaSuccessMsg((prev) => ({ ...prev, [key]: 'Note saved!' }));
+      setTimeout(() => setVisaSuccessMsg((prev) => ({ ...prev, [key]: '' })), 3000);
+      await loadVisaChecklist(effectiveStudentId);
+    } catch (err: any) {
+      alert(err.message || 'Failed to save note');
+    } finally {
+      setVisaNotesSavingId(null);
+    }
+  };
+
+  const handleSaveVisaGeneralNotes = async () => {
+    if (!effectiveStudentId) return;
+    try {
+      setVisaGeneralNotesSaving(true);
+      const res = await fetch(`${API_URL}/visa/counsellor/students/${effectiveStudentId}/notes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ counsellorNotes: visaGeneralNotes }),
+      });
+      if (!res.ok) throw new Error('Failed to save general visa notes');
+      alert('General visa strategy notes updated for student!');
+      await loadVisaChecklist(effectiveStudentId);
+    } catch (err: any) {
+      alert(err.message || 'Failed to save notes');
+    } finally {
+      setVisaGeneralNotesSaving(false);
+    }
+  };
+
+const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
     if (!effectiveStudentId) return;
     try {
       setGrantingDocType(documentType);
@@ -1881,6 +2074,24 @@ export function StudentDetailModal({
                   </span>
                 )}
               </button>
+
+              <button
+                onClick={() => setActiveTab('visa')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${
+                  activeTab === 'visa'
+                    ? 'bg-germany-red text-white shadow-md'
+                    : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
+                }`}
+              >
+                <Plane className="w-3.5 h-3.5" />
+                <span>Visa Preparation</span>
+                {visaProgress && (
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
+                    {visaProgress.verifiedCount}/{visaProgress.totalApplicable}
+                  </span>
+                )}
+              </button>
+
 
             </div>
           </div>
@@ -5016,7 +5227,359 @@ export function StudentDetailModal({
               </div>
             )}
 
-          </div>
+                      {/* ========================================================
+                TAB 6: VISA ASSISTANCE & DOCUMENT CHECKLIST
+            ======================================================== */}
+            {activeTab === 'visa' && (
+              <div className="space-y-5 animate-fadeIn">
+                {/* Header & Readiness Overview */}
+                <div className="bg-white dark:bg-[#151B27] rounded-2xl p-5 border border-gray-200/80 dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-germany-red/10 text-germany-red border border-germany-red/20 flex items-center gap-1">
+                        <Plane className="w-3 h-3" />
+                        <span>Counsellor Visa Assistance</span>
+                      </span>
+                      <span className="text-[10px] font-bold text-gray-400">
+                        Consular Checklist 2026
+                      </span>
+                    </div>
+                    <h3 className="text-base font-black text-gray-900 dark:text-white">
+                      German Student Visa Preparation &amp; Readiness
+                    </h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      Verify student documents against German consular criteria, flag re-uploads, and configure conditional exemptions.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {visaProgress && (
+                      <div className="flex items-center gap-3 bg-gray-50 dark:bg-[#1A2234] px-4 py-2.5 rounded-xl border border-gray-200/60 dark:border-gray-800 shrink-0">
+                        <div className="text-right">
+                          <div className="text-[10px] font-extrabold uppercase text-gray-400">Readiness</div>
+                          <div className="text-sm font-black text-gray-900 dark:text-white">
+                            {visaProgress.verifiedCount} / {visaProgress.totalApplicable} Verified
+                          </div>
+                        </div>
+                        <div className="w-10 h-10 rounded-full border-2 border-emerald-500/20 border-t-emerald-500 flex items-center justify-center font-black text-xs text-emerald-600 dark:text-emerald-400">
+                          {visaProgress.readinessPercentage}%
+                        </div>
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => loadVisaChecklist(effectiveStudentId)}
+                      disabled={visaLoading}
+                      className="px-3.5 py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${visaLoading ? 'animate-spin' : ''}`} />
+                      <span>Refresh</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Scope Limitation Alert */}
+                <div className="p-3.5 bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/60 rounded-xl text-xs text-amber-900 dark:text-amber-300 flex items-start gap-2.5">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <p className="leading-relaxed">
+                    <strong>Preparation Scope Only:</strong> EuroBridge provides visa document preparation and counsellor verification assistance only. EuroBridge does NOT submit visa applications, book consular appointments, or pay official fees on behalf of students.
+                  </p>
+                </div>
+
+                {/* General Counsellor Visa Notes */}
+                <div className="bg-white dark:bg-[#151B27] rounded-2xl p-5 border border-gray-200/80 dark:border-gray-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-extrabold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+                      <FileCheck2 className="w-4 h-4 text-germany-red" />
+                      <span>Overall Visa Strategy Instructions for Student</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleSaveVisaGeneralNotes}
+                      disabled={visaGeneralNotesSaving}
+                      className="px-3 py-1.5 bg-germany-red hover:bg-germany-red/90 text-white text-xs font-extrabold rounded-xl shadow-xs transition-all flex items-center gap-1 cursor-pointer"
+                    >
+                      {visaGeneralNotesSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                      <span>Save Strategy Notes</span>
+                    </button>
+                  </div>
+                  <textarea
+                    rows={2}
+                    placeholder="e.g. Schedule VFS appointment under Mumbai jurisdiction as soon as admission arrives. Ensure blocked account is funded 15 days before appointment."
+                    value={visaGeneralNotes}
+                    onChange={(e) => setVisaGeneralNotes(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#111622] text-xs text-gray-900 dark:text-white"
+                  />
+                </div>
+
+                {/* Visa Checklist Table */}
+                {visaLoading ? (
+                  <div className="p-12 text-center bg-white dark:bg-[#151B27] rounded-2xl border border-gray-200 dark:border-gray-800">
+                    <Loader2 className="w-8 h-8 animate-spin text-germany-red mx-auto mb-2" />
+                    <p className="text-xs font-bold text-gray-500">Loading student visa checklist...</p>
+                  </div>
+                ) : visaError ? (
+                  <div className="p-6 text-center bg-white dark:bg-[#151B27] rounded-2xl border border-red-200 dark:border-red-900">
+                    <AlertCircle className="w-6 h-6 text-red-500 mx-auto mb-2" />
+                    <p className="text-xs font-bold text-red-600">{visaError}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {visaChecklist.map((item) => {
+                      const isItemLoading = visaActionLoading === item.key || (item.documentId && visaActionLoading === item.documentId);
+                      const isSavingNote = visaNotesSavingId === item.key;
+                      const success = visaSuccessMsg[item.key];
+
+                      return (
+                        <div
+                          key={item.key}
+                          className={`bg-white dark:bg-[#151B27] rounded-2xl p-5 border shadow-sm space-y-3.5 transition-all ${
+                            !item.isApplicable
+                              ? 'opacity-65 border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-[#111622]'
+                              : 'border-gray-200/80 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
+                          }`}
+                        >
+                          {/* Row Header */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-800/80 pb-3">
+                            <div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md">
+                                  {item.category}
+                                </span>
+                                {item.isMandatory ? (
+                                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-md">
+                                    Mandatory
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 rounded-md">
+                                    Conditional
+                                  </span>
+                                )}
+
+                                <span
+                                  className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${
+                                    item.status === 'VERIFIED'
+                                      ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-300'
+                                      : item.status === 'UNDER_REVIEW' || item.status === 'UPLOADED'
+                                      ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-300'
+                                      : item.status === 'REJECT_REUPLOAD'
+                                      ? 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 border-red-300'
+                                      : item.status === 'NOT_APPLICABLE'
+                                      ? 'bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 border-purple-300'
+                                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 border-gray-300'
+                                  }`}
+                                >
+                                  {item.status.replace('_', ' ')}
+                                </span>
+                              </div>
+
+                              <h4 className="text-sm font-black text-gray-900 dark:text-white mt-1">
+                                {item.title}
+                              </h4>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                {item.description}
+                              </p>
+                            </div>
+
+                            {/* Verification & Exemption Actions */}
+                            <div className="flex items-center gap-2 shrink-0">
+                              {/* Preview if uploaded */}
+                              {item.documentUrl && (
+                                <a
+                                  href={item.documentUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                  <span>Preview</span>
+                                </a>
+                              )}
+
+                              {/* Verify Document button */}
+                              {item.documentId && item.status !== 'VERIFIED' && (
+                                <button
+                                  type="button"
+                                  disabled={isItemLoading}
+                                  onClick={() => handleVerifyVisaDoc(item.documentId!)}
+                                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl shadow-xs transition-all flex items-center gap-1 cursor-pointer"
+                                >
+                                  {isItemLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                                  <span>Verify</span>
+                                </button>
+                              )}
+
+                              {/* Request Re-upload button */}
+                              {item.documentId && (
+                                <button
+                                  type="button"
+                                  disabled={isItemLoading}
+                                  onClick={() => {
+                                    setVisaRejectItem(item);
+                                    setVisaRejectReason(item.rejectionNote || '');
+                                  }}
+                                  className="px-3 py-1.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 hover:bg-red-100 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                                >
+                                  <span>Request Correction</span>
+                                </button>
+                              )}
+
+                              {/* Toggle Applicability button */}
+                              {item.isConditional && (
+                                <button
+                                  type="button"
+                                  disabled={isItemLoading}
+                                  onClick={() => handleToggleVisaApplicability(item)}
+                                  className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer border ${
+                                    item.isApplicable
+                                      ? 'bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 border-purple-200'
+                                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300'
+                                  }`}
+                                >
+                                  <span>{item.isApplicable ? 'Mark Not Applicable' : 'Enable Requirement'}</span>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Upload info / Feedback row */}
+                          {item.originalFilename && (
+                            <div className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>{item.originalFilename}</span>
+                              {item.uploadedAt && (
+                                <span className="text-gray-400 font-normal">
+                                  · Uploaded {new Date(item.uploadedAt).toLocaleDateString()}
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          {item.notApplicableReason && !item.isApplicable && (
+                            <div className="p-2.5 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900 rounded-xl text-xs text-purple-800 dark:text-purple-300 font-medium">
+                              <strong>Exemption Reason: </strong>{item.notApplicableReason}
+                            </div>
+                          )}
+
+                          {item.rejectionNote && (
+                            <div className="p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-xl text-xs text-red-800 dark:text-red-300 font-medium">
+                              <strong>Correction Requested: </strong>{item.rejectionNote}
+                            </div>
+                          )}
+
+                          {/* Specific Advice for this item */}
+                          <div className="pt-1 space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <label className="text-[11px] font-bold text-gray-500">
+                                Specific Counsellor Advice for this Requirement:
+                              </label>
+                              <div className="flex items-center gap-2">
+                                {success && (
+                                  <span className="text-[11px] font-bold text-emerald-600">{success}</span>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleSaveVisaItemNote(item.key)}
+                                  disabled={isSavingNote}
+                                  className="text-[11px] font-extrabold text-germany-red hover:underline flex items-center gap-1 cursor-pointer"
+                                >
+                                  {isSavingNote ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                                  <span>Save Note</span>
+                                </button>
+                              </div>
+                            </div>
+                            <input
+                              type="text"
+                              placeholder="e.g. Ensure seal is visible; use 6-month validity standard."
+                              value={visaNotesEditing[item.key] || ''}
+                              onChange={(e) => setVisaNotesEditing((prev) => ({ ...prev, [item.key]: e.target.value }))}
+                              className="w-full px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#111622] text-xs text-gray-900 dark:text-white"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Exemption Modal */}
+                {visaExemptItem && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+                    <div className="bg-white dark:bg-[#151B27] rounded-2xl p-6 max-w-md w-full border border-gray-200 dark:border-gray-800 shadow-xl space-y-4">
+                      <h4 className="text-sm font-black text-gray-900 dark:text-white">
+                        Exempt Requirement: {visaExemptItem.title}
+                      </h4>
+                      <p className="text-xs text-gray-500">
+                        Please provide a reason why this requirement does not apply to this student (e.g. full DAAD scholarship, university language waiver, residence already booked).
+                      </p>
+                      <textarea
+                        rows={3}
+                        placeholder="State exemption reason..."
+                        value={visaExemptReason}
+                        onChange={(e) => setVisaExemptReason(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#111622] text-xs text-gray-900 dark:text-white"
+                      />
+                      <div className="flex items-center justify-end gap-2 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setVisaExemptItem(null)}
+                          className="px-4 py-2 text-xs font-bold rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleConfirmVisaExemption}
+                          className="px-4 py-2 text-xs font-extrabold rounded-xl bg-purple-600 hover:bg-purple-700 text-white"
+                        >
+                          Confirm Exemption
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Rejection Modal */}
+                {visaRejectItem && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+                    <div className="bg-white dark:bg-[#151B27] rounded-2xl p-6 max-w-md w-full border border-gray-200 dark:border-gray-800 shadow-xl space-y-4">
+                      <h4 className="text-sm font-black text-gray-900 dark:text-white">
+                        Request Correction: {visaRejectItem.title}
+                      </h4>
+                      <p className="text-xs text-gray-500">
+                        Explain clearly what is missing or incorrect so the student can upload the right version.
+                      </p>
+                      <textarea
+                        rows={3}
+                        placeholder="e.g. Scan is cut off at the bottom. Please re-scan in high resolution with all 4 corners visible."
+                        value={visaRejectReason}
+                        onChange={(e) => setVisaRejectReason(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#111622] text-xs text-gray-900 dark:text-white"
+                      />
+                      <div className="flex items-center justify-end gap-2 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setVisaRejectItem(null)}
+                          className="px-4 py-2 text-xs font-bold rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleConfirmVisaReject}
+                          className="px-4 py-2 text-xs font-extrabold rounded-xl bg-red-600 hover:bg-red-700 text-white"
+                        >
+                          Send Correction Request
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            </div>
 
           {/* Footer Bar (Strictly no delete student button) */}
           <div className="pt-3 border-t border-[#EBE7E0] dark:border-gray-800/80 flex items-center justify-between shrink-0">
