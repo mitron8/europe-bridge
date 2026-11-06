@@ -58,7 +58,7 @@ export interface StudentDocument {
   id: string;
   name: string;
   category: string;
-  section: 'aps' | 'general' | 'cv' | 'sop' | 'lor' | 'lor_sop_cv';
+  section: 'aps' | 'admission' | 'visa' | 'general' | 'cv' | 'sop' | 'lor' | 'lor_sop_cv';
   size: string;
   uploadDate: string;
   status: 'verified' | 'pending' | 'rejected';
@@ -73,22 +73,42 @@ export interface StudentDocument {
 }
 
 import {
+  APS_DOCUMENT_CATALOGUE,
+  ADMISSION_DOCUMENT_CATALOGUE,
+  VISA_DOCUMENT_CATALOGUE,
+  GENERAL_DOCUMENT_CATALOGUE,
   CatalogueDocument,
   DOCUMENT_CATALOGUE,
   DOCUMENT_TYPE_LABELS,
   formatBytes,
 } from '@/lib/documentCatalogue';
 
+function findMatchingDoc(catItem: CatalogueDocument, docs: StudentDocument[]): StudentDocument | undefined {
+  const matches = docs.filter((d) => {
+    if (d.documentType === catItem.type) return true;
+    if (catItem.matchedDocumentTypes && catItem.matchedDocumentTypes.includes(d.documentType || '')) {
+      return true;
+    }
+    return false;
+  });
+  if (matches.length === 0) return undefined;
+  const verifiedMatch = matches.find((m) => m.status === 'verified');
+  if (verifiedMatch) return verifiedMatch;
+  const pendingMatch = matches.find((m) => m.status === 'pending');
+  if (pendingMatch) return pendingMatch;
+  return matches[0];
+}
+
 function mapDbDocToStudentDocument(row: any): StudentDocument {
   const catItem = DOCUMENT_CATALOGUE.find((c) => c.type === row.document_type);
   const meta = catItem
     ? { name: catItem.name, category: catItem.category }
     : DOCUMENT_TYPE_LABELS[row.document_type] || {
-        name: row.original_filename || (row.document_type ? row.document_type.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : 'Document'),
-        category: 'General',
-      };
+      name: row.original_filename || (row.document_type ? row.document_type.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : 'Document'),
+      category: 'General',
+    };
 
-  let section: 'aps' | 'general' | 'cv' | 'sop' | 'lor' = 'general';
+  let section: 'aps' | 'admission' | 'visa' | 'general' | 'cv' | 'sop' | 'lor' = 'general';
   if (row.document_type === 'cv' || row.section === 'cv') {
     section = 'cv';
   } else if (row.document_type === 'sop' || row.section === 'sop') {
@@ -202,7 +222,7 @@ export function StudentDetailModal({
   onClose,
   isPage = false,
 }: StudentDetailModalProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'universities' | 'notes' | 'admission' | 'visa'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'universities' | 'notes' | 'admission'>('overview');
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
   const [note, setNote] = useState('');
@@ -373,7 +393,7 @@ export function StudentDetailModal({
     }
   };
 
-    // ── Visa Assistance Management State ────────────────────────────────────────
+  // ── Visa Assistance Management State ────────────────────────────────────────
   const [visaChecklist, setVisaChecklist] = useState<any[]>([]);
   const [visaProgress, setVisaProgress] = useState<any>(null);
   const [visaGeneralNotes, setVisaGeneralNotes] = useState<string>('');
@@ -421,11 +441,7 @@ export function StudentDetailModal({
     }
   }, [API_URL]);
 
-  useEffect(() => {
-    if (activeTab === 'visa' && effectiveStudentId) {
-      loadVisaChecklist(effectiveStudentId);
-    }
-  }, [activeTab, effectiveStudentId, loadVisaChecklist]);
+
 
   const handleVerifyVisaDoc = async (documentId: string) => {
     if (!effectiveStudentId || !documentId) return;
@@ -566,7 +582,7 @@ export function StudentDetailModal({
     }
   };
 
-const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
+  const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
     if (!effectiveStudentId) return;
     try {
       setGrantingDocType(documentType);
@@ -611,7 +627,13 @@ const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
   const [docsLoading, setDocsLoading] = useState(true);
   const [docsError, setDocsError] = useState<string | null>(null);
   const [docActionLoading, setDocActionLoading] = useState<string | null>(null);
-  const [docCategory, setDocCategory] = useState<'all' | 'aps' | 'general' | 'cv' | 'sop' | 'lor'>('all');
+  const [docCategory, setDocCategory] = useState<'all' | 'aps' | 'admission' | 'visa' | 'general' | 'cv' | 'sop' | 'lor'>('aps');
+
+  useEffect(() => {
+    if (docCategory === 'visa' && effectiveStudentId) {
+      loadVisaChecklist(effectiveStudentId);
+    }
+  }, [docCategory, effectiveStudentId, loadVisaChecklist]);
   const [docFilter, setDocFilter] = useState<'all' | 'pending' | 'verified' | 'rejected' | 'not_uploaded'>('all');
   const [docActionFeedback, setDocActionFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [previewDoc, setPreviewDoc] = useState<StudentDocument | null>(null);
@@ -1628,9 +1650,8 @@ const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
     try {
-      const url = `${API_URL}/counsellor/universities/programmes?university=${encodeURIComponent(uni.name)}${
-        effectiveStudentId ? `&studentId=${encodeURIComponent(effectiveStudentId)}` : ''
-      }`;
+      const url = `${API_URL}/counsellor/universities/programmes?university=${encodeURIComponent(uni.name)}${effectiveStudentId ? `&studentId=${encodeURIComponent(effectiveStudentId)}` : ''
+        }`;
       const res = await fetch(url, { credentials: 'include' });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -1849,23 +1870,29 @@ const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
   }, [documents]);
 
   const allCatalogueDocs = DOCUMENT_CATALOGUE;
-  const apsCatalogueDocs = DOCUMENT_CATALOGUE.filter((d) => d.section === 'aps');
-  const generalCatalogueDocs = DOCUMENT_CATALOGUE.filter((d) => d.section === 'general');
+  const apsCatalogueDocs = APS_DOCUMENT_CATALOGUE;
+  const admissionCatalogueDocs = ADMISSION_DOCUMENT_CATALOGUE;
+  const visaCatalogueDocs = VISA_DOCUMENT_CATALOGUE;
+  const generalCatalogueDocs = GENERAL_DOCUMENT_CATALOGUE;
   const cvCatalogueDocs = DOCUMENT_CATALOGUE.filter((d) => d.type === 'cv');
   const lorCatalogueDocs = DOCUMENT_CATALOGUE.filter((d) => d.type === 'lor');
 
   // Filtered by current category
   const currentCategoryCatalogue = React.useMemo(() => {
     if (docCategory === 'aps') return apsCatalogueDocs;
+    if (docCategory === 'admission') return admissionCatalogueDocs;
+    if (docCategory === 'visa') return visaCatalogueDocs;
     if (docCategory === 'general') return generalCatalogueDocs;
     if (docCategory === 'cv') return cvCatalogueDocs;
-        if (docCategory === 'lor') return lorCatalogueDocs;
+    if (docCategory === 'lor') return lorCatalogueDocs;
     if (docCategory === 'sop') return [];
-    return allCatalogueDocs;
-  }, [docCategory, allCatalogueDocs, apsCatalogueDocs, generalCatalogueDocs, cvCatalogueDocs, lorCatalogueDocs]);
+    return apsCatalogueDocs;
+  }, [docCategory, apsCatalogueDocs, admissionCatalogueDocs, visaCatalogueDocs, generalCatalogueDocs, cvCatalogueDocs, lorCatalogueDocs]);
 
   const currentCategoryUploadedDocs = React.useMemo(() => {
     if (docCategory === 'aps') return distinctUploadedDocs.filter((d) => d.section === 'aps');
+    if (docCategory === 'admission') return distinctUploadedDocs.filter((d) => d.section === 'admission');
+    if (docCategory === 'visa') return distinctUploadedDocs.filter((d) => d.section === 'visa');
     if (docCategory === 'general') return distinctUploadedDocs.filter((d) => d.section === 'general');
     if (docCategory === 'cv') return distinctUploadedDocs.filter((d) => d.section === 'cv' || d.documentType === 'cv');
     if (docCategory === 'lor') return distinctUploadedDocs.filter((d) => d.section === 'lor' || d.documentType === 'lor');
@@ -1873,30 +1900,94 @@ const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
     return distinctUploadedDocs;
   }, [docCategory, distinctUploadedDocs]);
 
+  // Unified Category Checklist (contains all expected items in this category)
+  const categoryChecklist = React.useMemo(() => {
+    if (docCategory === 'cv' || docCategory === 'sop' || docCategory === 'lor') {
+      return [];
+    }
+
+    const matchedDocIds = new Set<string>();
+
+    const items = currentCategoryCatalogue.map((catItem) => {
+      const uploadedDoc = findMatchingDoc(catItem, distinctUploadedDocs);
+      if (uploadedDoc) {
+        matchedDocIds.add(uploadedDoc.id);
+      }
+
+      const itemStatus: 'not_uploaded' | 'pending' | 'verified' | 'rejected' = !uploadedDoc
+        ? 'not_uploaded'
+        : (uploadedDoc.status as any);
+
+      return {
+        key: catItem.type,
+        type: catItem.type,
+        name: catItem.name,
+        category: catItem.category,
+        description: catItem.description,
+        required: catItem.required,
+        section: catItem.section,
+        uploadedDoc,
+        status: itemStatus,
+      };
+    });
+
+    // Also include any documents uploaded under this category section that didn't match a catalogue type
+    const unmappedDocs = currentCategoryUploadedDocs.filter((d) => !matchedDocIds.has(d.id));
+    unmappedDocs.forEach((d) => {
+      items.push({
+        key: d.id,
+        type: d.documentType || d.id,
+        name: d.name,
+        category: d.category || 'Additional',
+        description: 'Uploaded student document',
+        required: false,
+        section: (d.section || docCategory) as any,
+        uploadedDoc: d,
+        status: d.status as any,
+      });
+    });
+
+    return items;
+  }, [docCategory, currentCategoryCatalogue, distinctUploadedDocs, currentCategoryUploadedDocs]);
+
+  // Items to render based on docFilter
+  const displayedChecklist = React.useMemo(() => {
+    if (docFilter === 'all') return categoryChecklist;
+    return categoryChecklist.filter((item) => item.status === docFilter);
+  }, [docFilter, categoryChecklist]);
+
   // Missing / Not-yet-uploaded catalogue items
   const notUploadedCatalogueItems = React.useMemo(() => {
-    const uploadedTypes = new Set(currentCategoryUploadedDocs.map((d) => d.documentType).filter(Boolean));
-    return currentCategoryCatalogue.filter((item) => !uploadedTypes.has(item.type));
-  }, [currentCategoryCatalogue, currentCategoryUploadedDocs]);
+    return categoryChecklist.filter((item) => item.status === 'not_uploaded');
+  }, [categoryChecklist]);
 
   // Metric counts for current category
-  const statsTotalExpected = Math.max(currentCategoryCatalogue.length, currentCategoryUploadedDocs.length);
-  const statsUploaded = currentCategoryUploadedDocs.length;
-  const statsNotUploaded = notUploadedCatalogueItems.length;
-  const statsPending = currentCategoryUploadedDocs.filter((d) => d.status === 'pending').length;
-  const statsVerified = currentCategoryUploadedDocs.filter((d) => d.status === 'verified').length;
-  const statsRejected = currentCategoryUploadedDocs.filter((d) => d.status === 'rejected').length;
+  const isCustomAiCategory = docCategory === 'cv' || docCategory === 'lor';
+  const statsTotalExpected = isCustomAiCategory ? currentCategoryUploadedDocs.length : categoryChecklist.length;
+  const statsUploaded = isCustomAiCategory ? currentCategoryUploadedDocs.length : categoryChecklist.filter((i) => i.uploadedDoc).length;
+  const statsNotUploaded = isCustomAiCategory ? 0 : categoryChecklist.filter((i) => i.status === 'not_uploaded').length;
+  const statsPending = isCustomAiCategory
+    ? currentCategoryUploadedDocs.filter((d) => d.status === 'pending').length
+    : categoryChecklist.filter((i) => i.status === 'pending').length;
+  const statsVerified = isCustomAiCategory
+    ? currentCategoryUploadedDocs.filter((d) => d.status === 'verified').length
+    : categoryChecklist.filter((i) => i.status === 'verified').length;
+  const statsRejected = isCustomAiCategory
+    ? currentCategoryUploadedDocs.filter((d) => d.status === 'rejected').length
+    : categoryChecklist.filter((i) => i.status === 'rejected').length;
 
-  // Global counts for sub-tabs and top navigation
+  // Uploaded counts for sub-tabs and top navigation (resolved dynamically)
   const allUploadedCount = distinctUploadedDocs.length;
-  const apsUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'aps').length;
-  const generalUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'general').length;
+  const apsUploadedCount = APS_DOCUMENT_CATALOGUE.filter((cat) => Boolean(findMatchingDoc(cat, distinctUploadedDocs))).length;
+  const admissionUploadedCount = ADMISSION_DOCUMENT_CATALOGUE.filter((cat) => Boolean(findMatchingDoc(cat, distinctUploadedDocs))).length;
+  const visaUploadedCount = VISA_DOCUMENT_CATALOGUE.filter((cat) => Boolean(findMatchingDoc(cat, distinctUploadedDocs))).length;
+  const generalUploadedCount = GENERAL_DOCUMENT_CATALOGUE.filter((cat) => Boolean(findMatchingDoc(cat, distinctUploadedDocs))).length;
   const cvUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'cv' || d.documentType === 'cv').length;
   const sopUploadedCount = studentSops.filter((s) => s.documentId).length;
   const lorUploadedCount = distinctUploadedDocs.filter((d) => d.section === 'lor' || d.documentType === 'lor').length;
   const pendingDocsCount = distinctUploadedDocs.filter((d) => d.status === 'pending').length;
 
-  // Documents to render based on docFilter
+  // Documents to render based on docFilter (for CV and LOR fallback)
   const filteredDocs = React.useMemo(() => {
     if (docFilter === 'not_uploaded') return [];
     if (docFilter === 'all') return currentCategoryUploadedDocs;
@@ -1935,796 +2026,777 @@ const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
   const bodyContent = (
     <>
       {/* Student Profile Header */}
-          <div className="pt-2 pb-4 border-b border-[#EBE7E0] shrink-0">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-germany-red via-germany-gold to-amber-500 text-white font-display text-lg font-black flex items-center justify-center shadow-md shrink-0">
-                  {initials}
+      <div className="pt-2 pb-4 border-b border-[#EBE7E0] shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-germany-red via-germany-gold to-amber-500 text-white font-display text-lg font-black flex items-center justify-center shadow-md shrink-0">
+              {initials}
+            </div>
+
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-xl sm:text-2xl font-display text-germany-black dark:text-white leading-tight">
+                  {student.firstName} {student.lastName}
+                </h2>
+                <span className={`px-2.5 py-0.5 font-extrabold rounded-full text-[11px] border ${(isMatchingLocked || student?.status === 'shortlist_locked' || summaryData?.status === 'shortlist_locked')
+                  ? 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-950/50 dark:text-purple-300 dark:border-purple-800'
+                  : (student?.status === 'plan_purchased' || summaryData?.status === 'plan_purchased')
+                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
+                    : 'bg-germany-gold/20 text-germany-black font-extrabold rounded-full text-[11px] border border-germany-gold/40'
+                  }`}>
+                  {isMatchingLocked || student?.status === 'shortlist_locked' || summaryData?.status === 'shortlist_locked'
+                    ? 'Shortlist Locked'
+                    : formatStatus(summaryData?.status || student?.status)}
+                </span>
+                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-extrabold rounded-full text-[10px] flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>Assigned to You</span>
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3 text-xs font-bold text-gray-500 flex-wrap">
+                <span className="flex items-center gap-1 text-gray-600">
+                  <Mail className="w-3.5 h-3.5 text-germany-red" />
+                  {student.email}
+                </span>
+                <span>•</span>
+                <span className="text-[11px] text-gray-400 font-mono">
+                  ID: {student.userId.substring(0, 8)}...
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Contact Bar */}
+          <div className="flex items-center gap-2 shrink-0">
+            <a
+              href={`mailto:${student.email}`}
+              className="neu-btn-primary py-2 px-3.5 text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow"
+            >
+              <Mail className="w-3.5 h-3.5" />
+              <span>Send Email</span>
+            </a>
+
+            <button
+              onClick={handleCopyEmail}
+              className="p-2 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-gray-600 dark:text-gray-300 hover:text-germany-red hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors shadow-xs"
+              title="Copy email address"
+            >
+              {copiedEmail ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Navigation Tabs Bar */}
+        <div className="flex items-center gap-2 overflow-x-auto pt-4 mt-2 -mb-2 scrollbar-none">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${activeTab === 'overview'
+              ? 'bg-germany-red text-white shadow-md'
+              : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
+              }`}
+          >
+            <User className="w-3.5 h-3.5" />
+            <span>Overview &amp; Profile</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('documents')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${activeTab === 'documents'
+              ? 'bg-germany-red text-white shadow-md'
+              : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
+              }`}
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Uploaded Documents</span>
+            {(pendingDocsCount > 0 || sopPendingCount > 0) && (
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-amber-400 text-slate-900">
+                {pendingDocsCount + sopPendingCount}
+              </span>
+            )}
+          </button>
+
+
+          <button
+            onClick={() => setActiveTab('universities')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${activeTab === 'universities'
+              ? 'bg-germany-red text-white shadow-md'
+              : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
+              }`}
+          >
+            <Building2 className="w-3.5 h-3.5" />
+            <span>University Eligibility</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">
+              {curatedProgrammeIds.length > 0
+                ? curatedProgrammeIds.length
+                : matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length || 0}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('notes')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${activeTab === 'notes'
+              ? 'bg-germany-red text-white shadow-md'
+              : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
+              }`}
+          >
+            <Save className="w-3.5 h-3.5" />
+            <span>Strategy Notes &amp; Tasks</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('admission')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${activeTab === 'admission'
+              ? 'bg-germany-red text-white shadow-md'
+              : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
+              }`}
+          >
+            <Send className="w-3.5 h-3.5" />
+            <span>Admission &amp; Portals</span>
+            {admissionApplications.length > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300">
+                {admissionApplications.length}
+              </span>
+            )}
+          </button>
+
+
+        </div>
+      </div>
+
+      {/* Scrollable Tab Content Body */}
+      <div className={isPage ? "pt-5 pb-2 pr-1 space-y-5" : "flex-1 overflow-y-auto pt-5 pb-2 pr-1 space-y-5"}>
+        {/* ========================================================
+                TAB 1: OVERVIEW & PROFILE
+            ======================================================== */}
+        {activeTab === 'overview' && (
+          <div className="space-y-5">
+            {summaryLoading ? (
+              <div className="p-8 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-germany-red" />
+              </div>
+            ) : summaryError ? (
+              <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-red-500 text-xs font-bold bg-red-50">
+                {summaryError}
+              </div>
+            ) : (
+              <>
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setShowFullProfile(true)}
+                    className="py-2 px-4 text-xs font-extrabold flex items-center gap-1.5 bg-white dark:bg-[#151B27] text-germany-black dark:text-white hover:text-germany-red border border-gray-200/80 dark:border-gray-800/80 rounded-xl shadow-xs transition-colors cursor-pointer"
+                  >
+                    <User className="w-4 h-4" />
+                    <span>View Student Profile</span>
+                  </button>
                 </div>
 
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-xl sm:text-2xl font-display text-germany-black dark:text-white leading-tight">
-                      {student.firstName} {student.lastName}
-                    </h2>
-                    <span className={`px-2.5 py-0.5 font-extrabold rounded-full text-[11px] border ${
-                      (isMatchingLocked || student?.status === 'shortlist_locked' || summaryData?.status === 'shortlist_locked')
-                        ? 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-950/50 dark:text-purple-300 dark:border-purple-800'
-                        : (student?.status === 'plan_purchased' || summaryData?.status === 'plan_purchased')
-                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
-                        : 'bg-germany-gold/20 text-germany-black font-extrabold rounded-full text-[11px] border border-germany-gold/40'
-                    }`}>
-                      {isMatchingLocked || student?.status === 'shortlist_locked' || summaryData?.status === 'shortlist_locked'
-                        ? 'Shortlist Locked'
-                        : formatStatus(summaryData?.status || student?.status)}
-                    </span>
-                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-extrabold rounded-full text-[10px] flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" />
-                      <span>Assigned to You</span>
-                    </span>
+                {/* Profile Snapshot Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="p-3.5 bg-white dark:bg-[#0E121A] rounded-xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-1">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">German Bavarian GPA</span>
+                    <div className="text-sm font-display text-germany-black dark:text-white flex items-center gap-1.5">
+                      <span className="text-germany-black dark:text-white font-black">{summaryData?.summary?.gpa || 'NA'}</span>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-3 text-xs font-bold text-gray-500 flex-wrap">
-                    <span className="flex items-center gap-1 text-gray-600">
-                      <Mail className="w-3.5 h-3.5 text-germany-red" />
-                      {student.email}
-                    </span>
-                    <span>•</span>
-                    <span className="text-[11px] text-gray-400 font-mono">
-                      ID: {student.userId.substring(0, 8)}...
-                    </span>
+                  <div className="p-3.5 bg-white dark:bg-[#0E121A] rounded-xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-1">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Language Scores</span>
+                    <div className="text-sm font-display text-germany-black dark:text-white">
+                      {summaryData?.summary?.languageScore || 'NA'}
+                    </div>
                   </div>
+
+                  <div className="p-3.5 bg-white dark:bg-[#0E121A] rounded-xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-1">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Target Intake</span>
+                    <div className="text-sm font-display text-germany-black dark:text-white">{summaryData?.summary?.targetIntake || 'NA'}</div>
+                  </div>
+
+                  <div className="p-3.5 bg-white dark:bg-[#0E121A] rounded-xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-1">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Readiness Score</span>
+                    <div className="text-sm font-display text-germany-red font-black flex items-center gap-1.5">
+                      <span>{summaryData?.summary?.readinessScore || 'NA'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Advising Roadmap */}
+                <div className="p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Compass className="w-4 h-4 text-germany-red" />
+                      <h3 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white uppercase tracking-wider">
+                        Study in Germany Admission Milestone Track
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {summaryData?.plan?.planName && (
+                        <span className="text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-germany-red/10 text-germany-red border border-germany-red/20">
+                          Plan: {summaryData.plan.planName}
+                        </span>
+                      )}
+                      <span className="text-[11px] font-bold text-gray-400">Status Overview</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                    {[
+                      { title: 'Profile Registration', stage: 'logged_in' },
+                      { title: 'Profile Complete', stage: 'profile_completed' },
+                      { title: 'Matching Engine', stage: 'matching_completed' },
+                      { title: 'Plan / Subscription', stage: 'plan_purchased' },
+                      { title: 'Shortlist Finalized', stage: 'shortlist_locked' },
+                      { title: 'Document Verification', stage: 'documents' },
+                      { title: 'APS India Certificate', stage: 'aps' },
+                      { title: 'Applications & Uni-Assist', stage: 'applications' },
+                      { title: 'Visa & Blocked Account', stage: 'visa' },
+                    ].map((step, idx) => {
+                      const statusOrder = [
+                        'signed_up',
+                        'logged_in',
+                        'profile_completed',
+                        'matching_completed',
+                        'plan_purchased',
+                        'shortlist_locked',
+                        'documents',
+                        'aps',
+                        'applications',
+                        'visa',
+                      ];
+                      const activeStatus = isMatchingLocked
+                        ? 'shortlist_locked'
+                        : (summaryData?.status || student?.status || 'signed_up');
+                      const currentIdx = statusOrder.indexOf(activeStatus);
+                      const stepIdx = statusOrder.indexOf(step.stage);
+
+                      let status = 'Pending';
+                      if (stepIdx > 4) {
+                        status = 'Pending';
+                      } else {
+                        if (currentIdx > stepIdx) status = 'Completed';
+                        else if (currentIdx === stepIdx) status = 'Current';
+                      }
+
+                      return (
+                        <div
+                          key={step.title}
+                          className={`p-3 rounded-xl border flex flex-col justify-between gap-1 text-xs ${status === 'Completed'
+                            ? 'bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60'
+                            : status === 'Current'
+                              ? 'bg-amber-50/60 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/60'
+                              : 'bg-[#F4F1EA]/60 dark:bg-[#151B27] border-[#EBE7E0] dark:border-white/5'
+                            }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-black uppercase text-gray-400">Step 0{idx + 1}</span>
+                            <span
+                              className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${status === 'Completed'
+                                ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300'
+                                : status === 'Current'
+                                  ? 'bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300'
+                                  : 'bg-gray-200/80 dark:bg-white/10 text-gray-600 dark:text-gray-300'
+                                }`}
+                            >
+                              {status}
+                            </span>
+                          </div>
+                          <div className="font-extrabold text-germany-black dark:text-white text-xs leading-tight">{step.title}</div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Quick Consultation Jumpstart */}
+            <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="space-y-1 text-center sm:text-left">
+                <h4 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white">
+                  Action Required: {pendingDocsCount} Student Documents Pending Verification
+                </h4>
+                <p className="text-xs font-bold text-gray-500">
+                  Verify uploaded transcripts, degree certificates, and statements of purpose to accelerate university submissions.
+                </p>
+              </div>
+              <button
+                onClick={() => setActiveTab('documents')}
+                className="neu-btn-primary py-2 px-4 text-xs font-extrabold whitespace-nowrap cursor-pointer shadow-xs"
+              >
+                Go to Document Hub
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================
+                TAB 2: UPLOADED DOCUMENTS & VERIFICATION
+            ======================================================== */}
+        {activeTab === 'documents' && (
+          <div className="space-y-4">
+            {/* Inline Action Feedback Banner */}
+            {docActionFeedback && (
+              <div
+                className={`p-3.5 rounded-2xl text-xs font-bold flex items-center justify-between border shadow-xs ${docActionFeedback.type === 'success'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800/60'
+                  : 'bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800/60'
+                  }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  {docActionFeedback.type === 'success' ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
+                  )}
+                  <span>{docActionFeedback.message}</span>
+                </div>
+                <button
+                  onClick={() => setDocActionFeedback(null)}
+                  className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
+                  aria-label="Dismiss notification"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+            {/* Hub Header & Sub-Category Selector */}
+            <div className="bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs p-4 sm:p-5 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="font-display text-base text-germany-black dark:text-white">Uploaded Documents Verification Hub</h3>
+                  <p className="text-xs font-bold text-gray-500">
+                    Review, verify, accept, or request revisions on student documents with real-time feedback.
+                  </p>
                 </div>
               </div>
 
-              {/* Quick Contact Bar */}
-              <div className="flex items-center gap-2 shrink-0">
-                <a
-                  href={`mailto:${student.email}`}
-                  className="neu-btn-primary py-2 px-3.5 text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow"
-                >
-                  <Mail className="w-3.5 h-3.5" />
-                  <span>Send Email</span>
-                </a>
+              {/* 4 Category Navigation Tabs */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-gray-100 dark:border-gray-800/70">
 
                 <button
-                  onClick={handleCopyEmail}
-                  className="p-2 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-gray-600 dark:text-gray-300 hover:text-germany-red hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors shadow-xs"
-                  title="Copy email address"
+                  onClick={() => {
+                    setDocCategory('aps');
+                    if (docFilter === 'not_uploaded') setDocFilter('all');
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all ${docCategory === 'aps'
+                    ? 'bg-germany-red text-white shadow-xs'
+                    : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
+                    }`}
                 >
-                  {copiedEmail ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                  APS Documents ({apsUploadedCount})
+                </button>
+
+                <button
+                  onClick={() => {
+                    setDocCategory('admission');
+                    if (docFilter === 'not_uploaded') setDocFilter('all');
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all ${docCategory === 'admission'
+                    ? 'bg-germany-red text-white shadow-xs'
+                    : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
+                    }`}
+                >
+                  Application Documents ({admissionUploadedCount})
+                </button>
+
+                <button
+                  onClick={() => {
+                    setDocCategory('visa');
+                    if (docFilter === 'not_uploaded') setDocFilter('all');
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all ${docCategory === 'visa'
+                    ? 'bg-germany-red text-white shadow-xs'
+                    : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
+                    }`}
+                >
+                  Visa Documents ({visaUploadedCount})
+                </button>
+
+                <button
+                  onClick={() => {
+                    setDocCategory('general');
+                    if (docFilter === 'not_uploaded') setDocFilter('all');
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all ${docCategory === 'general'
+                    ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black shadow-xs'
+                    : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
+                    }`}
+                >
+                  General Documents ({generalUploadedCount})
+                </button>
+
+                <button
+                  onClick={() => {
+                    setDocCategory('cv');
+                    if (docFilter === 'not_uploaded') setDocFilter('all');
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all inline-flex items-center gap-1.5 ${docCategory === 'cv'
+                    ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black shadow-xs'
+                    : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
+                    }`}
+                >
+                  <span>Academic CV ({cvUploadedCount})</span>
+                  {cvUploadedCount > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/20 text-emerald-800 dark:text-emerald-300">
+                      {cvUploadedCount}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    setDocCategory('sop');
+                    fetchStudentSops();
+                    if (docFilter === 'not_uploaded') setDocFilter('all');
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all inline-flex items-center gap-1.5 ${docCategory === 'sop'
+                    ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black shadow-xs'
+                    : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
+                    }`}
+                >
+                  <span>SOP Documents ({sopUploadedCount})</span>
+                  {sopPendingCount > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-amber-400 text-slate-900">
+                      {sopPendingCount}
+                    </span>
+                  )}
+                </button>
+
+
+
+                <button
+                  onClick={() => {
+                    setDocCategory('lor');
+                    if (docFilter === 'not_uploaded') setDocFilter('all');
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all inline-flex items-center gap-1.5 ${docCategory === 'lor'
+                    ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black shadow-xs'
+                    : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
+                    }`}
+                >
+                  <span>LOR Documents ({lorUploadedCount})</span>
+                  {lorUploadedCount > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/20 text-emerald-800 dark:text-emerald-300">
+                      {lorUploadedCount}
+                    </span>
+                  )}
                 </button>
               </div>
             </div>
 
-            {/* Navigation Tabs Bar */}
-            <div className="flex items-center gap-2 overflow-x-auto pt-4 mt-2 -mb-2 scrollbar-none">
-              <button
-                onClick={() => setActiveTab('overview')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${
-                  activeTab === 'overview'
-                    ? 'bg-germany-red text-white shadow-md'
-                    : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
-                }`}
-              >
-                <User className="w-3.5 h-3.5" />
-                <span>Overview &amp; Profile</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('documents')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${
-                  activeTab === 'documents'
-                    ? 'bg-germany-red text-white shadow-md'
-                    : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
-                }`}
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>Uploaded Documents</span>
-                {(pendingDocsCount > 0 || sopPendingCount > 0) && (
-                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-amber-400 text-slate-900">
-                    {pendingDocsCount + sopPendingCount}
-                  </span>
-                )}
-              </button>
-
-
-              <button
-                onClick={() => setActiveTab('universities')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${
-                  activeTab === 'universities'
-                    ? 'bg-germany-red text-white shadow-md'
-                    : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
-                }`}
-              >
-                <Building2 className="w-3.5 h-3.5" />
-                <span>University Eligibility</span>
-                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">
-                  {curatedProgrammeIds.length > 0
-                    ? curatedProgrammeIds.length
-                    : matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length || 0}
-                </span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('notes')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${
-                  activeTab === 'notes'
-                    ? 'bg-germany-red text-white shadow-md'
-                    : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
-                }`}
-              >
-                <Save className="w-3.5 h-3.5" />
-                <span>Strategy Notes &amp; Tasks</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('admission')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${
-                  activeTab === 'admission'
-                    ? 'bg-germany-red text-white shadow-md'
-                    : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
-                }`}
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>Admission &amp; Portals</span>
-                {admissionApplications.length > 0 && (
-                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300">
-                    {admissionApplications.length}
-                  </span>
-                )}
-              </button>
-
-              <button
-                onClick={() => setActiveTab('visa')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${
-                  activeTab === 'visa'
-                    ? 'bg-germany-red text-white shadow-md'
-                    : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
-                }`}
-              >
-                <Plane className="w-3.5 h-3.5" />
-                <span>Visa Preparation</span>
-                {visaProgress && (
-                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
-                    {visaProgress.verifiedCount}/{visaProgress.totalApplicable}
-                  </span>
-                )}
-              </button>
-
-
-            </div>
-          </div>
-
-          {/* Scrollable Tab Content Body */}
-          <div className={isPage ? "pt-5 pb-2 pr-1 space-y-5" : "flex-1 overflow-y-auto pt-5 pb-2 pr-1 space-y-5"}>
-            {/* ========================================================
-                TAB 1: OVERVIEW & PROFILE
-            ======================================================== */}
-            {activeTab === 'overview' && (
-              <div className="space-y-5">
-                {summaryLoading ? (
-                  <div className="p-8 flex items-center justify-center">
-                    <Loader2 className="w-8 h-8 animate-spin text-germany-red" />
-                  </div>
-                ) : summaryError ? (
-                  <div className="p-8 border-2 border-dashed border-[#EBE7E0] rounded-2xl text-center text-red-500 text-xs font-bold bg-red-50">
-                    {summaryError}
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex justify-end">
-                      <button 
-                        onClick={() => setShowFullProfile(true)}
-                        className="py-2 px-4 text-xs font-extrabold flex items-center gap-1.5 bg-white dark:bg-[#151B27] text-germany-black dark:text-white hover:text-germany-red border border-gray-200/80 dark:border-gray-800/80 rounded-xl shadow-xs transition-colors cursor-pointer"
-                      >
-                        <User className="w-4 h-4" />
-                        <span>View Student Profile</span>
-                      </button>
+            {docCategory === 'sop' ? (
+              <div className="space-y-4">
+                {/* Header Banner */}
+                <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-germany-red" />
+                      <h3 className="font-display text-base text-germany-black dark:text-white">
+                        SOP Documents Verification Workspace
+                      </h3>
                     </div>
-
-                    {/* Profile Snapshot Grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <div className="p-3.5 bg-white dark:bg-[#0E121A] rounded-xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-1">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">German Bavarian GPA</span>
-                        <div className="text-sm font-display text-germany-black dark:text-white flex items-center gap-1.5">
-                          <span className="text-germany-black dark:text-white font-black">{summaryData?.summary?.gpa || 'NA'}</span>
-                        </div>
-                      </div>
-
-                      <div className="p-3.5 bg-white dark:bg-[#0E121A] rounded-xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-1">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Language Scores</span>
-                        <div className="text-sm font-display text-germany-black dark:text-white">
-                          {summaryData?.summary?.languageScore || 'NA'}
-                        </div>
-                      </div>
-
-                      <div className="p-3.5 bg-white dark:bg-[#0E121A] rounded-xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-1">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Target Intake</span>
-                        <div className="text-sm font-display text-germany-black dark:text-white">{summaryData?.summary?.targetIntake || 'NA'}</div>
-                      </div>
-
-                      <div className="p-3.5 bg-white dark:bg-[#0E121A] rounded-xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-1">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Readiness Score</span>
-                        <div className="text-sm font-display text-germany-red font-black flex items-center gap-1.5">
-                          <span>{summaryData?.summary?.readinessScore || 'NA'}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Advising Roadmap */}
-                    <div className="p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Compass className="w-4 h-4 text-germany-red" />
-                          <h3 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white uppercase tracking-wider">
-                            Study in Germany Admission Milestone Track
-                          </h3>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {summaryData?.plan?.planName && (
-                            <span className="text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-germany-red/10 text-germany-red border border-germany-red/20">
-                              Plan: {summaryData.plan.planName}
-                            </span>
-                          )}
-                          <span className="text-[11px] font-bold text-gray-400">Status Overview</span>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-                        {[
-                          { title: 'Profile Registration', stage: 'logged_in' },
-                          { title: 'Profile Complete', stage: 'profile_completed' },
-                          { title: 'Matching Engine', stage: 'matching_completed' },
-                          { title: 'Plan / Subscription', stage: 'plan_purchased' },
-                          { title: 'Shortlist Finalized', stage: 'shortlist_locked' },
-                          { title: 'Document Verification', stage: 'documents' },
-                          { title: 'APS India Certificate', stage: 'aps' },
-                          { title: 'Applications & Uni-Assist', stage: 'applications' },
-                          { title: 'Visa & Blocked Account', stage: 'visa' },
-                        ].map((step, idx) => {
-                          const statusOrder = [
-                            'signed_up',
-                            'logged_in',
-                            'profile_completed',
-                            'matching_completed',
-                            'plan_purchased',
-                            'shortlist_locked',
-                            'documents',
-                            'aps',
-                            'applications',
-                            'visa',
-                          ];
-                          const activeStatus = isMatchingLocked
-                            ? 'shortlist_locked'
-                            : (summaryData?.status || student?.status || 'signed_up');
-                          const currentIdx = statusOrder.indexOf(activeStatus);
-                          const stepIdx = statusOrder.indexOf(step.stage);
-                          
-                          let status = 'Pending';
-                          if (stepIdx > 4) {
-                            status = 'Pending';
-                          } else {
-                            if (currentIdx > stepIdx) status = 'Completed';
-                            else if (currentIdx === stepIdx) status = 'Current';
-                          }
-
-                          return (
-                          <div
-                            key={step.title}
-                            className={`p-3 rounded-xl border flex flex-col justify-between gap-1 text-xs ${
-                              status === 'Completed'
-                                ? 'bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60'
-                                : status === 'Current'
-                                ? 'bg-amber-50/60 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/60'
-                                : 'bg-[#F4F1EA]/60 dark:bg-[#151B27] border-[#EBE7E0] dark:border-white/5'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-black uppercase text-gray-400">Step 0{idx + 1}</span>
-                              <span
-                                className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
-                                  status === 'Completed'
-                                    ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300'
-                                    : status === 'Current'
-                                    ? 'bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300'
-                                    : 'bg-gray-200/80 dark:bg-white/10 text-gray-600 dark:text-gray-300'
-                                }`}
-                              >
-                                {status}
-                              </span>
-                            </div>
-                            <div className="font-extrabold text-germany-black dark:text-white text-xs leading-tight">{step.title}</div>
-                          </div>
-                        )})}
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {/* Quick Consultation Jumpstart */}
-                <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="space-y-1 text-center sm:text-left">
-                    <h4 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white">
-                      Action Required: {pendingDocsCount} Student Documents Pending Verification
-                    </h4>
-                    <p className="text-xs font-bold text-gray-500">
-                      Verify uploaded transcripts, degree certificates, and statements of purpose to accelerate university submissions.
+                    <p className="text-xs font-bold text-gray-500 mt-0.5">
+                      Verify, preview, download Word (.docx), upload corrected versions, or re-generate programme SOPs.
                     </p>
                   </div>
-                  <button
-                    onClick={() => setActiveTab('documents')}
-                    className="neu-btn-primary py-2 px-4 text-xs font-extrabold whitespace-nowrap cursor-pointer shadow-xs"
-                  >
-                    Go to Document Hub
-                  </button>
-                </div>
-              </div>
-            )}
 
-            {/* ========================================================
-                TAB 2: UPLOADED DOCUMENTS & VERIFICATION
-            ======================================================== */}
-            {activeTab === 'documents' && (
-              <div className="space-y-4">
-                {/* Inline Action Feedback Banner */}
-                {docActionFeedback && (
-                  <div
-                    className={`p-3.5 rounded-2xl text-xs font-bold flex items-center justify-between border shadow-xs ${
-                      docActionFeedback.type === 'success'
-                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800/60'
-                        : 'bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800/60'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      {docActionFeedback.type === 'success' ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                      ) : (
-                        <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
-                      )}
-                      <span>{docActionFeedback.message}</span>
-                    </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {studentSops.length > 0 && (
+                      <button
+                        onClick={() => {
+                          if (selectedSopRecIds.length === studentSops.length) {
+                            setSelectedSopRecIds([]);
+                          } else {
+                            setSelectedSopRecIds(studentSops.map((s) => s.recommendationId));
+                          }
+                        }}
+                        className="px-2.5 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                        title="Toggle select all SOPs"
+                      >
+                        {selectedSopRecIds.length === studentSops.length && studentSops.length > 0 ? (
+                          <CheckSquare className="w-3.5 h-3.5 text-germany-red" />
+                        ) : (
+                          <Square className="w-3.5 h-3.5 text-gray-400" />
+                        )}
+                        <span>Select All</span>
+                      </button>
+                    )}
+
+                    {selectedSopRecIds.length > 0 && (
+                      <button
+                        onClick={() => handleRegenerateSops(selectedSopRecIds)}
+                        disabled={regeneratingSops}
+                        className="px-3 py-1.5 rounded-xl text-xs font-black bg-germany-red hover:bg-[#D62839] text-white flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-50"
+                        title="Re-generate selected SOPs from scratch"
+                      >
+                        {regeneratingSops ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                        <span>Re-generate Selected ({selectedSopRecIds.length})</span>
+                      </button>
+                    )}
+
                     <button
-                      onClick={() => setDocActionFeedback(null)}
-                      className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
-                      aria-label="Dismiss notification"
+                      onClick={() => handleRegenerateSops()}
+                      disabled={regeneratingSops || studentSops.length === 0}
+                      className="px-3 py-1.5 rounded-xl text-xs font-black bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-50"
+                      title="Re-generate all shortlisted programme SOPs from scratch"
                     >
-                      <X className="w-3.5 h-3.5" />
+                      {regeneratingSops && selectedSopRecIds.length === 0 ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                      <span>Re-generate All SOPs</span>
                     </button>
+
+                    <button
+                      onClick={() => handleGrantAttempts('sop')}
+                      disabled={grantingDocType === 'sop'}
+                      className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      title="Allot +2 extra SOP generation attempts to student"
+                    >
+                      {grantingDocType === 'sop' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-amber-600" />}
+                      <span>+ Allot Extra</span>
+                    </button>
+
+                    <button
+                      onClick={fetchStudentSops}
+                      className="p-1.5 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
+                      title="Refresh SOP Documents"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${sopsLoading ? 'animate-spin text-germany-red' : ''}`} />
+                    </button>
+                  </div>
+                </div>
+
+                {grantStatusMessage && (
+                  <div
+                    className={`p-3.5 rounded-xl text-xs font-bold flex items-center gap-2 ${grantStatusMessage.type === 'success'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                      : 'bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800'
+                      }`}
+                  >
+                    <Info className="w-4 h-4 shrink-0" />
+                    <span>{grantStatusMessage.text}</span>
                   </div>
                 )}
 
-                {/* Hub Header & Sub-Category Selector */}
-                <div className="bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs p-4 sm:p-5 space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <h3 className="font-display text-base text-germany-black dark:text-white">Uploaded Documents Verification Hub</h3>
-                      <p className="text-xs font-bold text-gray-500">
-                        Review, verify, accept, or request revisions on student documents with real-time feedback.
-                      </p>
-                    </div>
+                {/* SOP Documents List */}
+                {sopsLoading ? (
+                  <div className="p-12 text-center space-y-3">
+                    <Loader2 className="w-6 h-6 animate-spin text-germany-red mx-auto" />
+                    <p className="text-xs font-bold text-gray-500">Loading student&apos;s SOP documents...</p>
                   </div>
-
-                  {/* 4 Category Navigation Tabs */}
-                  <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-gray-100 dark:border-gray-800/70">
+                ) : sopsError ? (
+                  <div className="p-6 bg-red-50 dark:bg-red-950/40 rounded-2xl border border-red-200 dark:border-red-800 text-center space-y-2">
+                    <p className="text-xs font-bold text-red-800 dark:text-red-300">{sopsError}</p>
                     <button
-                      onClick={() => {
-                        setDocCategory('all');
-                        if (docFilter === 'not_uploaded') setDocFilter('all');
-                      }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all ${
-                        docCategory === 'all'
-                          ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black shadow-xs'
-                          : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
-                      }`}
+                      onClick={fetchStudentSops}
+                      className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold cursor-pointer"
                     >
-                      All Documents ({allUploadedCount})
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setDocCategory('aps');
-                        if (docFilter === 'not_uploaded') setDocFilter('all');
-                      }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all ${
-                        docCategory === 'aps'
-                          ? 'bg-germany-red text-white shadow-xs'
-                          : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
-                      }`}
-                    >
-                      APS Documents ({apsUploadedCount})
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setDocCategory('general');
-                        if (docFilter === 'not_uploaded') setDocFilter('all');
-                      }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all ${
-                        docCategory === 'general'
-                          ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black shadow-xs'
-                          : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
-                      }`}
-                    >
-                      General Documents ({generalUploadedCount})
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setDocCategory('cv');
-                        if (docFilter === 'not_uploaded') setDocFilter('all');
-                      }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all inline-flex items-center gap-1.5 ${
-                        docCategory === 'cv'
-                          ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black shadow-xs'
-                          : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
-                      }`}
-                    >
-                      <span>Academic CV ({cvUploadedCount})</span>
-                      {cvUploadedCount > 0 && (
-                        <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/20 text-emerald-800 dark:text-emerald-300">
-                          {cvUploadedCount}
-                        </span>
-                      )}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setDocCategory('sop');
-                        fetchStudentSops();
-                        if (docFilter === 'not_uploaded') setDocFilter('all');
-                      }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all inline-flex items-center gap-1.5 ${
-                        docCategory === 'sop'
-                          ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black shadow-xs'
-                          : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
-                      }`}
-                    >
-                      <span>SOP Documents ({sopUploadedCount})</span>
-                      {sopPendingCount > 0 && (
-                        <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-amber-400 text-slate-900">
-                          {sopPendingCount}
-                        </span>
-                      )}
-                    </button>
-
-                    
-
-                    <button
-                      onClick={() => {
-                        setDocCategory('lor');
-                        if (docFilter === 'not_uploaded') setDocFilter('all');
-                      }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer transition-all inline-flex items-center gap-1.5 ${
-                        docCategory === 'lor'
-                          ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black shadow-xs'
-                          : 'bg-[#EBE7E0]/70 dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
-                      }`}
-                    >
-                      <span>LOR Documents ({lorUploadedCount})</span>
-                      {lorUploadedCount > 0 && (
-                        <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/20 text-emerald-800 dark:text-emerald-300">
-                          {lorUploadedCount}
-                        </span>
-                      )}
+                      Retry
                     </button>
                   </div>
-                </div>
+                ) : studentSops.length === 0 ? (
+                  <div className="p-12 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-2">
+                    <BookOpen className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto" />
+                    <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">No Shortlisted Programmes Found</h4>
+                    <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                      This student does not have any shortlisted programmes yet. Add shortlisted programmes from the University Eligibility tab to enable SOP generation.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {studentSops.map((sop: any, idx: number) => {
+                      const isApproved = sop.status === 'VERIFIED';
+                      const isPending = sop.status === 'PENDING';
+                      const isRejected = sop.status === 'REJECTED';
+                      const isGenerating = sop.status === 'GENERATING';
+                      const isFailed = sop.status === 'FAILED';
 
-                {docCategory === 'sop' ? (
-                <div className="space-y-4">
-                  {/* Header Banner */}
-                  <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <BookOpen className="w-4 h-4 text-germany-red" />
-                        <h3 className="font-display text-base text-germany-black dark:text-white">
-                          SOP Documents Verification Workspace
-                        </h3>
-                      </div>
-                      <p className="text-xs font-bold text-gray-500 mt-0.5">
-                        Verify, preview, download Word (.docx), upload corrected versions, or re-generate programme SOPs.
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {studentSops.length > 0 && (
-                        <button
-                          onClick={() => {
-                            if (selectedSopRecIds.length === studentSops.length) {
-                              setSelectedSopRecIds([]);
-                            } else {
-                              setSelectedSopRecIds(studentSops.map((s) => s.recommendationId));
-                            }
-                          }}
-                          className="px-2.5 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
-                          title="Toggle select all SOPs"
+                      return (
+                        <div
+                          key={sop.recommendationId || idx}
+                          className="p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4"
                         >
-                          {selectedSopRecIds.length === studentSops.length && studentSops.length > 0 ? (
-                            <CheckSquare className="w-3.5 h-3.5 text-germany-red" />
-                          ) : (
-                            <Square className="w-3.5 h-3.5 text-gray-400" />
-                          )}
-                          <span>Select All</span>
-                        </button>
-                      )}
+                          <div className="flex items-start gap-3 flex-1 min-w-0">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedSopRecIds((prev) =>
+                                  prev.includes(sop.recommendationId)
+                                    ? prev.filter((id) => id !== sop.recommendationId)
+                                    : [...prev, sop.recommendationId]
+                                );
+                              }}
+                              className="mt-1 text-gray-400 hover:text-germany-black dark:hover:text-white cursor-pointer shrink-0 transition-colors"
+                              title="Select for re-generation"
+                            >
+                              {selectedSopRecIds.includes(sop.recommendationId) ? (
+                                <CheckSquare className="w-4 h-4 text-germany-red" />
+                              ) : (
+                                <Square className="w-4 h-4 text-gray-300 dark:text-gray-600" />
+                              )}
+                            </button>
 
-                      {selectedSopRecIds.length > 0 && (
-                        <button
-                          onClick={() => handleRegenerateSops(selectedSopRecIds)}
-                          disabled={regeneratingSops}
-                          className="px-3 py-1.5 rounded-xl text-xs font-black bg-germany-red hover:bg-[#D62839] text-white flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-50"
-                          title="Re-generate selected SOPs from scratch"
-                        >
-                          {regeneratingSops ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                          <span>Re-generate Selected ({selectedSopRecIds.length})</span>
-                        </button>
-                      )}
+                            <div className="space-y-1.5 flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                                  #{idx + 1}
+                                </span>
 
-                      <button
-                        onClick={() => handleRegenerateSops()}
-                        disabled={regeneratingSops || studentSops.length === 0}
-                        className="px-3 py-1.5 rounded-xl text-xs font-black bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-50"
-                        title="Re-generate all shortlisted programme SOPs from scratch"
-                      >
-                        {regeneratingSops && selectedSopRecIds.length === 0 ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                        <span>Re-generate All SOPs</span>
-                      </button>
-
-                      <button
-                        onClick={() => handleGrantAttempts('sop')}
-                        disabled={grantingDocType === 'sop'}
-                        className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
-                        title="Allot +2 extra SOP generation attempts to student"
-                      >
-                        {grantingDocType === 'sop' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-amber-600" />}
-                        <span>+ Allot Extra</span>
-                      </button>
-
-                      <button
-                        onClick={fetchStudentSops}
-                        className="p-1.5 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
-                        title="Refresh SOP Documents"
-                      >
-                        <RefreshCw className={`w-3.5 h-3.5 ${sopsLoading ? 'animate-spin text-germany-red' : ''}`} />
-                      </button>
-                    </div>
-                  </div>
-  
-                  {grantStatusMessage && (
-                    <div
-                      className={`p-3.5 rounded-xl text-xs font-bold flex items-center gap-2 ${
-                        grantStatusMessage.type === 'success'
-                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                          : 'bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800'
-                      }`}
-                    >
-                      <Info className="w-4 h-4 shrink-0" />
-                      <span>{grantStatusMessage.text}</span>
-                    </div>
-                  )}
-  
-                  {/* SOP Documents List */}
-                  {sopsLoading ? (
-                    <div className="p-12 text-center space-y-3">
-                      <Loader2 className="w-6 h-6 animate-spin text-germany-red mx-auto" />
-                      <p className="text-xs font-bold text-gray-500">Loading student&apos;s SOP documents...</p>
-                    </div>
-                  ) : sopsError ? (
-                    <div className="p-6 bg-red-50 dark:bg-red-950/40 rounded-2xl border border-red-200 dark:border-red-800 text-center space-y-2">
-                      <p className="text-xs font-bold text-red-800 dark:text-red-300">{sopsError}</p>
-                      <button
-                        onClick={fetchStudentSops}
-                        className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold cursor-pointer"
-                      >
-                        Retry
-                      </button>
-                    </div>
-                  ) : studentSops.length === 0 ? (
-                    <div className="p-12 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-2">
-                      <BookOpen className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto" />
-                      <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">No Shortlisted Programmes Found</h4>
-                      <p className="text-xs text-gray-500 max-w-sm mx-auto">
-                        This student does not have any shortlisted programmes yet. Add shortlisted programmes from the University Eligibility tab to enable SOP generation.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {studentSops.map((sop: any, idx: number) => {
-                        const isApproved = sop.status === 'VERIFIED';
-                        const isPending = sop.status === 'PENDING';
-                        const isRejected = sop.status === 'REJECTED';
-                        const isGenerating = sop.status === 'GENERATING';
-                        const isFailed = sop.status === 'FAILED';
-  
-                        return (
-                          <div
-                            key={sop.recommendationId || idx}
-                            className="p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4"
-                          >
-                            <div className="flex items-start gap-3 flex-1 min-w-0">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setSelectedSopRecIds((prev) =>
-                                    prev.includes(sop.recommendationId)
-                                      ? prev.filter((id) => id !== sop.recommendationId)
-                                      : [...prev, sop.recommendationId]
-                                  );
-                                }}
-                                className="mt-1 text-gray-400 hover:text-germany-black dark:hover:text-white cursor-pointer shrink-0 transition-colors"
-                                title="Select for re-generation"
-                              >
-                                {selectedSopRecIds.includes(sop.recommendationId) ? (
-                                  <CheckSquare className="w-4 h-4 text-germany-red" />
-                                ) : (
-                                  <Square className="w-4 h-4 text-gray-300 dark:text-gray-600" />
-                                )}
-                              </button>
-
-                              <div className="space-y-1.5 flex-1 min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
-                                    #{idx + 1}
+                                {isApproved ? (
+                                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 flex items-center gap-1">
+                                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                    <span>Approved &amp; Verified</span>
                                   </span>
+                                ) : isPending ? (
+                                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 flex items-center gap-1">
+                                    <Clock className="w-3 h-3 text-amber-600" />
+                                    <span>Awaiting Counsellor Review</span>
+                                  </span>
+                                ) : isFailed ? (
+                                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 text-red-900 border border-red-300 dark:bg-red-950/60 dark:text-red-300 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3 text-red-600" />
+                                    <span>Generation Failed</span>
+                                  </span>
+                                ) : isGenerating ? (
+                                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 flex items-center gap-1">
+                                    <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
+                                    <span>Generating...</span>
+                                  </span>
+                                ) : (
+                                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                                    Not Generated
+                                  </span>
+                                )}
+                              </div>
 
-                                  {isApproved ? (
-                                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 flex items-center gap-1">
-                                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                      <span>Approved &amp; Verified</span>
-                                    </span>
-                                  ) : isPending ? (
-                                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 flex items-center gap-1">
-                                      <Clock className="w-3 h-3 text-amber-600" />
-                                      <span>Awaiting Counsellor Review</span>
-                                    </span>
-                                  ) : isFailed ? (
-                                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 text-red-900 border border-red-300 dark:bg-red-950/60 dark:text-red-300 flex items-center gap-1">
-                                      <AlertCircle className="w-3 h-3 text-red-600" />
-                                      <span>Generation Failed</span>
-                                    </span>
-                                  ) : isGenerating ? (
-                                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 flex items-center gap-1">
-                                      <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
-                                      <span>Generating...</span>
-                                    </span>
-                                  ) : (
-                                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-                                      Not Generated
-                                    </span>
-                                  )}
-                                </div>
+                              <h4 className="text-sm font-black text-gray-900 dark:text-gray-100 leading-snug">
+                                {sop.universityName}
+                              </h4>
+                              <p className="text-xs font-bold text-gray-600 dark:text-gray-400">
+                                {sop.programName}
+                              </p>
 
-                                <h4 className="text-sm font-black text-gray-900 dark:text-gray-100 leading-snug">
-                                  {sop.universityName}
-                                </h4>
-                                <p className="text-xs font-bold text-gray-600 dark:text-gray-400">
-                                  {sop.programName}
-                                </p>
-
-                                <div className="flex flex-wrap gap-3 text-[11px] text-gray-500 pt-0.5">
-                                  {sop.degree && <span>{sop.degree}</span>}
-                                  {sop.location && <span>• {sop.location}</span>}
-                                  {sop.uploadedAt && (
-                                    <span>• Submitted: {new Date(sop.uploadedAt).toLocaleDateString()}</span>
-                                  )}
-                                  {sop.originalFilename && (
-                                    <span className="font-mono text-[10px] text-gray-400">({sop.originalFilename})</span>
-                                  )}
-                                </div>
+                              <div className="flex flex-wrap gap-3 text-[11px] text-gray-500 pt-0.5">
+                                {sop.degree && <span>{sop.degree}</span>}
+                                {sop.location && <span>• {sop.location}</span>}
+                                {sop.uploadedAt && (
+                                  <span>• Submitted: {new Date(sop.uploadedAt).toLocaleDateString()}</span>
+                                )}
+                                {sop.originalFilename && (
+                                  <span className="font-mono text-[10px] text-gray-400">({sop.originalFilename})</span>
+                                )}
                               </div>
                             </div>
+                          </div>
 
-                            {/* Action Buttons */}
-                            <div className="flex items-center gap-2 shrink-0 flex-wrap">
-                              {sop.documentId && (
-                                <button
-                                  onClick={() =>
-                                    setPreviewDoc({
-                                      id: sop.documentId,
-                                      documentType: 'sop',
-                                      name: `SOP: ${sop.universityName} - ${sop.programName}`,
-                                      category: 'Academic Dossier',
-                                      section: 'sop',
-                                      size: 'A4 PDF',
-                                      uploadDate: sop.uploadedAt ? new Date(sop.uploadedAt).toLocaleDateString() : 'Recent',
-                                      status: (sop.status || 'pending').toLowerCase() as any,
-                                      rejectionReason: undefined,
-                                      url: sop.imagekitUrl || undefined,
-                                      previewContent: sop.generatedSop || undefined,
-                                      mimeType: 'application/pdf',
-                                      originalFilename: sop.originalFilename || `SOP_${sop.programName}.pdf`,
-                                    })
-                                  }
-                                  className="px-2.5 py-1.5 rounded-xl text-xs font-extrabold bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors flex items-center gap-1 cursor-pointer shadow-xs"
-                                  title="Preview SOP Document"
-                                >
-                                  <FileText className="w-3.5 h-3.5 text-germany-red" />
-                                  <span>Preview</span>
-                                </button>
-                              )}
-
-                              {/* Approve button */}
-                              {isApproved ? (
-                                <div
-                                  className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1 rounded-xl bg-emerald-100/80 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60"
-                                  title="SOP approved and verified"
-                                >
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                                  <span>Approved</span>
-                                </div>
-                              ) : sop.documentId ? (
-                                <button
-                                  onClick={() => handleVerifyDoc(sop.documentId)}
-                                  disabled={docActionLoading === sop.documentId}
-                                  className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center gap-1 cursor-pointer shadow-xs"
-                                  title="Approve SOP and release to student"
-                                >
-                                  {docActionLoading === sop.documentId ? (
-                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                  ) : (
-                                    <CheckCircle2 className="w-3.5 h-3.5" />
-                                  )}
-                                  <span>Approve</span>
-                                </button>
-                              ) : null}
-
-                              {/* Download Word (.docx) */}
+                          {/* Action Buttons */}
+                          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                            {sop.documentId && (
                               <button
                                 onClick={() =>
-                                  handleDownloadWord(
-                                    'sop',
-                                    sop.recommendationId,
-                                    `SOP_${(sop.universityName || 'Uni').replace(/[^a-zA-Z0-9]/g, '_')}_${(sop.programName || 'Prog').replace(/[^a-zA-Z0-9]/g, '_')}.docx`,
-                                  )
+                                  setPreviewDoc({
+                                    id: sop.documentId,
+                                    documentType: 'sop',
+                                    name: `SOP: ${sop.universityName} - ${sop.programName}`,
+                                    category: 'Academic Dossier',
+                                    section: 'sop',
+                                    size: 'A4 PDF',
+                                    uploadDate: sop.uploadedAt ? new Date(sop.uploadedAt).toLocaleDateString() : 'Recent',
+                                    status: (sop.status || 'pending').toLowerCase() as any,
+                                    rejectionReason: undefined,
+                                    url: sop.imagekitUrl || undefined,
+                                    previewContent: sop.generatedSop || undefined,
+                                    mimeType: 'application/pdf',
+                                    originalFilename: sop.originalFilename || `SOP_${sop.programName}.pdf`,
+                                  })
                                 }
-                                disabled={downloadingWordId === sop.recommendationId}
-                                className="px-2.5 py-1.5 rounded-xl text-xs font-extrabold bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-colors flex items-center gap-1 cursor-pointer shadow-xs"
-                                title="Download editable Microsoft Word (.docx) document"
+                                className="px-2.5 py-1.5 rounded-xl text-xs font-extrabold bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors flex items-center gap-1 cursor-pointer shadow-xs"
+                                title="Preview SOP Document"
                               >
-                                {downloadingWordId === sop.recommendationId ? (
-                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                ) : (
-                                  <Download className="w-3.5 h-3.5 text-blue-600" />
-                                )}
-                                <span>Word (.docx)</span>
+                                <FileText className="w-3.5 h-3.5 text-germany-red" />
+                                <span>Preview</span>
                               </button>
+                            )}
 
-                              {/* Upload Corrected */}
-                              <label
-                                className={`px-2.5 py-1.5 rounded-xl text-xs font-extrabold bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 transition-colors flex items-center gap-1 cursor-pointer shadow-xs ${
-                                  uploadingCorrectedId === sop.recommendationId ? 'opacity-60 pointer-events-none' : ''
-                                }`}
-                                title="Upload corrected SOP (marks as approved, replaces generated document)"
+                            {/* Approve button */}
+                            {isApproved ? (
+                              <div
+                                className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1 rounded-xl bg-emerald-100/80 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60"
+                                title="SOP approved and verified"
                               >
-                                {uploadingCorrectedId === sop.recommendationId ? (
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>Approved</span>
+                              </div>
+                            ) : sop.documentId ? (
+                              <button
+                                onClick={() => handleVerifyDoc(sop.documentId)}
+                                disabled={docActionLoading === sop.documentId}
+                                className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center gap-1 cursor-pointer shadow-xs"
+                                title="Approve SOP and release to student"
+                              >
+                                {docActionLoading === sop.documentId ? (
                                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                                 ) : (
-                                  <Upload className="w-3.5 h-3.5 text-purple-600" />
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
                                 )}
-                                <span>Upload Corrected</span>
-                                <input
-                                  type="file"
-                                  accept=".pdf,.docx,.doc"
-                                  className="hidden"
-                                  disabled={uploadingCorrectedId === sop.recommendationId}
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      handleUploadCorrected('sop', file, sop.recommendationId);
-                                      e.target.value = '';
-                                    }
-                                  }}
-                                />
-                              </label>
-                            </div>
+                                <span>Approve</span>
+                              </button>
+                            ) : null}
+
+                            {/* Download Word (.docx) */}
+                            <button
+                              onClick={() =>
+                                handleDownloadWord(
+                                  'sop',
+                                  sop.recommendationId,
+                                  `SOP_${(sop.universityName || 'Uni').replace(/[^a-zA-Z0-9]/g, '_')}_${(sop.programName || 'Prog').replace(/[^a-zA-Z0-9]/g, '_')}.docx`,
+                                )
+                              }
+                              disabled={downloadingWordId === sop.recommendationId}
+                              className="px-2.5 py-1.5 rounded-xl text-xs font-extrabold bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-colors flex items-center gap-1 cursor-pointer shadow-xs"
+                              title="Download editable Microsoft Word (.docx) document"
+                            >
+                              {downloadingWordId === sop.recommendationId ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Download className="w-3.5 h-3.5 text-blue-600" />
+                              )}
+                              <span>Word (.docx)</span>
+                            </button>
+
+                            {/* Upload Corrected */}
+                            <label
+                              className={`px-2.5 py-1.5 rounded-xl text-xs font-extrabold bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 transition-colors flex items-center gap-1 cursor-pointer shadow-xs ${uploadingCorrectedId === sop.recommendationId ? 'opacity-60 pointer-events-none' : ''
+                                }`}
+                              title="Upload corrected SOP (marks as approved, replaces generated document)"
+                            >
+                              {uploadingCorrectedId === sop.recommendationId ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Upload className="w-3.5 h-3.5 text-purple-600" />
+                              )}
+                              <span>Upload Corrected</span>
+                              <input
+                                type="file"
+                                accept=".pdf,.docx,.doc"
+                                className="hidden"
+                                disabled={uploadingCorrectedId === sop.recommendationId}
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    handleUploadCorrected('sop', file, sop.recommendationId);
+                                    e.target.value = '';
+                                  }
+                                }}
+                              />
+                            </label>
                           </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-                ) : (
-                  <>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
                 {/* If LOR, SOP & CV is selected, show informative banner */}
                 {/* Academic CV Verification Workspace Header */}
                 {docCategory === 'cv' && (
@@ -2755,11 +2827,10 @@ const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
                       <button
                         onClick={() => handleGrantAttempts('cv')}
                         disabled={grantingDocType === 'cv' || Boolean(dossierLimits?.cv?.extraAttemptsGranted)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-colors shadow-xs ${
-                          dossierLimits?.cv?.extraAttemptsGranted
-                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed'
-                            : 'bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 cursor-pointer'
-                        }`}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-colors shadow-xs ${dossierLimits?.cv?.extraAttemptsGranted
+                          ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed'
+                          : 'bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 cursor-pointer'
+                          }`}
                         title={
                           dossierLimits?.cv?.extraAttemptsGranted
                             ? 'Max 1 extra attempt already allotted'
@@ -2799,7 +2870,7 @@ const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
                           try {
                             const res = await fetch(`${API_URL}/counsellor/students/${effectiveStudentId}/dossier-limits`, { credentials: 'include' });
                             if (res.ok) setDossierLimits(await res.json());
-                          } catch {}
+                          } catch { }
                         }}
                         className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-[11px] font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors"
                         title="Refresh Quota Status"
@@ -2811,11 +2882,10 @@ const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
 
                     {/* Feedback Toast */}
                     {grantStatusMessage && (
-                      <div className={`p-3.5 rounded-xl text-xs font-bold flex items-center gap-2.5 ${
-                        grantStatusMessage.type === 'success'
-                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                          : 'bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800'
-                      }`}>
+                      <div className={`p-3.5 rounded-xl text-xs font-bold flex items-center gap-2.5 ${grantStatusMessage.type === 'success'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                        : 'bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800'
+                        }`}>
                         {grantStatusMessage.type === 'success' ? (
                           <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
                         ) : (
@@ -3047,11 +3117,10 @@ const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
                           <button
                             onClick={() => handleGrantAttempts('cv')}
                             disabled={grantingDocType === 'cv' || Boolean(dossierLimits?.cv?.extraAttemptsGranted)}
-                            className={`w-full py-2 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 shadow-xs transition-colors ${
-                              dossierLimits?.cv?.extraAttemptsGranted
-                                ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed'
-                                : 'bg-amber-600 hover:bg-amber-700 text-white cursor-pointer disabled:opacity-50'
-                            }`}
+                            className={`w-full py-2 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 shadow-xs transition-colors ${dossierLimits?.cv?.extraAttemptsGranted
+                              ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed'
+                              : 'bg-amber-600 hover:bg-amber-700 text-white cursor-pointer disabled:opacity-50'
+                              }`}
                             title={
                               dossierLimits?.cv?.extraAttemptsGranted
                                 ? 'Max 1 extra attempt already allotted'
@@ -3080,188 +3149,448 @@ const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
                     </div>
                   </div>
                 )}
-                    {/* Completeness & Progress Overview Card */}
-                    <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Target className="w-4 h-4 text-germany-red" />
-                          <h4 className="text-xs font-black uppercase tracking-wider text-gray-600 dark:text-gray-400">
-                            Document Completeness &amp; Progress (
-                            {docCategory === 'all'
-                              ? 'All Categories'
-                              : docCategory === 'aps'
-                              ? 'APS Checklist'
-                              : docCategory === 'cv'
-                              ? 'Academic CV'
-                                                            : docCategory === 'lor'
-                              ? 'LOR Documents'
-                              : 'General Documents'}
-                            )
-                          </h4>
-                        </div>
-                        <span className="text-[11px] font-extrabold text-gray-400">
-                          {statsUploaded} of {statsTotalExpected} Expected Uploaded
-                        </span>
-                      </div>
-
-                      {/* 6 Metric Overview Tiles */}
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-                        <button
-                          type="button"
-                          onClick={() => setDocFilter('all')}
-                          className="p-3 rounded-xl bg-gray-50 dark:bg-[#151B27] border border-gray-200/70 dark:border-gray-800/70 text-left hover:border-gray-300 dark:hover:border-gray-700 transition-colors cursor-pointer"
-                        >
-                          <span className="text-[10px] font-extrabold uppercase text-gray-400 block">Total Expected</span>
-                          <span className="text-lg font-black text-germany-black dark:text-white mt-0.5 block">{statsTotalExpected}</span>
-                          <span className="text-[10px] font-bold text-gray-400">Catalogue items</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setDocFilter('all')}
-                          className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${
-                            docFilter === 'all'
-                              ? 'bg-blue-50/70 dark:bg-blue-950/30 border-blue-300 dark:border-blue-800'
-                              : 'bg-gray-50 dark:bg-[#151B27] border-gray-200/70 dark:border-gray-800/70 hover:border-blue-200'
-                          }`}
-                        >
-                          <span className="text-[10px] font-extrabold uppercase text-blue-600 dark:text-blue-400 block">Uploaded</span>
-                          <span className="text-lg font-black text-blue-700 dark:text-blue-300 mt-0.5 block">{statsUploaded}</span>
-                          <span className="text-[10px] font-bold text-gray-400">Files received</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setDocFilter('not_uploaded')}
-                          className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${
-                            docFilter === 'not_uploaded'
-                              ? 'bg-purple-50/70 dark:bg-purple-950/30 border-purple-300 dark:border-purple-800'
-                              : 'bg-gray-50 dark:bg-[#151B27] border-gray-200/70 dark:border-gray-800/70 hover:border-purple-200'
-                          }`}
-                        >
-                          <span className="text-[10px] font-extrabold uppercase text-purple-600 dark:text-purple-400 block">Not Uploaded</span>
-                          <span className="text-lg font-black text-purple-700 dark:text-purple-300 mt-0.5 block">{statsNotUploaded}</span>
-                          <span className="text-[10px] font-bold text-gray-400">Awaiting student</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setDocFilter('pending')}
-                          className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${
-                            docFilter === 'pending'
-                              ? 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800'
-                              : 'bg-gray-50 dark:bg-[#151B27] border-gray-200/70 dark:border-gray-800/70 hover:border-amber-200'
-                          }`}
-                        >
-                          <span className="text-[10px] font-extrabold uppercase text-amber-600 dark:text-amber-400 block">Pending Review</span>
-                          <span className="text-lg font-black text-amber-700 dark:text-amber-300 mt-0.5 block">{statsPending}</span>
-                          <span className="text-[10px] font-bold text-gray-400">Action required</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setDocFilter('verified')}
-                          className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${
-                            docFilter === 'verified'
-                              ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800'
-                              : 'bg-gray-50 dark:bg-[#151B27] border-gray-200/70 dark:border-gray-800/70 hover:border-emerald-200'
-                          }`}
-                        >
-                          <span className="text-[10px] font-extrabold uppercase text-emerald-600 dark:text-emerald-400 block">Verified</span>
-                          <span className="text-lg font-black text-emerald-700 dark:text-emerald-300 mt-0.5 block">{statsVerified}</span>
-                          <span className="text-[10px] font-bold text-gray-400">Accepted &amp; ready</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setDocFilter('rejected')}
-                          className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${
-                            docFilter === 'rejected'
-                              ? 'bg-red-50/70 dark:bg-red-950/30 border-red-300 dark:border-red-800'
-                              : 'bg-gray-50 dark:bg-[#151B27] border-gray-200/70 dark:border-gray-800/70 hover:border-red-200'
-                          }`}
-                        >
-                          <span className="text-[10px] font-extrabold uppercase text-red-600 dark:text-red-400 block">Needs Revision</span>
-                          <span className="text-lg font-black text-red-700 dark:text-red-300 mt-0.5 block">{statsRejected}</span>
-                          <span className="text-[10px] font-bold text-gray-400">Rejected / feedback</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Filter Pills Bar */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs p-4">
-                      <div className="text-xs font-bold text-gray-500">
-                        Showing{' '}
-                        <span className="text-germany-black dark:text-white font-extrabold">
-                          {docFilter === 'not_uploaded'
-                            ? `${notUploadedCatalogueItems.length} Not Uploaded Documents`
-                            : `${filteredDocs.length} Uploaded Documents`}
-                        </span>{' '}
-                        in{' '}
-                        <span className="text-germany-black dark:text-white font-extrabold">
-                          {docCategory === 'all'
-                            ? 'All Categories'
-                            : docCategory === 'aps'
+                {/* Completeness & Progress Overview Card */}
+                <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Target className="w-4 h-4 text-germany-red" />
+                      <h4 className="text-xs font-black uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                        Document Completeness &amp; Progress (
+                        {docCategory === 'all'
+                          ? 'All Categories'
+                          : docCategory === 'aps'
                             ? 'APS Checklist'
                             : docCategory === 'cv'
-                            ? 'Academic CV'
-                                                        : docCategory === 'lor'
-                            ? 'LOR Documents'
-                            : 'General Documents'}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[11px] font-extrabold text-gray-400 mr-1">Filter by status:</span>
-                        {(
-                          [
-                            { id: 'all', label: 'All', count: statsUploaded },
-                            { id: 'pending', label: 'Pending', count: statsPending },
-                            { id: 'verified', label: 'Verified', count: statsVerified },
-                            { id: 'rejected', label: 'Rejected', count: statsRejected },
-                            { id: 'not_uploaded', label: 'Not Uploaded', count: statsNotUploaded },
-                          ] as const
-                        ).map((filter) => (
-                          <button
-                            key={filter.id}
-                            onClick={() => setDocFilter(filter.id)}
-                            className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold capitalize cursor-pointer transition-colors ${
-                              docFilter === filter.id
-                                ? 'bg-germany-red text-white shadow-xs'
-                                : 'bg-[#EBE7E0] dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
-                            }`}
-                          >
-                            {filter.label} ({filter.count})
-                          </button>
-                        ))}
-                      </div>
+                              ? 'Academic CV'
+                              : docCategory === 'lor'
+                                ? 'LOR Documents'
+                                : 'General Documents'}
+                        )
+                      </h4>
                     </div>
+                    <span className="text-[11px] font-extrabold text-gray-400">
+                      {statsUploaded} of {statsTotalExpected} Expected Uploaded
+                    </span>
+                  </div>
 
-                    {/* Documents List Container */}
-                    <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
-                      {docsLoading ? (
-                        <div className="p-12 flex flex-col items-center justify-center gap-2 text-gray-400 text-xs font-bold">
-                          <Loader2 className="w-6 h-6 animate-spin text-germany-red" />
-                          <span>Loading uploaded documents from student records...</span>
-                        </div>
-                      ) : docsError ? (
-                        <div className="p-6 border-2 border-dashed border-red-200 dark:border-red-900/40 rounded-2xl text-center text-red-500 dark:text-red-400 text-xs font-bold bg-red-50 dark:bg-red-950/20">
-                          {docsError}
-                        </div>
-                      ) : docFilter === 'not_uploaded' ? (
-                        /* Not Uploaded Catalogue Items View */
-                        notUploadedCatalogueItems.length === 0 ? (
-                          <div className="p-8 border-2 border-dashed border-emerald-200 dark:border-emerald-900/40 rounded-2xl text-center text-emerald-700 dark:text-emerald-400 text-xs font-bold bg-emerald-50/50 dark:bg-emerald-950/20">
-                            Great news! All expected documents for this category have been uploaded by the student.
+                  {/* 6 Metric Overview Tiles */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setDocFilter('all')}
+                      className="p-3 rounded-xl bg-gray-50 dark:bg-[#151B27] border border-gray-200/70 dark:border-gray-800/70 text-left hover:border-gray-300 dark:hover:border-gray-700 transition-colors cursor-pointer"
+                    >
+                      <span className="text-[10px] font-extrabold uppercase text-gray-400 block">Total Expected</span>
+                      <span className="text-lg font-black text-germany-black dark:text-white mt-0.5 block">{statsTotalExpected}</span>
+                      <span className="text-[10px] font-bold text-gray-400">Catalogue items</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setDocFilter('all')}
+                      className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${docFilter === 'all'
+                        ? 'bg-blue-50/70 dark:bg-blue-950/30 border-blue-300 dark:border-blue-800'
+                        : 'bg-gray-50 dark:bg-[#151B27] border-gray-200/70 dark:border-gray-800/70 hover:border-blue-200'
+                        }`}
+                    >
+                      <span className="text-[10px] font-extrabold uppercase text-blue-600 dark:text-blue-400 block">Uploaded</span>
+                      <span className="text-lg font-black text-blue-700 dark:text-blue-300 mt-0.5 block">{statsUploaded}</span>
+                      <span className="text-[10px] font-bold text-gray-400">Files received</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setDocFilter('not_uploaded')}
+                      className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${docFilter === 'not_uploaded'
+                        ? 'bg-purple-50/70 dark:bg-purple-950/30 border-purple-300 dark:border-purple-800'
+                        : 'bg-gray-50 dark:bg-[#151B27] border-gray-200/70 dark:border-gray-800/70 hover:border-purple-200'
+                        }`}
+                    >
+                      <span className="text-[10px] font-extrabold uppercase text-purple-600 dark:text-purple-400 block">Not Uploaded</span>
+                      <span className="text-lg font-black text-purple-700 dark:text-purple-300 mt-0.5 block">{statsNotUploaded}</span>
+                      <span className="text-[10px] font-bold text-gray-400">Awaiting student</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setDocFilter('pending')}
+                      className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${docFilter === 'pending'
+                        ? 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800'
+                        : 'bg-gray-50 dark:bg-[#151B27] border-gray-200/70 dark:border-gray-800/70 hover:border-amber-200'
+                        }`}
+                    >
+                      <span className="text-[10px] font-extrabold uppercase text-amber-600 dark:text-amber-400 block">Pending Review</span>
+                      <span className="text-lg font-black text-amber-700 dark:text-amber-300 mt-0.5 block">{statsPending}</span>
+                      <span className="text-[10px] font-bold text-gray-400">Action required</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setDocFilter('verified')}
+                      className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${docFilter === 'verified'
+                        ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800'
+                        : 'bg-gray-50 dark:bg-[#151B27] border-gray-200/70 dark:border-gray-800/70 hover:border-emerald-200'
+                        }`}
+                    >
+                      <span className="text-[10px] font-extrabold uppercase text-emerald-600 dark:text-emerald-400 block">Verified</span>
+                      <span className="text-lg font-black text-emerald-700 dark:text-emerald-300 mt-0.5 block">{statsVerified}</span>
+                      <span className="text-[10px] font-bold text-gray-400">Accepted &amp; ready</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setDocFilter('rejected')}
+                      className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${docFilter === 'rejected'
+                        ? 'bg-red-50/70 dark:bg-red-950/30 border-red-300 dark:border-red-800'
+                        : 'bg-gray-50 dark:bg-[#151B27] border-gray-200/70 dark:border-gray-800/70 hover:border-red-200'
+                        }`}
+                    >
+                      <span className="text-[10px] font-extrabold uppercase text-red-600 dark:text-red-400 block">Needs Revision</span>
+                      <span className="text-lg font-black text-red-700 dark:text-red-300 mt-0.5 block">{statsRejected}</span>
+                      <span className="text-[10px] font-bold text-gray-400">Rejected / feedback</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Filter Pills Bar */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs p-4">
+                  <div className="text-xs font-bold text-gray-500">
+                    Showing{' '}
+                    <span className="text-germany-black dark:text-white font-extrabold">
+                      {docFilter === 'not_uploaded'
+                        ? `${notUploadedCatalogueItems.length} Not Uploaded Documents`
+                        : `${filteredDocs.length} Uploaded Documents`}
+                    </span>{' '}
+                    in{' '}
+                    <span className="text-germany-black dark:text-white font-extrabold">
+                      {docCategory === 'all'
+                        ? 'All Categories'
+                        : docCategory === 'aps'
+                          ? 'APS Checklist'
+                          : docCategory === 'cv'
+                            ? 'Academic CV'
+                            : docCategory === 'lor'
+                              ? 'LOR Documents'
+                              : 'General Documents'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[11px] font-extrabold text-gray-400 mr-1">Filter by status:</span>
+                    {(
+                      [
+                        { id: 'all', label: 'All', count: statsTotalExpected },
+                        { id: 'pending', label: 'Pending Review', count: statsPending },
+                        { id: 'verified', label: 'Approved', count: statsVerified },
+                        { id: 'rejected', label: 'Needs Revision', count: statsRejected },
+                        { id: 'not_uploaded', label: 'Not Uploaded', count: statsNotUploaded },
+                      ] as const
+                    ).map((filter) => (
+                      <button
+                        key={filter.id}
+                        onClick={() => setDocFilter(filter.id)}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold capitalize cursor-pointer transition-colors ${docFilter === filter.id
+                          ? 'bg-germany-red text-white shadow-xs'
+                          : 'bg-[#EBE7E0] dark:bg-[#151B27] text-gray-700 dark:text-gray-300 hover:bg-[#DDD8CF] dark:hover:bg-[#1E2638]'
+                          }`}
+                      >
+                        {filter.label} ({filter.count})
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Documents List Container */}
+                <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
+                  {docsLoading ? (
+                    <div className="p-12 flex flex-col items-center justify-center gap-2 text-gray-400 text-xs font-bold">
+                      <Loader2 className="w-6 h-6 animate-spin text-germany-red" />
+                      <span>Loading uploaded documents from student records...</span>
+                    </div>
+                  ) : docsError ? (
+                    <div className="p-6 border-2 border-dashed border-red-200 dark:border-red-900/40 rounded-2xl text-center text-red-500 dark:text-red-400 text-xs font-bold bg-red-50 dark:bg-red-950/20">
+                      {docsError}
+                    </div>
+                  ) : isCustomAiCategory ? (
+                    /* Uploaded Documents List for CV and LOR */
+                    filteredDocs.length === 0 ? (
+                      <div className="p-8 border-2 border-dashed border-[#EBE7E0] dark:border-gray-800 rounded-2xl text-center space-y-2 text-xs font-bold text-gray-400">
+                        <p>No documents found matching the "{docFilter}" status filter.</p>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-[#EBE7E0] dark:divide-gray-800/80">
+                        {filteredDocs.map((doc) => {
+                          const isVerified = doc.status === 'verified';
+                          const isPending = doc.status === 'pending';
+                          const isRejected = doc.status === 'rejected';
+
+                          return (
+                            <div key={doc.id} className="py-3.5 space-y-2">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div className="flex items-start gap-3">
+                                  <div
+                                    className={`p-2.5 rounded-xl shrink-0 ${isVerified
+                                      ? 'bg-emerald-100 text-emerald-700'
+                                      : isPending
+                                        ? 'bg-amber-100 text-amber-700'
+                                        : 'bg-red-100 text-red-700'
+                                      }`}
+                                  >
+                                    <FileText className="w-4 h-4" />
+                                  </div>
+
+                                  <div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <h4 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white">
+                                        {doc.name}
+                                      </h4>
+                                      <span
+                                        className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 ${isVerified
+                                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                          : isPending
+                                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                                            : 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300'
+                                          }`}
+                                      >
+                                        {isVerified ? (
+                                          <>
+                                            <CheckCircle2 className="w-3 h-3" />
+                                            <span>Approved</span>
+                                          </>
+                                        ) : isPending ? (
+                                          <>
+                                            <Clock className="w-3 h-3" />
+                                            <span>Pending Verification</span>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <AlertTriangle className="w-3 h-3" />
+                                            <span>Revision Needed</span>
+                                          </>
+                                        )}
+                                      </span>
+                                    </div>
+
+                                    <p className="text-[11px] font-bold text-gray-400 mt-0.5">
+                                      {doc.category} • Uploaded {doc.uploadDate} • {doc.size}
+                                      {doc.originalFilename && (
+                                        <span className="font-mono text-[10px] text-gray-500 dark:text-gray-400 ml-1">
+                                          ({doc.originalFilename})
+                                        </span>
+                                      )}
+                                      {doc.verifiedAt && (
+                                        <span className="text-emerald-700 dark:text-emerald-400 font-extrabold ml-1.5">
+                                          • Verified {doc.verifiedAt}
+                                        </span>
+                                      )}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 shrink-0 self-end sm:self-center flex-wrap">
+                                  <button
+                                    onClick={() => setPreviewDoc(doc)}
+                                    className="py-1.5 px-3 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:text-germany-black dark:hover:text-white bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                                  >
+                                    <Eye className="w-3.5 h-3.5" />
+                                    <span>Preview</span>
+                                  </button>
+                                  {doc.url && (
+                                    <a
+                                      href={doc.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="py-1.5 px-3 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:text-germany-black dark:hover:text-white bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                                    >
+                                      <ExternalLink className="w-3.5 h-3.5" />
+                                      <span>Open</span>
+                                    </a>
+                                  )}
+
+                                  {isVerified ? (
+                                    <div className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-emerald-100/70 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+                                      <CheckCircle2 className="w-3.5 h-3.5" />
+                                      <span>Approved</span>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      onClick={() => handleVerifyDoc(doc.id)}
+                                      disabled={docActionLoading === doc.id}
+                                      className="py-1.5 px-3.5 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                                    >
+                                      {docActionLoading === doc.id ? (
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                      ) : (
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                      )}
+                                      <span>Accept</span>
+                                    </button>
+                                  )}
+
+                                  {doc.documentType === 'cv' && (
+                                    <>
+                                      <button
+                                        onClick={() => {
+                                          const studentName = student
+                                            ? [student.firstName, student.lastName].filter(Boolean).join('_')
+                                            : 'Applicant';
+                                          handleDownloadWord(
+                                            'cv',
+                                            undefined,
+                                            `CV_${studentName || 'Applicant'}.docx`,
+                                          );
+                                        }}
+                                        disabled={downloadingWordId === 'cv'}
+                                        className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-colors cursor-pointer shadow-xs"
+                                      >
+                                        {downloadingWordId === 'cv' ? (
+                                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        ) : (
+                                          <Download className="w-3.5 h-3.5 text-blue-600" />
+                                        )}
+                                        <span>Word (.docx)</span>
+                                      </button>
+
+                                      <label
+                                        className={`py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 transition-colors cursor-pointer shadow-xs ${uploadingCorrectedId === 'cv' ? 'opacity-60 pointer-events-none' : ''
+                                          }`}
+                                      >
+                                        {uploadingCorrectedId === 'cv' ? (
+                                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        ) : (
+                                          <Upload className="w-3.5 h-3.5 text-purple-600" />
+                                        )}
+                                        <span>Upload Corrected</span>
+                                        <input
+                                          type="file"
+                                          accept=".pdf,.docx,.doc"
+                                          className="hidden"
+                                          disabled={uploadingCorrectedId === 'cv'}
+                                          onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                              handleUploadCorrected('cv', file);
+                                              e.target.value = '';
+                                            }
+                                          }}
+                                        />
+                                      </label>
+
+                                      <button
+                                        onClick={handleRegenerateCv}
+                                        disabled={regeneratingCv}
+                                        className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors cursor-pointer shadow-xs"
+                                      >
+                                        {regeneratingCv ? (
+                                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        ) : (
+                                          <RefreshCw className="w-3.5 h-3.5" />
+                                        )}
+                                        <span>Re-generate</span>
+                                      </button>
+
+                                      <button
+                                        onClick={() => handleGrantAttempts('cv')}
+                                        disabled={grantingDocType === 'cv' || Boolean(dossierLimits?.cv?.extraAttemptsGranted)}
+                                        className={`py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl border transition-colors shadow-xs ${dossierLimits?.cv?.extraAttemptsGranted
+                                          ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed'
+                                          : 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 cursor-pointer'
+                                          }`}
+                                      >
+                                        {grantingDocType === 'cv' ? (
+                                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        ) : (
+                                          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                                        )}
+                                        <span>+ Allot Extra</span>
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )
+                  ) : (
+                    /* Unified Category Checklist for APS, Admission, Visa, and General */
+                    <div className="space-y-4">
+                      {/* Scope & Notes Banner for Visa */}
+                      {docCategory === 'visa' && (
+                        <div className="space-y-3 pb-2">
+                          <div className="p-3.5 bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/60 rounded-xl text-xs text-amber-900 dark:text-amber-300 flex items-start gap-2.5">
+                            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                            <p className="leading-relaxed">
+                              <strong>Preparation Scope Only:</strong> EuroBridge provides German student visa document preparation and counsellor verification assistance only. EuroBridge does NOT submit visa applications, book consular appointments, or pay official fees on behalf of students.
+                            </p>
                           </div>
-                        ) : (
-                          <div className="divide-y divide-[#EBE7E0] dark:divide-gray-800/80">
-                            {notUploadedCatalogueItems.map((item) => (
-                              <div key={item.type} className="py-3.5 space-y-2">
+
+                          <div className="bg-white dark:bg-[#151B27] rounded-xl p-4 border border-gray-200/80 dark:border-gray-800 space-y-2.5 shadow-2xs">
+                            <div className="flex items-center justify-between">
+                              <label className="text-xs font-extrabold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+                                <FileCheck2 className="w-4 h-4 text-germany-red" />
+                                <span>Overall Visa Strategy Instructions for Student</span>
+                              </label>
+                              <button
+                                type="button"
+                                onClick={handleSaveVisaGeneralNotes}
+                                disabled={visaGeneralNotesSaving}
+                                className="px-3 py-1.5 bg-germany-red hover:bg-germany-red/90 text-white text-xs font-extrabold rounded-xl shadow-xs transition-all flex items-center gap-1 cursor-pointer"
+                              >
+                                {visaGeneralNotesSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                                <span>Save Strategy Notes</span>
+                              </button>
+                            </div>
+                            <textarea
+                              rows={2}
+                              placeholder="e.g. Schedule VFS appointment under Mumbai jurisdiction as soon as admission arrives. Ensure blocked account is funded 15 days before appointment."
+                              value={visaGeneralNotes}
+                              onChange={(e) => setVisaGeneralNotes(e.target.value)}
+                              className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#111622] text-xs text-gray-900 dark:text-white"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {displayedChecklist.length === 0 ? (
+                        <div className="p-8 border-2 border-dashed border-[#EBE7E0] dark:border-gray-800 rounded-2xl text-center space-y-2 text-xs font-bold text-gray-400">
+                          <p>No documents found matching the "{docFilter}" status filter in this category.</p>
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-[#EBE7E0] dark:divide-gray-800/80">
+                          {displayedChecklist.map((item) => {
+                            const isUploaded = Boolean(item.uploadedDoc);
+                            const doc = item.uploadedDoc;
+                            const isVerified = item.status === 'verified';
+                            const isPending = item.status === 'pending';
+                            const isRejected = item.status === 'rejected';
+                            const isNotUploaded = item.status === 'not_uploaded';
+
+                            return (
+                              <div key={item.key} className="py-3.5 space-y-2">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                  {/* Left: Document Info & Status */}
                                   <div className="flex items-start gap-3">
-                                    <div className="p-2.5 rounded-xl shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-700">
-                                      <Clock className="w-4 h-4" />
+                                    <div
+                                      className={`p-2.5 rounded-xl shrink-0 ${isVerified
+                                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
+                                        : isPending
+                                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'
+                                          : isRejected
+                                            ? 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400'
+                                            : 'bg-gray-100 dark:bg-gray-800 text-gray-400 border border-dashed border-gray-300 dark:border-gray-700'
+                                        }`}
+                                    >
+                                      {isVerified ? (
+                                        <CheckCircle2 className="w-4 h-4" />
+                                      ) : isPending ? (
+                                        <Clock className="w-4 h-4" />
+                                      ) : isRejected ? (
+                                        <AlertTriangle className="w-4 h-4" />
+                                      ) : (
+                                        <Clock className="w-4 h-4" />
+                                      )}
                                     </div>
 
                                     <div>
@@ -3269,333 +3598,193 @@ const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
                                         <h4 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white">
                                           {item.name}
                                         </h4>
-                                        <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                                          Not Uploaded
-                                        </span>
+
+                                        {/* Status Badge */}
                                         <span
-                                          className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${
-                                            item.section === 'aps'
-                                              ? 'bg-germany-red/10 text-germany-red border border-germany-red/20'
-                                              : item.section === 'lor_sop_cv'
-                                              ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800'
-                                              : 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
-                                          }`}
-                                        >
-                                          {item.section === 'aps' ? 'APS Checklist' : item.section === 'lor_sop_cv' ? 'Academic Dossier' : 'General Document'}
-                                        </span>
-                                      </div>
-
-                                      <p className="text-[11px] font-bold text-gray-400 mt-0.5">
-                                        {item.category} • {item.description}
-                                        {item.required && (
-                                          <span className="text-amber-600 dark:text-amber-400 font-extrabold ml-1.5">
-                                            • Mandatory Requirement
-                                          </span>
-                                        )}
-                                      </p>
-                                    </div>
-                                  </div>
-
-                                  <div className="shrink-0 self-start sm:self-center">
-                                    <span className="text-xs font-bold text-gray-400 italic">
-                                      Awaiting student submission
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )
-                      ) : filteredDocs.length === 0 ? (
-                        /* Empty state when 0 uploaded docs match filter */
-                        <div className="p-8 border-2 border-dashed border-[#EBE7E0] dark:border-gray-800 rounded-2xl text-center space-y-2 text-xs font-bold text-gray-400">
-                          <p>
-                            {currentCategoryUploadedDocs.length === 0
-                              ? `No uploaded documents in this category yet (${statsNotUploaded} expected documents pending submission).`
-                              : `No documents found matching the "${docFilter}" status filter.`}
-                          </p>
-                          {statsNotUploaded > 0 && docFilter !== 'all' && (
-                            <button
-                              onClick={() => setDocFilter('not_uploaded')}
-                              className="text-germany-red font-extrabold hover:underline inline-flex items-center gap-1 cursor-pointer"
-                            >
-                              <span>View {statsNotUploaded} pending documents not uploaded yet &rarr;</span>
-                            </button>
-                          )}
-                        </div>
-                      ) : (
-                        /* Uploaded Documents List */
-                        <div className="divide-y divide-[#EBE7E0] dark:divide-gray-800/80">
-                          {filteredDocs.map((doc) => {
-                            const isVerified = doc.status === 'verified';
-                            const isPending = doc.status === 'pending';
-                            const isRejected = doc.status === 'rejected';
-
-                            return (
-                              <div key={doc.id} className="py-3.5 space-y-2">
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                  {/* Left: Document details */}
-                                  <div className="flex items-start gap-3">
-                                    <div
-                                      className={`p-2.5 rounded-xl shrink-0 ${
-                                        isVerified
-                                          ? 'bg-emerald-100 text-emerald-700'
-                                          : isPending
-                                          ? 'bg-amber-100 text-amber-700'
-                                          : 'bg-red-100 text-red-700'
-                                      }`}
-                                    >
-                                      <FileText className="w-4 h-4" />
-                                    </div>
-
-                                    <div>
-                                      <div className="flex items-center gap-2 flex-wrap">
-                                        <h4 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white">
-                                          {doc.name}
-                                        </h4>
-
-                                        {/* Status Badge with both text and color */}
-                                        <span
-                                          className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 ${
-                                            isVerified
-                                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                                              : isPending
-                                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                                              : 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300'
-                                          }`}
+                                          className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 ${isVerified
+                                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
+                                            : isPending
+                                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-700'
+                                              : isRejected
+                                                ? 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300 border border-red-300 dark:border-red-700'
+                                                : 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
+                                            }`}
                                         >
                                           {isVerified ? (
                                             <>
                                               <CheckCircle2 className="w-3 h-3" />
-                                              <span>Verified</span>
+                                              <span>Approved</span>
                                             </>
                                           ) : isPending ? (
                                             <>
                                               <Clock className="w-3 h-3" />
                                               <span>Pending Verification</span>
                                             </>
-                                          ) : (
+                                          ) : isRejected ? (
                                             <>
                                               <AlertTriangle className="w-3 h-3" />
                                               <span>Revision Needed</span>
                                             </>
+                                          ) : (
+                                            <>
+                                              <AlertCircle className="w-3 h-3" />
+                                              <span>Not Uploaded</span>
+                                            </>
                                           )}
                                         </span>
 
-                                        {/* Category Label Badge */}
+                                        {/* Section Badge */}
                                         <span
-                                          className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${
-                                            doc.section === 'aps'
-                                              ? 'bg-germany-red/10 text-germany-red border border-germany-red/20'
-                                              : doc.section === 'lor_sop_cv'
-                                              ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800'
-                                              : 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
-                                          }`}
+                                          className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${docCategory === 'aps'
+                                            ? 'bg-germany-red/10 text-germany-red border border-germany-red/20'
+                                            : docCategory === 'visa'
+                                              ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800'
+                                              : docCategory === 'admission'
+                                                ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+                                                : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                            }`}
                                         >
-                                          {doc.section === 'aps' ? 'APS Checklist' : doc.section === 'lor_sop_cv' ? 'Academic Dossier' : 'General Document'}
+                                          {docCategory === 'aps'
+                                            ? 'APS Checklist'
+                                            : docCategory === 'visa'
+                                              ? 'Visa Documents'
+                                              : docCategory === 'admission'
+                                                ? 'Application Document'
+                                                : 'General Document'}
                                         </span>
                                       </div>
 
-                                      <p className="text-[11px] font-bold text-gray-400 mt-0.5">
-                                        {doc.category} • Uploaded {doc.uploadDate} • {doc.size}
-                                        {doc.originalFilename && (
-                                          <span className="font-mono text-[10px] text-gray-500 dark:text-gray-400 ml-1">
-                                            ({doc.originalFilename})
-                                          </span>
-                                        )}
-                                        {doc.verifiedAt && (
-                                          <span className="text-emerald-700 dark:text-emerald-400 font-extrabold ml-1.5">
-                                            • Verified {doc.verifiedAt}
-                                          </span>
-                                        )}
-                                      </p>
+                                      {/* Details */}
+                                      {isUploaded && doc ? (
+                                        <p className="text-[11px] font-bold text-gray-400 mt-0.5">
+                                          {doc.category || item.category} • Uploaded {doc.uploadDate} • {doc.size}
+                                          {doc.originalFilename && (
+                                            <span className="font-mono text-[10px] text-gray-500 dark:text-gray-400 ml-1">
+                                              ({doc.originalFilename})
+                                            </span>
+                                          )}
+                                          {doc.verifiedAt && (
+                                            <span className="text-emerald-700 dark:text-emerald-400 font-extrabold ml-1.5">
+                                              • Verified {doc.verifiedAt}
+                                            </span>
+                                          )}
+                                        </p>
+                                      ) : (
+                                        <p className="text-[11px] font-bold text-gray-400 mt-0.5">
+                                          {item.category} • {item.description}
+                                          {item.required ? (
+                                            <span className="text-amber-600 dark:text-amber-400 font-extrabold ml-1.5">
+                                              • Mandatory Requirement
+                                            </span>
+                                          ) : (
+                                            <span className="text-gray-400 dark:text-gray-500 font-medium ml-1.5">
+                                              • Optional / Conditional
+                                            </span>
+                                          )}
+                                        </p>
+                                      )}
                                     </div>
                                   </div>
 
                                   {/* Right: Actions */}
-                                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-center flex-wrap">
-                                    {/* Preview Button */}
-                                    <button
-                                      onClick={() => setPreviewDoc(doc)}
-                                      className="py-1.5 px-3 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:text-germany-black dark:hover:text-white bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
-                                      title="Preview document contents"
-                                    >
-                                      <Eye className="w-3.5 h-3.5" />
-                                      <span>Preview</span>
-                                    </button>
+                                  <div className="shrink-0 self-start sm:self-center">
+                                    {isUploaded && doc ? (
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        {/* Preview */}
+                                        <button
+                                          type="button"
+                                          onClick={() => setPreviewDoc(doc)}
+                                          className="py-1.5 px-3 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:text-germany-black dark:hover:text-white bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                                          title="Preview document"
+                                        >
+                                          <Eye className="w-3.5 h-3.5" />
+                                          <span>Preview</span>
+                                        </button>
 
-                                    {/* Direct File Link */}
-                                    {doc.url && (
-                                      <a
-                                        href={doc.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="py-1.5 px-3 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:text-germany-black dark:hover:text-white bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
-                                        title="Open original file in new tab"
-                                      >
-                                        <ExternalLink className="w-3.5 h-3.5" />
-                                        <span>Open</span>
-                                      </a>
-                                    )}
-
-                                    {/* Accept / Verify Button */}
-                                    {isVerified ? (
-                                      <div
-                                        className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-emerald-100/70 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60"
-                                        title="Document already verified"
-                                      >
-                                        <CheckCircle2 className="w-3.5 h-3.5" />
-                                        <span>Verified</span>
-                                      </div>
-                                    ) : (
-                                      <button
-                                        onClick={() => handleVerifyDoc(doc.id)}
-                                        disabled={docActionLoading === doc.id}
-                                        className="py-1.5 px-3.5 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
-                                        title="Accept and verify document"
-                                      >
-                                        {docActionLoading === doc.id ? (
-                                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                        ) : (
-                                          <CheckCircle2 className="w-3.5 h-3.5" />
+                                        {/* Open in new tab */}
+                                        {doc.url && (
+                                          <a
+                                            href={doc.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="py-1.5 px-3 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:text-germany-black dark:hover:text-white bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                                            title="Open original file in new tab"
+                                          >
+                                            <ExternalLink className="w-3.5 h-3.5" />
+                                            <span>Open</span>
+                                          </a>
                                         )}
-                                        <span>Accept</span>
-                                      </button>
-                                    )}
 
-                                    {/* AI Documents: CV / SOP specific actions (Download Word, Upload Corrected, Re-generate) */}
-                                    {doc.documentType === 'cv' ? (
-                                      <>
-                                        {/* Download Word (.docx) */}
-                                        <button
-                                          onClick={() => {
-                                            const studentName = student
-                                              ? [student.firstName, student.lastName].filter(Boolean).join('_')
-                                              : 'Applicant';
-                                            handleDownloadWord(
-                                              'cv',
-                                              undefined,
-                                              `CV_${studentName || 'Applicant'}.docx`,
-                                            );
-                                          }}
-                                          disabled={downloadingWordId === 'cv'}
-                                          className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-colors cursor-pointer shadow-xs"
-                                          title="Download editable Microsoft Word (.docx) CV"
-                                        >
-                                          {downloadingWordId === 'cv' ? (
-                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                          ) : (
-                                            <Download className="w-3.5 h-3.5 text-blue-600" />
-                                          )}
-                                          <span>Word (.docx)</span>
-                                        </button>
-
-                                        {/* Upload Corrected */}
-                                        <label
-                                          className={`py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 transition-colors cursor-pointer shadow-xs ${
-                                            uploadingCorrectedId === 'cv' ? 'opacity-60 pointer-events-none' : ''
-                                          }`}
-                                          title="Upload corrected CV (marks as verified and replaces generated CV)"
-                                        >
-                                          {uploadingCorrectedId === 'cv' ? (
-                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                          ) : (
-                                            <Upload className="w-3.5 h-3.5 text-purple-600" />
-                                          )}
-                                          <span>Upload Corrected</span>
-                                          <input
-                                            type="file"
-                                            accept=".pdf,.docx,.doc"
-                                            className="hidden"
-                                            disabled={uploadingCorrectedId === 'cv'}
-                                            onChange={(e) => {
-                                              const file = e.target.files?.[0];
-                                              if (file) {
-                                                handleUploadCorrected('cv', file);
-                                                e.target.value = '';
-                                              }
-                                            }}
-                                          />
-                                        </label>
-
-                                        {/* Re-generate CV */}
-                                        <button
-                                          onClick={handleRegenerateCv}
-                                          disabled={regeneratingCv}
-                                          className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors cursor-pointer shadow-xs"
-                                          title="Re-generate CV from scratch"
-                                        >
-                                          {regeneratingCv ? (
-                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                          ) : (
-                                            <RefreshCw className="w-3.5 h-3.5" />
-                                          )}
-                                          <span>Re-generate</span>
-                                        </button>
-
-                                        {/* Allot Extra CV attempt */}
-                                        <button
-                                          onClick={() => handleGrantAttempts('cv')}
-                                          disabled={grantingDocType === 'cv' || Boolean(dossierLimits?.cv?.extraAttemptsGranted)}
-                                          className={`py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl border transition-colors shadow-xs ${
-                                            dossierLimits?.cv?.extraAttemptsGranted
-                                              ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed'
-                                              : 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 cursor-pointer'
-                                          }`}
-                                          title={
-                                            dossierLimits?.cv?.extraAttemptsGranted
-                                              ? 'Max 1 extra attempt already allotted'
-                                              : 'Allot +1 extra CV generation attempt to student'
-                                          }
-                                        >
-                                          {grantingDocType === 'cv' ? (
-                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                          ) : (
-                                            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                                          )}
-                                          <span>+ Allot Extra</span>
-                                        </button>
-                                      </>
-                                    ) : doc.documentType === 'sop' ? null : (
-                                      /* Non-AI Documents: Reject / Edit Reason / Request Re-upload Actions */
-                                      isRejected ? (
-                                        <>
+                                        {/* Accept / Verify */}
+                                        {isVerified ? (
+                                          <div className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-emerald-100/70 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+                                            <CheckCircle2 className="w-3.5 h-3.5" />
+                                            <span>Approved</span>
+                                          </div>
+                                        ) : (
                                           <button
+                                            type="button"
+                                            onClick={() => handleVerifyDoc(doc.id)}
+                                            disabled={docActionLoading === doc.id}
+                                            className="py-1.5 px-3.5 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                                            title="Accept and verify document"
+                                          >
+                                            {docActionLoading === doc.id ? (
+                                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            ) : (
+                                              <CheckCircle2 className="w-3.5 h-3.5" />
+                                            )}
+                                            <span>Accept</span>
+                                          </button>
+                                        )}
+
+                                        {/* Reject / Edit Reason */}
+                                        {isRejected ? (
+                                          <>
+                                            <button
+                                              type="button"
+                                              onClick={() => handleOpenRejectModal(doc)}
+                                              disabled={docActionLoading === doc.id}
+                                              className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-white dark:bg-[#151B27] border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 shadow-xs"
+                                              title="Update rejection feedback"
+                                            >
+                                              <AlertTriangle className="w-3.5 h-3.5" />
+                                              <span>Edit Reason</span>
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={() => handleOpenRejectModal(doc)}
+                                              disabled={docActionLoading === doc.id}
+                                              className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-red-600 hover:bg-red-700 text-white shadow-xs"
+                                              title="Re-request student re-upload"
+                                            >
+                                              <AlertCircle className="w-3.5 h-3.5" />
+                                              <span>Request Re-upload</span>
+                                            </button>
+                                          </>
+                                        ) : (
+                                          <button
+                                            type="button"
                                             onClick={() => handleOpenRejectModal(doc)}
                                             disabled={docActionLoading === doc.id}
-                                            className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-white dark:bg-[#151B27] border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 shadow-xs"
-                                            title="Update rejection feedback"
+                                            className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 shadow-xs"
+                                            title="Reject document and request revision"
                                           >
                                             <AlertTriangle className="w-3.5 h-3.5" />
-                                            <span>Edit Reason</span>
+                                            <span>Reject</span>
                                           </button>
-                                          <button
-                                            onClick={() => handleOpenRejectModal(doc)}
-                                            disabled={docActionLoading === doc.id}
-                                            className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-red-600 hover:bg-red-700 text-white shadow-xs"
-                                            title="Re-request student re-upload"
-                                          >
-                                            <AlertCircle className="w-3.5 h-3.5" />
-                                            <span>Request Re-upload</span>
-                                          </button>
-                                        </>
-                                      ) : (
-                                        <button
-                                          onClick={() => handleOpenRejectModal(doc)}
-                                          disabled={docActionLoading === doc.id}
-                                          className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 shadow-xs"
-                                          title="Reject document and request revision"
-                                        >
-                                          <AlertTriangle className="w-3.5 h-3.5" />
-                                          <span>Reject</span>
-                                        </button>
-                                      )
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <span className="text-xs font-bold text-gray-400 italic">
+                                        Awaiting student submission
+                                      </span>
                                     )}
                                   </div>
                                 </div>
 
-                                {/* Rejection Note Display (for non-AI uploaded documents) */}
-                                {doc.rejectionReason && doc.documentType !== 'cv' && doc.documentType !== 'sop' && (
+                                {/* Rejection Note Display */}
+                                {isRejected && doc?.rejectionReason && (
                                   <div className="ml-10 p-3 rounded-xl bg-red-50/90 dark:bg-red-950/40 border-l-4 border-l-red-600 border-y border-r border-red-200/80 dark:border-red-900/40 text-xs text-red-900 dark:text-red-200 flex items-start gap-2.5 shadow-2xs">
                                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600 dark:text-red-400" />
                                     <div className="space-y-0.5 flex-1">
@@ -3604,6 +3793,7 @@ const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
                                           Counsellor Feedback &amp; Revision Required:
                                         </span>
                                         <button
+                                          type="button"
                                           onClick={() => handleOpenRejectModal(doc)}
                                           className="text-[10px] font-extrabold text-red-700 dark:text-red-300 hover:underline cursor-pointer"
                                         >
@@ -3620,985 +3810,394 @@ const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
                         </div>
                       )}
                     </div>
-                  </>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+        {activeTab === 'universities' && (
+          <div className="space-y-4">
+            {/* Header with Run Matching & Add Recommendation */}
+            <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="font-display text-base text-germany-black dark:text-white">University Eligibility &amp; Recommendations</h3>
+                <p className="text-xs font-bold text-gray-500">
+                  {matchingRun?.status === 'completed'
+                    ? `Last run: ${new Date(matchingRun.completed_at || matchingRun.created_at).toLocaleDateString()} — ${matchingRun.candidates_evaluated ?? 0} programmes evaluated (${matchingRun.results_generated ?? matchingResults.length} matches found)`
+                    : matchingRun?.status === 'running' || matchingRun?.status === 'pending' || runningMatching
+                      ? 'Matching in progress…'
+                      : 'Run the matching engine to evaluate eligible programmes for this student.'}
+                </p>
+                {matchingRun?.status === 'failed' && (
+                  <p className="text-[11px] text-red-600 font-medium mt-0.5">Last run failed. You can re-run below.</p>
                 )}
               </div>
-            )}
-            {activeTab === 'universities' && (
-              <div className="space-y-4">
-                {/* Header with Run Matching & Add Recommendation */}
-                <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  id="counsellor-run-matching-btn"
+                  onClick={handleRunMatching}
+                  disabled={runningMatching || isMatchingLocked}
+                  title={isMatchingLocked ? 'Shortlist and matching are locked. Unlock before re-running matching.' : undefined}
+                  className={`flex items-center gap-1.5 py-2 px-3.5 text-xs font-extrabold rounded-xl shadow-xs transition-colors ${isMatchingLocked
+                    ? 'bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800 cursor-not-allowed opacity-75'
+                    : 'bg-germany-red hover:bg-[#D62839] disabled:opacity-60 text-white cursor-pointer'
+                    }`}
+                >
+                  {isMatchingLocked ? (
+                    <><Lock className="w-3.5 h-3.5 text-purple-700 dark:text-purple-300" /> Shortlist Locked</>
+                  ) : runningMatching ? (
+                    <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Starting…</>
+                  ) : matchingRun?.status === 'running' || matchingRun?.status === 'pending' ? (
+                    <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Re-start Matching</>
+                  ) : matchingRun?.status === 'completed' ? (
+                    <><RefreshCw className="w-3.5 h-3.5" /> Re-run Matching</>
+                  ) : (
+                    <><Compass className="w-3.5 h-3.5" /> Run Matching Engine</>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Lock Status Alert Banner */}
+            {isMatchingLocked && (
+              <div className="p-3.5 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/60 rounded-2xl flex items-center justify-between gap-3 text-purple-900 dark:text-purple-200">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-purple-200 dark:bg-purple-900/60 flex items-center justify-center shrink-0">
+                    <Lock className="w-4 h-4 text-purple-800 dark:text-purple-200" />
+                  </div>
                   <div>
-                    <h3 className="font-display text-base text-germany-black dark:text-white">University Eligibility &amp; Recommendations</h3>
-                    <p className="text-xs font-bold text-gray-500">
-                      {matchingRun?.status === 'completed'
-                        ? `Last run: ${new Date(matchingRun.completed_at || matchingRun.created_at).toLocaleDateString()} — ${matchingRun.candidates_evaluated ?? 0} programmes evaluated (${matchingRun.results_generated ?? matchingResults.length} matches found)`
-                        : matchingRun?.status === 'running' || matchingRun?.status === 'pending' || runningMatching
-                        ? 'Matching in progress…'
-                        : 'Run the matching engine to evaluate eligible programmes for this student.'}
+                    <p className="text-xs font-black uppercase tracking-wider text-purple-800 dark:text-purple-300">
+                      Shortlist &amp; Display Curation Locked
                     </p>
-                    {matchingRun?.status === 'failed' && (
-                      <p className="text-[11px] text-red-600 font-medium mt-0.5">Last run failed. You can re-run below.</p>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      id="counsellor-run-matching-btn"
-                      onClick={handleRunMatching}
-                      disabled={runningMatching || isMatchingLocked}
-                      title={isMatchingLocked ? 'Shortlist and matching are locked. Unlock before re-running matching.' : undefined}
-                      className={`flex items-center gap-1.5 py-2 px-3.5 text-xs font-extrabold rounded-xl shadow-xs transition-colors ${
-                        isMatchingLocked
-                          ? 'bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800 cursor-not-allowed opacity-75'
-                          : 'bg-germany-red hover:bg-[#D62839] disabled:opacity-60 text-white cursor-pointer'
-                      }`}
-                    >
-                      {isMatchingLocked ? (
-                        <><Lock className="w-3.5 h-3.5 text-purple-700 dark:text-purple-300" /> Shortlist Locked</>
-                      ) : runningMatching ? (
-                        <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Starting…</>
-                      ) : matchingRun?.status === 'running' || matchingRun?.status === 'pending' ? (
-                        <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Re-start Matching</>
-                      ) : matchingRun?.status === 'completed' ? (
-                        <><RefreshCw className="w-3.5 h-3.5" /> Re-run Matching</>
-                      ) : (
-                        <><Compass className="w-3.5 h-3.5" /> Run Matching Engine</>
-                      )}
-                    </button>
+                    <p className="text-[11px] text-purple-700 dark:text-purple-400 font-medium">
+                      Programmes are finalized for university application submission. Re-running matching, curation modifications, and shortlist changes are locked. Click &quot;Shortlist Locked&quot; to unlock.
+                    </p>
                   </div>
                 </div>
+              </div>
+            )}
 
-                {/* Lock Status Alert Banner */}
-                {isMatchingLocked && (
-                  <div className="p-3.5 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/60 rounded-2xl flex items-center justify-between gap-3 text-purple-900 dark:text-purple-200">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-purple-200 dark:bg-purple-900/60 flex items-center justify-center shrink-0">
-                        <Lock className="w-4 h-4 text-purple-800 dark:text-purple-200" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-black uppercase tracking-wider text-purple-800 dark:text-purple-300">
-                          Shortlist &amp; Display Curation Locked
-                        </p>
-                        <p className="text-[11px] text-purple-700 dark:text-purple-400 font-medium">
-                          Programmes are finalized for university application submission. Re-running matching, curation modifications, and shortlist changes are locked. Click &quot;Shortlist Locked&quot; to unlock.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Subscription & Shortlist Lock Control Bar */}
-                <div className="p-4 bg-gradient-to-r from-amber-500/10 via-transparent to-red-500/10 dark:from-amber-500/5 dark:to-red-500/5 rounded-2xl border border-amber-500/20 dark:border-amber-500/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    {studentSubscription ? (
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-germany-gold/20 text-germany-black dark:text-germany-gold border border-germany-gold/40">
-                          {studentSubscription.planName || studentSubscription.planId}
-                        </span>
-                        <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                          Display: <strong className="text-germany-red">{curatedProgrammeIds.length}</strong> / {studentSubscription.maxDisplayCount} max
-                        </span>
-                        <span className="text-xs text-gray-400">•</span>
-                        <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                          Shortlist: <strong className="text-blue-600">{studentShortlistCount}</strong> / {studentSubscription.maxShortlistCount} max
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
-                          No Active Plan
-                        </span>
-                        <span className="text-xs font-medium text-gray-500">
-                          Student has not purchased a plan. Results withheld from student until plan purchase.
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      id="counsellor-toggle-lock-btn"
-                      onClick={handleToggleLock}
-                      disabled={togglingLock}
-                      className={`flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-extrabold transition-colors cursor-pointer border ${
-                        isMatchingLocked
-                          ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-100'
-                          : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100'
-                      }`}
-                      title={isMatchingLocked ? 'Shortlist and matching are locked for this student. Click to unlock.' : 'Student can modify shortlist and re-run matching. Click to lock.'}
-                    >
-                      {togglingLock ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : isMatchingLocked ? (
-                        <Lock className="w-3.5 h-3.5 text-red-600" />
-                      ) : (
-                        <Unlock className="w-3.5 h-3.5 text-emerald-600" />
-                      )}
-                      <span>{isMatchingLocked ? 'Shortlist Locked' : 'Shortlist Unlocked'}</span>
-                    </button>
-
-                    <button
-                      onClick={() => setShowCurationPanel(!showCurationPanel)}
-                      className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-bold bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1C2436] transition-colors cursor-pointer shadow-xs"
-                    >
-                      <span>{showCurationPanel ? 'Hide Curation Panel' : 'Show Curation Panel'}</span>
-                      <span className="text-[10px] font-black px-1.5 py-0.2 bg-germany-red text-white rounded-full">
-                        {curatedProgrammeIds.length}
-                      </span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Error Banner */}
-                {matchingError && (
-                  <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 rounded-xl flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
-                      <p className="text-xs font-bold text-red-700 dark:text-red-300">{matchingError}</p>
-                    </div>
-                    <button onClick={fetchMatchingResults} className="text-xs font-extrabold text-red-700 dark:text-red-300 underline cursor-pointer">
-                      Retry
-                    </button>
-                  </div>
-                )}
-
-                {/* Sub-navigation Tabs: Matched Programmes vs Other Universities / Catalogue */}
-                <div className="flex items-center justify-between border-b border-gray-200/80 dark:border-gray-800/80 pb-3 gap-2 flex-wrap">
+            {/* Subscription & Shortlist Lock Control Bar */}
+            <div className="p-4 bg-gradient-to-r from-amber-500/10 via-transparent to-red-500/10 dark:from-amber-500/5 dark:to-red-500/5 rounded-2xl border border-amber-500/20 dark:border-amber-500/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
+                {studentSubscription ? (
                   <div className="flex items-center gap-2 flex-wrap">
-                    <button
-                      type="button"
-                      onClick={() => setMatchingSubTab('matches')}
-                      className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-                        matchingSubTab === 'matches'
-                          ? 'bg-germany-red text-white shadow-xs'
-                          : 'bg-gray-100 dark:bg-[#151B27] text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                      }`}
-                    >
-                      <Compass className="w-3.5 h-3.5" />
-                      <span>Matched Programmes</span>
-                      <span
-                        className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${
-                          matchingSubTab === 'matches'
-                            ? 'bg-white/20 text-white'
-                            : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                        }`}
-                      >
-                        {matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length}
-                      </span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setMatchingSubTab('catalogue')}
-                      className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-                        matchingSubTab === 'catalogue'
-                          ? 'bg-germany-red text-white shadow-xs'
-                          : 'bg-gray-100 dark:bg-[#151B27] text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                      }`}
-                    >
-                      <Building2 className="w-3.5 h-3.5" />
-                      <span>Other Universities / Catalogue</span>
-                      {notepadProgrammes.length > 0 && (
-                        <span
-                          className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${
-                            matchingSubTab === 'catalogue'
-                              ? 'bg-white/20 text-white'
-                              : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
-                          }`}
-                        >
-                          {notepadProgrammes.length} in Notepad
-                        </span>
-                      )}
-                    </button>
+                    <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-germany-gold/20 text-germany-black dark:text-germany-gold border border-germany-gold/40">
+                      {studentSubscription.planName || studentSubscription.planId}
+                    </span>
+                    <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                      Display: <strong className="text-germany-red">{curatedProgrammeIds.length}</strong> / {studentSubscription.maxDisplayCount} max
+                    </span>
+                    <span className="text-xs text-gray-400">•</span>
+                    <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                      Shortlist: <strong className="text-blue-600">{studentShortlistCount}</strong> / {studentSubscription.maxShortlistCount} max
+                    </span>
                   </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                      No Active Plan
+                    </span>
+                    <span className="text-xs font-medium text-gray-500">
+                      Student has not purchased a plan. Results withheld from student until plan purchase.
+                    </span>
+                  </div>
+                )}
+              </div>
 
-                  <p className="text-[11px] font-bold text-gray-400">
-                    {matchingSubTab === 'matches'
-                      ? `${filteredMatchingResults.length} matches • Page ${matchPage} of ${totalMatchPages}`
-                      : `Search German universities above • ${notepadProgrammes.length} saved in notepad below`}
-                  </p>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  id="counsellor-toggle-lock-btn"
+                  onClick={handleToggleLock}
+                  disabled={togglingLock}
+                  className={`flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-extrabold transition-colors cursor-pointer border ${isMatchingLocked
+                    ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-100'
+                    : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100'
+                    }`}
+                  title={isMatchingLocked ? 'Shortlist and matching are locked for this student. Click to unlock.' : 'Student can modify shortlist and re-run matching. Click to lock.'}
+                >
+                  {togglingLock ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : isMatchingLocked ? (
+                    <Lock className="w-3.5 h-3.5 text-red-600" />
+                  ) : (
+                    <Unlock className="w-3.5 h-3.5 text-emerald-600" />
+                  )}
+                  <span>{isMatchingLocked ? 'Shortlist Locked' : 'Shortlist Unlocked'}</span>
+                </button>
+
+                <button
+                  onClick={() => setShowCurationPanel(!showCurationPanel)}
+                  className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-bold bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1C2436] transition-colors cursor-pointer shadow-xs"
+                >
+                  <span>{showCurationPanel ? 'Hide Curation Panel' : 'Show Curation Panel'}</span>
+                  <span className="text-[10px] font-black px-1.5 py-0.2 bg-germany-red text-white rounded-full">
+                    {curatedProgrammeIds.length}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Error Banner */}
+            {matchingError && (
+              <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 rounded-xl flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                  <p className="text-xs font-bold text-red-700 dark:text-red-300">{matchingError}</p>
                 </div>
+                <button onClick={fetchMatchingResults} className="text-xs font-extrabold text-red-700 dark:text-red-300 underline cursor-pointer">
+                  Retry
+                </button>
+              </div>
+            )}
 
-                {/* Main Content Area: Left (Matches / Catalogue) + Right (Student Display Curation) */}
-                <div className="flex flex-col xl:flex-row items-start gap-4">
-                  {/* Left Column */}
-                  <div className="flex-1 min-w-0 w-full">
-                    {matchingSubTab === 'matches' ? (
+            {/* Sub-navigation Tabs: Matched Programmes vs Other Universities / Catalogue */}
+            <div className="flex items-center justify-between border-b border-gray-200/80 dark:border-gray-800/80 pb-3 gap-2 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setMatchingSubTab('matches')}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${matchingSubTab === 'matches'
+                    ? 'bg-germany-red text-white shadow-xs'
+                    : 'bg-gray-100 dark:bg-[#151B27] text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                >
+                  <Compass className="w-3.5 h-3.5" />
+                  <span>Matched Programmes</span>
+                  <span
+                    className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${matchingSubTab === 'matches'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                      }`}
+                  >
+                    {matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setMatchingSubTab('catalogue')}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${matchingSubTab === 'catalogue'
+                    ? 'bg-germany-red text-white shadow-xs'
+                    : 'bg-gray-100 dark:bg-[#151B27] text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                >
+                  <Building2 className="w-3.5 h-3.5" />
+                  <span>Other Universities / Catalogue</span>
+                  {notepadProgrammes.length > 0 && (
+                    <span
+                      className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${matchingSubTab === 'catalogue'
+                        ? 'bg-white/20 text-white'
+                        : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
+                        }`}
+                    >
+                      {notepadProgrammes.length} in Notepad
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              <p className="text-[11px] font-bold text-gray-400">
+                {matchingSubTab === 'matches'
+                  ? `${filteredMatchingResults.length} matches • Page ${matchPage} of ${totalMatchPages}`
+                  : `Search German universities above • ${notepadProgrammes.length} saved in notepad below`}
+              </p>
+            </div>
+
+            {/* Main Content Area: Left (Matches / Catalogue) + Right (Student Display Curation) */}
+            <div className="flex flex-col xl:flex-row items-start gap-4">
+              {/* Left Column */}
+              <div className="flex-1 min-w-0 w-full">
+                {matchingSubTab === 'matches' ? (
+                  <div className="space-y-4">
+                    {/* Loading State */}
+                    {(loadingMatching || runningMatching || matchingRun?.status === 'running' || matchingRun?.status === 'pending') && (
+                      <div className="p-8 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-3 animate-pulse">
+                        <Loader2 className="w-7 h-7 text-germany-red mx-auto animate-spin" />
+                        <p className="text-xs font-bold text-gray-400">
+                          {runningMatching || matchingRun?.status === 'running' || matchingRun?.status === 'pending'
+                            ? 'Running matching engine across all German university programmes for this student…'
+                            : 'Loading matching results…'}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* No Run Yet */}
+                    {!loadingMatching && !runningMatching && matchingRun?.status !== 'running' && matchingRun?.status !== 'pending' && !matchingRun && (
+                      <div className="p-8 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-2">
+                        <Compass className="w-8 h-8 text-gray-300 mx-auto" />
+                        <h4 className="font-display text-sm text-germany-black dark:text-white">No Matching Run Yet</h4>
+                        <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                          Click &quot;Run Matching Engine&quot; above to evaluate this student&apos;s qualifications against German university programmes.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Completed with 0 Results */}
+                    {!loadingMatching && !runningMatching && matchingRun?.status === 'completed' && matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length === 0 && (
+                      <div className="p-8 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-3">
+                        <Compass className="w-8 h-8 text-germany-red mx-auto" />
+                        <h4 className="font-display text-sm text-germany-black dark:text-white">Profile Under Manual Advising Review</h4>
+                        <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                          No direct automated matches passed the strict criteria. Switch to &quot;Other Universities / Catalogue&quot; to handpick specialized universities or pathway programs.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setMatchingSubTab('catalogue')}
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-germany-red text-white text-xs font-extrabold rounded-xl hover:bg-germany-red/90 cursor-pointer"
+                        >
+                          <Building2 className="w-3.5 h-3.5" />
+                          <span>Explore University Catalogue</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Matching Results Present */}
+                    {!loadingMatching && !runningMatching && matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length > 0 && (
                       <div className="space-y-4">
-                        {/* Loading State */}
-                        {(loadingMatching || runningMatching || matchingRun?.status === 'running' || matchingRun?.status === 'pending') && (
-                          <div className="p-8 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-3 animate-pulse">
-                            <Loader2 className="w-7 h-7 text-germany-red mx-auto animate-spin" />
-                            <p className="text-xs font-bold text-gray-400">
-                              {runningMatching || matchingRun?.status === 'running' || matchingRun?.status === 'pending'
-                                ? 'Running matching engine across all German university programmes for this student…'
-                                : 'Loading matching results…'}
-                            </p>
+                        {/* Search & Filter Toolbar */}
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs">
+                          {/* Search input */}
+                          <div className="relative flex-1 min-w-[200px]">
+                            <input
+                              type="text"
+                              value={matchSearchQuery}
+                              onChange={(e) => {
+                                setMatchSearchQuery(e.target.value);
+                                setMatchPage(1);
+                              }}
+                              placeholder="Search by programme, university, city, language..."
+                              className="w-full pl-8 pr-8 py-2 bg-[#F8F9FA] dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 placeholder:text-gray-400 focus:outline-none focus:border-germany-red"
+                            />
+                            <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5 pointer-events-none" />
+                            {matchSearchQuery && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMatchSearchQuery('');
+                                  setMatchPage(1);
+                                }}
+                                className="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                           </div>
-                        )}
 
-                        {/* No Run Yet */}
-                        {!loadingMatching && !runningMatching && matchingRun?.status !== 'running' && matchingRun?.status !== 'pending' && !matchingRun && (
+                          {/* University Filter Dropdown */}
+                          <div className="flex items-center gap-2">
+                            <select
+                              value={matchUniFilter}
+                              onChange={(e) => {
+                                setMatchUniFilter(e.target.value);
+                                setMatchPage(1);
+                              }}
+                              className="text-xs font-extrabold bg-[#F8F9FA] dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl px-3 py-2 text-gray-700 dark:text-gray-300 focus:outline-none focus:border-germany-red max-w-[220px] truncate cursor-pointer"
+                            >
+                              <option value="ALL">
+                                All Universities ({matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length})
+                              </option>
+                              {matchedUniversities.map((u) => (
+                                <option key={u.name} value={u.name}>
+                                  {u.name} ({u.count})
+                                </option>
+                              ))}
+                            </select>
+
+                            {(matchSearchQuery || matchUniFilter !== 'ALL') && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMatchSearchQuery('');
+                                  setMatchUniFilter('ALL');
+                                  setMatchPage(1);
+                                }}
+                                className="text-xs font-bold text-germany-red hover:underline whitespace-nowrap cursor-pointer px-1"
+                              >
+                                Reset
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Empty Filter State */}
+                        {filteredMatchingResults.length === 0 ? (
                           <div className="p-8 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-2">
-                            <Compass className="w-8 h-8 text-gray-300 mx-auto" />
-                            <h4 className="font-display text-sm text-germany-black dark:text-white">No Matching Run Yet</h4>
-                            <p className="text-xs text-gray-500 max-w-sm mx-auto">
-                              Click &quot;Run Matching Engine&quot; above to evaluate this student&apos;s qualifications against German university programmes.
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Completed with 0 Results */}
-                        {!loadingMatching && !runningMatching && matchingRun?.status === 'completed' && matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length === 0 && (
-                          <div className="p-8 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-3">
-                            <Compass className="w-8 h-8 text-germany-red mx-auto" />
-                            <h4 className="font-display text-sm text-germany-black dark:text-white">Profile Under Manual Advising Review</h4>
-                            <p className="text-xs text-gray-500 max-w-sm mx-auto">
-                              No direct automated matches passed the strict criteria. Switch to &quot;Other Universities / Catalogue&quot; to handpick specialized universities or pathway programs.
+                            <Filter className="w-8 h-8 text-gray-300 mx-auto" />
+                            <h4 className="font-display text-sm text-germany-black dark:text-white">No Matching Programmes Found</h4>
+                            <p className="text-xs text-gray-500">
+                              No programmes match your current filter criteria.
                             </p>
                             <button
                               type="button"
-                              onClick={() => setMatchingSubTab('catalogue')}
-                              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-germany-red text-white text-xs font-extrabold rounded-xl hover:bg-germany-red/90 cursor-pointer"
+                              onClick={() => {
+                                setMatchSearchQuery('');
+                                setMatchUniFilter('ALL');
+                                setMatchPage(1);
+                              }}
+                              className="inline-flex items-center gap-1 text-xs font-extrabold text-germany-red hover:underline pt-2 cursor-pointer"
                             >
-                              <Building2 className="w-3.5 h-3.5" />
-                              <span>Explore University Catalogue</span>
+                              Clear All Filters
                             </button>
-                          </div>
-                        )}
-
-                        {/* Matching Results Present */}
-                        {!loadingMatching && !runningMatching && matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length > 0 && (
-                          <div className="space-y-4">
-                            {/* Search & Filter Toolbar */}
-                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs">
-                              {/* Search input */}
-                              <div className="relative flex-1 min-w-[200px]">
-                                <input
-                                  type="text"
-                                  value={matchSearchQuery}
-                                  onChange={(e) => {
-                                    setMatchSearchQuery(e.target.value);
-                                    setMatchPage(1);
-                                  }}
-                                  placeholder="Search by programme, university, city, language..."
-                                  className="w-full pl-8 pr-8 py-2 bg-[#F8F9FA] dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 placeholder:text-gray-400 focus:outline-none focus:border-germany-red"
-                                />
-                                <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5 pointer-events-none" />
-                                {matchSearchQuery && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setMatchSearchQuery('');
-                                      setMatchPage(1);
-                                    }}
-                                    className="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600"
-                                  >
-                                    <X className="w-3.5 h-3.5" />
-                                  </button>
-                                )}
-                              </div>
-
-                              {/* University Filter Dropdown */}
-                              <div className="flex items-center gap-2">
-                                <select
-                                  value={matchUniFilter}
-                                  onChange={(e) => {
-                                    setMatchUniFilter(e.target.value);
-                                    setMatchPage(1);
-                                  }}
-                                  className="text-xs font-extrabold bg-[#F8F9FA] dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl px-3 py-2 text-gray-700 dark:text-gray-300 focus:outline-none focus:border-germany-red max-w-[220px] truncate cursor-pointer"
-                                >
-                                  <option value="ALL">
-                                    All Universities ({matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length})
-                                  </option>
-                                  {matchedUniversities.map((u) => (
-                                    <option key={u.name} value={u.name}>
-                                      {u.name} ({u.count})
-                                    </option>
-                                  ))}
-                                </select>
-
-                                {(matchSearchQuery || matchUniFilter !== 'ALL') && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setMatchSearchQuery('');
-                                      setMatchUniFilter('ALL');
-                                      setMatchPage(1);
-                                    }}
-                                    className="text-xs font-bold text-germany-red hover:underline whitespace-nowrap cursor-pointer px-1"
-                                  >
-                                    Reset
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Empty Filter State */}
-                            {filteredMatchingResults.length === 0 ? (
-                              <div className="p-8 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 text-center space-y-2">
-                                <Filter className="w-8 h-8 text-gray-300 mx-auto" />
-                                <h4 className="font-display text-sm text-germany-black dark:text-white">No Matching Programmes Found</h4>
-                                <p className="text-xs text-gray-500">
-                                  No programmes match your current filter criteria.
-                                </p>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setMatchSearchQuery('');
-                                    setMatchUniFilter('ALL');
-                                    setMatchPage(1);
-                                  }}
-                                  className="inline-flex items-center gap-1 text-xs font-extrabold text-germany-red hover:underline pt-2 cursor-pointer"
-                                >
-                                  Clear All Filters
-                                </button>
-                              </div>
-                            ) : (
-                              <>
-                                {/* Paginated Grid (12 items) */}
-                                <div className={`grid grid-cols-1 ${showCurationPanel ? 'md:grid-cols-1 xl:grid-cols-2' : 'md:grid-cols-2'} gap-4`}>
-                                  {paginatedMatchingResults.map((r: any) => {
-                                    const progIdStr = String(r.programmeId || r.id);
-                                    const isCurated = curatedProgrammeIds.includes(progIdStr);
-                                    const isShortlisted = shortlistedProgIds.has(progIdStr);
-                                    const maxDisplay = studentSubscription?.maxDisplayCount || 5;
-                                    const isDisplayFull = curatedProgrammeIds.length >= maxDisplay;
-
-                                    return (
-                                      <ProgrammeCard
-                                        key={r.id}
-                                        rank={r.rank}
-                                        universityType={r.universityType ?? 'University'}
-                                        universityName={r.universityName}
-                                        programName={r.programName}
-                                        degree={r.degree}
-                                        eligibilityStatus={r.eligibilityStatus}
-                                        isShortlisted={isShortlisted}
-                                        score={r.relevanceScore}
-                                        location={[r.city, r.country].filter(Boolean).join(', ') || 'NA'}
-                                        tuition={r.tuitionPerSemester ?? 'NA'}
-                                        language={r.language ?? 'NA'}
-                                        deadline={r.nonEuDeadline ?? 'NA'}
-                                        matchedReasons={r.matchedReasons}
-                                        requirementGaps={r.requirementGaps}
-                                        gpaFallbackUsed={r.gpaFallbackUsed}
-                                        programUrl={r.programUrl}
-                                        isLocked={isMatchingLocked}
-                                        isCurated={isCurated}
-                                        onDelete={() => handleDeleteMatchedProgramme(progIdStr)}
-                                        deleteTitle={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Dismiss / remove programme from matches'}
-                                        deleteDisabled={isMatchingLocked}
-                                        actionSlot={
-                                          <button
-                                            type="button"
-                                            onClick={() => handleToggleCuratedProgramme(progIdStr)}
-                                            disabled={savingCuration || isMatchingLocked || (!isCurated && (!studentSubscription || isDisplayFull))}
-                                            className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl transition-colors border ${
-                                              isMatchingLocked
-                                                ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
-                                                : isCurated
-                                                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
-                                                : 'bg-germany-black dark:bg-white text-white dark:text-germany-black border-transparent hover:opacity-90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
-                                            }`}
-                                            title={
-                                              isMatchingLocked
-                                                ? 'Shortlist and curation are locked. Unlock to modify.'
-                                                : !studentSubscription
-                                                ? 'Student must have an active subscription'
-                                                : !isCurated && isDisplayFull
-                                                ? `Plan display limit reached (${maxDisplay})`
-                                                : isCurated
-                                                ? 'Remove from student display'
-                                                : 'Add to student display'
-                                            }
-                                          >
-                                            {isMatchingLocked ? (
-                                              <>
-                                                <Lock className="w-3 h-3 text-gray-400" />
-                                                <span>Locked</span>
-                                              </>
-                                            ) : isCurated ? (
-                                              <>
-                                                <Check className="w-3 h-3 text-emerald-600" />
-                                                <span>On Student Display</span>
-                                              </>
-                                            ) : (
-                                              <>
-                                                <Plus className="w-3 h-3" />
-                                                <span>Add to Display</span>
-                                              </>
-                                            )}
-                                          </button>
-                                        }
-                                      />
-                                    );
-                                  })}
-                                </div>
-
-                                {/* Pagination Controls */}
-                                {totalMatchPages > 1 && (
-                                  <div className="flex items-center justify-between pt-3 border-t border-gray-200/80 dark:border-gray-800/80">
-                                    <button
-                                      type="button"
-                                      onClick={() => setMatchPage((p) => Math.max(1, p - 1))}
-                                      disabled={matchPage <= 1}
-                                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-gray-200/80 dark:border-gray-800/80 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#151B27] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                                    >
-                                      <ChevronLeft className="w-3.5 h-3.5" />
-                                      <span>Previous</span>
-                                    </button>
-
-                                    <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500">
-                                      <span>
-                                        Page <strong className="text-germany-black dark:text-white">{matchPage}</strong> of{' '}
-                                        <strong className="text-germany-black dark:text-white">{totalMatchPages}</strong>
-                                      </span>
-                                      <span className="text-gray-300 dark:text-gray-700">•</span>
-                                      <span>({filteredMatchingResults.length} total)</span>
-                                    </div>
-
-                                    <button
-                                      type="button"
-                                      onClick={() => setMatchPage((p) => Math.min(totalMatchPages, p + 1))}
-                                      disabled={matchPage >= totalMatchPages}
-                                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-gray-200/80 dark:border-gray-800/80 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#151B27] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                                    >
-                                      <span>Next</span>
-                                      <ChevronRight className="w-3.5 h-3.5" />
-                                    </button>
-                                  </div>
-                                )}
-                              </>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      /* Other Universities / Catalogue Explorer & Notepad Below */
-                      <div className="space-y-6">
-                        {/* Catalogue Explorer Box */}
-                      <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-4">
-                        <div className="flex items-center justify-between flex-wrap gap-2">
-                          <div>
-                            <h4 className="font-display text-sm text-germany-black dark:text-white flex items-center gap-2">
-                              <Building2 className="w-4 h-4 text-germany-red" />
-                              <span>University Programme Catalogue Explorer</span>
-                            </h4>
-                            <p className="text-[11px] font-bold text-gray-400">
-                              Search any German university to evaluate all its programmes with student background alignment
-                            </p>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => setIsManualUniEntry(!isManualUniEntry)}
-                            className="text-xs font-bold text-germany-red hover:underline cursor-pointer"
-                          >
-                            {isManualUniEntry ? '← Back to Catalogue Search' : '+ Manual Entry Fallback'}
-                          </button>
-                        </div>
-
-                        {recommendSuccessMsg && (
-                          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl text-xs font-bold text-emerald-800 dark:text-emerald-200 flex items-center justify-between">
-                            <span>{recommendSuccessMsg}</span>
-                            <button type="button" onClick={() => setRecommendSuccessMsg(null)}>
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        )}
-
-                        {!isManualUniEntry ? (
-                          <div className="space-y-4">
-                            {/* Popular University Chips */}
-                            <div>
-                              <span className="text-[10px] font-black uppercase tracking-wider text-gray-400 block mb-1.5">
-                                Popular Universities:
-                              </span>
-                              <div className="flex flex-wrap gap-1.5">
-                                {[
-                                  'Munich University of Technology',
-                                  'RWTH Aachen University',
-                                  'Technical University of Berlin',
-                                  'Heidelberg University',
-                                  'Karlsruhe Institute of Technology',
-                                  'University of Stuttgart',
-                                ].map((quickUni) => (
-                                  <button
-                                    key={quickUni}
-                                    type="button"
-                                    onClick={() => handleSelectUniversity({ name: quickUni })}
-                                    className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
-                                      selectedUniversity?.name === quickUni
-                                        ? 'bg-germany-red text-white border-germany-red shadow-xs'
-                                        : 'bg-[#F8F9FA] dark:bg-[#151B27] text-gray-700 dark:text-gray-300 border-gray-200/80 dark:border-gray-800/80 hover:border-germany-red/50'
-                                    }`}
-                                  >
-                                    {quickUni}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-
-                            {/* Search Input */}
-                            <div className="relative">
-                              <label className="block text-[11px] font-black uppercase tracking-wider text-gray-500 mb-1">
-                                Search University (Live Database)
-                              </label>
-                              <div className="relative">
-                                <input
-                                  type="text"
-                                  value={uniSearchQuery}
-                                  onChange={(e) => {
-                                    setUniSearchQuery(e.target.value);
-                                    if (selectedUniversity && e.target.value !== selectedUniversity.name) {
-                                      setSelectedUniversity(null);
-                                      setUniProgrammes([]);
-                                      setSelectedProg(null);
-                                    }
-                                  }}
-                                  onFocus={() => {
-                                    if (uniSearchResults.length > 0) setShowUniDropdown(true);
-                                  }}
-                                  placeholder="Type university name (e.g. Technical University of Munich, RWTH Aachen)..."
-                                  className="w-full pl-9 pr-9 py-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
-                                />
-                                <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3 pointer-events-none" />
-                                {loadingUniSearch && (
-                                  <Loader2 className="w-4 h-4 text-germany-red animate-spin absolute right-3 top-3" />
-                                )}
-                                {!loadingUniSearch && uniSearchQuery && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setUniSearchQuery('');
-                                      setSelectedUniversity(null);
-                                      setUniSearchResults([]);
-                                      setUniProgrammes([]);
-                                      setSelectedProg(null);
-                                    }}
-                                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                                  >
-                                    <X className="w-3.5 h-3.5" />
-                                  </button>
-                                )}
-                              </div>
-
-                              {/* Autocomplete Dropdown */}
-                              {showUniDropdown && uniSearchResults.length > 0 && (
-                                <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-[#151B27] border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl z-20 max-h-56 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800/60">
-                                  {uniSearchResults.map((uni, idx) => (
-                                    <button
-                                      key={idx}
-                                      type="button"
-                                      onClick={() => handleSelectUniversity(uni)}
-                                      className="w-full text-left px-3.5 py-2.5 hover:bg-gray-50 dark:hover:bg-[#1E2638] transition-colors flex items-center justify-between gap-2"
-                                    >
-                                      <div>
-                                        <div className="text-xs font-extrabold text-germany-black dark:text-white">
-                                          {uni.name}
-                                        </div>
-                                        {(uni.city || uni.country) && (
-                                          <div className="text-[10px] text-gray-400">
-                                            📍 {[uni.city, uni.country].filter(Boolean).join(', ')}
-                                          </div>
-                                        )}
-                                      </div>
-                                      <span className="text-[10px] font-bold text-gray-400">Select →</span>
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Selected University Details & Programmes List */}
-                            {selectedUniversity && (
-                              <div className="space-y-3 pt-2">
-                                <div className="p-3 bg-gray-50 dark:bg-[#151B27] rounded-xl border border-gray-200/80 dark:border-gray-800/80 flex items-center justify-between flex-wrap gap-2">
-                                  <div>
-                                    <span className="text-[10px] font-black uppercase text-germany-red block">Selected University</span>
-                                    <h5 className="font-display text-sm text-germany-black dark:text-white">{selectedUniversity.name}</h5>
-                                    {selectedUniversity.city && (
-                                      <span className="text-[11px] text-gray-400">📍 {selectedUniversity.city}</span>
-                                    )}
-                                  </div>
-
-                                  {uniMeta && (
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-1">
-                                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                        <span>{uniMeta.relevantCount} Relevant ({uniMeta.studentField || 'Field'})</span>
-                                      </span>
-                                      <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800/60 flex items-center gap-1">
-                                        <Ban className="w-3 h-3 text-red-600" />
-                                        <span>{uniMeta.disqualifiedCount} Disqualified</span>
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-
-                                {loadingProgrammes && (
-                                  <div className="p-8 text-center space-y-2">
-                                    <Loader2 className="w-6 h-6 text-germany-red animate-spin mx-auto" />
-                                    <p className="text-xs font-bold text-gray-400">Loading university programmes & evaluating academic field...</p>
-                                  </div>
-                                )}
-
-                                {programmesError && (
-                                  <div className="p-3 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 text-xs font-bold rounded-xl border border-red-200 dark:border-red-900/40">
-                                    {programmesError}
-                                  </div>
-                                )}
-
-                                {!loadingProgrammes && !programmesError && uniProgrammes.length > 0 && (
-                                  <div className="space-y-2.5">
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                                      <input
-                                        type="text"
-                                        value={progFilterText}
-                                        onChange={(e) => setProgFilterText(e.target.value)}
-                                        placeholder="Filter by keyword (e.g. Data, AI, Systems)..."
-                                        className="px-3 py-1.5 bg-[#F8F9FA] dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 placeholder:text-gray-400 focus:outline-none focus:border-germany-red flex-1"
-                                      />
-
-                                      <div className="flex items-center gap-1.5 shrink-0">
-                                        <button
-                                          type="button"
-                                          onClick={() => setProgFilterOnlyRelevant(false)}
-                                          className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold transition-colors cursor-pointer ${
-                                            !progFilterOnlyRelevant
-                                              ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black'
-                                              : 'bg-gray-100 dark:bg-[#1E2638] text-gray-600 dark:text-gray-300'
-                                          }`}
-                                        >
-                                          All ({uniProgrammes.length})
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={() => setProgFilterOnlyRelevant(true)}
-                                          className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold transition-colors cursor-pointer ${
-                                            progFilterOnlyRelevant
-                                              ? 'bg-emerald-600 text-white'
-                                              : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
-                                          }`}
-                                        >
-                                          Relevant Only ({uniProgrammes.filter((p) => p.isRelevant).length})
-                                        </button>
-                                      </div>
-                                    </div>
-
-                                    {/* Scrollable list of programmes */}
-                                    <div className="max-h-[500px] overflow-y-auto space-y-2.5 pr-1">
-                                      {uniProgrammes
-                                        .filter((p) => {
-                                          if (progFilterOnlyRelevant && !p.isRelevant) return false;
-                                          if (progFilterText) {
-                                            const q = progFilterText.toLowerCase();
-                                            return (
-                                              p.programName?.toLowerCase().includes(q) ||
-                                              (p.subject && p.subject.toLowerCase().includes(q))
-                                            );
-                                          }
-                                          return true;
-                                        })
-                                        .map((p) => {
-                                          const progIdStr = String(p.id);
-                                          const isCurated = curatedProgrammeIds.includes(progIdStr);
-                                          const maxDisplay = studentSubscription?.maxDisplayCount || 5;
-                                          const isDisplayFull = curatedProgrammeIds.length >= maxDisplay;
-
-                                          // Check if this programme is already in the matchingResults
-                                          const isAlreadyMatched = matchingResults.some((m: any) => {
-                                            if (m.eligibilityStatus === 'NOT_ELIGIBLE') return false;
-                                            const matchProgId = String(m.programmeId || m.id);
-                                            if (matchProgId === progIdStr) return true;
-                                            const matchProgName = (m.programName || '').toLowerCase().trim();
-                                            const pProgName = (p.programName || '').toLowerCase().trim();
-                                            const matchUniName = (m.universityName || '').toLowerCase().trim();
-                                            const selectedUniName = (selectedUniversity?.name || '').toLowerCase().trim();
-                                            return (
-                                              matchProgName === pProgName &&
-                                              (matchUniName.includes(selectedUniName) || selectedUniName.includes(matchUniName))
-                                            );
-                                          });
-
-                                          // Check if already saved in Counsellor Notepad
-                                          const isAlreadyInNotepad = notepadProgrammes.some((u: any) => {
-                                            if (String(u.programmeId) === progIdStr) return true;
-                                            const uProg = (u.program || '').toLowerCase().trim();
-                                            const pProg = (p.programName || '').toLowerCase().trim();
-                                            const uUni = (u.name || '').toLowerCase().trim();
-                                            const sUni = (selectedUniversity?.name || '').toLowerCase().trim();
-                                            return uProg === pProg && (uUni.includes(sUni) || sUni.includes(uUni));
-                                          });
-
-                                          return (
-                                            <div
-                                              key={p.id}
-                                              className={`p-3.5 rounded-xl transition-all border ${
-                                                isMatchingLocked
-                                                  ? 'bg-gray-50/50 dark:bg-[#0B0E14] border-gray-200/50 dark:border-gray-800/50 opacity-70'
-                                                  : isAlreadyMatched
-                                                  ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-700/80 ring-1 ring-amber-400/20'
-                                                  : isAlreadyInNotepad
-                                                  ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-400 dark:border-emerald-700/80 ring-1 ring-emerald-500/20'
-                                                  : p.isRelevant
-                                                  ? 'bg-white dark:bg-[#151B27] border-gray-200/80 dark:border-gray-800/80 hover:border-emerald-400/80'
-                                                  : 'bg-gray-50/50 dark:bg-[#0B0E14] border-red-200/40 dark:border-red-950/40 opacity-60'
-                                              }`}
-                                            >
-                                              <div className="flex items-start justify-between gap-3">
-                                                <div className="min-w-0 space-y-1 flex-1">
-                                                  <div className="flex items-center gap-2 flex-wrap">
-                                                    <span className="text-xs font-extrabold text-germany-black dark:text-white leading-tight">
-                                                      {p.programName}
-                                                    </span>
-                                                    {isAlreadyMatched ? (
-                                                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-extrabold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700">
-                                                        <AlertCircle className="w-2.5 h-2.5 text-amber-600" />
-                                                        <span>Already in Matching List</span>
-                                                      </span>
-                                                    ) : isAlreadyInNotepad ? (
-                                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
-                                                        <Bookmark className="w-2.5 h-2.5 text-emerald-600" />
-                                                        <span>Saved in Notepad</span>
-                                                      </span>
-                                                    ) : p.isRelevant ? (
-                                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
-                                                        <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
-                                                        <span>Relevant to {uniMeta?.studentField || 'Field'}</span>
-                                                      </span>
-                                                    ) : (
-                                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/40">
-                                                        <Ban className="w-2.5 h-2.5 text-red-500" />
-                                                        <span>Disqualified (Non-matching field)</span>
-                                                      </span>
-                                                    )}
-                                                  </div>
-
-                                                  <div className="text-[11px] font-bold text-gray-500 flex items-center gap-2 pt-0.5 flex-wrap">
-                                                    <span>{p.degree}</span>
-                                                    <span>•</span>
-                                                    <span>🌐 {p.language}</span>
-                                                    <span>•</span>
-                                                    <span>💶 {p.tuition || 'Public tuition free'}</span>
-                                                    {p.deadline && (
-                                                      <>
-                                                        <span>•</span>
-                                                        <span>⏰ {p.deadline}</span>
-                                                      </>
-                                                    )}
-                                                  </div>
-                                                  {p.subject && (
-                                                    <p className="text-[10px] text-gray-400">Subject: {p.subject}</p>
-                                                  )}
-                                                </div>
-
-                                                {/* Action Buttons for Catalogue Programmes */}
-                                                <div className="shrink-0 flex items-center gap-1.5 flex-wrap justify-end">
-                                                  {isAlreadyMatched ? (
-                                                    <button
-                                                      disabled
-                                                      type="button"
-                                                      className="inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl bg-amber-100/70 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-300/60 dark:border-amber-800/60 cursor-not-allowed opacity-85"
-                                                      title="This programme was already evaluated by the matching engine and is in your Matched Programmes list"
-                                                    >
-                                                      <Check className="w-3 h-3 text-amber-600" />
-                                                      <span>Already in Matches</span>
-                                                    </button>
-                                                  ) : isAlreadyInNotepad ? (
-                                                    <button
-                                                      type="button"
-                                                      onClick={() => { const el = document.getElementById('counsellor-notepad-section'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }}
-                                                      className="inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors cursor-pointer"
-                                                      title="Saved in your notepad. Click to view notepad."
-                                                    >
-                                                      <Check className="w-3 h-3 text-emerald-600" />
-                                                      <span>Saved in Notepad</span>
-                                                    </button>
-                                                  ) : p.isRelevant ? (
-                                                    <button
-                                                      type="button"
-                                                      onClick={() => handleSaveProgrammeToNotepad(p)}
-                                                      disabled={savingRecommendation || isMatchingLocked}
-                                                      className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl border border-transparent transition-colors ${
-                                                        isMatchingLocked
-                                                          ? 'bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed opacity-50'
-                                                          : 'bg-germany-black dark:bg-white text-white dark:text-germany-black hover:opacity-90 cursor-pointer disabled:opacity-40'
-                                                      }`}
-                                                      title={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Save this programme to your Counsellor Notepad'}
-                                                    >
-                                                      {savingRecommendation ? (
-                                                        <Loader2 className="w-3 h-3 animate-spin" />
-                                                      ) : isMatchingLocked ? (
-                                                        <Lock className="w-3 h-3 text-gray-400" />
-                                                      ) : (
-                                                        <Plus className="w-3 h-3" />
-                                                      )}
-                                                      <span>{isMatchingLocked ? 'Locked' : 'Add to Notepad'}</span>
-                                                    </button>
-                                                  ) : null}
-                                                </div>
-                                              </div>
-                                            </div>
-                                          );
-                                        })}
-                                    </div>
-                                  </div>
-                                )}
-
-                                {!loadingProgrammes && !programmesError && uniProgrammes.length === 0 && (
-                                  <div className="p-6 bg-gray-50 dark:bg-[#151B27] rounded-xl text-center text-xs font-bold text-gray-400">
-                                    No programmes found in database for {selectedUniversity.name}. You can use manual entry fallback above.
-                                  </div>
-                                )}
-                              </div>
-                            )}
                           </div>
                         ) : (
-                          /* Manual Entry Form */
-                          <form onSubmit={handleSaveRecommendation} className="space-y-3">
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                              <input
-                                type="text"
-                                placeholder="University (e.g. TU Darmstadt)"
-                                value={newUniName}
-                                onChange={(e) => setNewUniName(e.target.value)}
-                                className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
-                                required
-                              />
-                              <input
-                                type="text"
-                                placeholder="Program (e.g. M.Sc. Distributed Systems)"
-                                value={newUniProgram}
-                                onChange={(e) => setNewUniProgram(e.target.value)}
-                                className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
-                                required
-                              />
-                              <input
-                                type="text"
-                                placeholder="City / State (e.g. Darmstadt, Hesse)"
-                                value={newUniLocation}
-                                onChange={(e) => setNewUniLocation(e.target.value)}
-                                className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
-                              />
-                            </div>
-
-                            <input
-                              type="text"
-                              placeholder="Advisor fit note or rationale (optional)"
-                              value={recommendNote}
-                              onChange={(e) => setRecommendNote(e.target.value)}
-                              className="w-full p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
-                            />
-
-                            <div className="flex justify-end gap-2">
-                              <button
-                                type="submit"
-                                disabled={savingRecommendation || !newUniName.trim() || !newUniProgram.trim()}
-                                className="flex items-center gap-1.5 px-4 py-2 bg-germany-red text-white text-xs font-extrabold rounded-xl hover:bg-germany-red/90 cursor-pointer disabled:opacity-40"
-                              >
-                                {savingRecommendation ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
-                                <span>Add Programme to Recommendations</span>
-                              </button>
-                            </div>
-                          </form>
-                        )}
-                      </div>
-
-                        {/* Counsellor Saved Programmes / Notepad View (Below Catalogue) */}
-                        <div id="counsellor-notepad-section" className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-4">
-                          <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-gray-100 dark:border-gray-800">
-                            <div>
-                              <h4 className="font-display text-sm text-germany-black dark:text-white flex items-center gap-1.5">
-                                <Bookmark className="w-4 h-4 text-germany-red" />
-                                <span>Counsellor Saved Programmes &amp; Notepad</span>
-                              </h4>
-                              <p className="text-[11px] font-bold text-gray-400">
-                                Your candidate scratchpad. Click &quot;+ Add to Display&quot; on any card below to curate it into the student display.
-                              </p>
-                            </div>
-                            <span className="text-xs font-black px-2.5 py-1 rounded-full bg-germany-black text-white dark:bg-white dark:text-germany-black">
-                              {notepadProgrammes.length} saved
-                            </span>
-                          </div>
-
-                          {notepadProgrammes.length === 0 ? (
-                            <div className="p-8 text-center space-y-2 bg-gray-50/60 dark:bg-[#151B27]/40 rounded-xl border border-dashed border-gray-200 dark:border-gray-800">
-                              <Bookmark className="w-7 h-7 text-gray-400 mx-auto" />
-                              <h5 className="font-display text-xs text-gray-600 dark:text-gray-300">Your Notepad is Empty</h5>
-                              <p className="text-[11px] text-gray-400 max-w-sm mx-auto">
-                                Search any university in the box above and click &quot;+ Add to Notepad&quot; to save candidate programmes here.
-                              </p>
-                            </div>
-                          ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {notepadProgrammes.map((uni, idx) => {
-                                const progIdStr = String(uni.programmeId || uni.id);
+                          <>
+                            {/* Paginated Grid (12 items) */}
+                            <div className={`grid grid-cols-1 ${showCurationPanel ? 'md:grid-cols-1 xl:grid-cols-2' : 'md:grid-cols-2'} gap-4`}>
+                              {paginatedMatchingResults.map((r: any) => {
+                                const progIdStr = String(r.programmeId || r.id);
                                 const isCurated = curatedProgrammeIds.includes(progIdStr);
                                 const isShortlisted = shortlistedProgIds.has(progIdStr);
                                 const maxDisplay = studentSubscription?.maxDisplayCount || 5;
                                 const isDisplayFull = curatedProgrammeIds.length >= maxDisplay;
 
-                                const uAny = uni as any;
-                                const uniName = uAny.universityName || uAny.name || 'German University';
-                                const progName = uAny.programName || uAny.program || 'University Programme';
-                                const uniType = uAny.universityType || uAny.type || 'Public University';
-                                const uniLocation = uAny.location || [uAny.city, uAny.country].filter(Boolean).join(', ') || 'Germany';
-                                const uniTuition = uAny.tuitionPerSemester || uAny.tuition || '€0 / semester fee only';
-                                const uniDeadline = uAny.nonEuDeadline || uAny.deadline || 'July 15';
-                                const uniLanguage = uAny.language || 'German';
-                                const uniUrl = uAny.programUrl || uAny.url;
-
                                 return (
                                   <ProgrammeCard
-                                    key={uni.id}
-                                    rank={idx + 1}
-                                    universityType={uniType}
-                                    universityName={uniName}
-                                    programName={progName}
-                                    degree={uni.degree || 'Bachelor'}
-                                    eligibilityLabel={uni.status ? (uni.status === 'recommended' ? 'RECOMMENDED' : uni.status.toUpperCase()) : 'RECOMMENDED'}
-                                    eligibilityStyle="bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700"
+                                    key={r.id}
+                                    rank={r.rank}
+                                    universityType={r.universityType ?? 'University'}
+                                    universityName={r.universityName}
+                                    programName={r.programName}
+                                    degree={r.degree}
+                                    eligibilityStatus={r.eligibilityStatus}
                                     isShortlisted={isShortlisted}
-                                    score={`${uni.matchScore || 90}% Fit`}
-                                    scoreLabel="Score"
-                                    location={uniLocation}
-                                    tuition={uniTuition}
-                                    language={uniLanguage}
-                                    deadline={uniDeadline}
-                                    notes={uni.notes}
-                                    programUrl={uniUrl}
-                                    programUrlLabel="Website"
+                                    score={r.relevanceScore}
+                                    location={[r.city, r.country].filter(Boolean).join(', ') || 'NA'}
+                                    tuition={r.tuitionPerSemester ?? 'NA'}
+                                    language={r.language ?? 'NA'}
+                                    deadline={r.nonEuDeadline ?? 'NA'}
+                                    matchedReasons={r.matchedReasons}
+                                    requirementGaps={r.requirementGaps}
+                                    gpaFallbackUsed={r.gpaFallbackUsed}
+                                    programUrl={r.programUrl}
                                     isLocked={isMatchingLocked}
                                     isCurated={isCurated}
-                                    onDelete={() => handleDeleteRecommendation(uni.id)}
-                                    deleteTitle={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Remove programme from notepad'}
+                                    onDelete={() => handleDeleteMatchedProgramme(progIdStr)}
+                                    deleteTitle={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Dismiss / remove programme from matches'}
                                     deleteDisabled={isMatchingLocked}
                                     actionSlot={
                                       <button
                                         type="button"
                                         onClick={() => handleToggleCuratedProgramme(progIdStr)}
                                         disabled={savingCuration || isMatchingLocked || (!isCurated && (!studentSubscription || isDisplayFull))}
-                                        className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl transition-colors border ${
-                                          isMatchingLocked
-                                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
-                                            : isCurated
+                                        className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl transition-colors border ${isMatchingLocked
+                                          ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
+                                          : isCurated
                                             ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
                                             : 'bg-germany-black dark:bg-white text-white dark:text-germany-black border-transparent hover:opacity-90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
-                                        }`}
+                                          }`}
                                         title={
                                           isMatchingLocked
                                             ? 'Shortlist and curation are locked. Unlock to modify.'
                                             : !studentSubscription
-                                            ? 'Student must have an active subscription'
-                                            : !isCurated && isDisplayFull
-                                            ? `Plan display limit reached (${maxDisplay}). Remove an item from Student Display Curation to make space.`
-                                            : isCurated
-                                            ? 'Remove from student display (frees up a display slot)'
-                                            : 'Add to student display'
+                                              ? 'Student must have an active subscription'
+                                              : !isCurated && isDisplayFull
+                                                ? `Plan display limit reached (${maxDisplay})`
+                                                : isCurated
+                                                  ? 'Remove from student display'
+                                                  : 'Add to student display'
                                         }
                                       >
                                         {isMatchingLocked ? (
@@ -4609,7 +4208,7 @@ const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
                                         ) : isCurated ? (
                                           <>
                                             <Check className="w-3 h-3 text-emerald-600" />
-                                            <span>On Display</span>
+                                            <span>On Student Display</span>
                                           </>
                                         ) : (
                                           <>
@@ -4623,982 +4222,1206 @@ const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
                                 );
                               })}
                             </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
 
-                  {/* Right: Dedicated Programme Curation Panel */}
-                  {showCurationPanel && (
-                    <div className="w-full xl:w-80 shrink-0 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 p-4 shadow-xs space-y-4 xl:sticky xl:top-4">
-                      <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800">
-                        <div>
-                          <h4 className="font-display text-sm text-germany-black dark:text-white flex items-center gap-1.5">
-                            <span>Student Display Curation</span>
-                          </h4>
-                          <p className="text-[10px] font-bold text-gray-400">
-                            Programmes visible to student
-                          </p>
-                        </div>
-                        <div className="flex flex-col items-end gap-0.5">
-                          <span className="text-xs font-black px-2 py-0.5 rounded-full bg-germany-black text-white dark:bg-white dark:text-germany-black">
-                            {curatedProgrammeIds.length} / {studentSubscription?.maxDisplayCount || 5}
-                          </span>
-                          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
-                            ★ {studentShortlistCount} / {studentSubscription?.maxShortlistCount || 3} shortlisted
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Auto-fill Button */}
-                      <button
-                        type="button"
-                        onClick={handleAutoFillTopMatches}
-                        disabled={savingCuration || isMatchingLocked || !studentSubscription || matchingResults.length === 0}
-                        className={`w-full flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-extrabold rounded-xl transition-colors ${
-                          isMatchingLocked
-                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
-                            : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/30 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
-                        }`}
-                        title={
-                          isMatchingLocked
-                            ? 'Shortlist and curation are locked. Unlock to modify.'
-                            : 'Fill student display with the highest ranked eligible programmes up to plan limit'
-                        }
-                      >
-                        {isMatchingLocked ? (
-                          <Lock className="w-3.5 h-3.5 text-gray-400" />
-                        ) : (
-                          <Sparkles className="w-3.5 h-3.5 text-germany-gold" />
-                        )}
-                        <span>{isMatchingLocked ? 'Auto-fill Locked' : 'Auto-fill Top Matches'}</span>
-                      </button>
-
-                      {/* Curated Items List */}
-                      <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1">
-                        {curatedProgrammeIds.length === 0 ? (
-                          <div className="p-6 text-center text-xs text-gray-400 space-y-1 bg-gray-50 dark:bg-[#151B27] rounded-xl border border-dashed border-gray-200 dark:border-gray-800">
-                            <p className="font-bold text-gray-500 dark:text-gray-400">No programmes curated</p>
-                            <p className="text-[11px]">Click &quot;Add to Display&quot; on any match or use auto-fill above.</p>
-                          </div>
-                        ) : (
-                          curatedProgrammeIds.map((progId, idx) => {
-                            const matchItem = matchingResults.find(
-                              (r) => String(r.programmeId || r.id) === String(progId)
-                            );
-                            const curatedItem = curatedProgrammes.find(
-                              (cp) => String(cp.programmeId) === String(progId)
-                            );
-                            const isShortlisted = shortlistedProgIds.has(String(progId));
-                            const uniName = matchItem?.universityName || curatedItem?.universityName || 'University';
-                            const progName = matchItem?.programName || curatedItem?.programName || `Programme ID: ${progId}`;
-                            const maxShortlist = studentSubscription?.maxShortlistCount || 3;
-                            const isShortlistFull = studentShortlistCount >= maxShortlist;
-
-                            return (
-                              <div
-                                key={progId}
-                                className="p-2.5 bg-gray-50 dark:bg-[#151B27] rounded-xl border border-gray-200/60 dark:border-gray-800/60 flex items-start justify-between gap-2 text-xs"
-                              >
-                                <div className="min-w-0 space-y-0.5 flex-1">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-[10px] font-black text-germany-red shrink-0">
-                                      #{idx + 1}
-                                    </span>
-                                    <span className="font-extrabold text-germany-black dark:text-white truncate block">
-                                      {uniName}
-                                    </span>
-                                  </div>
-                                  <p className="text-[11px] text-gray-600 dark:text-gray-300 truncate">
-                                    {progName}
-                                  </p>
-                                  <div className="flex items-center gap-1.5 pt-0.5">
-                                    {isShortlisted && (
-                                      <span className="text-[9px] font-extrabold px-1.5 py-0.2 bg-blue-100 text-blue-800 rounded">
-                                        ★ Shortlisted
-                                      </span>
-                                    )}
-                                    {matchItem?.relevanceScore && (
-                                      <span className="text-[9px] font-bold text-gray-400">
-                                        Score: {matchItem.relevanceScore}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
-                                  {/* Shortlist Toggle Button on the Student Display Curation card */}
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      handleToggleShortlist({
-                                        programmeId: Number(progId),
-                                        universityName: uniName,
-                                        programName: progName,
-                                        degree: matchItem?.degree || curatedItem?.degree || 'Master',
-                                        city: matchItem?.city || curatedItem?.city || 'Germany',
-                                        country: matchItem?.country || curatedItem?.country || 'Germany',
-                                        tuitionPerSemester: matchItem?.tuitionPerSemester || curatedItem?.tuitionPerSemester || 'Free / None',
-                                        nonEuDeadline: matchItem?.nonEuDeadline || curatedItem?.nonEuDeadline || 'NA',
-                                        universityType: matchItem?.universityType || curatedItem?.universityType || 'Public University',
-                                        relevanceScore: matchItem?.relevanceScore || 90,
-                                      })
-                                    }
-                                    disabled={togglingShortlist === String(progId) || isMatchingLocked || (!isShortlisted && isShortlistFull)}
-                                    className={`inline-flex items-center gap-1 text-[10px] font-extrabold py-1 px-2 rounded-lg transition-colors border ${
-                                      isMatchingLocked
-                                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
-                                        : isShortlisted
-                                        ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
-                                        : isShortlistFull
-                                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-50'
-                                        : 'bg-white dark:bg-[#151B27] text-gray-700 dark:text-gray-300 border-gray-200/80 dark:border-gray-800 hover:border-blue-400 hover:text-blue-600 cursor-pointer'
-                                    }`}
-                                    title={
-                                      isMatchingLocked
-                                        ? 'Shortlist is locked. Unlock to modify.'
-                                        : isShortlisted
-                                        ? 'Click to remove from student shortlist'
-                                        : isShortlistFull
-                                        ? `Student shortlist limit reached (${studentShortlistCount}/${maxShortlist} max for ${studentSubscription?.planId || 'Plan'}). Remove an existing shortlisted programme first.`
-                                        : 'Add to student shortlist'
-                                    }
-                                  >
-                                    {togglingShortlist === String(progId) ? (
-                                      <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                                    ) : isMatchingLocked ? (
-                                      <Lock className="w-2.5 h-2.5 text-gray-400" />
-                                    ) : (
-                                      <Bookmark className={`w-2.5 h-2.5 ${isShortlisted ? 'fill-current text-blue-600' : ''}`} />
-                                    )}
-                                    <span>
-                                      {isMatchingLocked && isShortlisted
-                                        ? 'Shortlisted (Locked)'
-                                        : isMatchingLocked
-                                        ? 'Locked'
-                                        : isShortlisted
-                                        ? 'Shortlisted'
-                                        : isShortlistFull
-                                        ? 'Limit Reached'
-                                        : 'Shortlist'}
-                                    </span>
-                                  </button>
-
-                                  {/* Remove from Curation / Display Button */}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleToggleCuratedProgramme(progId)}
-                                    disabled={isMatchingLocked}
-                                    title={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Remove from student display (frees up a display slot)'}
-                                    className={`p-1 rounded-lg transition-colors shrink-0 ${
-                                      isMatchingLocked
-                                        ? 'text-gray-300 dark:text-gray-700 cursor-not-allowed opacity-40'
-                                        : 'text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer'
-                                    }`}
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
-
-                      {/* Footer status */}
-                      <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-[10px] text-gray-400 font-bold">
-                        {savingCuration ? (
-                          <span className="flex items-center gap-1 text-amber-600">
-                            <Loader2 className="w-3 h-3 animate-spin" /> Saving changes…
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-1 text-emerald-600">
-                            <Check className="w-3 h-3" /> Synced to student
-                          </span>
-                        )}
-                        <span>Max {studentSubscription?.maxDisplayCount || 5}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* ========================================================
-                TAB 4: STRATEGY NOTES & TASKS
-            ======================================================== */}
-            {activeTab === 'notes' && (
-              <div className="space-y-4">
-                {/* Notes Editor */}
-                <div className="p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-germany-black dark:text-white" />
-                      <h3 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white uppercase tracking-wider">
-                        Private Counsellor Remarks &amp; Strategy
-                      </h3>
-                    </div>
-                    {noteSaved && (
-                      <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 animate-in fade-in">
-                        <Check className="w-3.5 h-3.5" />
-                        Saved to browser!
-                      </span>
-                    )}
-                  </div>
-
-                  <textarea
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    placeholder="Document consultation takeaways (e.g. Target TUM Data Engineering, advised to re-take German A2 Goethe exam in October, notarization complete for APS Delhi)..."
-                    rows={4}
-                    className="w-full p-3 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-900 dark:text-white placeholder:text-gray-400 placeholder:font-normal resize-none focus:outline-none focus:border-germany-red shadow-xs"
-                  />
-
-                  <div className="flex items-center justify-between pt-1">
-                    <p className="text-[10px] font-bold text-gray-400">
-                      Notes are kept private to counsellors and automatically saved.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={handleSaveNote}
-                      className="py-1.5 px-3.5 text-xs font-extrabold flex items-center gap-1.5 text-germany-black dark:text-white hover:text-germany-red dark:hover:text-germany-red bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl cursor-pointer shadow-xs transition-colors"
-                    >
-                      <Save className="w-3.5 h-3.5" />
-                      <span>Save Notes</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Consultation Follow-Up Checklist */}
-                <div className="p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
-                  <h3 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white uppercase tracking-wider">
-                    Advising Checklist &amp; Action Items
-                  </h3>
-
-                  <div className="space-y-2">
-                    {tasks.map((t) => (
-                      <div
-                        key={t.id}
-                        onClick={() => handleToggleTask(t.id)}
-                        className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 text-xs font-bold cursor-pointer transition-colors ${
-                          t.completed 
-                            ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/40 text-gray-500 dark:text-gray-400 line-through' 
-                            : 'bg-[#FDFBF7] dark:bg-[#151B27] border-[#EBE7E0] dark:border-gray-800/80 text-germany-black dark:text-white hover:bg-white dark:hover:bg-[#1A2130]'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          {t.completed ? (
-                            <CheckSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                          ) : (
-                            <Square className="w-4 h-4 text-gray-400 shrink-0" />
-                          )}
-                          <span>{t.text}</span>
-                        </div>
-                        <span className="text-[10px] text-gray-400 font-extrabold shrink-0">Due {t.dueDate}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <form onSubmit={handleAddTask} className="flex items-center gap-2 pt-2">
-                    <input
-                      type="text"
-                      placeholder="Add an advising follow-up item..."
-                      value={newTaskText}
-                      onChange={(e) => setNewTaskText(e.target.value)}
-                      className="flex-1 p-2 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:border-germany-red shadow-xs"
-                    />
-                    <button
-                      type="submit"
-                      className="py-2 px-3 text-xs font-extrabold flex items-center gap-1 shrink-0 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-germany-black dark:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-[#1A2130] shadow-xs cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Add Task</span>
-                    </button>
-                  </form>
-                </div>
-              </div>
-            )}
-
-            {/* ========================================================
-                TAB 5: ADMISSION MANAGEMENT & PORTAL CREDENTIALS
-            ======================================================== */}
-            {activeTab === 'admission' && (
-              <div className="space-y-5 animate-fadeIn">
-                <div className="bg-white dark:bg-[#151B27] rounded-2xl p-5 border border-gray-200/80 dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-germany-red/10 text-germany-red border border-germany-red/20">
-                        Counsellor Admission Management
-                      </span>
-                      <span className="text-[10px] font-bold text-gray-400">
-                        AES-256-GCM Vault Protected
-                      </span>
-                    </div>
-                    <h3 className="text-base font-black text-gray-900 dark:text-white">
-                      University Application Portals &amp; Credentials
-                    </h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                      Manage official portal URLs, track application IDs and deadlines, and store encrypted student credentials programme by programme.
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => loadAdmissionApplications(effectiveStudentId)}
-                    disabled={admissionLoading}
-                    className="px-3.5 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 ${admissionLoading ? 'animate-spin' : ''}`} />
-                    <span>Refresh Portals</span>
-                  </button>
-                </div>
-
-                {admissionLoading ? (
-                  <div className="p-12 text-center bg-white dark:bg-[#151B27] rounded-2xl border border-gray-200 dark:border-gray-800">
-                    <Loader2 className="w-8 h-8 animate-spin text-germany-red mx-auto mb-2" />
-                    <p className="text-xs font-bold text-gray-500">Loading student locked applications...</p>
-                  </div>
-                ) : admissionError ? (
-                  <div className="p-6 text-center bg-white dark:bg-[#151B27] rounded-2xl border border-red-200 dark:border-red-900/40">
-                    <AlertCircle className="w-6 h-6 text-red-500 mx-auto mb-2" />
-                    <p className="text-xs font-bold text-red-600">{admissionError}</p>
-                  </div>
-                ) : admissionApplications.length === 0 ? (
-                  <div className="p-10 text-center bg-white dark:bg-[#151B27] rounded-2xl border border-dashed border-gray-200 dark:border-gray-800 space-y-2">
-                    <Building2 className="w-8 h-8 text-gray-400 mx-auto" />
-                    <h4 className="text-xs font-black text-gray-800 dark:text-gray-200">
-                      No Shortlisted Programmes Found
-                    </h4>
-                    <p className="text-xs text-gray-500 max-w-sm mx-auto">
-                      Shortlist and lock programmes for this student in the "University Eligibility" tab to manage application portals.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-5">
-                    {admissionApplications.map((app) => {
-                      const form = admissionFormState[app.id] || {};
-                      const isSaving = admissionSavingId === app.id;
-                      const success = admissionSuccessMsg[app.id];
-                      const creds = admissionRevealedCreds[app.id];
-                      const isPwShown = Boolean(admissionShowPassword[app.id]);
-                      const isRevealing = admissionRevealingId === app.id;
-
-                      return (
-                        <div
-                          key={app.id}
-                          className="bg-white dark:bg-[#151B27] rounded-2xl p-5 border border-gray-200/80 dark:border-gray-800 shadow-sm space-y-4"
-                        >
-                          {/* Programme Header */}
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-gray-800/80 pb-3">
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-black uppercase text-gray-400">
-                                  {app.degree || 'Master of Science'} · {app.location || 'Germany'}
-                                </span>
-                                {app.hasCredentials && (
-                                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                                    <ShieldCheck className="w-3 h-3" /> Vault Active
-                                  </span>
-                                )}
-                              </div>
-                              <h4 className="text-sm font-black text-gray-900 dark:text-white mt-0.5">
-                                {app.programmeName}
-                              </h4>
-                              <div className="text-xs font-bold text-gray-500 flex items-center gap-1 mt-0.5">
-                                <Building2 className="w-3.5 h-3.5 text-gray-400" />
-                                <span>{app.universityName}</span>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              {/* Application Status Dropdown */}
-                              <select
-                                value={form.applicationStatus || 'NOT_STARTED'}
-                                onChange={(e) => handleUpdateAdmissionForm(app.id, 'applicationStatus', e.target.value)}
-                                className="text-xs font-extrabold px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1A2234] text-gray-800 dark:text-gray-200 cursor-pointer"
-                              >
-                                <option value="NOT_STARTED">Not Started</option>
-                                <option value="IN_PROGRESS">In Progress</option>
-                                <option value="SUBMITTED">Submitted</option>
-                                <option value="ACCEPTED">Offer Received</option>
-                                <option value="REJECTED">Unsuccessful</option>
-                                <option value="WAITLISTED">Waitlisted</option>
-                              </select>
-                            </div>
-                          </div>
-
-                          {/* Editable Details Form */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                            {/* Portal URL */}
-                            <div className="space-y-1">
-                              <label className="font-extrabold text-gray-700 dark:text-gray-300">
-                                Official Application Portal URL
-                              </label>
-                              <div className="flex items-center gap-1.5">
-                                <input
-                                  type="text"
-                                  placeholder="e.g. https://campus.tum.de or uni-assist.de"
-                                  value={form.portalUrl || ''}
-                                  onChange={(e) => handleUpdateAdmissionForm(app.id, 'portalUrl', e.target.value)}
-                                  className="flex-1 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111622] text-gray-900 dark:text-white"
-                                />
-                                {form.portalUrl && (
-                                  <a
-                                    href={form.portalUrl.startsWith('http') ? form.portalUrl : `https://${form.portalUrl}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="p-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 rounded-xl text-gray-600 dark:text-gray-300"
-                                    title="Open portal"
-                                  >
-                                    <ExternalLink className="w-3.5 h-3.5" />
-                                  </a>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Application Reference ID */}
-                            <div className="space-y-1">
-                              <label className="font-extrabold text-gray-700 dark:text-gray-300">
-                                Application ID / Reference Number
-                              </label>
-                              <input
-                                type="text"
-                                placeholder="e.g. TUM-2026-99210 or UA-88219"
-                                value={form.applicationId || ''}
-                                onChange={(e) => handleUpdateAdmissionForm(app.id, 'applicationId', e.target.value)}
-                                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111622] text-gray-900 dark:text-white"
-                              />
-                            </div>
-
-                            {/* Submission Date */}
-                            <div className="space-y-1">
-                              <label className="font-extrabold text-gray-700 dark:text-gray-300">
-                                Submission Date
-                              </label>
-                              <input
-                                type="date"
-                                value={form.submissionDate || ''}
-                                onChange={(e) => handleUpdateAdmissionForm(app.id, 'submissionDate', e.target.value)}
-                                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111622] text-gray-900 dark:text-white"
-                              />
-                            </div>
-
-                            {/* Deadline */}
-                            <div className="space-y-1">
-                              <label className="font-extrabold text-gray-700 dark:text-gray-300">
-                                Application Deadline
-                              </label>
-                              <input
-                                type="date"
-                                value={form.deadline || ''}
-                                onChange={(e) => handleUpdateAdmissionForm(app.id, 'deadline', e.target.value)}
-                                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111622] text-gray-900 dark:text-white"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Encrypted Credentials Section */}
-                          <div className="p-4 bg-gray-50/70 dark:bg-[#111622] rounded-2xl border border-gray-200/60 dark:border-gray-800 space-y-3">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-1.5 font-black text-xs text-gray-800 dark:text-gray-200">
-                                <KeyRound className="w-3.5 h-3.5 text-germany-gold" />
-                                <span>Confidential Portal Credentials (Encrypted with AES-256-GCM)</span>
-                              </div>
-
-                              {app.hasCredentials && (
+                            {/* Pagination Controls */}
+                            {totalMatchPages > 1 && (
+                              <div className="flex items-center justify-between pt-3 border-t border-gray-200/80 dark:border-gray-800/80">
                                 <button
                                   type="button"
-                                  onClick={() => handleRevealCounsellorCreds(app.id)}
-                                  disabled={isRevealing}
-                                  className="text-[11px] font-extrabold text-germany-red hover:underline flex items-center gap-1 cursor-pointer"
+                                  onClick={() => setMatchPage((p) => Math.max(1, p - 1))}
+                                  disabled={matchPage <= 1}
+                                  className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-gray-200/80 dark:border-gray-800/80 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#151B27] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                                 >
-                                  {isRevealing ? (
-                                    <>
-                                      <Loader2 className="w-3 h-3 animate-spin" />
-                                      <span>Decrypting...</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      {isPwShown ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                                      <span>{isPwShown ? 'Hide Secret' : 'Reveal Current Vault Password'}</span>
-                                    </>
-                                  )}
+                                  <ChevronLeft className="w-3.5 h-3.5" />
+                                  <span>Previous</span>
+                                </button>
+
+                                <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500">
+                                  <span>
+                                    Page <strong className="text-germany-black dark:text-white">{matchPage}</strong> of{' '}
+                                    <strong className="text-germany-black dark:text-white">{totalMatchPages}</strong>
+                                  </span>
+                                  <span className="text-gray-300 dark:text-gray-700">•</span>
+                                  <span>({filteredMatchingResults.length} total)</span>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => setMatchPage((p) => Math.min(totalMatchPages, p + 1))}
+                                  disabled={matchPage >= totalMatchPages}
+                                  className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-gray-200/80 dark:border-gray-800/80 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#151B27] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                                >
+                                  <span>Next</span>
+                                  <ChevronRight className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Other Universities / Catalogue Explorer & Notepad Below */
+                  <div className="space-y-6">
+                    {/* Catalogue Explorer Box */}
+                    <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-4">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div>
+                          <h4 className="font-display text-sm text-germany-black dark:text-white flex items-center gap-2">
+                            <Building2 className="w-4 h-4 text-germany-red" />
+                            <span>University Programme Catalogue Explorer</span>
+                          </h4>
+                          <p className="text-[11px] font-bold text-gray-400">
+                            Search any German university to evaluate all its programmes with student background alignment
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setIsManualUniEntry(!isManualUniEntry)}
+                          className="text-xs font-bold text-germany-red hover:underline cursor-pointer"
+                        >
+                          {isManualUniEntry ? '← Back to Catalogue Search' : '+ Manual Entry Fallback'}
+                        </button>
+                      </div>
+
+                      {recommendSuccessMsg && (
+                        <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl text-xs font-bold text-emerald-800 dark:text-emerald-200 flex items-center justify-between">
+                          <span>{recommendSuccessMsg}</span>
+                          <button type="button" onClick={() => setRecommendSuccessMsg(null)}>
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
+
+                      {!isManualUniEntry ? (
+                        <div className="space-y-4">
+                          {/* Popular University Chips */}
+                          <div>
+                            <span className="text-[10px] font-black uppercase tracking-wider text-gray-400 block mb-1.5">
+                              Popular Universities:
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {[
+                                'Munich University of Technology',
+                                'RWTH Aachen University',
+                                'Technical University of Berlin',
+                                'Heidelberg University',
+                                'Karlsruhe Institute of Technology',
+                                'University of Stuttgart',
+                              ].map((quickUni) => (
+                                <button
+                                  key={quickUni}
+                                  type="button"
+                                  onClick={() => handleSelectUniversity({ name: quickUni })}
+                                  className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${selectedUniversity?.name === quickUni
+                                    ? 'bg-germany-red text-white border-germany-red shadow-xs'
+                                    : 'bg-[#F8F9FA] dark:bg-[#151B27] text-gray-700 dark:text-gray-300 border-gray-200/80 dark:border-gray-800/80 hover:border-germany-red/50'
+                                    }`}
+                                >
+                                  {quickUni}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Search Input */}
+                          <div className="relative">
+                            <label className="block text-[11px] font-black uppercase tracking-wider text-gray-500 mb-1">
+                              Search University (Live Database)
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                value={uniSearchQuery}
+                                onChange={(e) => {
+                                  setUniSearchQuery(e.target.value);
+                                  if (selectedUniversity && e.target.value !== selectedUniversity.name) {
+                                    setSelectedUniversity(null);
+                                    setUniProgrammes([]);
+                                    setSelectedProg(null);
+                                  }
+                                }}
+                                onFocus={() => {
+                                  if (uniSearchResults.length > 0) setShowUniDropdown(true);
+                                }}
+                                placeholder="Type university name (e.g. Technical University of Munich, RWTH Aachen)..."
+                                className="w-full pl-9 pr-9 py-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
+                              />
+                              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3 pointer-events-none" />
+                              {loadingUniSearch && (
+                                <Loader2 className="w-4 h-4 text-germany-red animate-spin absolute right-3 top-3" />
+                              )}
+                              {!loadingUniSearch && uniSearchQuery && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setUniSearchQuery('');
+                                    setSelectedUniversity(null);
+                                    setUniSearchResults([]);
+                                    setUniProgrammes([]);
+                                    setSelectedProg(null);
+                                  }}
+                                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                                >
+                                  <X className="w-3.5 h-3.5" />
                                 </button>
                               )}
                             </div>
 
-                            {/* Revealed Credential Display if active */}
-                            {creds && isPwShown && (
-                              <div className="p-3 bg-white dark:bg-[#151B27] rounded-xl border border-emerald-300 dark:border-emerald-800 text-xs space-y-1">
-                                <div className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-                                  Current Decrypted Credentials:
-                                </div>
-                                <div className="grid grid-cols-2 gap-2 text-xs">
-                                  <div>
-                                    <span className="text-gray-400 text-[11px]">Username: </span>
-                                    <span className="font-extrabold text-gray-900 dark:text-white select-all">{creds.username || '(None)'}</span>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-400 text-[11px]">Password: </span>
-                                    <span className="font-extrabold font-mono text-gray-900 dark:text-white select-all">{creds.password || '(None)'}</span>
-                                  </div>
-                                </div>
+                            {/* Autocomplete Dropdown */}
+                            {showUniDropdown && uniSearchResults.length > 0 && (
+                              <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-[#151B27] border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl z-20 max-h-56 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800/60">
+                                {uniSearchResults.map((uni, idx) => (
+                                  <button
+                                    key={idx}
+                                    type="button"
+                                    onClick={() => handleSelectUniversity(uni)}
+                                    className="w-full text-left px-3.5 py-2.5 hover:bg-gray-50 dark:hover:bg-[#1E2638] transition-colors flex items-center justify-between gap-2"
+                                  >
+                                    <div>
+                                      <div className="text-xs font-extrabold text-germany-black dark:text-white">
+                                        {uni.name}
+                                      </div>
+                                      {(uni.city || uni.country) && (
+                                        <div className="text-[10px] text-gray-400">
+                                          📍 {[uni.city, uni.country].filter(Boolean).join(', ')}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <span className="text-[10px] font-bold text-gray-400">Select →</span>
+                                  </button>
+                                ))}
                               </div>
                             )}
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                              <div className="space-y-1">
-                                <label className="font-bold text-gray-600 dark:text-gray-400">
-                                  Set / Update Portal Username or Email
-                                </label>
-                                <input
-                                  type="text"
-                                  placeholder={creds?.username ? creds.username : 'Enter portal username/email'}
-                                  value={form.portalUsername || ''}
-                                  onChange={(e) => handleUpdateAdmissionForm(app.id, 'portalUsername', e.target.value)}
-                                  className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#151B27] text-gray-900 dark:text-white"
-                                />
-                              </div>
-
-                              <div className="space-y-1">
-                                <label className="font-bold text-gray-600 dark:text-gray-400">
-                                  Set / Update Portal Password
-                                </label>
-                                <input
-                                  type="text"
-                                  placeholder={app.hasCredentials ? '•••••••• (Enter new to overwrite)' : 'Enter initial password'}
-                                  value={form.portalPassword || ''}
-                                  onChange={(e) => handleUpdateAdmissionForm(app.id, 'portalPassword', e.target.value)}
-                                  className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#151B27] text-gray-900 dark:text-white font-mono"
-                                />
-                              </div>
-                            </div>
                           </div>
 
-                          {/* Counsellor Instructions & Notes */}
-                          <div className="space-y-1 text-xs">
-                            <label className="font-extrabold text-gray-700 dark:text-gray-300">
-                              Instructions &amp; Guidance for Student
-                            </label>
-                            <textarea
-                              rows={2}
-                              placeholder="e.g. Please verify your certified high school certificates and sign the declaration before submission."
-                              value={form.counsellorNotes || ''}
-                              onChange={(e) => handleUpdateAdmissionForm(app.id, 'counsellorNotes', e.target.value)}
-                              className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111622] text-gray-900 dark:text-white resize-y"
+                          {/* Selected University Details & Programmes List */}
+                          {selectedUniversity && (
+                            <div className="space-y-3 pt-2">
+                              <div className="p-3 bg-gray-50 dark:bg-[#151B27] rounded-xl border border-gray-200/80 dark:border-gray-800/80 flex items-center justify-between flex-wrap gap-2">
+                                <div>
+                                  <span className="text-[10px] font-black uppercase text-germany-red block">Selected University</span>
+                                  <h5 className="font-display text-sm text-germany-black dark:text-white">{selectedUniversity.name}</h5>
+                                  {selectedUniversity.city && (
+                                    <span className="text-[11px] text-gray-400">📍 {selectedUniversity.city}</span>
+                                  )}
+                                </div>
+
+                                {uniMeta && (
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-1">
+                                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                      <span>{uniMeta.relevantCount} Relevant ({uniMeta.studentField || 'Field'})</span>
+                                    </span>
+                                    <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800/60 flex items-center gap-1">
+                                      <Ban className="w-3 h-3 text-red-600" />
+                                      <span>{uniMeta.disqualifiedCount} Disqualified</span>
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {loadingProgrammes && (
+                                <div className="p-8 text-center space-y-2">
+                                  <Loader2 className="w-6 h-6 text-germany-red animate-spin mx-auto" />
+                                  <p className="text-xs font-bold text-gray-400">Loading university programmes & evaluating academic field...</p>
+                                </div>
+                              )}
+
+                              {programmesError && (
+                                <div className="p-3 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 text-xs font-bold rounded-xl border border-red-200 dark:border-red-900/40">
+                                  {programmesError}
+                                </div>
+                              )}
+
+                              {!loadingProgrammes && !programmesError && uniProgrammes.length > 0 && (
+                                <div className="space-y-2.5">
+                                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                    <input
+                                      type="text"
+                                      value={progFilterText}
+                                      onChange={(e) => setProgFilterText(e.target.value)}
+                                      placeholder="Filter by keyword (e.g. Data, AI, Systems)..."
+                                      className="px-3 py-1.5 bg-[#F8F9FA] dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 placeholder:text-gray-400 focus:outline-none focus:border-germany-red flex-1"
+                                    />
+
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                      <button
+                                        type="button"
+                                        onClick={() => setProgFilterOnlyRelevant(false)}
+                                        className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold transition-colors cursor-pointer ${!progFilterOnlyRelevant
+                                          ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black'
+                                          : 'bg-gray-100 dark:bg-[#1E2638] text-gray-600 dark:text-gray-300'
+                                          }`}
+                                      >
+                                        All ({uniProgrammes.length})
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => setProgFilterOnlyRelevant(true)}
+                                        className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold transition-colors cursor-pointer ${progFilterOnlyRelevant
+                                          ? 'bg-emerald-600 text-white'
+                                          : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
+                                          }`}
+                                      >
+                                        Relevant Only ({uniProgrammes.filter((p) => p.isRelevant).length})
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {/* Scrollable list of programmes */}
+                                  <div className="max-h-[500px] overflow-y-auto space-y-2.5 pr-1">
+                                    {uniProgrammes
+                                      .filter((p) => {
+                                        if (progFilterOnlyRelevant && !p.isRelevant) return false;
+                                        if (progFilterText) {
+                                          const q = progFilterText.toLowerCase();
+                                          return (
+                                            p.programName?.toLowerCase().includes(q) ||
+                                            (p.subject && p.subject.toLowerCase().includes(q))
+                                          );
+                                        }
+                                        return true;
+                                      })
+                                      .map((p) => {
+                                        const progIdStr = String(p.id);
+                                        const isCurated = curatedProgrammeIds.includes(progIdStr);
+                                        const maxDisplay = studentSubscription?.maxDisplayCount || 5;
+                                        const isDisplayFull = curatedProgrammeIds.length >= maxDisplay;
+
+                                        // Check if this programme is already in the matchingResults
+                                        const isAlreadyMatched = matchingResults.some((m: any) => {
+                                          if (m.eligibilityStatus === 'NOT_ELIGIBLE') return false;
+                                          const matchProgId = String(m.programmeId || m.id);
+                                          if (matchProgId === progIdStr) return true;
+                                          const matchProgName = (m.programName || '').toLowerCase().trim();
+                                          const pProgName = (p.programName || '').toLowerCase().trim();
+                                          const matchUniName = (m.universityName || '').toLowerCase().trim();
+                                          const selectedUniName = (selectedUniversity?.name || '').toLowerCase().trim();
+                                          return (
+                                            matchProgName === pProgName &&
+                                            (matchUniName.includes(selectedUniName) || selectedUniName.includes(matchUniName))
+                                          );
+                                        });
+
+                                        // Check if already saved in Counsellor Notepad
+                                        const isAlreadyInNotepad = notepadProgrammes.some((u: any) => {
+                                          if (String(u.programmeId) === progIdStr) return true;
+                                          const uProg = (u.program || '').toLowerCase().trim();
+                                          const pProg = (p.programName || '').toLowerCase().trim();
+                                          const uUni = (u.name || '').toLowerCase().trim();
+                                          const sUni = (selectedUniversity?.name || '').toLowerCase().trim();
+                                          return uProg === pProg && (uUni.includes(sUni) || sUni.includes(uUni));
+                                        });
+
+                                        return (
+                                          <div
+                                            key={p.id}
+                                            className={`p-3.5 rounded-xl transition-all border ${isMatchingLocked
+                                              ? 'bg-gray-50/50 dark:bg-[#0B0E14] border-gray-200/50 dark:border-gray-800/50 opacity-70'
+                                              : isAlreadyMatched
+                                                ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-700/80 ring-1 ring-amber-400/20'
+                                                : isAlreadyInNotepad
+                                                  ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-400 dark:border-emerald-700/80 ring-1 ring-emerald-500/20'
+                                                  : p.isRelevant
+                                                    ? 'bg-white dark:bg-[#151B27] border-gray-200/80 dark:border-gray-800/80 hover:border-emerald-400/80'
+                                                    : 'bg-gray-50/50 dark:bg-[#0B0E14] border-red-200/40 dark:border-red-950/40 opacity-60'
+                                              }`}
+                                          >
+                                            <div className="flex items-start justify-between gap-3">
+                                              <div className="min-w-0 space-y-1 flex-1">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                  <span className="text-xs font-extrabold text-germany-black dark:text-white leading-tight">
+                                                    {p.programName}
+                                                  </span>
+                                                  {isAlreadyMatched ? (
+                                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-extrabold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700">
+                                                      <AlertCircle className="w-2.5 h-2.5 text-amber-600" />
+                                                      <span>Already in Matching List</span>
+                                                    </span>
+                                                  ) : isAlreadyInNotepad ? (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                                                      <Bookmark className="w-2.5 h-2.5 text-emerald-600" />
+                                                      <span>Saved in Notepad</span>
+                                                    </span>
+                                                  ) : p.isRelevant ? (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+                                                      <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+                                                      <span>Relevant to {uniMeta?.studentField || 'Field'}</span>
+                                                    </span>
+                                                  ) : (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/40">
+                                                      <Ban className="w-2.5 h-2.5 text-red-500" />
+                                                      <span>Disqualified (Non-matching field)</span>
+                                                    </span>
+                                                  )}
+                                                </div>
+
+                                                <div className="text-[11px] font-bold text-gray-500 flex items-center gap-2 pt-0.5 flex-wrap">
+                                                  <span>{p.degree}</span>
+                                                  <span>•</span>
+                                                  <span>🌐 {p.language}</span>
+                                                  <span>•</span>
+                                                  <span>💶 {p.tuition || 'Public tuition free'}</span>
+                                                  {p.deadline && (
+                                                    <>
+                                                      <span>•</span>
+                                                      <span>⏰ {p.deadline}</span>
+                                                    </>
+                                                  )}
+                                                </div>
+                                                {p.subject && (
+                                                  <p className="text-[10px] text-gray-400">Subject: {p.subject}</p>
+                                                )}
+                                              </div>
+
+                                              {/* Action Buttons for Catalogue Programmes */}
+                                              <div className="shrink-0 flex items-center gap-1.5 flex-wrap justify-end">
+                                                {isAlreadyMatched ? (
+                                                  <button
+                                                    disabled
+                                                    type="button"
+                                                    className="inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl bg-amber-100/70 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-300/60 dark:border-amber-800/60 cursor-not-allowed opacity-85"
+                                                    title="This programme was already evaluated by the matching engine and is in your Matched Programmes list"
+                                                  >
+                                                    <Check className="w-3 h-3 text-amber-600" />
+                                                    <span>Already in Matches</span>
+                                                  </button>
+                                                ) : isAlreadyInNotepad ? (
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => { const el = document.getElementById('counsellor-notepad-section'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }}
+                                                    className="inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors cursor-pointer"
+                                                    title="Saved in your notepad. Click to view notepad."
+                                                  >
+                                                    <Check className="w-3 h-3 text-emerald-600" />
+                                                    <span>Saved in Notepad</span>
+                                                  </button>
+                                                ) : p.isRelevant ? (
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => handleSaveProgrammeToNotepad(p)}
+                                                    disabled={savingRecommendation || isMatchingLocked}
+                                                    className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl border border-transparent transition-colors ${isMatchingLocked
+                                                      ? 'bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed opacity-50'
+                                                      : 'bg-germany-black dark:bg-white text-white dark:text-germany-black hover:opacity-90 cursor-pointer disabled:opacity-40'
+                                                      }`}
+                                                    title={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Save this programme to your Counsellor Notepad'}
+                                                  >
+                                                    {savingRecommendation ? (
+                                                      <Loader2 className="w-3 h-3 animate-spin" />
+                                                    ) : isMatchingLocked ? (
+                                                      <Lock className="w-3 h-3 text-gray-400" />
+                                                    ) : (
+                                                      <Plus className="w-3 h-3" />
+                                                    )}
+                                                    <span>{isMatchingLocked ? 'Locked' : 'Add to Notepad'}</span>
+                                                  </button>
+                                                ) : null}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                  </div>
+                                </div>
+                              )}
+
+                              {!loadingProgrammes && !programmesError && uniProgrammes.length === 0 && (
+                                <div className="p-6 bg-gray-50 dark:bg-[#151B27] rounded-xl text-center text-xs font-bold text-gray-400">
+                                  No programmes found in database for {selectedUniversity.name}. You can use manual entry fallback above.
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        /* Manual Entry Form */
+                        <form onSubmit={handleSaveRecommendation} className="space-y-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <input
+                              type="text"
+                              placeholder="University (e.g. TU Darmstadt)"
+                              value={newUniName}
+                              onChange={(e) => setNewUniName(e.target.value)}
+                              className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
+                              required
+                            />
+                            <input
+                              type="text"
+                              placeholder="Program (e.g. M.Sc. Distributed Systems)"
+                              value={newUniProgram}
+                              onChange={(e) => setNewUniProgram(e.target.value)}
+                              className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
+                              required
+                            />
+                            <input
+                              type="text"
+                              placeholder="City / State (e.g. Darmstadt, Hesse)"
+                              value={newUniLocation}
+                              onChange={(e) => setNewUniLocation(e.target.value)}
+                              className="p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
                             />
                           </div>
 
-                          {/* Footer with Save Action */}
-                          <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
-                            <div>
-                              {success && (
-                                <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                                  <CheckCircle2 className="w-3.5 h-3.5" />
-                                  <span>{success}</span>
+                          <input
+                            type="text"
+                            placeholder="Advisor fit note or rationale (optional)"
+                            value={recommendNote}
+                            onChange={(e) => setRecommendNote(e.target.value)}
+                            className="w-full p-2.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-germany-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-germany-red shadow-xs"
+                          />
+
+                          <div className="flex justify-end gap-2">
+                            <button
+                              type="submit"
+                              disabled={savingRecommendation || !newUniName.trim() || !newUniProgram.trim()}
+                              className="flex items-center gap-1.5 px-4 py-2 bg-germany-red text-white text-xs font-extrabold rounded-xl hover:bg-germany-red/90 cursor-pointer disabled:opacity-40"
+                            >
+                              {savingRecommendation ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                              <span>Add Programme to Recommendations</span>
+                            </button>
+                          </div>
+                        </form>
+                      )}
+                    </div>
+
+                    {/* Counsellor Saved Programmes / Notepad View (Below Catalogue) */}
+                    <div id="counsellor-notepad-section" className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-4">
+                      <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-gray-100 dark:border-gray-800">
+                        <div>
+                          <h4 className="font-display text-sm text-germany-black dark:text-white flex items-center gap-1.5">
+                            <Bookmark className="w-4 h-4 text-germany-red" />
+                            <span>Counsellor Saved Programmes &amp; Notepad</span>
+                          </h4>
+                          <p className="text-[11px] font-bold text-gray-400">
+                            Your candidate scratchpad. Click &quot;+ Add to Display&quot; on any card below to curate it into the student display.
+                          </p>
+                        </div>
+                        <span className="text-xs font-black px-2.5 py-1 rounded-full bg-germany-black text-white dark:bg-white dark:text-germany-black">
+                          {notepadProgrammes.length} saved
+                        </span>
+                      </div>
+
+                      {notepadProgrammes.length === 0 ? (
+                        <div className="p-8 text-center space-y-2 bg-gray-50/60 dark:bg-[#151B27]/40 rounded-xl border border-dashed border-gray-200 dark:border-gray-800">
+                          <Bookmark className="w-7 h-7 text-gray-400 mx-auto" />
+                          <h5 className="font-display text-xs text-gray-600 dark:text-gray-300">Your Notepad is Empty</h5>
+                          <p className="text-[11px] text-gray-400 max-w-sm mx-auto">
+                            Search any university in the box above and click &quot;+ Add to Notepad&quot; to save candidate programmes here.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {notepadProgrammes.map((uni, idx) => {
+                            const progIdStr = String(uni.programmeId || uni.id);
+                            const isCurated = curatedProgrammeIds.includes(progIdStr);
+                            const isShortlisted = shortlistedProgIds.has(progIdStr);
+                            const maxDisplay = studentSubscription?.maxDisplayCount || 5;
+                            const isDisplayFull = curatedProgrammeIds.length >= maxDisplay;
+
+                            const uAny = uni as any;
+                            const uniName = uAny.universityName || uAny.name || 'German University';
+                            const progName = uAny.programName || uAny.program || 'University Programme';
+                            const uniType = uAny.universityType || uAny.type || 'Public University';
+                            const uniLocation = uAny.location || [uAny.city, uAny.country].filter(Boolean).join(', ') || 'Germany';
+                            const uniTuition = uAny.tuitionPerSemester || uAny.tuition || '€0 / semester fee only';
+                            const uniDeadline = uAny.nonEuDeadline || uAny.deadline || 'July 15';
+                            const uniLanguage = uAny.language || 'German';
+                            const uniUrl = uAny.programUrl || uAny.url;
+
+                            return (
+                              <ProgrammeCard
+                                key={uni.id}
+                                rank={idx + 1}
+                                universityType={uniType}
+                                universityName={uniName}
+                                programName={progName}
+                                degree={uni.degree || 'Bachelor'}
+                                eligibilityLabel={uni.status ? (uni.status === 'recommended' ? 'RECOMMENDED' : uni.status.toUpperCase()) : 'RECOMMENDED'}
+                                eligibilityStyle="bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700"
+                                isShortlisted={isShortlisted}
+                                score={`${uni.matchScore || 90}% Fit`}
+                                scoreLabel="Score"
+                                location={uniLocation}
+                                tuition={uniTuition}
+                                language={uniLanguage}
+                                deadline={uniDeadline}
+                                notes={uni.notes}
+                                programUrl={uniUrl}
+                                programUrlLabel="Website"
+                                isLocked={isMatchingLocked}
+                                isCurated={isCurated}
+                                onDelete={() => handleDeleteRecommendation(uni.id)}
+                                deleteTitle={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Remove programme from notepad'}
+                                deleteDisabled={isMatchingLocked}
+                                actionSlot={
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleCuratedProgramme(progIdStr)}
+                                    disabled={savingCuration || isMatchingLocked || (!isCurated && (!studentSubscription || isDisplayFull))}
+                                    className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl transition-colors border ${isMatchingLocked
+                                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
+                                      : isCurated
+                                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
+                                        : 'bg-germany-black dark:bg-white text-white dark:text-germany-black border-transparent hover:opacity-90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
+                                      }`}
+                                    title={
+                                      isMatchingLocked
+                                        ? 'Shortlist and curation are locked. Unlock to modify.'
+                                        : !studentSubscription
+                                          ? 'Student must have an active subscription'
+                                          : !isCurated && isDisplayFull
+                                            ? `Plan display limit reached (${maxDisplay}). Remove an item from Student Display Curation to make space.`
+                                            : isCurated
+                                              ? 'Remove from student display (frees up a display slot)'
+                                              : 'Add to student display'
+                                    }
+                                  >
+                                    {isMatchingLocked ? (
+                                      <>
+                                        <Lock className="w-3 h-3 text-gray-400" />
+                                        <span>Locked</span>
+                                      </>
+                                    ) : isCurated ? (
+                                      <>
+                                        <Check className="w-3 h-3 text-emerald-600" />
+                                        <span>On Display</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Plus className="w-3 h-3" />
+                                        <span>Add to Display</span>
+                                      </>
+                                    )}
+                                  </button>
+                                }
+                              />
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Right: Dedicated Programme Curation Panel */}
+              {showCurationPanel && (
+                <div className="w-full xl:w-80 shrink-0 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 p-4 shadow-xs space-y-4 xl:sticky xl:top-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800">
+                    <div>
+                      <h4 className="font-display text-sm text-germany-black dark:text-white flex items-center gap-1.5">
+                        <span>Student Display Curation</span>
+                      </h4>
+                      <p className="text-[10px] font-bold text-gray-400">
+                        Programmes visible to student
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-0.5">
+                      <span className="text-xs font-black px-2 py-0.5 rounded-full bg-germany-black text-white dark:bg-white dark:text-germany-black">
+                        {curatedProgrammeIds.length} / {studentSubscription?.maxDisplayCount || 5}
+                      </span>
+                      <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                        ★ {studentShortlistCount} / {studentSubscription?.maxShortlistCount || 3} shortlisted
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Auto-fill Button */}
+                  <button
+                    type="button"
+                    onClick={handleAutoFillTopMatches}
+                    disabled={savingCuration || isMatchingLocked || !studentSubscription || matchingResults.length === 0}
+                    className={`w-full flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-extrabold rounded-xl transition-colors ${isMatchingLocked
+                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
+                      : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/30 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
+                      }`}
+                    title={
+                      isMatchingLocked
+                        ? 'Shortlist and curation are locked. Unlock to modify.'
+                        : 'Fill student display with the highest ranked eligible programmes up to plan limit'
+                    }
+                  >
+                    {isMatchingLocked ? (
+                      <Lock className="w-3.5 h-3.5 text-gray-400" />
+                    ) : (
+                      <Sparkles className="w-3.5 h-3.5 text-germany-gold" />
+                    )}
+                    <span>{isMatchingLocked ? 'Auto-fill Locked' : 'Auto-fill Top Matches'}</span>
+                  </button>
+
+                  {/* Curated Items List */}
+                  <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1">
+                    {curatedProgrammeIds.length === 0 ? (
+                      <div className="p-6 text-center text-xs text-gray-400 space-y-1 bg-gray-50 dark:bg-[#151B27] rounded-xl border border-dashed border-gray-200 dark:border-gray-800">
+                        <p className="font-bold text-gray-500 dark:text-gray-400">No programmes curated</p>
+                        <p className="text-[11px]">Click &quot;Add to Display&quot; on any match or use auto-fill above.</p>
+                      </div>
+                    ) : (
+                      curatedProgrammeIds.map((progId, idx) => {
+                        const matchItem = matchingResults.find(
+                          (r) => String(r.programmeId || r.id) === String(progId)
+                        );
+                        const curatedItem = curatedProgrammes.find(
+                          (cp) => String(cp.programmeId) === String(progId)
+                        );
+                        const isShortlisted = shortlistedProgIds.has(String(progId));
+                        const uniName = matchItem?.universityName || curatedItem?.universityName || 'University';
+                        const progName = matchItem?.programName || curatedItem?.programName || `Programme ID: ${progId}`;
+                        const maxShortlist = studentSubscription?.maxShortlistCount || 3;
+                        const isShortlistFull = studentShortlistCount >= maxShortlist;
+
+                        return (
+                          <div
+                            key={progId}
+                            className="p-2.5 bg-gray-50 dark:bg-[#151B27] rounded-xl border border-gray-200/60 dark:border-gray-800/60 flex items-start justify-between gap-2 text-xs"
+                          >
+                            <div className="min-w-0 space-y-0.5 flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] font-black text-germany-red shrink-0">
+                                  #{idx + 1}
                                 </span>
-                              )}
+                                <span className="font-extrabold text-germany-black dark:text-white truncate block">
+                                  {uniName}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-gray-600 dark:text-gray-300 truncate">
+                                {progName}
+                              </p>
+                              <div className="flex items-center gap-1.5 pt-0.5">
+                                {isShortlisted && (
+                                  <span className="text-[9px] font-extrabold px-1.5 py-0.2 bg-blue-100 text-blue-800 rounded">
+                                    ★ Shortlisted
+                                  </span>
+                                )}
+                                {matchItem?.relevanceScore && (
+                                  <span className="text-[9px] font-bold text-gray-400">
+                                    Score: {matchItem.relevanceScore}
+                                  </span>
+                                )}
+                              </div>
                             </div>
 
+                            <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
+                              {/* Shortlist Toggle Button on the Student Display Curation card */}
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleToggleShortlist({
+                                    programmeId: Number(progId),
+                                    universityName: uniName,
+                                    programName: progName,
+                                    degree: matchItem?.degree || curatedItem?.degree || 'Master',
+                                    city: matchItem?.city || curatedItem?.city || 'Germany',
+                                    country: matchItem?.country || curatedItem?.country || 'Germany',
+                                    tuitionPerSemester: matchItem?.tuitionPerSemester || curatedItem?.tuitionPerSemester || 'Free / None',
+                                    nonEuDeadline: matchItem?.nonEuDeadline || curatedItem?.nonEuDeadline || 'NA',
+                                    universityType: matchItem?.universityType || curatedItem?.universityType || 'Public University',
+                                    relevanceScore: matchItem?.relevanceScore || 90,
+                                  })
+                                }
+                                disabled={togglingShortlist === String(progId) || isMatchingLocked || (!isShortlisted && isShortlistFull)}
+                                className={`inline-flex items-center gap-1 text-[10px] font-extrabold py-1 px-2 rounded-lg transition-colors border ${isMatchingLocked
+                                  ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
+                                  : isShortlisted
+                                    ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
+                                    : isShortlistFull
+                                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-50'
+                                      : 'bg-white dark:bg-[#151B27] text-gray-700 dark:text-gray-300 border-gray-200/80 dark:border-gray-800 hover:border-blue-400 hover:text-blue-600 cursor-pointer'
+                                  }`}
+                                title={
+                                  isMatchingLocked
+                                    ? 'Shortlist is locked. Unlock to modify.'
+                                    : isShortlisted
+                                      ? 'Click to remove from student shortlist'
+                                      : isShortlistFull
+                                        ? `Student shortlist limit reached (${studentShortlistCount}/${maxShortlist} max for ${studentSubscription?.planId || 'Plan'}). Remove an existing shortlisted programme first.`
+                                        : 'Add to student shortlist'
+                                }
+                              >
+                                {togglingShortlist === String(progId) ? (
+                                  <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                                ) : isMatchingLocked ? (
+                                  <Lock className="w-2.5 h-2.5 text-gray-400" />
+                                ) : (
+                                  <Bookmark className={`w-2.5 h-2.5 ${isShortlisted ? 'fill-current text-blue-600' : ''}`} />
+                                )}
+                                <span>
+                                  {isMatchingLocked && isShortlisted
+                                    ? 'Shortlisted (Locked)'
+                                    : isMatchingLocked
+                                      ? 'Locked'
+                                      : isShortlisted
+                                        ? 'Shortlisted'
+                                        : isShortlistFull
+                                          ? 'Limit Reached'
+                                          : 'Shortlist'}
+                                </span>
+                              </button>
+
+                              {/* Remove from Curation / Display Button */}
+                              <button
+                                type="button"
+                                onClick={() => handleToggleCuratedProgramme(progId)}
+                                disabled={isMatchingLocked}
+                                title={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Remove from student display (frees up a display slot)'}
+                                className={`p-1 rounded-lg transition-colors shrink-0 ${isMatchingLocked
+                                  ? 'text-gray-300 dark:text-gray-700 cursor-not-allowed opacity-40'
+                                  : 'text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer'
+                                  }`}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {/* Footer status */}
+                  <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-[10px] text-gray-400 font-bold">
+                    {savingCuration ? (
+                      <span className="flex items-center gap-1 text-amber-600">
+                        <Loader2 className="w-3 h-3 animate-spin" /> Saving changes…
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-emerald-600">
+                        <Check className="w-3 h-3" /> Synced to student
+                      </span>
+                    )}
+                    <span>Max {studentSubscription?.maxDisplayCount || 5}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================
+                TAB 4: STRATEGY NOTES & TASKS
+            ======================================================== */}
+        {activeTab === 'notes' && (
+          <div className="space-y-4">
+            {/* Notes Editor */}
+            <div className="p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-germany-black dark:text-white" />
+                  <h3 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white uppercase tracking-wider">
+                    Private Counsellor Remarks &amp; Strategy
+                  </h3>
+                </div>
+                {noteSaved && (
+                  <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 animate-in fade-in">
+                    <Check className="w-3.5 h-3.5" />
+                    Saved to browser!
+                  </span>
+                )}
+              </div>
+
+              <textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Document consultation takeaways (e.g. Target TUM Data Engineering, advised to re-take German A2 Goethe exam in October, notarization complete for APS Delhi)..."
+                rows={4}
+                className="w-full p-3 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-900 dark:text-white placeholder:text-gray-400 placeholder:font-normal resize-none focus:outline-none focus:border-germany-red shadow-xs"
+              />
+
+              <div className="flex items-center justify-between pt-1">
+                <p className="text-[10px] font-bold text-gray-400">
+                  Notes are kept private to counsellors and automatically saved.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleSaveNote}
+                  className="py-1.5 px-3.5 text-xs font-extrabold flex items-center gap-1.5 text-germany-black dark:text-white hover:text-germany-red dark:hover:text-germany-red bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl cursor-pointer shadow-xs transition-colors"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>Save Notes</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Consultation Follow-Up Checklist */}
+            <div className="p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
+              <h3 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white uppercase tracking-wider">
+                Advising Checklist &amp; Action Items
+              </h3>
+
+              <div className="space-y-2">
+                {tasks.map((t) => (
+                  <div
+                    key={t.id}
+                    onClick={() => handleToggleTask(t.id)}
+                    className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 text-xs font-bold cursor-pointer transition-colors ${t.completed
+                      ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/40 text-gray-500 dark:text-gray-400 line-through'
+                      : 'bg-[#FDFBF7] dark:bg-[#151B27] border-[#EBE7E0] dark:border-gray-800/80 text-germany-black dark:text-white hover:bg-white dark:hover:bg-[#1A2130]'
+                      }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      {t.completed ? (
+                        <CheckSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      ) : (
+                        <Square className="w-4 h-4 text-gray-400 shrink-0" />
+                      )}
+                      <span>{t.text}</span>
+                    </div>
+                    <span className="text-[10px] text-gray-400 font-extrabold shrink-0">Due {t.dueDate}</span>
+                  </div>
+                ))}
+              </div>
+
+              <form onSubmit={handleAddTask} className="flex items-center gap-2 pt-2">
+                <input
+                  type="text"
+                  placeholder="Add an advising follow-up item..."
+                  value={newTaskText}
+                  onChange={(e) => setNewTaskText(e.target.value)}
+                  className="flex-1 p-2 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:border-germany-red shadow-xs"
+                />
+                <button
+                  type="submit"
+                  className="py-2 px-3 text-xs font-extrabold flex items-center gap-1 shrink-0 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-germany-black dark:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-[#1A2130] shadow-xs cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Task</span>
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================
+                TAB 5: ADMISSION MANAGEMENT & PORTAL CREDENTIALS
+            ======================================================== */}
+        {activeTab === 'admission' && (
+          <div className="space-y-5 animate-fadeIn">
+            <div className="bg-white dark:bg-[#151B27] rounded-2xl p-5 border border-gray-200/80 dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-germany-red/10 text-germany-red border border-germany-red/20">
+                    Counsellor Admission Management
+                  </span>
+                  <span className="text-[10px] font-bold text-gray-400">
+                    AES-256-GCM Vault Protected
+                  </span>
+                </div>
+                <h3 className="text-base font-black text-gray-900 dark:text-white">
+                  University Application Portals &amp; Credentials
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Manage official portal URLs, track application IDs and deadlines, and store encrypted student credentials programme by programme.
+                </p>
+              </div>
+
+              <button
+                onClick={() => loadAdmissionApplications(effectiveStudentId)}
+                disabled={admissionLoading}
+                className="px-3.5 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${admissionLoading ? 'animate-spin' : ''}`} />
+                <span>Refresh Portals</span>
+              </button>
+            </div>
+
+            {admissionLoading ? (
+              <div className="p-12 text-center bg-white dark:bg-[#151B27] rounded-2xl border border-gray-200 dark:border-gray-800">
+                <Loader2 className="w-8 h-8 animate-spin text-germany-red mx-auto mb-2" />
+                <p className="text-xs font-bold text-gray-500">Loading student locked applications...</p>
+              </div>
+            ) : admissionError ? (
+              <div className="p-6 text-center bg-white dark:bg-[#151B27] rounded-2xl border border-red-200 dark:border-red-900/40">
+                <AlertCircle className="w-6 h-6 text-red-500 mx-auto mb-2" />
+                <p className="text-xs font-bold text-red-600">{admissionError}</p>
+              </div>
+            ) : admissionApplications.length === 0 ? (
+              <div className="p-10 text-center bg-white dark:bg-[#151B27] rounded-2xl border border-dashed border-gray-200 dark:border-gray-800 space-y-2">
+                <Building2 className="w-8 h-8 text-gray-400 mx-auto" />
+                <h4 className="text-xs font-black text-gray-800 dark:text-gray-200">
+                  No Shortlisted Programmes Found
+                </h4>
+                <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                  Shortlist and lock programmes for this student in the "University Eligibility" tab to manage application portals.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-5">
+                {admissionApplications.map((app) => {
+                  const form = admissionFormState[app.id] || {};
+                  const isSaving = admissionSavingId === app.id;
+                  const success = admissionSuccessMsg[app.id];
+                  const creds = admissionRevealedCreds[app.id];
+                  const isPwShown = Boolean(admissionShowPassword[app.id]);
+                  const isRevealing = admissionRevealingId === app.id;
+
+                  return (
+                    <div
+                      key={app.id}
+                      className="bg-white dark:bg-[#151B27] rounded-2xl p-5 border border-gray-200/80 dark:border-gray-800 shadow-sm space-y-4"
+                    >
+                      {/* Programme Header */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-gray-800/80 pb-3">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black uppercase text-gray-400">
+                              {app.degree || 'Master of Science'} · {app.location || 'Germany'}
+                            </span>
+                            {app.hasCredentials && (
+                              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                <ShieldCheck className="w-3 h-3" /> Vault Active
+                              </span>
+                            )}
+                          </div>
+                          <h4 className="text-sm font-black text-gray-900 dark:text-white mt-0.5">
+                            {app.programmeName}
+                          </h4>
+                          <div className="text-xs font-bold text-gray-500 flex items-center gap-1 mt-0.5">
+                            <Building2 className="w-3.5 h-3.5 text-gray-400" />
+                            <span>{app.universityName}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {/* Application Status Dropdown */}
+                          <select
+                            value={form.applicationStatus || 'NOT_STARTED'}
+                            onChange={(e) => handleUpdateAdmissionForm(app.id, 'applicationStatus', e.target.value)}
+                            className="text-xs font-extrabold px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1A2234] text-gray-800 dark:text-gray-200 cursor-pointer"
+                          >
+                            <option value="NOT_STARTED">Not Started</option>
+                            <option value="IN_PROGRESS">In Progress</option>
+                            <option value="SUBMITTED">Submitted</option>
+                            <option value="ACCEPTED">Offer Received</option>
+                            <option value="REJECTED">Unsuccessful</option>
+                            <option value="WAITLISTED">Waitlisted</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Editable Details Form */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        {/* Portal URL */}
+                        <div className="space-y-1">
+                          <label className="font-extrabold text-gray-700 dark:text-gray-300">
+                            Official Application Portal URL
+                          </label>
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="text"
+                              placeholder="e.g. https://campus.tum.de or uni-assist.de"
+                              value={form.portalUrl || ''}
+                              onChange={(e) => handleUpdateAdmissionForm(app.id, 'portalUrl', e.target.value)}
+                              className="flex-1 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111622] text-gray-900 dark:text-white"
+                            />
+                            {form.portalUrl && (
+                              <a
+                                href={form.portalUrl.startsWith('http') ? form.portalUrl : `https://${form.portalUrl}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 rounded-xl text-gray-600 dark:text-gray-300"
+                                title="Open portal"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Application Reference ID */}
+                        <div className="space-y-1">
+                          <label className="font-extrabold text-gray-700 dark:text-gray-300">
+                            Application ID / Reference Number
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. TUM-2026-99210 or UA-88219"
+                            value={form.applicationId || ''}
+                            onChange={(e) => handleUpdateAdmissionForm(app.id, 'applicationId', e.target.value)}
+                            className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111622] text-gray-900 dark:text-white"
+                          />
+                        </div>
+
+                        {/* Submission Date */}
+                        <div className="space-y-1">
+                          <label className="font-extrabold text-gray-700 dark:text-gray-300">
+                            Submission Date
+                          </label>
+                          <input
+                            type="date"
+                            value={form.submissionDate || ''}
+                            onChange={(e) => handleUpdateAdmissionForm(app.id, 'submissionDate', e.target.value)}
+                            className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111622] text-gray-900 dark:text-white"
+                          />
+                        </div>
+
+                        {/* Deadline */}
+                        <div className="space-y-1">
+                          <label className="font-extrabold text-gray-700 dark:text-gray-300">
+                            Application Deadline
+                          </label>
+                          <input
+                            type="date"
+                            value={form.deadline || ''}
+                            onChange={(e) => handleUpdateAdmissionForm(app.id, 'deadline', e.target.value)}
+                            className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111622] text-gray-900 dark:text-white"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Encrypted Credentials Section */}
+                      <div className="p-4 bg-gray-50/70 dark:bg-[#111622] rounded-2xl border border-gray-200/60 dark:border-gray-800 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5 font-black text-xs text-gray-800 dark:text-gray-200">
+                            <KeyRound className="w-3.5 h-3.5 text-germany-gold" />
+                            <span>Confidential Portal Credentials (Encrypted with AES-256-GCM)</span>
+                          </div>
+
+                          {app.hasCredentials && (
                             <button
                               type="button"
-                              onClick={() => handleSaveAdmissionApp(app.id)}
-                              disabled={isSaving}
-                              className="px-4 py-2 bg-germany-red text-white hover:bg-germany-red/90 disabled:opacity-50 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+                              onClick={() => handleRevealCounsellorCreds(app.id)}
+                              disabled={isRevealing}
+                              className="text-[11px] font-extrabold text-germany-red hover:underline flex items-center gap-1 cursor-pointer"
                             >
-                              {isSaving ? (
+                              {isRevealing ? (
                                 <>
-                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                  <span>Encrypting &amp; Saving...</span>
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                  <span>Decrypting...</span>
                                 </>
                               ) : (
                                 <>
-                                  <Save className="w-3.5 h-3.5" />
-                                  <span>Save Application Information</span>
+                                  {isPwShown ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                                  <span>{isPwShown ? 'Hide Secret' : 'Reveal Current Vault Password'}</span>
                                 </>
                               )}
                             </button>
-                          </div>
+                          )}
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
 
-                      {/* ========================================================
-                TAB 6: VISA ASSISTANCE & DOCUMENT CHECKLIST
-            ======================================================== */}
-            {activeTab === 'visa' && (
-              <div className="space-y-5 animate-fadeIn">
-                {/* Header & Readiness Overview */}
-                <div className="bg-white dark:bg-[#151B27] rounded-2xl p-5 border border-gray-200/80 dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-germany-red/10 text-germany-red border border-germany-red/20 flex items-center gap-1">
-                        <Plane className="w-3 h-3" />
-                        <span>Counsellor Visa Assistance</span>
-                      </span>
-                      <span className="text-[10px] font-bold text-gray-400">
-                        Consular Checklist 2026
-                      </span>
-                    </div>
-                    <h3 className="text-base font-black text-gray-900 dark:text-white">
-                      German Student Visa Preparation &amp; Readiness
-                    </h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                      Verify student documents against German consular criteria, flag re-uploads, and configure conditional exemptions.
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    {visaProgress && (
-                      <div className="flex items-center gap-3 bg-gray-50 dark:bg-[#1A2234] px-4 py-2.5 rounded-xl border border-gray-200/60 dark:border-gray-800 shrink-0">
-                        <div className="text-right">
-                          <div className="text-[10px] font-extrabold uppercase text-gray-400">Readiness</div>
-                          <div className="text-sm font-black text-gray-900 dark:text-white">
-                            {visaProgress.verifiedCount} / {visaProgress.totalApplicable} Verified
-                          </div>
-                        </div>
-                        <div className="w-10 h-10 rounded-full border-2 border-emerald-500/20 border-t-emerald-500 flex items-center justify-center font-black text-xs text-emerald-600 dark:text-emerald-400">
-                          {visaProgress.readinessPercentage}%
-                        </div>
-                      </div>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => loadVisaChecklist(effectiveStudentId)}
-                      disabled={visaLoading}
-                      className="px-3.5 py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
-                    >
-                      <RefreshCw className={`w-3.5 h-3.5 ${visaLoading ? 'animate-spin' : ''}`} />
-                      <span>Refresh</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Scope Limitation Alert */}
-                <div className="p-3.5 bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/60 rounded-xl text-xs text-amber-900 dark:text-amber-300 flex items-start gap-2.5">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                  <p className="leading-relaxed">
-                    <strong>Preparation Scope Only:</strong> EuroBridge provides visa document preparation and counsellor verification assistance only. EuroBridge does NOT submit visa applications, book consular appointments, or pay official fees on behalf of students.
-                  </p>
-                </div>
-
-                {/* General Counsellor Visa Notes */}
-                <div className="bg-white dark:bg-[#151B27] rounded-2xl p-5 border border-gray-200/80 dark:border-gray-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-extrabold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
-                      <FileCheck2 className="w-4 h-4 text-germany-red" />
-                      <span>Overall Visa Strategy Instructions for Student</span>
-                    </label>
-                    <button
-                      type="button"
-                      onClick={handleSaveVisaGeneralNotes}
-                      disabled={visaGeneralNotesSaving}
-                      className="px-3 py-1.5 bg-germany-red hover:bg-germany-red/90 text-white text-xs font-extrabold rounded-xl shadow-xs transition-all flex items-center gap-1 cursor-pointer"
-                    >
-                      {visaGeneralNotesSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
-                      <span>Save Strategy Notes</span>
-                    </button>
-                  </div>
-                  <textarea
-                    rows={2}
-                    placeholder="e.g. Schedule VFS appointment under Mumbai jurisdiction as soon as admission arrives. Ensure blocked account is funded 15 days before appointment."
-                    value={visaGeneralNotes}
-                    onChange={(e) => setVisaGeneralNotes(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#111622] text-xs text-gray-900 dark:text-white"
-                  />
-                </div>
-
-                {/* Visa Checklist Table */}
-                {visaLoading ? (
-                  <div className="p-12 text-center bg-white dark:bg-[#151B27] rounded-2xl border border-gray-200 dark:border-gray-800">
-                    <Loader2 className="w-8 h-8 animate-spin text-germany-red mx-auto mb-2" />
-                    <p className="text-xs font-bold text-gray-500">Loading student visa checklist...</p>
-                  </div>
-                ) : visaError ? (
-                  <div className="p-6 text-center bg-white dark:bg-[#151B27] rounded-2xl border border-red-200 dark:border-red-900">
-                    <AlertCircle className="w-6 h-6 text-red-500 mx-auto mb-2" />
-                    <p className="text-xs font-bold text-red-600">{visaError}</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {visaChecklist.map((item) => {
-                      const isItemLoading = visaActionLoading === item.key || (item.documentId && visaActionLoading === item.documentId);
-                      const isSavingNote = visaNotesSavingId === item.key;
-                      const success = visaSuccessMsg[item.key];
-
-                      return (
-                        <div
-                          key={item.key}
-                          className={`bg-white dark:bg-[#151B27] rounded-2xl p-5 border shadow-sm space-y-3.5 transition-all ${
-                            !item.isApplicable
-                              ? 'opacity-65 border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-[#111622]'
-                              : 'border-gray-200/80 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
-                          }`}
-                        >
-                          {/* Row Header */}
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-800/80 pb-3">
-                            <div>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md">
-                                  {item.category}
-                                </span>
-                                {item.isMandatory ? (
-                                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-md">
-                                    Mandatory
-                                  </span>
-                                ) : (
-                                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 rounded-md">
-                                    Conditional
-                                  </span>
-                                )}
-
-                                <span
-                                  className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${
-                                    item.status === 'VERIFIED'
-                                      ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-300'
-                                      : item.status === 'UNDER_REVIEW' || item.status === 'UPLOADED'
-                                      ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-300'
-                                      : item.status === 'REJECT_REUPLOAD'
-                                      ? 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 border-red-300'
-                                      : item.status === 'NOT_APPLICABLE'
-                                      ? 'bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 border-purple-300'
-                                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 border-gray-300'
-                                  }`}
-                                >
-                                  {item.status.replace('_', ' ')}
-                                </span>
+                        {/* Revealed Credential Display if active */}
+                        {creds && isPwShown && (
+                          <div className="p-3 bg-white dark:bg-[#151B27] rounded-xl border border-emerald-300 dark:border-emerald-800 text-xs space-y-1">
+                            <div className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+                              Current Decrypted Credentials:
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div>
+                                <span className="text-gray-400 text-[11px]">Username: </span>
+                                <span className="font-extrabold text-gray-900 dark:text-white select-all">{creds.username || '(None)'}</span>
                               </div>
-
-                              <h4 className="text-sm font-black text-gray-900 dark:text-white mt-1">
-                                {item.title}
-                              </h4>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                {item.description}
-                              </p>
-                            </div>
-
-                            {/* Verification & Exemption Actions */}
-                            <div className="flex items-center gap-2 shrink-0">
-                              {/* Preview if uploaded */}
-                              {item.documentUrl && (
-                                <a
-                                  href={item.documentUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer"
-                                >
-                                  <Eye className="w-3.5 h-3.5" />
-                                  <span>Preview</span>
-                                </a>
-                              )}
-
-                              {/* Verify Document button */}
-                              {item.documentId && item.status !== 'VERIFIED' && (
-                                <button
-                                  type="button"
-                                  disabled={isItemLoading}
-                                  onClick={() => handleVerifyVisaDoc(item.documentId!)}
-                                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl shadow-xs transition-all flex items-center gap-1 cursor-pointer"
-                                >
-                                  {isItemLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                                  <span>Verify</span>
-                                </button>
-                              )}
-
-                              {/* Request Re-upload button */}
-                              {item.documentId && (
-                                <button
-                                  type="button"
-                                  disabled={isItemLoading}
-                                  onClick={() => {
-                                    setVisaRejectItem(item);
-                                    setVisaRejectReason(item.rejectionNote || '');
-                                  }}
-                                  className="px-3 py-1.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 hover:bg-red-100 text-xs font-bold rounded-xl transition-all cursor-pointer"
-                                >
-                                  <span>Request Correction</span>
-                                </button>
-                              )}
-
-                              {/* Toggle Applicability button */}
-                              {item.isConditional && (
-                                <button
-                                  type="button"
-                                  disabled={isItemLoading}
-                                  onClick={() => handleToggleVisaApplicability(item)}
-                                  className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer border ${
-                                    item.isApplicable
-                                      ? 'bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 border-purple-200'
-                                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300'
-                                  }`}
-                                >
-                                  <span>{item.isApplicable ? 'Mark Not Applicable' : 'Enable Requirement'}</span>
-                                </button>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Upload info / Feedback row */}
-                          {item.originalFilename && (
-                            <div className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              <span>{item.originalFilename}</span>
-                              {item.uploadedAt && (
-                                <span className="text-gray-400 font-normal">
-                                  · Uploaded {new Date(item.uploadedAt).toLocaleDateString()}
-                                </span>
-                              )}
-                            </div>
-                          )}
-
-                          {item.notApplicableReason && !item.isApplicable && (
-                            <div className="p-2.5 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900 rounded-xl text-xs text-purple-800 dark:text-purple-300 font-medium">
-                              <strong>Exemption Reason: </strong>{item.notApplicableReason}
-                            </div>
-                          )}
-
-                          {item.rejectionNote && (
-                            <div className="p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-xl text-xs text-red-800 dark:text-red-300 font-medium">
-                              <strong>Correction Requested: </strong>{item.rejectionNote}
-                            </div>
-                          )}
-
-                          {/* Specific Advice for this item */}
-                          <div className="pt-1 space-y-1.5">
-                            <div className="flex items-center justify-between">
-                              <label className="text-[11px] font-bold text-gray-500">
-                                Specific Counsellor Advice for this Requirement:
-                              </label>
-                              <div className="flex items-center gap-2">
-                                {success && (
-                                  <span className="text-[11px] font-bold text-emerald-600">{success}</span>
-                                )}
-                                <button
-                                  type="button"
-                                  onClick={() => handleSaveVisaItemNote(item.key)}
-                                  disabled={isSavingNote}
-                                  className="text-[11px] font-extrabold text-germany-red hover:underline flex items-center gap-1 cursor-pointer"
-                                >
-                                  {isSavingNote ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
-                                  <span>Save Note</span>
-                                </button>
+                              <div>
+                                <span className="text-gray-400 text-[11px]">Password: </span>
+                                <span className="font-extrabold font-mono text-gray-900 dark:text-white select-all">{creds.password || '(None)'}</span>
                               </div>
                             </div>
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                          <div className="space-y-1">
+                            <label className="font-bold text-gray-600 dark:text-gray-400">
+                              Set / Update Portal Username or Email
+                            </label>
                             <input
                               type="text"
-                              placeholder="e.g. Ensure seal is visible; use 6-month validity standard."
-                              value={visaNotesEditing[item.key] || ''}
-                              onChange={(e) => setVisaNotesEditing((prev) => ({ ...prev, [item.key]: e.target.value }))}
-                              className="w-full px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#111622] text-xs text-gray-900 dark:text-white"
+                              placeholder={creds?.username ? creds.username : 'Enter portal username/email'}
+                              value={form.portalUsername || ''}
+                              onChange={(e) => handleUpdateAdmissionForm(app.id, 'portalUsername', e.target.value)}
+                              className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#151B27] text-gray-900 dark:text-white"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="font-bold text-gray-600 dark:text-gray-400">
+                              Set / Update Portal Password
+                            </label>
+                            <input
+                              type="text"
+                              placeholder={app.hasCredentials ? '•••••••• (Enter new to overwrite)' : 'Enter initial password'}
+                              value={form.portalPassword || ''}
+                              onChange={(e) => handleUpdateAdmissionForm(app.id, 'portalPassword', e.target.value)}
+                              className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#151B27] text-gray-900 dark:text-white font-mono"
                             />
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+                      </div>
 
-                {/* Exemption Modal */}
-                {visaExemptItem && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-                    <div className="bg-white dark:bg-[#151B27] rounded-2xl p-6 max-w-md w-full border border-gray-200 dark:border-gray-800 shadow-xl space-y-4">
-                      <h4 className="text-sm font-black text-gray-900 dark:text-white">
-                        Exempt Requirement: {visaExemptItem.title}
-                      </h4>
-                      <p className="text-xs text-gray-500">
-                        Please provide a reason why this requirement does not apply to this student (e.g. full DAAD scholarship, university language waiver, residence already booked).
-                      </p>
-                      <textarea
-                        rows={3}
-                        placeholder="State exemption reason..."
-                        value={visaExemptReason}
-                        onChange={(e) => setVisaExemptReason(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#111622] text-xs text-gray-900 dark:text-white"
-                      />
-                      <div className="flex items-center justify-end gap-2 pt-2">
+                      {/* Counsellor Instructions & Notes */}
+                      <div className="space-y-1 text-xs">
+                        <label className="font-extrabold text-gray-700 dark:text-gray-300">
+                          Instructions &amp; Guidance for Student
+                        </label>
+                        <textarea
+                          rows={2}
+                          placeholder="e.g. Please verify your certified high school certificates and sign the declaration before submission."
+                          value={form.counsellorNotes || ''}
+                          onChange={(e) => handleUpdateAdmissionForm(app.id, 'counsellorNotes', e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111622] text-gray-900 dark:text-white resize-y"
+                        />
+                      </div>
+
+                      {/* Footer with Save Action */}
+                      <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
+                        <div>
+                          {success && (
+                            <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>{success}</span>
+                            </span>
+                          )}
+                        </div>
+
                         <button
                           type="button"
-                          onClick={() => setVisaExemptItem(null)}
-                          className="px-4 py-2 text-xs font-bold rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700"
+                          onClick={() => handleSaveAdmissionApp(app.id)}
+                          disabled={isSaving}
+                          className="px-4 py-2 bg-germany-red text-white hover:bg-germany-red/90 disabled:opacity-50 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
                         >
-                          Cancel
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleConfirmVisaExemption}
-                          className="px-4 py-2 text-xs font-extrabold rounded-xl bg-purple-600 hover:bg-purple-700 text-white"
-                        >
-                          Confirm Exemption
+                          {isSaving ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <span>Encrypting &amp; Saving...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Save className="w-3.5 h-3.5" />
+                              <span>Save Application Information</span>
+                            </>
+                          )}
                         </button>
                       </div>
                     </div>
-                  </div>
-                )}
-
-                {/* Rejection Modal */}
-                {visaRejectItem && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-                    <div className="bg-white dark:bg-[#151B27] rounded-2xl p-6 max-w-md w-full border border-gray-200 dark:border-gray-800 shadow-xl space-y-4">
-                      <h4 className="text-sm font-black text-gray-900 dark:text-white">
-                        Request Correction: {visaRejectItem.title}
-                      </h4>
-                      <p className="text-xs text-gray-500">
-                        Explain clearly what is missing or incorrect so the student can upload the right version.
-                      </p>
-                      <textarea
-                        rows={3}
-                        placeholder="e.g. Scan is cut off at the bottom. Please re-scan in high resolution with all 4 corners visible."
-                        value={visaRejectReason}
-                        onChange={(e) => setVisaRejectReason(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#111622] text-xs text-gray-900 dark:text-white"
-                      />
-                      <div className="flex items-center justify-end gap-2 pt-2">
-                        <button
-                          type="button"
-                          onClick={() => setVisaRejectItem(null)}
-                          className="px-4 py-2 text-xs font-bold rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleConfirmVisaReject}
-                          className="px-4 py-2 text-xs font-extrabold rounded-xl bg-red-600 hover:bg-red-700 text-white"
-                        >
-                          Send Correction Request
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                  );
+                })}
               </div>
             )}
-
-            </div>
-
-          {/* Footer Bar (Strictly no delete student button) */}
-          <div className="pt-3 border-t border-[#EBE7E0] dark:border-gray-800/80 flex items-center justify-between shrink-0">
-            <div className="text-[11px] font-bold text-gray-400 flex items-center gap-1.5">
-              <span>EuropeBridge Counsellor CRM</span>
-              <span>•</span>
-              <span>Student ID: {student.userId.substring(0, 10)}</span>
-            </div>
-
-            {!isPage && onClose && (
-              <button
-                type="button"
-                onClick={onClose}
-                className="py-2 px-6 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:text-germany-black dark:hover:text-white bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl cursor-pointer shadow-xs"
-              >
-                Close
-              </button>
-            )}
           </div>
+        )}
+
+      </div>
+
+      {/* Footer Bar (Strictly no delete student button) */}
+      <div className="pt-3 border-t border-[#EBE7E0] dark:border-gray-800/80 flex items-center justify-between shrink-0">
+        <div className="text-[11px] font-bold text-gray-400 flex items-center gap-1.5">
+          <span>EuropeBridge Counsellor CRM</span>
+          <span>•</span>
+          <span>Student ID: {student.userId.substring(0, 10)}</span>
+        </div>
+
+        {!isPage && onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="py-2 px-6 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:text-germany-black dark:hover:text-white bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl cursor-pointer shadow-xs"
+          >
+            Close
+          </button>
+        )}
+      </div>
     </>
   );
 
@@ -5660,9 +5483,9 @@ const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
 
       <AnimatePresence>
         {showFullProfile && (
-          <StudentFullProfileView 
-            studentId={student.userId} 
-            onClose={() => setShowFullProfile(false)} 
+          <StudentFullProfileView
+            studentId={student.userId}
+            onClose={() => setShowFullProfile(false)}
           />
         )}
       </AnimatePresence>
@@ -5759,13 +5582,12 @@ const handleGrantAttempts = async (documentType: 'sop' | 'lor' | 'cv') => {
                 <div className="text-xs font-extrabold text-gray-800 dark:text-gray-200">
                   Current Status:{' '}
                   <span
-                    className={`capitalize ${
-                      previewDoc.status === 'verified'
-                        ? 'text-emerald-700 dark:text-emerald-400'
-                        : previewDoc.status === 'pending'
+                    className={`capitalize ${previewDoc.status === 'verified'
+                      ? 'text-emerald-700 dark:text-emerald-400'
+                      : previewDoc.status === 'pending'
                         ? 'text-amber-700 dark:text-amber-400'
                         : 'text-red-700 dark:text-red-400'
-                    }`}
+                      }`}
                   >
                     {previewDoc.status}
                   </span>

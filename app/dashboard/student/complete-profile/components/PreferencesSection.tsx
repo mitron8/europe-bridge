@@ -1,11 +1,8 @@
 import React, { useMemo } from 'react';
-import AsyncSelect from 'react-select/async';
 import { ProfileData } from '../types';
 import { ClaySelect } from '@/components/ClaySelect';
-import Select from 'react-select';
 import { PROGRAMME_SUBJECTS, PROGRAMME_SPECIALIZATIONS } from '@/lib/programme-constants';
 import { useAppStore } from '@/store/useAppStore';
-import { getReactSelectStyles } from '@/lib/selectTheme';
 
 interface Props {
   data: ProfileData;
@@ -16,7 +13,6 @@ interface Props {
 
 export default function PreferencesSection({ data, onChange, onNext, onPrev }: Props) {
   const isDarkMode = useAppStore((state) => state.isDarkMode);
-  const selectStyles = useMemo(() => getReactSelectStyles(isDarkMode), [isDarkMode]);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     onChange({ [e.target.name]: e.target.value });
   };
@@ -49,27 +45,21 @@ export default function PreferencesSection({ data, onChange, onNext, onPrev }: P
           </div>
           <div>
             <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Preferred Field of Study *</label>
-            <Select 
+            <ClaySelect 
               options={subjects}
-              value={subjects.find(s => s.value === data.preferredFieldOfStudy) || null}
-              onChange={(option) => onChange({ preferredFieldOfStudy: option?.value || '' })}
-              isSearchable
-              isClearable
-              styles={selectStyles}
-              classNamePrefix="neu-select"
+              value={data.preferredFieldOfStudy || ''}
+              onChange={(val) => onChange({ preferredFieldOfStudy: val || '' })}
+              searchable
               placeholder="Select Subject"
             />
           </div>
           <div>
             <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Preferred Specialization</label>
-            <Select 
+            <ClaySelect 
               options={specializations}
-              value={specializations.find(s => s.value === data.preferredSpecialization) || null}
-              onChange={(option) => onChange({ preferredSpecialization: option?.value || '' })}
-              isSearchable
-              isClearable
-              styles={selectStyles}
-              classNamePrefix="neu-select"
+              value={data.preferredSpecialization || ''}
+              onChange={(val) => onChange({ preferredSpecialization: val || '' })}
+              searchable
               placeholder="Select Specialization"
             />
           </div>
@@ -93,13 +83,11 @@ export default function PreferencesSection({ data, onChange, onNext, onPrev }: P
         </div>
         <div>
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Target Year *</label>
-          <Select 
+          <ClaySelect 
             options={Array.from({ length: 20 }, (_, i) => new Date().getFullYear() + 10 - i).map(y => ({ label: y.toString(), value: y }))}
-            value={data.intakeYear ? { label: data.intakeYear.toString(), value: data.intakeYear as number } : null}
-            onChange={(option) => onChange({ intakeYear: option?.value || '' })}
-            isSearchable
-            styles={selectStyles}
-            classNamePrefix="neu-select"
+            value={data.intakeYear || ''}
+            onChange={(val) => onChange({ intakeYear: val || '' })}
+            searchable
             placeholder="Select Year"
           />
         </div>
@@ -109,10 +97,8 @@ export default function PreferencesSection({ data, onChange, onNext, onPrev }: P
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="md:col-span-2">
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Preferred Universities</label>
-          <AsyncSelect
-            isMulti
-            cacheOptions
-            defaultOptions
+          <ClaySelect
+            multiple
             loadOptions={async (inputValue: string) => {
               if (inputValue.length < 2) return [];
               try {
@@ -120,22 +106,19 @@ export default function PreferencesSection({ data, onChange, onNext, onPrev }: P
                   credentials: 'include'
                 });
                 if (!res.ok) return [];
-                const data = await res.json();
-                return data.map((u: any) => ({ 
+                const resData = await res.json();
+                return resData.map((u: any) => ({ 
                   label: `${u.name} ${u.city ? `- ${u.city}` : ''} (${u.country})`, 
                   value: u.name 
                 }));
-              } catch (err) {
+              } catch {
                 return [];
               }
             }}
-            value={data.preferredUniversities.map(name => ({ label: name, value: name }))}
-            onChange={(selected) => {
-              const values = (selected as any[]).map(option => option.value);
-              onChange({ preferredUniversities: values });
+            value={data.preferredUniversities || []}
+            onChange={(values) => {
+              onChange({ preferredUniversities: values || [] });
             }}
-            styles={selectStyles}
-            classNamePrefix="neu-select"
             placeholder="Search and select universities..."
             noOptionsMessage={({ inputValue }) => inputValue.length < 2 ? "Type at least 2 characters to search..." : "No universities found"}
           />

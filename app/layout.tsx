@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Nunito, Geist } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
-import { PerformanceGuard } from "@/components/PerformanceGuard";
 import { ThemeRouteGuard } from "@/components/ThemeRouteGuard";
 import { Providers } from "./providers";
 import Script from "next/script";
@@ -144,7 +143,6 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col font-sans text-gray-800 antialiased overflow-x-hidden">
-        <PerformanceGuard />
         <Providers>
           <ThemeRouteGuard />
           {children}

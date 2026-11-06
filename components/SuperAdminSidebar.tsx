@@ -36,9 +36,6 @@ const navItems = [
   { name: 'Marketing', path: '/dashboard/super-admin/marketing', icon: TrendingUp },
   { name: 'Finance', path: '/dashboard/super-admin/finance', icon: CreditCard },
   { name: 'Content', path: '/dashboard/super-admin/content', icon: FileEdit },
-  { name: 'Reports & Analytics', path: '/dashboard/super-admin/reports', icon: BarChart3 },
-  { name: 'Universities', path: '/dashboard/super-admin/universities', icon: GraduationCap },
-  { name: 'Notices', path: '/dashboard/super-admin/notices', icon: Bell },
 ];
 
 interface SuperAdminSidebarProps {
@@ -183,9 +180,9 @@ export function SuperAdminSidebar({ isOpen = false, onClose }: SuperAdminSidebar
             <div className="flex-1 min-w-0">
               <p className="font-bold text-xs text-germany-black dark:text-white truncate">{fullName}</p>
               <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 truncate">{displayRole}</p>
-              <Link href="/dashboard/super-admin/account" className="text-[10px] font-bold text-germany-red hover:underline block truncate mt-0.5">
-                Security & Setup →
-              </Link>
+              <span className="text-[10px] font-bold text-gray-400 block truncate mt-0.5">
+                Super Admin Workspace
+              </span>
             </div>
           </div>
         ) : (

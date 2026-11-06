@@ -236,61 +236,80 @@ export function CourseDetailModal({
           </div>
 
           {/* Curriculum Highlights */}
-          <div className="rounded-2xl border border-[#e5e0d3] bg-white p-5 sm:p-6 shadow-sm">
-            <h3 className="text-[16px] font-bold text-[#16161a] mb-3 flex items-center gap-2">
-              <BookOpen className="h-4 w-4 text-[#16161a]" />
-              Core Curriculum & Module Highlights
-            </h3>
-            <ul className="space-y-2.5">
-              {course.curriculumHighlights.map((mod, i) => (
-                <li key={i} className="flex items-start gap-2.5 text-[13.5px] text-[#4a4740]">
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-[#16161a] mt-0.5" />
-                  <span>{mod}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {course.curriculumHighlights && course.curriculumHighlights.length > 0 && (
+            <div className="rounded-2xl border border-[#e5e0d3] bg-white p-5 sm:p-6 shadow-sm">
+              <h3 className="text-[16px] font-bold text-[#16161a] mb-3 flex items-center gap-2">
+                <BookOpen className="h-4 w-4 text-[#16161a]" />
+                Core Curriculum & Module Highlights
+              </h3>
+              <ul className="space-y-2.5">
+                {course.curriculumHighlights.map((mod, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-[13.5px] text-[#4a4740]">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-[#16161a] mt-0.5" />
+                    <span>{mod}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Career & Salary Prospects */}
-          <div className="rounded-2xl border border-[#e5e0d3] bg-[#f9f8f5] p-5 sm:p-6">
-            <div className="flex items-center gap-2 text-[16px] font-bold text-[#16161a] mb-2">
-              <TrendingUp className="h-5 w-5 text-[#16161a]" />
-              Career Outcomes & German Blue Card Potential
-            </div>
-            <p className="text-[13px] text-[#5e5b54] mb-4">
-              Graduates of this degree program qualify for the 18-month German post-study work visa and EU Blue Card fast-track permanent residency (after 21 months with B1 German).
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[13px]">
-              <div className="rounded-xl border border-[#e5e0d3] bg-white p-4">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-[#787369]">Average Starting Salary</div>
-                <div className="text-[20px] font-bold text-[#16161a] mt-1">{course.careerOutcomes.averageSalary}</div>
-                <div className="text-[11px] text-[#787369] mt-1">Exceeds German Blue Card threshold (~€45,300)</div>
+          {course.careerOutcomes && (
+            <div className="rounded-2xl border border-[#e5e0d3] bg-[#f9f8f5] p-5 sm:p-6">
+              <div className="flex items-center gap-2 text-[16px] font-bold text-[#16161a] mb-2">
+                <TrendingUp className="h-5 w-5 text-[#16161a]" />
+                Career Outcomes & German Blue Card Potential
               </div>
+              <p className="text-[13px] text-[#5e5b54] mb-4">
+                Graduates of this degree program qualify for the 18-month German post-study work visa and EU Blue Card fast-track permanent residency (after 21 months with B1 German).
+              </p>
 
-              <div className="rounded-xl border border-[#e5e0d3] bg-white p-4">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-[#787369]">Top Recruiting Companies</div>
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {course.careerOutcomes.topCompanies.map((comp) => (
-                    <span key={comp} className="rounded-md bg-[#f4f1ea] px-2 py-0.5 text-[11.5px] font-semibold text-[#16161a]">
-                      {comp}
-                    </span>
-                  ))}
+              {(course.careerOutcomes.averageSalary || (course.careerOutcomes.topCompanies && course.careerOutcomes.topCompanies.length > 0)) && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[13px]">
+                  {course.careerOutcomes.averageSalary && (
+                    <div className="rounded-xl border border-[#e5e0d3] bg-white p-4">
+                      <div className="text-[11px] font-bold uppercase tracking-wider text-[#787369]">Average Starting Salary</div>
+                      <div className="text-[20px] font-bold text-[#16161a] mt-1">{course.careerOutcomes.averageSalary}</div>
+                      <div className="text-[11px] text-[#787369] mt-1">Exceeds German Blue Card threshold (~€45,300)</div>
+                    </div>
+                  )}
+
+                  {course.careerOutcomes.topCompanies && course.careerOutcomes.topCompanies.length > 0 && (
+                    <div className="rounded-xl border border-[#e5e0d3] bg-white p-4">
+                      <div className="text-[11px] font-bold uppercase tracking-wider text-[#787369]">Top Recruiting Companies</div>
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {course.careerOutcomes.topCompanies.map((comp) => (
+                          <span key={comp} className="rounded-md bg-[#f4f1ea] px-2 py-0.5 text-[11.5px] font-semibold text-[#16161a]">
+                            {comp}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </div>
+              )}
 
-            <div className="mt-4">
-              <div className="text-[12px] font-bold uppercase tracking-wider text-[#787369] mb-1.5">Common Job Roles</div>
-              <div className="flex flex-wrap gap-1.5">
-                {course.careerOutcomes.topRoles.map((role) => (
-                  <span key={role} className="rounded-full border border-[#dcd7cb] bg-white px-2.5 py-1 text-[12px] font-medium text-[#4a4740]">
-                    {role}
-                  </span>
-                ))}
-              </div>
+              {course.careerOutcomes.topRoles && course.careerOutcomes.topRoles.length > 0 && (
+                <div className="mt-4">
+                  <div className="text-[12px] font-bold uppercase tracking-wider text-[#787369] mb-1.5">Common Job Roles</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {course.careerOutcomes.topRoles.map((role) => (
+                      <span key={role} className="rounded-full border border-[#dcd7cb] bg-white px-2.5 py-1 text-[12px] font-medium text-[#4a4740]">
+                        {role}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(course.careerOutcomes as any).careerOpportunities && (
+                <div className="mt-4 p-3 bg-white rounded-xl border border-[#e5e0d3] text-xs text-[#5e5b54]">
+                  <span className="font-bold text-[#16161a] block mb-1">Career Opportunities:</span>
+                  {(course.careerOutcomes as any).careerOpportunities}
+                </div>
+              )}
             </div>
-          </div>
+          )}
         </div>
 
         {/* Sticky Action Footer */}

@@ -2,10 +2,8 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { ProfileData, EducationRecord } from '../types';
 import { ClaySelect } from '@/components/ClaySelect';
 import { DEGREE_TYPE_OPTIONS, FIELD_OF_STUDY_OPTIONS } from '@/lib/education-constants';
-import Select from 'react-select';
 import { getCountries, GeoOption } from '@/lib/geoData';
 import { useAppStore } from '@/store/useAppStore';
-import { getReactSelectStyles } from '@/lib/selectTheme';
 
 interface Props {
   data: ProfileData;
@@ -16,7 +14,6 @@ interface Props {
 
 export default function EducationSection({ data, onChange, onNext, onPrev }: Props) {
   const isDarkMode = useAppStore((state) => state.isDarkMode);
-  const selectStyles = useMemo(() => getReactSelectStyles(isDarkMode), [isDarkMode]);
   const [countries, setCountries] = useState<GeoOption[]>([]);
 
   useEffect(() => {
@@ -176,14 +173,12 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
                 </div>
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Institution Country *</label>
-                  <Select 
+                  <ClaySelect 
                     options={countries}
-                    value={countries.find(c => c.value === record.institutionCountry) || (record.institutionCountry ? { label: record.institutionCountry, value: record.institutionCountry } : null)}
+                    value={record.institutionCountry || ''}
                     isLoading={countries.length === 0}
-                    onChange={(option) => updateEducation(record.id, 'institutionCountry', option?.value || '')}
-                    isSearchable
-                    styles={selectStyles}
-                    classNamePrefix="neu-select"
+                    onChange={(val) => updateEducation(record.id, 'institutionCountry', val || '')}
+                    searchable
                     placeholder="Select Country"
                   />
                 </div>
@@ -192,25 +187,21 @@ export default function EducationSection({ data, onChange, onNext, onPrev }: Pro
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Start Year *</label>
-                  <Select 
+                  <ClaySelect 
                     options={Array.from({ length: 60 }, (_, i) => new Date().getFullYear() + 10 - i).map(y => ({ label: y.toString(), value: y }))}
-                    value={record.startYear ? { label: record.startYear.toString(), value: record.startYear as number } : null}
-                    onChange={(option) => updateEducation(record.id, 'startYear', option?.value || '')}
-                    isSearchable
-                    styles={selectStyles}
-                    classNamePrefix="neu-select"
+                    value={record.startYear || ''}
+                    onChange={(val) => updateEducation(record.id, 'startYear', val || '')}
+                    searchable
                     placeholder="Select Year"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">End Year</label>
-                  <Select 
+                  <ClaySelect 
                     options={Array.from({ length: 60 }, (_, i) => new Date().getFullYear() + 10 - i).map(y => ({ label: y.toString(), value: y }))}
-                    value={record.endYear ? { label: record.endYear.toString(), value: record.endYear as number } : null}
-                    onChange={(option) => updateEducation(record.id, 'endYear', option?.value || '')}
-                    isSearchable
-                    styles={selectStyles}
-                    classNamePrefix="neu-select"
+                    value={record.endYear || ''}
+                    onChange={(val) => updateEducation(record.id, 'endYear', val || '')}
+                    searchable
                     placeholder="Select Year"
                   />
                 </div>

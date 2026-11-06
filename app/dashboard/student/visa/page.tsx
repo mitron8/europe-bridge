@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import { StudentDocumentItemRow, UnifiedDocumentItem } from '@/components/StudentDocumentItemRow';
 import {
   FileText,
   Plane,
@@ -27,9 +28,25 @@ import {
   Trash2,
   BadgeAlert,
   FileQuestion,
+  Sparkles,
 } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+
+interface ProgrammeSopItem {
+  recommendationId: string;
+  programmeId: number | null;
+  universityName: string;
+  programName: string;
+  degree?: string;
+  deadline?: string;
+  documentId: string | null;
+  status: 'MISSING' | 'PENDING' | 'VERIFIED' | 'REJECTED' | 'NOT_GENERATED' | 'GENERATING' | 'FAILED';
+  url: string | null;
+  originalFilename: string | null;
+  rejectionNote: string | null;
+  uploadedAt: string | null;
+}
 
 interface VisaChecklistItem {
   key: string;
@@ -77,12 +94,20 @@ const STATUS_BADGES: Record<string, { label: string; style: string }> = {
     label: 'Under Counsellor Review',
     style: 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-800',
   },
+  PENDING: {
+    label: 'Pending Review',
+    style: 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-800',
+  },
   UPLOADED: {
     label: 'Uploaded · Pending Review',
     style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-800',
   },
   REJECT_REUPLOAD: {
     label: 'Correction Required',
+    style: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 border-red-300 dark:border-red-800',
+  },
+  REJECTED: {
+    label: 'Action Required',
     style: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 border-red-300 dark:border-red-800',
   },
   MISSING: {
@@ -93,10 +118,23 @@ const STATUS_BADGES: Record<string, { label: string; style: string }> = {
     label: 'Not Applicable · Exempted',
     style: 'bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 border-purple-300 dark:border-purple-800',
   },
+  NOT_GENERATED: {
+    label: 'Not Generated',
+    style: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-700',
+  },
+  GENERATING: {
+    label: 'Generating AI Draft...',
+    style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-800',
+  },
+  FAILED: {
+    label: 'Generation Failed',
+    style: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 border-red-300 dark:border-red-800',
+  },
 };
 
 export default function StudentVisaAssistancePage() {
   const [checklist, setChecklist] = useState<VisaChecklistItem[]>([]);
+  const [sopRecords, setSopRecords] = useState<ProgrammeSopItem[]>([]);
   const [progress, setProgress] = useState<VisaReadinessProgress | null>(null);
   const [generalNotes, setGeneralNotes] = useState<string | null>(null);
   const [disclaimer, setDisclaimer] = useState<string>('');
@@ -106,9 +144,55 @@ export default function StudentVisaAssistancePage() {
 
   // Upload & Action State
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
+  const [deletingKey, setDeletingKey] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState('');
   const [actionError, setActionError] = useState('');
   const [activeGuidanceKey, setActiveGuidanceKey] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedUploadItem, setSelectedUploadItem] = useState<VisaChecklistItem | null>(null);
+
+  const openFileDialog = (itemKeyOrDocType: string) => {
+    const targetItem = checklist.find(
+      (c) => c.key === itemKeyOrDocType || c.uploadDocumentType === itemKeyOrDocType
+    );
+    if (!targetItem) return;
+    setSelectedUploadItem(targetItem);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && selectedUploadItem) {
+      handleUpload(selectedUploadItem, file);
+    }
+  };
+
+  const handleDelete = async (docType: string, docTitle?: string) => {
+    if (!window.confirm(`Are you sure you want to delete your uploaded ${docTitle || docType}?`)) {
+      return;
+    }
+    setDeletingKey(docType);
+    try {
+      const res = await fetch(`${API_URL}/student/documents/${docType}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || 'Failed to delete document');
+      }
+      setActionSuccess('Document deleted successfully.');
+      setTimeout(() => setActionSuccess(''), 5000);
+      await loadVisaChecklist();
+    } catch (e: any) {
+      setActionError(e.message || 'Delete failed. Please try again.');
+    } finally {
+      setDeletingKey(null);
+    }
+  };
 
   const loadVisaChecklist = useCallback(async () => {
     try {
@@ -120,6 +204,7 @@ export default function StudentVisaAssistancePage() {
       }
       const data = await res.json();
       setChecklist(data.items || []);
+      setSopRecords(data.sopRecords || []);
       setProgress(data.progress || null);
       setGeneralNotes(data.generalCounsellorNotes || null);
       setDisclaimer(data.disclaimer || '');
@@ -204,6 +289,9 @@ export default function StudentVisaAssistancePage() {
     selectedCategory === 'ALL'
       ? checklist
       : checklist.filter((c) => c.category === selectedCategory);
+  const uploadableChecklist = filteredChecklist.filter(
+    (item) => item.key !== 'motivation_letter_visa' && item.uploadDocumentType !== 'motivation_letter_visa'
+  );
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 py-6">
@@ -342,180 +430,140 @@ export default function StudentVisaAssistancePage() {
           </button>
         </div>
       ) : (
-        <div className="space-y-4">
-          {filteredChecklist.map((item) => {
-            const badge = STATUS_BADGES[item.status] || STATUS_BADGES.MISSING;
-            const isUploading = uploadingKey === item.key;
-            const isGuidanceOpen = activeGuidanceKey === item.key;
+        <div className="space-y-6">
+          <div className="space-y-3">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.png,.jpg,.jpeg,.webp"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            {uploadableChecklist.map((item) => {
+              const unifiedItem: UnifiedDocumentItem = {
+                type: item.uploadDocumentType,
+                title: item.title,
+                description: item.description,
+                required: item.isMandatory,
+                status: item.status,
+                url: item.documentUrl,
+                uploadedAt: item.uploadedAt,
+                verifiedAt: item.verifiedAt,
+                rejectionNote: item.rejectionNote,
+                originalFilename: item.originalFilename,
+                category: item.category,
+                conditionNotes: item.conditionNotes,
+                counsellorNotes: item.counsellorNotes,
+                preparationGuidance: item.preparationGuidance,
+                officialSourceUrl: item.officialSourceUrl,
+              };
 
-            return (
-              <div
-                key={item.key}
-                className={`bg-white dark:bg-[#151B27] rounded-2xl p-5 border shadow-sm transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-                  item.status === 'NOT_APPLICABLE'
-                    ? 'opacity-70 border-gray-200 dark:border-gray-800/60 bg-gray-50/50 dark:bg-[#111622]'
-                    : 'border-gray-200/80 dark:border-gray-800/80 hover:border-gray-300 dark:hover:border-gray-700'
-                }`}
-              >
-                {/* Details Column */}
-                <div className="space-y-2 max-w-2xl">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md">
-                      {item.category}
-                    </span>
+              return (
+                <StudentDocumentItemRow
+                  key={item.key}
+                  item={unifiedItem}
+                  onUpload={() => openFileDialog(item.key)}
+                  onDelete={() => handleDelete(item.uploadDocumentType, item.title)}
+                  isUploading={uploadingKey === item.key}
+                  isDeleting={deletingKey === item.uploadDocumentType}
+                />
+              );
+            })}
+          </div>
 
-                    {item.isMandatory ? (
-                      <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-md border border-red-200 dark:border-red-900">
-                        Mandatory
-                      </span>
-                    ) : item.isConditional ? (
-                      <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 rounded-md border border-blue-200 dark:border-blue-900">
-                        Conditional
-                      </span>
-                    ) : (
-                      <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-md">
-                        Optional
-                      </span>
-                    )}
-
-                    <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${badge.style}`}>
-                      {badge.label}
-                    </span>
-
-                    {item.officialSourceUrl && (
-                      <a
-                        href={item.officialSourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[10px] font-bold text-gray-400 hover:text-germany-red flex items-center gap-0.5"
-                        title="View Official German Mission Guidance"
-                      >
-                        <span>Official Source</span>
-                        <ExternalLink className="w-2.5 h-2.5" />
-                      </a>
-                    )}
-                  </div>
-
-                  <h3 className="text-sm font-black text-gray-900 dark:text-white flex items-center gap-2">
-                    {item.title}
+          {/* Programme-Specific Statements of Purpose (SOP) Section */}
+          {(selectedCategory === 'ALL' || selectedCategory === 'Additional Supporting') && (
+            <div className="bg-white dark:bg-[#151B27] rounded-3xl p-6 border border-gray-200/80 dark:border-gray-800 shadow-sm space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-800 pb-4">
+                <div>
+                  <h3 className="text-base font-black text-gray-900 dark:text-white flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-germany-gold" />
+                    <span>Statements of Purpose (SOP) by Programme</span>
                   </h3>
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 leading-relaxed">
-                    {item.description}
+                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">
+                    Individual SOPs tailored to each shortlisted university and programme. Each document undergoes dedicated counsellor review.
                   </p>
+                </div>
+                <Link
+                  href="/dashboard/student/documents"
+                  className="text-xs font-extrabold text-germany-red hover:underline flex items-center gap-1"
+                >
+                  <span>Open SOP Studio</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
 
-                  {/* Condition notes */}
-                  {item.conditionNotes && (
-                    <div className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1">
-                      <HelpCircle className="w-3 h-3 shrink-0" />
-                      <span>{item.conditionNotes}</span>
-                    </div>
-                  )}
+              {sopRecords.length === 0 ? (
+                <div className="p-8 text-center bg-gray-50 dark:bg-[#111622] rounded-2xl border border-dashed border-gray-200 dark:border-gray-800 text-xs font-medium text-gray-500">
+                  No shortlisted programmes found. Once your counsellor shortlists programmes, individual SOP records will appear here.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {sopRecords.map((sop) => {
+                    const badge = STATUS_BADGES[sop.status] || STATUS_BADGES.NOT_GENERATED || {
+                      label: 'Not Generated',
+                      style: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-700',
+                    };
+                    return (
+                      <div
+                        key={sop.recommendationId}
+                        className="p-4 bg-gray-50 dark:bg-[#1A2234] rounded-2xl border border-gray-200/60 dark:border-gray-800 space-y-2.5"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-wider">
+                            {sop.degree || 'Master of Science'}
+                          </span>
+                          <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${badge.style}`}>
+                            {badge.label}
+                          </span>
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-black text-gray-900 dark:text-white leading-tight">
+                            {sop.programName}
+                          </h4>
+                          <div className="text-[11px] font-bold text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-1">
+                            <Building2 className="w-3 h-3 text-gray-400" />
+                            <span>{sop.universityName}</span>
+                          </div>
+                        </div>
 
-                  {/* Not Applicable explanation */}
-                  {item.status === 'NOT_APPLICABLE' && item.notApplicableReason && (
-                    <div className="p-2.5 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900 text-purple-700 dark:text-purple-300 rounded-xl text-xs font-semibold">
-                      <span className="font-black">Counsellor Exemption: </span>
-                      {item.notApplicableReason}
-                    </div>
-                  )}
+                        {sop.originalFilename && (
+                          <div className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 truncate">
+                            {sop.originalFilename}
+                          </div>
+                        )}
 
-                  {/* Counsellor Guidance Notes on this item */}
-                  {item.counsellorNotes && (
-                    <div className="p-2.5 bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900 text-amber-900 dark:text-amber-300 rounded-xl text-xs font-semibold">
-                      <span className="font-black">Counsellor Advice: </span>
-                      {item.counsellorNotes}
-                    </div>
-                  )}
-
-                  {/* Rejection / Correction feedback note */}
-                  {item.rejectionNote && (
-                    <div className="p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 rounded-xl text-xs font-semibold">
-                      <span className="font-black">Correction Needed: </span>
-                      {item.rejectionNote}
-                    </div>
-                  )}
-
-                  {/* Associated File details */}
-                  {item.originalFilename && (
-                    <div className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 pt-1">
-                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                      <span>{item.originalFilename}</span>
-                      {item.uploadedAt && (
-                        <span className="text-gray-400 font-normal">
-                          · Uploaded {new Date(item.uploadedAt).toLocaleDateString()}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Preparation Guidance Drawer Toggle */}
-                  <div className="pt-1">
-                    <button
-                      onClick={() => setActiveGuidanceKey(isGuidanceOpen ? null : item.key)}
-                      className="text-[11px] font-extrabold text-germany-red hover:underline flex items-center gap-1 cursor-pointer"
-                    >
-                      <Info className="w-3 h-3" />
-                      <span>{isGuidanceOpen ? 'Hide Preparation Rules' : 'View Preparation Rules & Consular Specs'}</span>
-                    </button>
-                    {isGuidanceOpen && (
-                      <div className="mt-2 p-3 bg-gray-50 dark:bg-[#111622] border border-gray-200 dark:border-gray-800 rounded-xl text-xs text-gray-600 dark:text-gray-300 leading-relaxed space-y-1 animate-fadeIn">
-                        <div className="font-bold text-gray-900 dark:text-white">Official Consular Guidance:</div>
-                        <p>{item.preparationGuidance}</p>
-                        <div className="text-[10px] text-gray-400 pt-1">
-                          Last verified with German diplomatic missions: {item.lastVerifiedDate}
+                        <div className="pt-2 flex items-center justify-between border-t border-gray-200/60 dark:border-gray-800">
+                          <div className="text-[10px] text-gray-400">
+                            {sop.deadline ? `Deadline: ${sop.deadline}` : 'Intake: Winter Semester'}
+                          </div>
+                          {sop.url ? (
+                            <a
+                              href={sop.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3 py-1.5 bg-white dark:bg-[#151B27] border border-gray-200 dark:border-gray-700 text-xs font-extrabold rounded-lg hover:bg-gray-100 flex items-center gap-1"
+                            >
+                              <Eye className="w-3 h-3" />
+                              <span>Preview</span>
+                            </a>
+                          ) : (
+                            <Link
+                              href="/dashboard/student/documents"
+                              className="px-3 py-1.5 bg-germany-red text-white text-xs font-extrabold rounded-lg hover:bg-germany-red/90 flex items-center gap-1"
+                            >
+                              <Sparkles className="w-3 h-3" />
+                              <span>Generate</span>
+                            </Link>
+                          )}
                         </div>
                       </div>
-                    )}
-                  </div>
+                    );
+                  })}
                 </div>
-
-                {/* Actions Column */}
-                <div className="flex items-center gap-2 shrink-0 pt-2 md:pt-0">
-                  {/* Preview Document */}
-                  {item.documentUrl && (
-                    <a
-                      href={item.documentUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3.5 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>Preview</span>
-                    </a>
-                  )}
-
-                  {/* Upload / Replace Button */}
-                  {item.status !== 'NOT_APPLICABLE' && (
-                    <label className="relative cursor-pointer">
-                      <input
-                        type="file"
-                        accept=".pdf,.png,.jpg,.jpeg,.webp"
-                        className="sr-only"
-                        disabled={isUploading}
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleUpload(item, file);
-                        }}
-                      />
-                      <span className="px-4 py-2 bg-germany-red text-white hover:bg-germany-red/90 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5 shadow-sm">
-                        {isUploading ? (
-                          <>
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            <span>Uploading...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="w-3.5 h-3.5" />
-                            <span>{item.documentUrl ? 'Replace' : 'Upload'}</span>
-                          </>
-                        )}
-                      </span>
-                    </label>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

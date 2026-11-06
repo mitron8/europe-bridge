@@ -30,10 +30,7 @@ const navItems = [
   { name: 'Dashboard', path: '/dashboard/admin', icon: LayoutDashboard },
   { name: 'Students', path: '/dashboard/admin/students', icon: Users },
   { name: 'Counsellors', path: '/dashboard/admin/counsellors', icon: UserCheck },
-  { name: 'Universities', path: '/dashboard/admin/universities', icon: GraduationCap },
   { name: 'Help & Escalations', path: '/dashboard/admin/help', icon: HelpCircle },
-  { name: 'Reports & Analytics', path: '/dashboard/admin/reports', icon: BarChart3 },
-  { name: 'Notices', path: '/dashboard/admin/notices', icon: Bell },
 ];
 
 interface AdminSidebarProps {
@@ -200,9 +197,9 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
             <div className="flex-1 min-w-0">
               <p className="font-bold text-xs text-germany-black dark:text-white truncate">{fullName}</p>
               <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 truncate">{displayRole}</p>
-              <Link href="/dashboard/admin/account" className="text-[10px] font-bold text-germany-red hover:underline block truncate mt-0.5">
-                Account Settings →
-              </Link>
+              <span className="text-[10px] font-bold text-gray-400 block truncate mt-0.5">
+                Admin Workspace
+              </span>
             </div>
           </div>
         ) : (

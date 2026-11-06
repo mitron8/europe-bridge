@@ -1,5 +1,7 @@
 "use client";
 
+import { StudentDocumentItemRow } from './StudentDocumentItemRow';
+
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   CheckCircle2,
@@ -18,6 +20,7 @@ import {
   BookOpen,
   FileEdit,
   FolderOpen,
+  Eye,
 } from 'lucide-react';
 import { GENERAL_DOCUMENT_CATALOGUE } from '@/lib/documentCatalogue';
 import { StudentCvGenerator } from './StudentCvGenerator';
@@ -507,194 +510,16 @@ export function StudentDocumentHub() {
         </div>
 
         <div className="space-y-3 pt-2">
-          {items.map((item) => {
-            const isVerified = item.status === 'VERIFIED';
-            const isPending = item.status === 'PENDING';
-            const isRejected = item.status === 'REJECTED';
-            const isMissing = item.status === 'MISSING';
-            const isUploaded = isVerified || isPending;
-
-            const isUploading = uploading === item.type;
-            const isDeleting = deleting === item.type;
-            const isBusy = isUploading || isDeleting;
-
-            let bgColor = 'bg-white border-[#EBE7E0] hover:border-germany-red/30';
-            if (isVerified) bgColor = 'bg-emerald-50/70 border-emerald-200';
-            else if (isPending) bgColor = 'bg-amber-50/70 border-amber-200';
-            else if (isRejected) bgColor = 'bg-red-50/80 border-red-200';
-
-            return (
-              <div
-                key={item.type}
-                className={`flex items-start gap-4 p-4 rounded-2xl border transition-all ${bgColor}`}
-              >
-                {/* Status icon */}
-                <div className="shrink-0 mt-0.5">
-                  {isVerified ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                  ) : isPending ? (
-                    <Clock className="w-5 h-5 text-amber-500" />
-                  ) : isRejected ? (
-                    <AlertCircle className="w-5 h-5 text-red-600" />
-                  ) : (
-                    <Circle className={`w-5 h-5 ${item.required ? 'text-germany-red/40' : 'text-gray-300'}`} />
-                  )}
-                </div>
-
-                {/* Document details */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-xs font-extrabold text-germany-black dark:text-white">{item.title}</p>
-
-                    {item.required && (
-                      <span className="px-1.5 py-0.5 rounded-md text-[10px] font-extrabold bg-germany-red/10 text-germany-red">
-                        Required
-                      </span>
-                    )}
-
-                    {isVerified && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800">
-                        Verified &amp; Accepted
-                      </span>
-                    )}
-
-                    {isPending && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800">
-                        Pending Verification
-                      </span>
-                    )}
-
-                    {isRejected && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 text-red-700">
-                        Revision Needed
-                      </span>
-                    )}
-
-                    {isMissing && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-gray-100 text-gray-500">
-                        Not Uploaded
-                      </span>
-                    )}
-                  </div>
-
-                  <p className="text-[11px] font-bold text-gray-400 mt-0.5">{item.description}</p>
-
-                  {/* Rejection Note Display */}
-                  {isRejected && item.rejectionNote && (
-                    <div className="mt-2.5 p-3 bg-white rounded-xl border border-red-200 text-xs text-red-800 flex items-start gap-2 shadow-2xs">
-                      <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-                      <div>
-                        <span className="font-extrabold text-red-900">Counsellor Feedback: </span>
-                        <span>{item.rejectionNote}</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Uploaded File Reference */}
-                  {item.url && item.originalFilename && (
-                    <div className="flex items-center gap-2 mt-2">
-                      <FileText className="w-3.5 h-3.5 text-gray-500 shrink-0" />
-                      <a
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[11px] font-bold text-germany-black hover:text-germany-red hover:underline truncate max-w-xs inline-flex items-center gap-1"
-                        title="Open document in new tab"
-                      >
-                        <span>{item.originalFilename}</span>
-                        <ExternalLink className="w-3 h-3 inline-block shrink-0" />
-                      </a>
-                      {item.uploadedAt && (
-                        <span className="text-[10px] font-bold text-gray-400">
-                          • Uploaded {new Date(item.uploadedAt).toLocaleDateString()}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="shrink-0 flex items-center gap-2">
-                  {['cv', 'sop', 'lor'].includes(item.type) ? (
-                    <div className="flex items-center gap-2">
-                      {isVerified ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                          <span>Approved</span>
-                        </span>
-                      ) : isPending ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shadow-2xs">
-                          <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                          <span>Under Review</span>
-                        </span>
-                      ) : isRejected ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 shadow-2xs">
-                          <AlertCircle className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
-                          <span>Revision Needed</span>
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
-                          <Circle className="w-3.5 h-3.5 text-gray-400" />
-                          <span>Not Generated</span>
-                        </span>
-                      )}
-                    </div>
-                  ) : isUploaded || isRejected ? (
-                    <>
-                      {/* Replace / Re-upload Button */}
-                      <button
-                        disabled={isBusy}
-                        onClick={() => openFileDialog(item.type)}
-                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-extrabold transition-colors cursor-pointer disabled:opacity-50 ${
-                          isRejected
-                            ? 'bg-red-600 text-white hover:bg-red-700 shadow-xs'
-                            : 'text-gray-600 hover:text-germany-red hover:bg-germany-red/10 border border-gray-200/80 bg-white'
-                        }`}
-                        title="Upload a new replacement file"
-                      >
-                        {isUploading ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Upload className="w-3.5 h-3.5" />
-                        )}
-                        <span>{isUploading ? 'Uploading...' : isRejected ? 'Replace File' : 'Replace'}</span>
-                      </button>
-
-                      {/* Delete Button */}
-                      {!isRejected && (
-                        <button
-                          disabled={isBusy}
-                          onClick={() => handleDelete(item.type, item.title)}
-                          className="p-2 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40 cursor-pointer"
-                          title="Delete file"
-                        >
-                          {isDeleting ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="w-4 h-4" />
-                          )}
-                        </button>
-                      )}
-                    </>
-                  ) : (
-                    /* Initial Upload Button */
-                    <button
-                      disabled={isBusy}
-                      onClick={() => openFileDialog(item.type)}
-                      className="flex items-center gap-1.5 px-3.5 py-2 neu-btn-primary text-[11px] font-extrabold disabled:opacity-50 cursor-pointer shadow-xs"
-                    >
-                      {isUploading ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <Upload className="w-3.5 h-3.5" />
-                      )}
-                      <span>{isUploading ? 'Uploading...' : 'Upload'}</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          {items.map((item) => (
+            <StudentDocumentItemRow
+              key={item.type}
+              item={item}
+              onUpload={openFileDialog}
+              onDelete={handleDelete}
+              isUploading={uploading === item.type}
+              isDeleting={deleting === item.type}
+            />
+          ))}
         </div>
       </div>
 

@@ -1,50 +1,70 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Check, Search } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { ChevronDown, Check, Search, X, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export interface ClaySelectOption<T extends string = string> {
+export interface ClaySelectOption<T = any> {
   value: T;
   label: string;
   sublabel?: string;
   searchTerms?: string[];
 }
 
-export interface ClaySelectProps<T extends string = string> {
+export interface ClaySelectProps<T = any> {
   name?: string;
-  value?: T;
-  onChange: (value: T, name?: string) => void;
-  options: (ClaySelectOption<T> | T)[];
+  value?: T | T[];
+  onChange: (value: any, name?: string) => void;
+  options?: (ClaySelectOption<T> | T)[];
   placeholder?: string;
   className?: string;
   disabled?: boolean;
   searchable?: boolean;
+  isSearchable?: boolean;
+  multiple?: boolean;
+  isMulti?: boolean;
+  isLoading?: boolean;
+  loadOptions?: (inputValue: string) => Promise<(ClaySelectOption<T> | T)[]>;
+  noOptionsMessage?: string | ((obj: { inputValue: string }) => string);
 }
 
-export function ClaySelect<T extends string = string>({
+export function ClaySelect<T = any>({
   name,
   value,
   onChange,
-  options,
+  options = [],
   placeholder = 'Select option...',
   className = '',
   disabled = false,
   searchable = false,
+  isSearchable,
+  multiple = false,
+  isMulti,
+  isLoading = false,
+  loadOptions,
+  noOptionsMessage,
 }: ClaySelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [asyncOptions, setAsyncOptions] = useState<ClaySelectOption<T>[]>([]);
+  const [isAsyncLoading, setIsAsyncLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Normalize options to ClaySelectOption objects
-  const normalizedOptions: ClaySelectOption<T>[] = options.map((opt) => {
-    if (typeof opt === 'string') {
-      return { value: opt as T, label: opt };
-    }
-    return opt;
-  });
+  const effectiveSearchable = isSearchable !== undefined ? isSearchable : searchable;
+  const effectiveMultiple = isMulti !== undefined ? isMulti : multiple;
 
-  const selectedOption = normalizedOptions.find((opt) => opt.value === value);
+  // Normalize static options to ClaySelectOption objects
+  const normalizeOptions = useCallback((raw: (ClaySelectOption<T> | T)[]): ClaySelectOption<T>[] => {
+    return (raw || []).map((opt) => {
+      if (opt && typeof opt === 'object' && 'value' in (opt as any) && 'label' in (opt as any)) {
+        return opt as ClaySelectOption<T>;
+      }
+      return { value: opt as T, label: String(opt) };
+    });
+  }, []);
+
+  const baseOptions = loadOptions ? asyncOptions : normalizeOptions(options);
 
   // Close on outside click
   useEffect(() => {
@@ -62,23 +82,99 @@ export function ClaySelect<T extends string = string>({
     };
   }, [isOpen]);
 
-  const filteredOptions = normalizedOptions.filter((opt) => {
+  // Focus search input when dropdown opens
+  useEffect(() => {
+    if (isOpen && (effectiveSearchable || loadOptions)) {
+      setTimeout(() => searchInputRef.current?.focus(), 50);
+    }
+  }, [isOpen, effectiveSearchable, loadOptions]);
+
+  // Handle async loading of options with debounce
+  useEffect(() => {
+    if (!loadOptions || !isOpen) return;
+
+    let isMounted = true;
+    setIsAsyncLoading(true);
+
+    const timer = setTimeout(async () => {
+      try {
+        const results = await loadOptions(searchQuery);
+        if (isMounted) {
+          setAsyncOptions(normalizeOptions(results));
+        }
+      } catch {
+        if (isMounted) setAsyncOptions([]);
+      } finally {
+        if (isMounted) setIsAsyncLoading(false);
+      }
+    }, 200);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [searchQuery, loadOptions, isOpen, normalizeOptions]);
+
+  // Multiple vs Single value resolution
+  const selectedValues: T[] = effectiveMultiple
+    ? Array.isArray(value) ? value : value ? [value] : []
+    : [];
+
+  const singleSelectedOption = !effectiveMultiple
+    ? baseOptions.find((opt) => opt.value === value) || (value ? { value: value as T, label: String(value) } : null)
+    : null;
+
+  const multiSelectedOptions = effectiveMultiple
+    ? selectedValues.map((val) => {
+        const found = baseOptions.find((opt) => opt.value === val);
+        return found || { value: val, label: String(val) };
+      })
+    : [];
+
+  const filteredOptions = baseOptions.filter((opt) => {
+    if (loadOptions) return true; // already filtered by API
     const normalizedSearch = searchQuery.toLowerCase().replace(/[^a-z0-9]/g, '');
     if (!normalizedSearch) return true;
-    
+
     const searchString = [
       opt.label,
       opt.sublabel,
-      ...(opt.searchTerms || [])
+      ...(opt.searchTerms || []),
     ].filter(Boolean).join(' ').toLowerCase().replace(/[^a-z0-9\s]/g, '');
-    
+
     return searchString.includes(normalizedSearch);
   });
 
-  const handleSelect = (val: T) => {
+  const handleSelectSingle = (val: T) => {
     onChange(val, name);
     setIsOpen(false);
     setSearchQuery('');
+  };
+
+  const handleToggleMultiple = (val: T) => {
+    const exists = selectedValues.some((v) => v === val);
+    const newValues = exists
+      ? selectedValues.filter((v) => v !== val)
+      : [...selectedValues, val];
+    onChange(newValues, name);
+  };
+
+  const handleRemoveChip = (e: React.MouseEvent, val: T) => {
+    e.stopPropagation();
+    const newValues = selectedValues.filter((v) => v !== val);
+    onChange(newValues, name);
+  };
+
+  const shouldShowSearch = effectiveSearchable || Boolean(loadOptions) || baseOptions.length > 8;
+
+  const getNoOptionsText = () => {
+    if (typeof noOptionsMessage === 'function') {
+      return noOptionsMessage({ inputValue: searchQuery });
+    }
+    if (typeof noOptionsMessage === 'string') {
+      return noOptionsMessage;
+    }
+    return 'No matching options';
   };
 
   return (
@@ -88,18 +184,50 @@ export function ClaySelect<T extends string = string>({
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`w-full px-3.5 py-2.5 text-xs font-bold bg-white border border-gray-200/80 rounded-xl text-germany-black text-left flex items-center justify-between cursor-pointer transition-all shadow-xs ${
-          disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-gray-300'
-        } ${isOpen ? 'ring-2 ring-germany-red/20 border-germany-red bg-white' : ''}`}
+        className={`w-full min-h-[42px] px-3.5 py-2 text-xs font-bold bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800 rounded-xl text-germany-black dark:text-white text-left flex items-center justify-between cursor-pointer transition-all shadow-xs ${
+          disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-gray-300 dark:hover:border-gray-700'
+        } ${isOpen ? 'ring-2 ring-germany-red/20 border-germany-red bg-white dark:bg-[#111622]' : ''}`}
       >
-        <span className={`truncate ${!selectedOption?.label ? 'text-gray-400 dark:text-gray-500 font-medium' : 'text-germany-black dark:text-white'}`}>
-          {selectedOption ? selectedOption.label : placeholder}
-        </span>
-        <ChevronDown
-          className={`w-4 h-4 text-gray-400 shrink-0 ml-2 transition-transform duration-200 ${
-            isOpen ? 'rotate-180 text-germany-red' : ''
-          }`}
-        />
+        <div className="flex-1 flex flex-wrap items-center gap-1.5 min-w-0 pr-2">
+          {effectiveMultiple ? (
+            multiSelectedOptions.length > 0 ? (
+              multiSelectedOptions.map((opt) => (
+                <span
+                  key={String(opt.value)}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-germany-black dark:text-gray-100 text-[11px] font-bold border border-gray-200 dark:border-gray-700 shrink-0"
+                >
+                  <span className="truncate max-w-[180px]">{opt.label}</span>
+                  {!disabled && (
+                    <span
+                      onClick={(e) => handleRemoveChip(e, opt.value)}
+                      className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-germany-red cursor-pointer inline-flex items-center justify-center transition-colors"
+                      title={`Remove ${opt.label}`}
+                    >
+                      <X className="w-3 h-3" />
+                    </span>
+                  )}
+                </span>
+              ))
+            ) : (
+              <span className="text-gray-400 dark:text-gray-500 font-medium truncate">
+                {placeholder}
+              </span>
+            )
+          ) : (
+            <span className={`truncate ${!singleSelectedOption?.label ? 'text-gray-400 dark:text-gray-500 font-medium' : 'text-germany-black dark:text-white'}`}>
+              {singleSelectedOption ? singleSelectedOption.label : placeholder}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1.5 shrink-0 text-gray-400">
+          {(isLoading || isAsyncLoading) && <Loader2 className="w-3.5 h-3.5 animate-spin text-germany-red" />}
+          <ChevronDown
+            className={`w-4 h-4 transition-transform duration-200 ${
+              isOpen ? 'rotate-180 text-germany-red' : ''
+            }`}
+          />
+        </div>
       </button>
 
       {/* Floating Menu */}
@@ -113,45 +241,53 @@ export function ClaySelect<T extends string = string>({
             className="absolute left-0 right-0 mt-1.5 p-1.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800 rounded-xl shadow-lg dark:shadow-2xl z-50 max-h-64 flex flex-col overflow-hidden"
           >
             {/* Optional Search Bar */}
-            {(searchable || normalizedOptions.length > 8) && (
+            {shouldShowSearch && (
               <div className="mb-1.5 p-1 relative shrink-0">
                 <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-gray-400" />
                 <input
+                  ref={searchInputRef}
                   type="text"
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-8 pr-3 py-1.5 text-xs font-bold bg-gray-50 dark:bg-[#111622] border border-gray-200/80 dark:border-gray-700 rounded-lg text-germany-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-germany-red focus:bg-white dark:focus:bg-[#111622] transition-colors"
-                  autoFocus
                 />
               </div>
             )}
 
             {/* Options List */}
             <div className="overflow-y-auto space-y-1 custom-scrollbar max-h-52 pr-0.5">
-              {placeholder && (
+              {!effectiveMultiple && placeholder && !shouldShowSearch && (
                 <button
                   type="button"
-                  onClick={() => handleSelect('' as T)}
+                  onClick={() => handleSelectSingle('' as any)}
                   className="w-full text-left px-3 py-2 text-xs font-medium text-gray-400 dark:text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1E2638] transition-colors"
                 >
                   {placeholder}
                 </button>
               )}
 
-              {filteredOptions.length === 0 ? (
+              {isAsyncLoading ? (
+                <div className="p-4 text-center text-xs font-medium text-gray-400 flex items-center justify-center gap-2">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-germany-red" />
+                  <span>Searching...</span>
+                </div>
+              ) : filteredOptions.length === 0 ? (
                 <div className="p-3 text-center text-xs font-medium text-gray-400">
-                  No matching options
+                  {getNoOptionsText()}
                 </div>
               ) : (
                 filteredOptions.map((opt) => {
-                  const isSelected = opt.value === value;
+                  const isSelected = effectiveMultiple
+                    ? selectedValues.some((v) => v === opt.value)
+                    : opt.value === value;
+
                   return (
                     <button
-                      key={opt.value}
+                      key={String(opt.value)}
                       type="button"
-                      onClick={() => handleSelect(opt.value)}
-                      className={`w-full text-left px-3 py-2 text-xs font-bold rounded-lg flex items-center justify-between transition-colors ${
+                      onClick={() => effectiveMultiple ? handleToggleMultiple(opt.value) : handleSelectSingle(opt.value)}
+                      className={`w-full text-left px-3 py-2 text-xs font-bold rounded-lg flex items-center justify-between transition-colors cursor-pointer ${
                         isSelected
                           ? 'bg-germany-red text-white'
                           : 'text-germany-black dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#1E2638]'

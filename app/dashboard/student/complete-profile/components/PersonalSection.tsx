@@ -1,10 +1,8 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { ProfileData } from '../types';
 import { ClaySelect } from '@/components/ClaySelect';
-import Select from 'react-select';
 import { getCountries, getStates, getCities, GeoOption } from '@/lib/geoData';
 import { useAppStore } from '@/store/useAppStore';
-import { getReactSelectStyles } from '@/lib/selectTheme';
 
 interface Props {
   data: ProfileData;
@@ -14,7 +12,6 @@ interface Props {
 
 export default function PersonalSection({ data, onChange, onNext }: Props) {
   const isDarkMode = useAppStore((state) => state.isDarkMode);
-  const selectStyles = useMemo(() => getReactSelectStyles(isDarkMode), [isDarkMode]);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     // grab the checked state for checkboxes, otherwise standard value
     const value = e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value;
@@ -112,14 +109,12 @@ export default function PersonalSection({ data, onChange, onNext }: Props) {
         </div>
         <div>
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Nationality *</label>
-          <Select 
+          <ClaySelect 
              options={countries}
-             value={countries.find(c => c.value === data.nationality) || (data.nationality ? { label: data.nationality, value: data.nationality } : null)}
+             value={data.nationality || ''}
              isLoading={countries.length === 0}
-             onChange={(option) => onChange({ nationality: option?.value || '' })}
-             isSearchable
-             styles={selectStyles}
-             classNamePrefix="neu-select"
+             onChange={(val) => onChange({ nationality: val || '' })}
+             searchable
              placeholder="Select Nationality"
           />
         </div>
@@ -150,16 +145,14 @@ export default function PersonalSection({ data, onChange, onNext }: Props) {
         
         <div>
           <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1.5">Country *</label>
-          <Select 
+          <ClaySelect 
              options={countries}
-             value={countries.find(c => c.value === data.country) || (data.country ? { label: data.country, value: data.country } : null)}
+             value={data.country || ''}
              isLoading={countries.length === 0}
-             onChange={(option) => {
-                 onChange({ country: option?.value || '', stateProvince: '', city: '' });
+             onChange={(val) => {
+                 onChange({ country: val || '', stateProvince: '', city: '' });
              }}
-             isSearchable
-             styles={selectStyles}
-             classNamePrefix="neu-select"
+             searchable
              placeholder="Select Country"
           />
         </div>
@@ -169,16 +162,14 @@ export default function PersonalSection({ data, onChange, onNext }: Props) {
             <span>State / Province</span>
             {!data.country && <em className="text-gray-400 font-normal normal-case lowercase text-[10px] italic">*(choose a country first)</em>}
           </label>
-          <Select 
+          <ClaySelect 
              options={states}
-             value={states.find(s => s.value === data.stateProvince) || (data.stateProvince ? { label: data.stateProvince, value: data.stateProvince } : null)}
-             onChange={(option) => {
-                 onChange({ stateProvince: option?.value || '', city: '' });
+             value={data.stateProvince || ''}
+             onChange={(val) => {
+                 onChange({ stateProvince: val || '', city: '' });
              }}
-             isDisabled={!data.country || (states.length === 0 && !loadingStates)}
-             isSearchable
-             styles={selectStyles}
-             classNamePrefix="neu-select"
+             disabled={!data.country || (states.length === 0 && !loadingStates)}
+             searchable
              placeholder={loadingStates ? "Loading states..." : states.length === 0 && data.country ? "No states available" : "Select State"}
              isLoading={loadingStates}
           />
@@ -192,14 +183,12 @@ export default function PersonalSection({ data, onChange, onNext }: Props) {
           { data.stateProvince && cities.length === 0 && !loadingCities ? (
              <input type="text" name="city" value={data.city} onChange={handleChange} className="w-full px-4 py-2.5 neu-input text-xs font-bold" placeholder="Type city name" />
           ) : (
-            <Select 
+            <ClaySelect 
                 options={cities}
-                value={cities.find(c => c.value === data.city) || (data.city ? { label: data.city, value: data.city } : null)}
-                onChange={(option) => onChange({ city: option?.value || '' })}
-                isDisabled={!data.stateProvince || (cities.length === 0 && !loadingCities)}
-                isSearchable
-                styles={selectStyles}
-                classNamePrefix="neu-select"
+                value={data.city || ''}
+                onChange={(val) => onChange({ city: val || '' })}
+                disabled={!data.stateProvince || (cities.length === 0 && !loadingCities)}
+                searchable
                 placeholder={loadingCities ? "Loading cities..." : "Select City"}
                 isLoading={loadingCities}
             />

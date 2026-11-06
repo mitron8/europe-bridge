@@ -47,12 +47,13 @@ export interface Course {
   apsRequired: boolean;
   greRequired: 'No' | 'Optional' | 'Mandatory';
   description: string;
-  curriculumHighlights: string[];
-  careerOutcomes: {
-    averageSalary: string; // e.g. "€58,000 – €68,000 / year"
-    topRoles: string[]; // e.g. ["Machine Learning Engineer", "Robotics Specialist"]
-    topCompanies: string[]; // e.g. ["Siemens", "BMW", "SAP", "Infineon"]
-  };
+  curriculumHighlights?: string[] | null;
+  careerOutcomes?: {
+    averageSalary?: string | null;
+    topRoles?: string[];
+    topCompanies?: string[];
+    careerOpportunities?: string | null;
+  } | null;
   officialUrl: string;
   featured?: boolean;
 }

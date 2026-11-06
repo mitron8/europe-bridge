@@ -151,25 +151,31 @@ export function CourseCard({
         </div>
 
         {/* Curriculum Highlights Preview */}
-        <div className="mt-3 sm:mt-3.5 space-y-1">
-          {course.curriculumHighlights.slice(0, 2).map((item, idx) => (
-            <div key={idx} className="flex items-start gap-1.5 text-[11.5px] sm:text-[12px] text-[#5e5b54]">
-              <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#16161a] mt-0.5" />
-              <span className="line-clamp-1">{item}</span>
-            </div>
-          ))}
-        </div>
+        {course.curriculumHighlights && course.curriculumHighlights.length > 0 && (
+          <div className="mt-3 sm:mt-3.5 space-y-1">
+            {course.curriculumHighlights.slice(0, 2).map((item, idx) => (
+              <div key={idx} className="flex items-start gap-1.5 text-[11.5px] sm:text-[12px] text-[#5e5b54]">
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#16161a] mt-0.5" />
+                <span className="line-clamp-1">{item}</span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Career Outcome Preview */}
-        <div className="mt-3 sm:mt-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1 rounded-lg border border-[#e5e0d3] bg-white px-2.5 py-2 text-[11px] sm:text-[11.5px]">
-          <div className="flex items-center gap-1.5 text-[#16161a] font-semibold shrink-0">
-            <TrendingUp className="h-3.5 w-3.5 text-[#16161a]" />
-            <span>Avg {course.careerOutcomes.averageSalary}</span>
+        {course.careerOutcomes && (course.careerOutcomes.averageSalary || (course.careerOutcomes.topCompanies && course.careerOutcomes.topCompanies.length > 0) || (course.careerOutcomes as any).careerOpportunities) && (
+          <div className="mt-3 sm:mt-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1 rounded-lg border border-[#e5e0d3] bg-white px-2.5 py-2 text-[11px] sm:text-[11.5px]">
+            <div className="flex items-center gap-1.5 text-[#16161a] font-semibold shrink-0">
+              <TrendingUp className="h-3.5 w-3.5 text-[#16161a]" />
+              <span>{course.careerOutcomes.averageSalary ? `Avg ${course.careerOutcomes.averageSalary}` : 'Career Outlook'}</span>
+            </div>
+            {course.careerOutcomes.topCompanies && course.careerOutcomes.topCompanies.length > 0 && (
+              <span className="text-[#787369] text-left sm:text-right text-[11px] truncate">
+                {course.careerOutcomes.topCompanies.slice(0, 2).join(", ")}
+              </span>
+            )}
           </div>
-          <span className="text-[#787369] text-left sm:text-right text-[11px] truncate">
-            {course.careerOutcomes.topCompanies.slice(0, 2).join(", ")}
-          </span>
-        </div>
+        )}
       </div>
 
       {/* Action Buttons */}

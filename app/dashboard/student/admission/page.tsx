@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import { StudentDocumentItemRow } from '@/components/StudentDocumentItemRow';
 import {
   FileText,
   Send,
@@ -112,8 +113,50 @@ export default function StudentAdmissionPage() {
   const [docProgress, setDocProgress] = useState({ completed: 0, total: 0, percentage: 0 });
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [uploadingType, setUploadingType] = useState<string | null>(null);
+  const [deletingType, setDeletingType] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState('');
   const [actionError, setActionError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedUploadDocType, setSelectedUploadDocType] = useState<string | null>(null);
+
+  const openFileDialog = (docType: string) => {
+    setSelectedUploadDocType(docType);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && selectedUploadDocType) {
+      handleUpload(selectedUploadDocType, file);
+    }
+  };
+
+  const handleDelete = async (documentType: string, docTitle?: string) => {
+    if (!window.confirm(`Are you sure you want to delete your uploaded ${docTitle || documentType}?`)) {
+      return;
+    }
+    setDeletingType(documentType);
+    try {
+      const res = await fetch(`${API_URL}/student/documents/${documentType}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || 'Failed to delete document');
+      }
+      setActionSuccess('Document deleted successfully.');
+      setTimeout(() => setActionSuccess(''), 5000);
+      await loadDocuments();
+    } catch (e: any) {
+      setActionError(e.message || 'Delete failed. Please try again.');
+    } finally {
+      setDeletingType(null);
+    }
+  };
 
   // Applications State
   const [appsLoading, setAppsLoading] = useState(true);
@@ -420,124 +463,24 @@ export default function StudentAdmissionPage() {
               </button>
             </div>
           ) : (
-            <div className="space-y-4">
-              {filteredDocuments.map((doc) => {
-                const badge = STATUS_BADGES[doc.status] || STATUS_BADGES.MISSING;
-                const isUploading = uploadingType === doc.type;
-
-                return (
-                  <div
-                    key={doc.type}
-                    className="bg-white dark:bg-[#151B27] rounded-2xl p-5 border border-gray-200/80 dark:border-gray-800/80 shadow-sm hover:border-gray-300 dark:hover:border-gray-700 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
-                  >
-                    <div className="space-y-1.5 max-w-xl">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md">
-                          {doc.category}
-                        </span>
-                        {doc.required && (
-                          <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-md border border-red-200 dark:border-red-900">
-                            Required
-                          </span>
-                        )}
-                        <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${badge.style}`}>
-                          {badge.label}
-                        </span>
-                      </div>
-                      <h3 className="text-sm font-black text-gray-900 dark:text-white flex items-center gap-2">
-                        {doc.title}
-                      </h3>
-                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 leading-relaxed">
-                        {doc.description}
-                      </p>
-
-                      {/* Upload details / Filename */}
-                      {doc.originalFilename && (
-                        <div className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 pt-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>{doc.originalFilename}</span>
-                          {doc.uploadedAt && (
-                            <span className="text-gray-400 font-normal">
-                              · Uploaded {new Date(doc.uploadedAt).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Rejection Note */}
-                      {doc.rejectionNote && (
-                        <div className="p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 rounded-xl text-xs font-semibold">
-                          <span className="font-extrabold">Counsellor Feedback: </span>
-                          {doc.rejectionNote}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-2 shrink-0 pt-2 md:pt-0">
-                      {/* View document */}
-                      {doc.url && (
-                        <a
-                          href={doc.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-3.5 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                          <span>Preview</span>
-                        </a>
-                      )}
-
-                      {/* If AI Generated, link to dedicated editor */}
-                      {doc.isAiGenerated ? (
-                        doc.type === 'cv' ? (
-                          <Link
-                            href="/dashboard/student/documents"
-                            className="px-4 py-2 bg-germany-red text-white hover:bg-germany-red/90 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5 shadow-sm"
-                          >
-                            <Sparkles className="w-3.5 h-3.5" />
-                            <span>Academic CV</span>
-                          </Link>
-                        ) : (
-                          <Link
-                            href="/dashboard/student/documents"
-                            className="px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5"
-                          >
-                            <span>Manage LOR</span>
-                          </Link>
-                        )
-                      ) : (
-                        /* Standard Upload / Replace Button */
-                        <label className="relative cursor-pointer">
-                          <input
-                            type="file"
-                            accept=".pdf,.png,.jpg,.jpeg,.webp"
-                            className="sr-only"
-                            disabled={isUploading}
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleUpload(doc.type, file);
-                            }}
-                          />
-                          <span className="px-4 py-2 bg-germany-red text-white hover:bg-germany-red/90 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5 shadow-sm">
-                            {isUploading ? (
-                              <>
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                <span>Uploading...</span>
-                              </>
-                            ) : (
-                              <>
-                                <Upload className="w-3.5 h-3.5" />
-                                <span>{doc.url ? 'Replace' : 'Upload'}</span>
-                              </>
-                            )}
-                          </span>
-                        </label>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="space-y-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.png,.jpg,.jpeg,.webp"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              {filteredDocuments.map((doc) => (
+                <StudentDocumentItemRow
+                  key={doc.type}
+                  item={doc}
+                  onUpload={openFileDialog}
+                  onDelete={handleDelete}
+                  isUploading={uploadingType === doc.type}
+                  isDeleting={deletingType === doc.type}
+                />
+              ))}
             </div>
           )}
 
