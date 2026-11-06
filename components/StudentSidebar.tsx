@@ -41,7 +41,7 @@ const admissionNavItems = [
   { name: 'My Services', path: '/dashboard/student/services', icon: Layers, step: 'Services' },
   { name: 'Document Hub', path: '/dashboard/student/documents', icon: FileText, step: 'Step 4' },
   { name: 'APS Checklist', path: '/dashboard/student/aps', icon: CheckCircle2, step: 'Step 5' },
-  { name: 'Applications', path: '/dashboard/student/applications', icon: Send, step: 'Step 6' },
+  { name: 'Admission & Apps', path: '/dashboard/student/admission', icon: Send, step: 'Step 6' },
   { name: 'Visa Assistance', path: '/dashboard/student/visa', icon: Plane, step: 'Step 7' },
   { name: 'Help & AI Support', path: '/dashboard/student/help', icon: Bot, step: 'Help' },
 ];
