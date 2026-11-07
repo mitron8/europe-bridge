@@ -2335,14 +2335,12 @@ export function StudentDetailModal({
                                   </span>
                                 </div>
                                 <div>
-                                  <div className="font-extrabold text-germany-black dark:text-white text-xs leading-tight">
-                                    {step.title}
+                                  <div className="font-extrabold text-purple-950 dark:text-purple-100 text-xs leading-tight line-clamp-1" title={purchasedPlanName || step.title}>
+                                    {purchasedPlanName || step.title}
                                   </div>
-                                  {purchasedPlanName && (
-                                    <div className="text-[10px] font-bold text-purple-700 dark:text-purple-300 truncate mt-0.5">
-                                      {purchasedPlanName}
-                                    </div>
-                                  )}
+                                  <div className="text-[10px] font-extrabold text-purple-700 dark:text-purple-300 truncate mt-0.5">
+                                    Purchased & Active
+                                  </div>
                                 </div>
                               </div>
                             );
@@ -2479,7 +2477,7 @@ export function StudentDetailModal({
                           if (currentIdx >= 3 || (matchingRun && matchingRun.status === 'completed')) status = 'Completed';
                           else if (currentIdx === 2) status = 'Current';
                         } else if (step.stage === 'shortlist_locked') {
-                          if (isMatchingLocked || currentIdx >= 4) status = 'Completed';
+                          if (isMatchingLocked || currentIdx >= 4 || rawStatus === 'shortlist_locked' || summaryData?.status === 'shortlist_locked') status = 'Completed';
                           else if (currentIdx === 3) status = 'Current';
                         }
 
@@ -2510,7 +2508,7 @@ export function StudentDetailModal({
                                     : 'bg-gray-200/80 dark:bg-white/10 text-gray-600 dark:text-gray-300'
                                 }`}
                               >
-                                {step.stage === 'shortlist_locked' && isMatchingLocked ? 'Locked' : status}
+                                {step.stage === 'shortlist_locked' && (isMatchingLocked || rawStatus === 'shortlist_locked' || summaryData?.status === 'shortlist_locked') ? 'Locked' : status}
                               </span>
                             </div>
                             <div className="font-extrabold text-germany-black dark:text-white text-xs leading-tight">
