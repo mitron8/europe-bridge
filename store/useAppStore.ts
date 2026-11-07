@@ -12,6 +12,8 @@ export interface UserProfile {
   phone?: string;
   role?: string;
   avatarUrl?: string;
+  hasPassword?: boolean;
+  isGoogleUser?: boolean;
 }
 
 interface AppState {

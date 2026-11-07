@@ -174,6 +174,12 @@ export function MarketingSidebar({ isOpen = false, onClose }: MarketingSidebarPr
             <div className="flex-1 min-w-0">
               <p className="font-bold text-xs text-germany-black truncate">{fullName}</p>
               <p className="text-[10px] font-medium text-gray-500 truncate">{displayRole}</p>
+              <Link
+                href="/dashboard/marketing/account"
+                className="text-[10px] font-bold text-germany-red hover:underline block truncate mt-0.5"
+              >
+                Account Settings
+              </Link>
             </div>
           </div>
         ) : (

@@ -7,6 +7,7 @@ import ProfileCompletionGate from '@/components/ProfileCompletionGate';
 import StudentStageGate from '@/components/StudentStageGate';
 import { StudentDocumentHub } from '@/components/StudentDocumentHub';
 import { StudentServicesHub } from '@/components/StudentServicesHub';
+import AccountSettingsView from '@/components/AccountSettingsView';
 import {
   Compass,
   Bookmark,
@@ -1092,7 +1093,8 @@ export default function StudentSectionPage({ params }: { params: Promise<{ secti
             )
           )}
           {section === 'services' && <StudentServicesHub />}
-          {!['matching', 'shortlist', 'documents', 'aps', 'services'].includes(section) && (
+          {section === 'account' && <AccountSettingsView forcedRole='student' />}
+          {!['matching', 'shortlist', 'documents', 'aps', 'services', 'account'].includes(section) && (
             <div className="neu-card p-8 bg-white dark:bg-[#111622] text-center space-y-4">
               <div className="max-w-md mx-auto space-y-3">
                 <h3 className="font-display text-xl text-germany-black dark:text-white">{config.title} Module</h3>

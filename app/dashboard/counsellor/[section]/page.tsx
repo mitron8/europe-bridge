@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { CounsellorLeads } from '@/components/CounsellorLeads';
 import { CounsellorStudents } from '@/components/CounsellorStudents';
 import { CounsellorServicesQueue } from '@/components/CounsellorServicesQueue';
+import AccountSettingsView from '@/components/AccountSettingsView';
 
 const VALID_SECTIONS = [
   'leads', 'students', 'deadlines', 'notices', 'account', 'help', 'services'

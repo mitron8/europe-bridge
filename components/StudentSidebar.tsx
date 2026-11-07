@@ -317,7 +317,7 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
               <p className="font-bold text-xs text-germany-black dark:text-white truncate">{fullName}</p>
               <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 truncate">{displayRole}</p>
               <Link href="/dashboard/student/account" className="text-[10px] font-bold text-germany-red hover:underline block truncate mt-0.5">
-                Manage Profile →
+                Account & Membership →
               </Link>
             </div>
           </div>
