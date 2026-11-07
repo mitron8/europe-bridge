@@ -185,6 +185,7 @@ export function StudentDocumentHub() {
       formData.append('expire', String(auth.expire));
       formData.append('token', auth.token);
       formData.append('folder', auth.folder);
+      formData.append('isPrivateFile', 'true');
 
       const ikResponse = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
         method: 'POST',
