@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { ClaySelect } from '@/components/ClaySelect';
 import { getChatSocket } from '@/lib/socket';
+import { formatChatTimestamp, formatFullTimestamp, formatDateDivider, isDifferentDay } from '@/lib/chatUtils';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
@@ -853,55 +854,68 @@ export default function AdminHelpPage() {
                 ) : (
                   ticketDetails.messages.map((msg, idx) => {
                     const itemKey = msg.id ? `${msg.id}-${idx}` : `msg-${idx}`;
-
-                    // Confidential Staff Note
-                    if (msg.isInternalNote) {
-                      return (
-                        <div
-                          key={itemKey}
-                          className="mx-auto max-w-md bg-amber-50/90 border border-amber-300 text-amber-900 rounded-xl p-3 shadow-2xs space-y-1"
-                        >
-                          <div className="flex items-center justify-between text-[10px] font-bold text-amber-800">
-                            <span className="flex items-center gap-1">
-                              <Lock className="w-3 h-3 text-amber-700" />
-                              <span>CONFIDENTIAL STAFF NOTE</span>
-                            </span>
-                            <span>{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                          </div>
-                          <p className="text-xs font-medium text-amber-950 whitespace-pre-wrap">{msg.content}</p>
-                          <div className="text-[10px] text-amber-700 font-medium">By: {msg.senderName} ({msg.senderRole})</div>
-                        </div>
-                      );
-                    }
-
-                    // Instagram DM chat layout: Admin on right, Student/Counsellor on left
-                    const isAdmin = msg.senderRole === 'admin' || msg.senderRole === 'superadmin';
+                    const prevMsg = idx > 0 ? ticketDetails.messages[idx - 1] : null;
+                    const showDateDivider = isDifferentDay(prevMsg?.createdAt, msg.createdAt);
 
                     return (
-                      <div
-                        key={itemKey}
-                        className={`flex flex-col ${isAdmin ? 'items-end' : 'items-start'}`}
-                      >
-                        <span className="text-[10px] font-bold text-gray-400 mb-0.5 px-1">
-                          {isAdmin ? 'You (Admin)' : `${msg.senderName} (${msg.senderRole})`}
-                        </span>
+                      <React.Fragment key={itemKey}>
+                        {showDateDivider && (
+                          <div className="flex items-center justify-center my-2">
+                            <span className="px-3 py-1 bg-gray-200/80 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-full text-[10px] font-bold tracking-wide shadow-2xs">
+                              {formatDateDivider(msg.createdAt)}
+                            </span>
+                          </div>
+                        )}
+                        {msg.isInternalNote ? (
+                          <div
+                            className="mx-auto max-w-md bg-amber-50/90 border border-amber-300 text-amber-900 rounded-xl p-3 shadow-2xs space-y-1"
+                          >
+                            <div className="flex items-center justify-between text-[10px] font-bold text-amber-800">
+                              <span className="flex items-center gap-1">
+                                <Lock className="w-3 h-3 text-amber-700" />
+                                <span>CONFIDENTIAL STAFF NOTE</span>
+                              </span>
+                              <span
+                                className="cursor-default text-amber-600"
+                                title={formatFullTimestamp(msg.createdAt)}
+                              >
+                                {formatChatTimestamp(msg.createdAt)}
+                              </span>
+                            </div>
+                            <p className="text-xs font-medium text-amber-950 whitespace-pre-wrap">{msg.content}</p>
+                            <div className="text-[10px] text-amber-700 font-medium">By: {msg.senderName} ({msg.senderRole})</div>
+                          </div>
+                        ) : (
+                          <div
+                            className={`flex flex-col ${
+                              msg.senderRole === 'admin' || msg.senderRole === 'superadmin' ? 'items-end' : 'items-start'
+                            }`}
+                          >
+                            <span className="text-[10px] font-bold text-gray-400 mb-0.5 px-1">
+                              {msg.senderRole === 'admin' || msg.senderRole === 'superadmin' ? 'You (Admin)' : `${msg.senderName} (${msg.senderRole})`}
+                            </span>
 
-                        <div
-                          className={`max-w-[78%] px-4 py-2.5 rounded-2xl text-xs font-medium shadow-2xs whitespace-pre-wrap ${
-                            isAdmin
-                              ? 'bg-slate-900 text-white rounded-br-xs'
-                              : msg.senderRole === 'counsellor'
-                              ? 'bg-red-50 text-germany-black border border-red-100 rounded-bl-xs'
-                              : 'bg-white text-gray-900 border border-gray-200/80 rounded-bl-xs'
-                          }`}
-                        >
-                          {msg.content}
-                        </div>
+                            <div
+                              className={`max-w-[78%] px-4 py-2.5 rounded-2xl text-xs font-medium shadow-2xs whitespace-pre-wrap ${
+                                msg.senderRole === 'admin' || msg.senderRole === 'superadmin'
+                                  ? 'bg-slate-900 text-white rounded-br-xs'
+                                  : msg.senderRole === 'counsellor'
+                                  ? 'bg-red-50 text-germany-black border border-red-100 rounded-bl-xs'
+                                  : 'bg-white text-gray-900 border border-gray-200/80 rounded-bl-xs'
+                              }`}
+                            >
+                              {msg.content}
+                            </div>
 
-                        <span className="text-[9px] text-gray-400 mt-0.5 px-1 font-mono">
-                          {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
+                            <span
+                              className="text-[9px] text-gray-400 mt-0.5 px-1 font-mono cursor-default"
+                              title={formatFullTimestamp(msg.createdAt)}
+                            >
+                              {formatChatTimestamp(msg.createdAt)}
+                            </span>
+                          </div>
+                        )}
+                      </React.Fragment>
                     );
                   })
                 )}

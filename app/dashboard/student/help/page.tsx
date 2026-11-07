@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { ClaySelect } from '@/components/ClaySelect';
 import { getChatSocket } from '@/lib/socket';
+import { formatChatTimestamp, formatFullTimestamp, formatDateDivider, isDifferentDay } from '@/lib/chatUtils';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
@@ -565,10 +566,20 @@ export default function StudentHelpPage() {
                 <h2 className="text-lg sm:text-xl font-bold text-germany-black mt-0.5">
                   {ticketDetail.title}
                 </h2>
-                <p className="text-xs text-gray-500 font-medium mt-1">
-                  Assigned Advisor: <strong className="text-germany-black">{ticketDetail.counsellor?.name || 'Assigned Counsellor'}</strong>
-                  {ticketDetail.counsellor?.email && ` (${ticketDetail.counsellor.email})`}
-                </p>
+                <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 font-medium mt-1">
+                  <span>
+                    Assigned Advisor: <strong className="text-germany-black">{ticketDetail.counsellor?.name || 'Assigned Counsellor'}</strong>
+                    {ticketDetail.counsellor?.email && ` (${ticketDetail.counsellor.email})`}
+                  </span>
+                  {ticketDetail.createdAt && (
+                    <>
+                      <span>•</span>
+                      <span title={formatFullTimestamp(ticketDetail.createdAt)}>
+                        Opened: <strong className="text-gray-700">{formatChatTimestamp(ticketDetail.createdAt)}</strong>
+                      </span>
+                    </>
+                  )}
+                </div>
               </div>
 
               {/* Resolution Summary Banner if resolved */}
@@ -587,21 +598,36 @@ export default function StudentHelpPage() {
                 ) : (
                   ticketDetail.messages.map((m, idx) => {
                     const isMe = m.isMe;
+                    const prevMsg = idx > 0 ? ticketDetail.messages[idx - 1] : null;
+                    const showDateDivider = isDifferentDay(prevMsg?.createdAt, m.createdAt);
+
                     return (
-                      <div
-                        key={m.id ? `${m.id}-${idx}` : `msg-${idx}`}
-                        className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] ${
-                          isMe ? 'self-end' : 'self-start'
-                        }`}
-                      >
-                        {/* Sender Label */}
-                        <div className="flex items-center gap-1.5 text-[11px] text-gray-400 font-medium px-1 mb-1">
-                          <span className="font-semibold text-gray-700">
-                            {isMe ? 'You' : m.senderName || 'Counsellor'}
-                          </span>
-                          <span>•</span>
-                          <span>{new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                        </div>
+                      <React.Fragment key={m.id ? `${m.id}-${idx}` : `msg-${idx}`}>
+                        {showDateDivider && (
+                          <div className="flex items-center justify-center my-2">
+                            <span className="px-3 py-1 bg-gray-200/80 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-full text-[10px] font-bold tracking-wide shadow-2xs">
+                              {formatDateDivider(m.createdAt)}
+                            </span>
+                          </div>
+                        )}
+                        <div
+                          className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] ${
+                            isMe ? 'self-end' : 'self-start'
+                          }`}
+                        >
+                          {/* Sender Label */}
+                          <div className="flex items-center gap-1.5 text-[11px] text-gray-400 font-medium px-1 mb-1">
+                            <span className="font-semibold text-gray-700">
+                              {isMe ? 'You' : m.senderName || 'Counsellor'}
+                            </span>
+                            <span>•</span>
+                            <span
+                              title={formatFullTimestamp(m.createdAt)}
+                              className="cursor-default"
+                            >
+                              {formatChatTimestamp(m.createdAt)}
+                            </span>
+                          </div>
 
                         {/* Message Bubble (Instagram DM styling) */}
                         <div
@@ -614,6 +640,7 @@ export default function StudentHelpPage() {
                           {m.content}
                         </div>
                       </div>
+                      </React.Fragment>
                     );
                   })
                 )}

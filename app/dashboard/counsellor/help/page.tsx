@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { ClaySelect } from '@/components/ClaySelect';
 import { getChatSocket } from '@/lib/socket';
+import { formatChatTimestamp, formatFullTimestamp, formatDateDivider, isDifferentDay } from '@/lib/chatUtils';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
@@ -599,7 +600,7 @@ export default function CounsellorHelpPage() {
                     <span className="text-germany-black font-bold truncate">
                       {t.student.name}
                     </span>
-                    <span>{new Date(t.updatedAt).toLocaleDateString()}</span>
+                    <span>{formatChatTimestamp(t.updatedAt)}</span>
                   </div>
                 </button>
               ))
@@ -692,41 +693,52 @@ export default function CounsellorHelpPage() {
                   const isMe = m.isMe; // sent by counsellor
                   const isInternal = m.isInternalNote;
                   const itemKey = m.id ? `${m.id}-${idx}` : `msg-${idx}`;
+                  const prevMsg = idx > 0 ? ticketDetail.messages[idx - 1] : null;
+                  const showDateDivider = isDifferentDay(prevMsg?.createdAt, m.createdAt);
 
-                  if (isInternal) {
-                    // Internal Staff Note: Styled in amber box with lock icon
-                    return (
-                      <div
-                        key={itemKey}
-                        className="p-3.5 rounded-xl bg-amber-50/90 border border-amber-300 text-amber-900 text-xs leading-relaxed max-w-[90%] self-center my-1.5"
-                      >
-                        <div className="flex items-center gap-1.5 font-bold text-amber-800 mb-1">
-                          <Lock className="w-3.5 h-3.5" />
-                          <span>Confidential Staff Note (Not visible to student)</span>
-                          <span className="text-amber-500 font-normal">
-                            • {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  return (
+                    <React.Fragment key={itemKey}>
+                      {showDateDivider && (
+                        <div className="flex items-center justify-center my-2">
+                          <span className="px-3 py-1 bg-gray-200/80 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-full text-[10px] font-bold tracking-wide shadow-2xs">
+                            {formatDateDivider(m.createdAt)}
                           </span>
                         </div>
-                        <p className="whitespace-pre-line font-medium">{m.content}</p>
-                      </div>
-                    );
-                  }
-
-                  // Normal chat messages (Instagram layout)
-                  return (
-                    <div
-                      key={itemKey}
-                      className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] ${
-                        isMe ? 'self-end' : 'self-start'
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5 text-[11px] text-gray-400 font-medium px-1 mb-1">
-                        <span className="font-semibold text-gray-700">
-                          {isMe ? 'You (Counsellor)' : ticketDetail.student.name}
-                        </span>
-                        <span>•</span>
-                        <span>{new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                      </div>
+                      )}
+                      {isInternal ? (
+                        <div
+                          className="p-3.5 rounded-xl bg-amber-50/90 border border-amber-300 text-amber-900 text-xs leading-relaxed max-w-[90%] self-center my-1.5"
+                        >
+                          <div className="flex items-center gap-1.5 font-bold text-amber-800 mb-1">
+                            <Lock className="w-3.5 h-3.5" />
+                            <span>Confidential Staff Note (Not visible to student)</span>
+                            <span
+                              className="text-amber-600 font-medium cursor-default"
+                              title={formatFullTimestamp(m.createdAt)}
+                            >
+                              • {formatChatTimestamp(m.createdAt)}
+                            </span>
+                          </div>
+                          <p className="whitespace-pre-line font-medium">{m.content}</p>
+                        </div>
+                      ) : (
+                        <div
+                          className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] ${
+                            isMe ? 'self-end' : 'self-start'
+                          }`}
+                        >
+                          <div className="flex items-center gap-1.5 text-[11px] text-gray-400 font-medium px-1 mb-1">
+                            <span className="font-semibold text-gray-700">
+                              {isMe ? 'You (Counsellor)' : ticketDetail.student.name}
+                            </span>
+                            <span>•</span>
+                            <span
+                              title={formatFullTimestamp(m.createdAt)}
+                              className="cursor-default"
+                            >
+                              {formatChatTimestamp(m.createdAt)}
+                            </span>
+                          </div>
 
                       <div
                         className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-line shadow-2xs ${
@@ -738,7 +750,9 @@ export default function CounsellorHelpPage() {
                         {m.content}
                       </div>
                     </div>
-                  );
+                  )}
+                </React.Fragment>
+              );
                 })}
                 <div ref={messagesEndRef} />
               </div>
