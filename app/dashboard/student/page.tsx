@@ -224,7 +224,43 @@ export default function StudentDashboard() {
   // Recent real documents
   const recentDocs = profile?.recentDocuments || [];
 
-    const handleAcceptInvitation = async (meetingId: string) => {
+    // Modals & Feedback State for Student Meetings
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState<{
+    isOpen: boolean;
+    meetingId: string | null;
+    title: string;
+    message: string;
+    reason: string;
+    isSubmitting: boolean;
+  }>({
+    isOpen: false,
+    meetingId: null,
+    title: '',
+    message: '',
+    reason: '',
+    isSubmitting: false,
+  });
+
+  const [cancelMeetingModal, setCancelMeetingModal] = useState<{
+    isOpen: boolean;
+    meetingId: string | null;
+    reason: string;
+    isSubmitting: boolean;
+    error: string | null;
+  }>({
+    isOpen: false,
+    meetingId: null,
+    reason: '',
+    isSubmitting: false,
+    error: null,
+  });
+
+  const [meetingFeedback, setMeetingFeedback] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
+
+  const handleAcceptInvitation = async (meetingId: string) => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -237,37 +273,22 @@ export default function StudentDashboard() {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.message || 'Failed to accept invitation');
       }
-      alert('Meeting confirmed successfully!');
+      setMeetingFeedback({ type: 'success', message: 'Meeting confirmed successfully!' });
       fetchStudentMeetings();
     } catch (err: any) {
-      alert(err.message || 'Failed to accept invitation');
+      setMeetingFeedback({ type: 'error', message: err.message || 'Failed to accept invitation' });
     }
   };
 
   const handleDeclineInvitation = async (meetingId: string) => {
-    const reason = prompt('Please share a reason for declining:');
-    if (reason === null) return;
-    try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const res = await fetch(`${API_URL}/meetings/${meetingId}/student/decline-invitation`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ reason }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || 'Failed to decline');
-      }
-      alert('Invitation declined.');
-      fetchStudentMeetings();
-    } catch (err: any) {
-      alert(err.message);
-    }
+    setConfirmDeleteModal({
+      isOpen: true,
+      meetingId,
+      title: 'Decline Meeting Invitation?',
+      message: 'Declining will release this time slot. You can book a fresh strategy session anytime later.',
+      reason: '',
+      isSubmitting: false,
+    });
   };
 
   const handleAcceptReschedule = async (meetingId: string) => {
@@ -283,62 +304,96 @@ export default function StudentDashboard() {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.message || 'Failed to accept reschedule');
       }
-      alert('Rescheduled meeting confirmed!');
+      setMeetingFeedback({ type: 'success', message: 'Rescheduled meeting accepted and confirmed!' });
       fetchStudentMeetings();
     } catch (err: any) {
-      alert(err.message);
+      setMeetingFeedback({ type: 'error', message: err.message || 'Failed to accept reschedule' });
     }
   };
 
-  const handleDeclineReschedule = async (meetingId: string) => {
-    const reason = prompt('Reason for declining proposed reschedule:');
-    if (reason === null) return;
+  const handleOpenDeclineRescheduleModal = (meetingId: string, isProposalByCounsellor: boolean) => {
+    setConfirmDeleteModal({
+      isOpen: true,
+      meetingId,
+      title: isProposalByCounsellor ? 'Decline Reschedule Proposal?' : 'Withdraw Reschedule Request?',
+      message: 'Declining or withdrawing this reschedule request will completely delete this meeting schedule from the calendar. You will be able to book a fresh meeting slot anytime later.',
+      reason: '',
+      isSubmitting: false,
+    });
+  };
+
+  const executeDeclineReschedule = async () => {
+    if (!confirmDeleteModal.meetingId) return;
+    setConfirmDeleteModal((prev) => ({ ...prev, isSubmitting: true }));
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const res = await fetch(`${API_URL}/meetings/${meetingId}/student/decline-reschedule`, {
+      const res = await fetch(`${API_URL}/meetings/${confirmDeleteModal.meetingId}/student/decline-reschedule`, {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ reason }),
+        body: JSON.stringify({ reason: confirmDeleteModal.reason.trim() || undefined }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.message || 'Failed to decline reschedule');
       }
-      alert('Reschedule declined. Existing meeting remains confirmed.');
+      setMeetingFeedback({
+        type: 'success',
+        message: 'Meeting schedule has been deleted. You can re-book a fresh meeting slot anytime.',
+      });
+      setConfirmDeleteModal((prev) => ({ ...prev, isOpen: false }));
       fetchStudentMeetings();
     } catch (err: any) {
-      alert(err.message);
+      setMeetingFeedback({ type: 'error', message: err.message || 'Error processing request' });
+      setConfirmDeleteModal((prev) => ({ ...prev, isSubmitting: false }));
     }
   };
 
-  const handleCancelMeeting = async (meetingId: string) => {
-    const reason = prompt('Please provide a reason for cancelling this meeting:');
-    if (!reason) return;
+  const handleOpenCancelMeetingModal = (meetingId: string) => {
+    setCancelMeetingModal({
+      isOpen: true,
+      meetingId,
+      reason: '',
+      isSubmitting: false,
+      error: null,
+    });
+  };
+
+  const executeCancelMeeting = async () => {
+    if (!cancelMeetingModal.meetingId) return;
+    if (!cancelMeetingModal.reason.trim()) {
+      setCancelMeetingModal((prev) => ({ ...prev, error: 'Please provide a reason for cancelling this meeting.' }));
+      return;
+    }
+    setCancelMeetingModal((prev) => ({ ...prev, isSubmitting: true, error: null }));
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const res = await fetch(`${API_URL}/meetings/${meetingId}/student/cancel`, {
+      const res = await fetch(`${API_URL}/meetings/${cancelMeetingModal.meetingId}/student/cancel`, {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ cancellationReason: reason }),
+        body: JSON.stringify({
+          reason: cancelMeetingModal.reason.trim(),
+          cancellationReason: cancelMeetingModal.reason.trim(),
+        }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.message || 'Failed to cancel meeting');
       }
-      alert('Meeting cancelled. Slot has been freed.');
+      setMeetingFeedback({ type: 'success', message: 'Meeting cancelled. Slot has been freed.' });
+      setCancelMeetingModal((prev) => ({ ...prev, isOpen: false }));
       fetchStudentMeetings();
     } catch (err: any) {
-      alert(err.message);
+      setCancelMeetingModal((prev) => ({ ...prev, isSubmitting: false, error: err.message }));
     }
   };
 
@@ -782,7 +837,28 @@ export default function StudentDashboard() {
                 </div>
 
                 
-                {/* Active / Upcoming Strategy Meeting Preview */}
+                {/* Meeting Feedback Banner */}
+                {meetingFeedback && (
+                  <div className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-between animate-in fade-in ${
+                    meetingFeedback.type === 'success'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border-emerald-300 dark:border-emerald-800'
+                      : 'bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-200 border-red-300 dark:border-red-900'
+                  }`}>
+                    <div className="flex items-center gap-1.5">
+                      {meetingFeedback.type === 'success' ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      ) : (
+                        <AlertCircle className="w-3.5 h-3.5 text-germany-red" />
+                      )}
+                      <span>{meetingFeedback.message}</span>
+                    </div>
+                    <button type="button" onClick={() => setMeetingFeedback(null)} className="opacity-70 hover:opacity-100 cursor-pointer">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Active / Confirmed Strategy Meeting Card */}
                 {meetingsData?.upcoming?.[0] && (
                   <div className="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-2xl border border-emerald-300 dark:border-emerald-800/60 text-xs space-y-2">
                     <div className="flex items-center justify-between">
@@ -790,7 +866,7 @@ export default function StudentDashboard() {
                         <Calendar className="w-3 h-3 text-emerald-600" />
                         Next Confirmed Session
                       </span>
-                      <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200">
+                      <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 border border-emerald-300">
                         {meetingsData.upcoming[0].status}
                       </span>
                     </div>
@@ -827,7 +903,7 @@ export default function StudentDashboard() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleCancelMeeting(meetingsData.upcoming[0].id)}
+                        onClick={() => handleOpenCancelMeetingModal(meetingsData.upcoming[0].id)}
                         className="p-1.5 text-gray-400 hover:text-germany-red rounded-xl"
                         title="Cancel Meeting"
                       >
@@ -836,6 +912,109 @@ export default function StudentDashboard() {
                     </div>
                   </div>
                 )}
+
+                {/* Reschedule Pending Acceptance Card (Moved from upcoming to pending) */}
+                {meetingsData?.pendingReschedules?.[0] && (() => {
+                  const m = meetingsData.pendingReschedules[0];
+                  const isAwaitingStudent = Boolean(m.isAwaitingMyAcceptance);
+
+                  return (
+                    <div className="p-3.5 bg-amber-50/90 dark:bg-amber-950/40 rounded-2xl border border-amber-300 dark:border-amber-800 text-xs space-y-2.5 shadow-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black uppercase text-amber-900 dark:text-amber-200 flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5 text-amber-600" />
+                          Reschedule In Progress
+                        </span>
+                        <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-200 dark:bg-amber-900/80 text-amber-950 dark:text-amber-100 border border-amber-400">
+                          Pending Acceptance
+                        </span>
+                      </div>
+
+                      {/* Previous & Proposed Time */}
+                      <div className="space-y-1 bg-white/90 dark:bg-[#0E121A]/90 p-2.5 rounded-xl border border-amber-200 dark:border-amber-800/60">
+                        {m.originalTime && (
+                          <div className="text-[11px] text-gray-500 dark:text-gray-400">
+                            Previous Time: <span className="line-through font-semibold text-gray-600 dark:text-gray-300">{m.originalTime}</span>
+                          </div>
+                        )}
+                        <div className="text-xs font-black text-amber-900 dark:text-amber-200 flex items-center gap-1">
+                          <span>New Proposed Time:</span>
+                          <strong className="text-germany-black dark:text-white underline decoration-amber-400">{m.humanTime}</strong>
+                        </div>
+                        {m.reschedule_note && (
+                          <div className="text-[10px] text-gray-500 italic">
+                            Reason: "{m.reschedule_note}"
+                          </div>
+                        )}
+                      </div>
+
+                      {isAwaitingStudent ? (
+                        // Counsellor proposed reschedule -> Student reviews
+                        <div className="space-y-1.5 pt-0.5">
+                          <p className="text-[11px] text-amber-800 dark:text-amber-300 font-medium">
+                            Your counsellor proposed this alternative time slot:
+                          </p>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleAcceptReschedule(m.id)}
+                              className="flex-1 py-1.5 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-black text-center shadow-xs transition-colors"
+                            >
+                              Accept New Time
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedMeetingForReschedule(m);
+                                setBookingMode('counterproposal');
+                                setIsBookingModalOpen(true);
+                              }}
+                              className="py-1.5 px-2 rounded-xl border border-amber-400 text-[11px] font-bold text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/40"
+                            >
+                              Counter-Slot
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenDeclineRescheduleModal(m.id, true)}
+                              className="py-1.5 px-2 text-[11px] font-bold text-gray-500 hover:text-germany-red cursor-pointer"
+                              title="Declining will delete this schedule so you can re-book later"
+                            >
+                              Decline
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        // Student proposed reschedule -> Waiting for counsellor
+                        <div className="space-y-1.5 pt-0.5">
+                          <div className="text-[11px] font-medium text-amber-800 dark:text-amber-300">
+                            ⏳ Waiting for your counsellor to confirm this proposed time.
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedMeetingForReschedule(m);
+                                setBookingMode('reschedule');
+                                setIsBookingModalOpen(true);
+                              }}
+                              className="py-1 px-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-[11px] font-bold text-gray-700 dark:text-gray-300 hover:border-gray-500"
+                            >
+                              Change Slot
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenDeclineRescheduleModal(m.id, false)}
+                              className="py-1 px-2 text-[11px] font-bold text-gray-500 hover:text-germany-red cursor-pointer"
+                              title="Withdraw request and delete schedule"
+                            >
+                              Withdraw Request
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Counsellor Invitation Banner */}
                 {meetingsData?.pendingInvitations?.[0] && (
@@ -880,48 +1059,6 @@ export default function StudentDashboard() {
                     </div>
                   </div>
                 )}
-
-                {/* Counsellor Reschedule Proposal Banner */}
-                {meetingsData?.pendingReschedules?.find((m: any) => m.reschedule_proposed_by === 'counsellor') && (() => {
-                  const m = meetingsData.pendingReschedules.find((item: any) => item.reschedule_proposed_by === 'counsellor');
-                  return (
-                    <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 rounded-2xl border border-amber-300 dark:border-amber-800 text-xs space-y-2">
-                      <span className="text-[10px] font-black uppercase text-amber-800 dark:text-amber-300">
-                        Counsellor Proposed Reschedule
-                      </span>
-                      <div className="font-extrabold text-germany-black dark:text-white">
-                        New Slot: {m.pendingRescheduleHumanTime}
-                      </div>
-                      <div className="flex items-center gap-1.5 pt-1">
-                        <button
-                          type="button"
-                          onClick={() => handleAcceptReschedule(m.id)}
-                          className="flex-1 py-1.5 px-2 rounded-xl bg-amber-600 text-white text-[11px] font-black text-center shadow-xs"
-                        >
-                          Accept
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedMeetingForReschedule(m);
-                            setBookingMode('counterproposal');
-                            setIsBookingModalOpen(true);
-                          }}
-                          className="py-1.5 px-2 rounded-xl border border-amber-300 text-[11px] font-bold text-amber-800 dark:text-amber-200"
-                        >
-                          Counter-Slot
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeclineReschedule(m.id)}
-                          className="py-1.5 px-2 text-[11px] font-bold text-gray-500 hover:text-red-500"
-                        >
-                          Decline
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })()}
 
                 <button
                   type="button"
@@ -1069,8 +1206,135 @@ export default function StudentDashboard() {
           counsellorId={assignedCounsellor?.id}
           counsellorName={assignedCounsellor?.name}
           existingMeetingId={selectedMeetingForReschedule?.id}
-          currentMeetingHumanTime={selectedMeetingForReschedule?.humanTime}
+          currentMeetingHumanTime={selectedMeetingForReschedule?.displayTime || selectedMeetingForReschedule?.humanTime}
         />
+      )}
+
+      {/* Reschedule Decline / Withdraw Warning Modal */}
+      {confirmDeleteModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#111622] rounded-3xl border border-gray-200/80 dark:border-gray-800 shadow-2xl w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                <AlertCircle className="w-5 h-5 text-amber-500" />
+                <h3 className="font-display font-extrabold text-base text-germany-black dark:text-white">
+                  {confirmDeleteModal.title || 'Delete Meeting Schedule?'}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteModal((prev) => ({ ...prev, isOpen: false }))}
+                className="text-gray-400 hover:text-gray-600 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+              {confirmDeleteModal.message}
+            </p>
+
+            <div>
+              <label className="text-[11px] font-black uppercase text-gray-500 tracking-wider">
+                Reason (Optional)
+              </label>
+              <input
+                type="text"
+                value={confirmDeleteModal.reason}
+                onChange={(e) => setConfirmDeleteModal((prev) => ({ ...prev, reason: e.target.value }))}
+                placeholder="e.g. Schedule conflict, will rebook next week..."
+                className="w-full text-xs p-2.5 rounded-xl bg-gray-50 dark:bg-[#0E121A] border border-gray-200/80 dark:border-gray-800 mt-1 focus:ring-2 focus:ring-germany-red text-germany-black dark:text-white"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteModal((prev) => ({ ...prev, isOpen: false }))}
+                className="neu-btn-secondary px-4 py-2 text-xs font-black cursor-pointer"
+                disabled={confirmDeleteModal.isSubmitting}
+              >
+                Keep Proposal
+              </button>
+              <button
+                type="button"
+                onClick={executeDeclineReschedule}
+                disabled={confirmDeleteModal.isSubmitting}
+                className="neu-btn-primary bg-germany-red hover:bg-[#D62839] text-white px-5 py-2 text-xs font-black flex items-center gap-1.5 cursor-pointer"
+              >
+                {confirmDeleteModal.isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                <span>Delete Schedule</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Meeting Modal */}
+      {cancelMeetingModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#111622] rounded-3xl border border-gray-200/80 dark:border-gray-800 shadow-2xl w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-germany-red">
+                <AlertCircle className="w-5 h-5 text-germany-red" />
+                <h3 className="font-display font-extrabold text-base text-germany-black dark:text-white">
+                  Cancel Meeting
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCancelMeetingModal((prev) => ({ ...prev, isOpen: false, error: null }))}
+                className="text-gray-400 hover:text-gray-600 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-500">
+              Cancelling will release the slot and notify your advisor. Please provide a clear cancellation reason.
+            </p>
+
+            {cancelMeetingModal.error && (
+              <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-xs text-red-600 dark:text-red-300 rounded-xl">
+                {cancelMeetingModal.error}
+              </div>
+            )}
+
+            <div>
+              <label className="text-[11px] font-black uppercase text-gray-500 tracking-wider">
+                Cancellation Reason <span className="text-germany-red">*</span>
+              </label>
+              <textarea
+                value={cancelMeetingModal.reason}
+                onChange={(e) => setCancelMeetingModal((prev) => ({ ...prev, reason: e.target.value, error: null }))}
+                placeholder="e.g. Unforeseen academic exam commitment, will rebook later..."
+                rows={3}
+                maxLength={500}
+                className="w-full text-xs p-3 rounded-xl bg-gray-50 dark:bg-[#0E121A] border border-gray-200/80 dark:border-gray-800 mt-1 focus:ring-2 focus:ring-germany-red text-germany-black dark:text-white"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setCancelMeetingModal((prev) => ({ ...prev, isOpen: false, error: null }))}
+                className="neu-btn-secondary px-4 py-2 text-xs font-black cursor-pointer"
+                disabled={cancelMeetingModal.isSubmitting}
+              >
+                Keep Meeting
+              </button>
+              <button
+                type="button"
+                onClick={executeCancelMeeting}
+                disabled={cancelMeetingModal.isSubmitting || !cancelMeetingModal.reason.trim()}
+                className="neu-btn-primary bg-germany-red hover:bg-[#D62839] text-white px-5 py-2 text-xs font-black flex items-center gap-1.5 cursor-pointer"
+              >
+                {cancelMeetingModal.isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                <span>Confirm Cancellation</span>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

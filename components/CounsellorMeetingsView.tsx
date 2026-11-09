@@ -40,18 +40,28 @@ export function CounsellorMeetingsView() {
   const [selectedMeeting, setSelectedMeeting] = useState<any | null>(null);
   const [rescheduleMode, setRescheduleMode] = useState<'reschedule' | 'counterproposal'>('reschedule');
 
-  // Outcome recording state
-  const [isOutcomeOpen, setIsOutcomeOpen] = useState<boolean>(false);
-  const [outcomeMeetingId, setOutcomeMeetingId] = useState<string | null>(null);
-  const [attendance, setAttendance] = useState<'attended' | 'no_show'>('attended');
-  const [outcomeNotes, setOutcomeNotes] = useState<string>('');
-  const [isSubmittingOutcome, setIsSubmittingOutcome] = useState<boolean>(false);
-
   // Cancellation state
   const [isCancelOpen, setIsCancelOpen] = useState<boolean>(false);
   const [cancelMeetingId, setCancelMeetingId] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState<string>('');
   const [isSubmittingCancel, setIsSubmittingCancel] = useState<boolean>(false);
+
+  // Delete Reschedule Modal state
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState<{
+    isOpen: boolean;
+    meetingId: string | null;
+    title: string;
+    message: string;
+    reason: string;
+    isSubmitting: boolean;
+  }>({
+    isOpen: false,
+    meetingId: null,
+    title: '',
+    message: '',
+    reason: '',
+    isSubmitting: false,
+  });
 
   // Block slot state
   const [isBlockOpen, setIsBlockOpen] = useState<boolean>(false);
@@ -120,63 +130,49 @@ export function CounsellorMeetingsView() {
     }
   };
 
-  // Decline Reschedule
-  const handleDeclineReschedule = async (meetingId: string) => {
-    const reason = prompt('Please enter a brief reason for declining the reschedule request:');
-    if (reason === null) return;
+  // Open Decline Reschedule Modal
+  const handleOpenDeclineRescheduleModal = (meetingId: string, isProposalByCounsellor: boolean) => {
+    setConfirmDeleteModal({
+      isOpen: true,
+      meetingId,
+      title: isProposalByCounsellor ? 'Withdraw Reschedule Proposal?' : 'Decline Reschedule Proposal?',
+      message: 'Declining or withdrawing this reschedule proposal will completely delete this meeting schedule from the calendar. The student can book a fresh slot anytime later.',
+      reason: '',
+      isSubmitting: false,
+    });
+  };
+
+  const executeDeclineReschedule = async () => {
+    if (!confirmDeleteModal.meetingId) return;
+    setConfirmDeleteModal((prev) => ({ ...prev, isSubmitting: true }));
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/meetings/${meetingId}/counsellor/decline-reschedule`, {
+      const res = await fetch(`${API_BASE}/meetings/${confirmDeleteModal.meetingId}/counsellor/decline-reschedule`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ reason }),
+        body: JSON.stringify({ reason: confirmDeleteModal.reason.trim() || undefined }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.message || 'Failed to decline reschedule');
       }
-      setActionFeedback({ type: 'success', message: 'Reschedule declined. Existing meeting remains confirmed.' });
-      fetchMeetingsAndAvailability();
-    } catch (err: any) {
-      setActionFeedback({ type: 'error', message: err.message });
-    }
-  };
-
-  // Submit Outcome
-  const handleSubmitOutcome = async () => {
-    if (!outcomeMeetingId) return;
-    setIsSubmittingOutcome(true);
-    try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/meetings/${outcomeMeetingId}/counsellor/outcome`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          attendance,
-          outcomeNotes: outcomeNotes.trim() || undefined,
-        }),
+      setActionFeedback({
+        type: 'success',
+        message: 'Reschedule declined and meeting schedule completely deleted. A new slot can be booked anytime.',
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || 'Failed to record meeting outcome');
-      }
-      setActionFeedback({ type: 'success', message: 'Meeting outcome recorded successfully.' });
-      setIsOutcomeOpen(false);
-      setOutcomeNotes('');
+      setConfirmDeleteModal((prev) => ({ ...prev, isOpen: false }));
       fetchMeetingsAndAvailability();
     } catch (err: any) {
       setActionFeedback({ type: 'error', message: err.message });
-    } finally {
-      setIsSubmittingOutcome(false);
+      setConfirmDeleteModal((prev) => ({ ...prev, isSubmitting: false }));
     }
   };
 
   // Submit Cancellation
   const handleSubmitCancel = async () => {
     if (!cancelMeetingId || !cancelReason.trim()) {
-      alert('Please provide a reason for cancelling this meeting.');
+      setActionFeedback({ type: 'error', message: 'Please provide a reason for cancelling this meeting.' });
       return;
     }
     setIsSubmittingCancel(true);
@@ -186,7 +182,10 @@ export function CounsellorMeetingsView() {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ cancellationReason: cancelReason.trim() }),
+        body: JSON.stringify({
+          reason: cancelReason.trim(),
+          cancellationReason: cancelReason.trim(),
+        }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -436,26 +435,23 @@ export function CounsellorMeetingsView() {
               {meetingsData.upcoming.map((m: any) => (
                 <div
                   key={m.id}
-                  className="p-5 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  className="p-5 rounded-2xl border shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all bg-white dark:bg-[#111622] border-gray-200/80 dark:border-gray-800"
                 >
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-display font-extrabold text-sm text-germany-black dark:text-white">
                         {m.studentName || 'Student'}
                       </span>
-                      <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                        {m.status}
+                      <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                        Confirmed
                       </span>
-                      {m.hasPendingReschedule && (
-                        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-                          Reschedule Pending
-                        </span>
-                      )}
                     </div>
+
                     <div className="text-xs font-bold text-germany-red flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5" />
                       <span>{m.humanTime}</span>
                     </div>
+
                     {m.agenda && (
                       <div className="text-xs font-medium text-gray-600 dark:text-gray-300">
                         Topic: <strong>{m.agenda}</strong>
@@ -494,20 +490,10 @@ export function CounsellorMeetingsView() {
 
                     <button
                       onClick={() => {
-                        setOutcomeMeetingId(m.id);
-                        setIsOutcomeOpen(true);
-                      }}
-                      className="neu-btn py-2 px-3 text-xs font-black text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl"
-                    >
-                      Record Outcome
-                    </button>
-
-                    <button
-                      onClick={() => {
                         setCancelMeetingId(m.id);
                         setIsCancelOpen(true);
                       }}
-                      className="p-2 text-gray-400 hover:text-germany-red hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors"
+                      className="p-2 text-gray-400 hover:text-germany-red hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors cursor-pointer"
                       title="Cancel Meeting"
                     >
                       <X className="w-4 h-4" />
@@ -527,39 +513,42 @@ export function CounsellorMeetingsView() {
               Reschedule Proposals Awaiting Your Response
             </h3>
 
-            {(!meetingsData?.pendingReschedules || meetingsData.pendingReschedules.filter((m: any) => m.reschedule_proposed_by === 'student').length === 0) ? (
+            {(!meetingsData?.pendingReschedules || meetingsData.pendingReschedules.filter((m: any) => m.isAwaitingMyAcceptance || m.rescheduleProposedBy === 'student').length === 0) ? (
               <div className="p-6 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 text-xs font-medium text-gray-500 text-center">
                 No active student reschedule proposals.
               </div>
             ) : (
               meetingsData.pendingReschedules
-                .filter((m: any) => m.reschedule_proposed_by === 'student')
+                .filter((m: any) => m.isAwaitingMyAcceptance || m.rescheduleProposedBy === 'student')
                 .map((m: any) => (
                   <div
                     key={m.id}
-                    className="p-5 bg-amber-50/60 dark:bg-amber-950/20 rounded-2xl border border-amber-200 dark:border-amber-800/60 shadow-xs space-y-3"
+                    className="p-5 bg-amber-50/70 dark:bg-amber-950/20 rounded-2xl border border-amber-300 dark:border-amber-800/60 shadow-xs space-y-3"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
                         <span className="font-extrabold text-sm text-germany-black dark:text-white">
                           {m.studentName} requested to reschedule
                         </span>
-                        <div className="text-xs font-bold text-gray-500 mt-0.5">
-                          Current: {m.humanTime}
-                        </div>
+                        {m.originalTime && (
+                          <div className="text-xs font-bold text-gray-500 mt-0.5">
+                            Original Slot: <span className="line-through">{m.originalTime}</span>
+                          </div>
+                        )}
                       </div>
-                      <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 w-fit">
-                        30-Min Expiry
+                      <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 border border-amber-400 w-fit">
+                        Pending Acceptance
                       </span>
                     </div>
 
                     <div className="p-3 bg-white dark:bg-[#111622] rounded-xl border border-amber-300 dark:border-amber-800 text-xs space-y-1">
-                      <div className="font-extrabold text-emerald-600 dark:text-emerald-400">
-                        Proposed Alternative: {m.pendingRescheduleHumanTime}
+                      <div className="font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>New Proposed Slot: {m.humanTime}</span>
                       </div>
-                      {m.reschedule_reason && (
+                      {m.reschedule_note && (
                         <div className="text-gray-600 dark:text-gray-300 italic">
-                          Reason: "{m.reschedule_reason}"
+                          Reason: "{m.reschedule_note}"
                         </div>
                       )}
                     </div>
@@ -567,7 +556,7 @@ export function CounsellorMeetingsView() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <button
                         onClick={() => handleAcceptReschedule(m.id)}
-                        className="neu-btn-primary py-1.5 px-4 text-xs font-black inline-flex items-center gap-1.5"
+                        className="neu-btn-primary py-1.5 px-4 text-xs font-black inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
                       >
                         <Check className="w-3.5 h-3.5" />
                         <span>Accept Proposed Time</span>
@@ -585,10 +574,71 @@ export function CounsellorMeetingsView() {
                       </button>
 
                       <button
-                        onClick={() => handleDeclineReschedule(m.id)}
-                        className="neu-btn py-1.5 px-3.5 text-xs font-black text-gray-600 hover:text-germany-red rounded-xl"
+                        onClick={() => handleOpenDeclineRescheduleModal(m.id, false)}
+                        className="neu-btn py-1.5 px-3.5 text-xs font-black text-gray-600 hover:text-germany-red rounded-xl cursor-pointer"
                       >
-                        <span>Decline</span>
+                        <span>Decline & Delete Schedule</span>
+                      </button>
+                    </div>
+                  </div>
+                ))
+            )}
+          </div>
+
+          {/* Reschedules Proposed by Counsellor (Waiting for student) */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400">
+              Reschedules Proposed by You (Waiting for Student Acceptance)
+            </h3>
+
+            {(!meetingsData?.pendingReschedules || meetingsData.pendingReschedules.filter((m: any) => m.isAwaitingOtherAcceptance || m.rescheduleProposedBy === 'counsellor').length === 0) ? (
+              <div className="p-6 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 text-xs font-medium text-gray-500 text-center">
+                No proposals waiting for student acceptance.
+              </div>
+            ) : (
+              meetingsData.pendingReschedules
+                .filter((m: any) => m.isAwaitingOtherAcceptance || m.rescheduleProposedBy === 'counsellor')
+                .map((m: any) => (
+                  <div
+                    key={m.id}
+                    className="p-5 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-xs space-y-3"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <span className="font-extrabold text-sm text-germany-black dark:text-white">
+                          With {m.studentName}
+                        </span>
+                        {m.originalTime && (
+                          <div className="text-xs font-medium text-gray-500 mt-0.5">
+                            Original Slot: <span className="line-through">{m.originalTime}</span>
+                          </div>
+                        )}
+                        <div className="text-xs font-bold text-amber-600 dark:text-amber-400 mt-0.5">
+                          Proposed New Slot: {m.humanTime}
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 w-fit">
+                        Waiting for Student
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        onClick={() => {
+                          setSelectedMeeting(m);
+                          setRescheduleMode('reschedule');
+                          setIsRescheduleOpen(true);
+                        }}
+                        className="neu-btn-secondary py-1.5 px-3 text-xs font-black inline-flex items-center gap-1"
+                      >
+                        <span>Change Slot</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleOpenDeclineRescheduleModal(m.id, true)}
+                        className="neu-btn py-1.5 px-3 text-xs font-black text-gray-500 hover:text-germany-red rounded-xl cursor-pointer"
+                      >
+                        <span>Withdraw & Delete Schedule</span>
                       </button>
                     </div>
                   </div>
@@ -599,7 +649,7 @@ export function CounsellorMeetingsView() {
           {/* Pending Invitations Sent to Students */}
           <div className="space-y-3">
             <h3 className="text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400">
-              Invitations Sent to Students (Waiting for Student Acceptance)
+              Invitations Sent to Students
             </h3>
 
             {(!meetingsData?.pendingInvitations || meetingsData.pendingInvitations.length === 0) ? (
@@ -649,7 +699,7 @@ export function CounsellorMeetingsView() {
                   Rolling 3-Day Window Slots (Live Preview)
                 </h3>
                 <p className="text-xs text-gray-500">
-                  Green slots are bookable by students. Blocked slots or meetings are marked unavailable.
+                  <strong className="text-emerald-600">Green = Confirmed</strong> • <strong className="text-amber-600">Yellow = Pending Acceptance</strong> • White = Available.
                 </p>
               </div>
               <button
@@ -683,21 +733,51 @@ export function CounsellorMeetingsView() {
                   </div>
 
                   <div className="space-y-1.5">
-                    {day.allSlots?.map((slot: any) => (
-                      <div
-                        key={slot.slotId}
-                        className={`p-2 rounded-xl border text-xs flex items-center justify-between ${
-                          slot.isAvailable
-                            ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/60 text-emerald-950 dark:text-emerald-200'
-                            : 'bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/5 text-gray-400'
-                        }`}
-                      >
-                        <span className="font-bold text-[11px]">{slot.label.split('–')[0]}</span>
-                        <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-md bg-white/60 dark:bg-black/30">
-                          {slot.isAvailable ? 'Available' : slot.unavailableReason || 'Unavailable'}
-                        </span>
-                      </div>
-                    ))}
+                    {day.allSlots?.map((slot: any) => {
+                      const isConfirmed = slot.meetingStatus === 'CONFIRMED';
+                      const isPending = slot.meetingStatus === 'PENDING';
+
+                      return (
+                        <div
+                          key={slot.slotId}
+                          className={`p-2.5 rounded-xl border text-xs flex items-center justify-between transition-all ${
+                            isConfirmed
+                              ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-400 dark:border-emerald-600 text-emerald-950 dark:text-emerald-200 shadow-xs'
+                              : isPending
+                              ? 'bg-amber-50 dark:bg-amber-950/60 border-amber-400 dark:border-amber-600 text-amber-950 dark:text-amber-200 shadow-xs'
+                              : slot.isAvailable
+                              ? 'bg-white dark:bg-[#111622] border-emerald-300 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-400'
+                              : 'bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/5 text-gray-400'
+                          }`}
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-extrabold text-[11px]">{slot.label.split('–')[0]}</span>
+                            {(isConfirmed || isPending) && slot.studentName && (
+                              <span className="text-[10px] font-bold opacity-90 truncate max-w-[120px]">
+                                • {slot.studentName}
+                              </span>
+                            )}
+                          </div>
+                          <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${
+                            isConfirmed
+                              ? 'bg-emerald-200 text-emerald-900 border-emerald-400 dark:bg-emerald-900/80 dark:text-emerald-100'
+                              : isPending
+                              ? 'bg-amber-200 text-amber-900 border-amber-400 dark:bg-amber-900/80 dark:text-amber-100'
+                              : slot.isAvailable
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300'
+                              : 'bg-gray-200 dark:bg-gray-800 text-gray-500 border-transparent'
+                          }`}>
+                            {isConfirmed
+                              ? 'Confirmed'
+                              : isPending
+                              ? 'Pending Acceptance'
+                              : slot.isAvailable
+                              ? 'Available'
+                              : slot.unavailableReason || 'Unavailable'}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
@@ -705,132 +785,87 @@ export function CounsellorMeetingsView() {
           </div>
         </div>
       ) : (
-        /* History & Audit Logs Tab */
-        <div className="space-y-3">
-          {(!meetingsData?.history || meetingsData.history.length === 0) ? (
+        /* History & Meeting Event Logs Tab */
+        <div className="space-y-4">
+          <div className="p-4 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 flex items-center justify-between">
+            <div>
+              <h4 className="font-display font-extrabold text-sm text-germany-black dark:text-white">
+                Counselling Activity Logs & Historical Audit
+              </h4>
+              <p className="text-xs text-gray-500">
+                Chronological record of bookings, reschedule proposals, acceptances, and deletions for your consultations.
+              </p>
+            </div>
+            <span className="text-xs font-black text-gray-400 uppercase">
+              {meetingsData?.logs?.length || 0} Events Logged
+            </span>
+          </div>
+
+          {(!meetingsData?.logs || meetingsData.logs.length === 0) ? (
             <div className="p-12 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 text-center space-y-2">
               <CheckCircle2 className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto" />
               <h4 className="font-display font-extrabold text-sm text-germany-black dark:text-white">
-                No Completed or Historical Meetings
+                No Activity Logs Yet
               </h4>
-              <p className="text-xs text-gray-500">Historical records from the past 90 days appear here.</p>
+              <p className="text-xs text-gray-500">Meeting actions, rescheduling events, and cancellations will appear here.</p>
             </div>
           ) : (
-            meetingsData.history.map((m: any) => (
-              <div
-                key={m.id}
-                className="p-4 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-extrabold text-germany-black dark:text-white">{m.studentName}</span>
-                    <span
-                      className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
-                        m.status === 'COMPLETED'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : m.status === 'CANCELLED'
-                          ? 'bg-red-100 text-red-800'
-                          : m.status === 'NO_SHOW'
-                          ? 'bg-amber-100 text-amber-800'
-                          : 'bg-gray-100 text-gray-600'
-                      }`}
-                    >
-                      {m.status}
-                    </span>
-                  </div>
-                  <div className="text-gray-500 font-bold">{m.humanTime}</div>
-                  {m.outcome_notes && (
-                    <div className="text-gray-600 dark:text-gray-300 italic">Notes: "{m.outcome_notes}"</div>
-                  )}
-                  {m.cancellation_reason && (
-                    <div className="text-red-500 italic">Cancellation Reason: "{m.cancellation_reason}"</div>
-                  )}
-                </div>
+            <div className="space-y-2.5">
+              {meetingsData.logs.map((log: any) => {
+                const isDeclineOrDelete = log.event_type.includes('DECLINED') || log.event_type.includes('DELETED') || log.event_type === 'CANCELLED';
+                const isReschedule = log.event_type.includes('RESCHEDULE');
+                const isAccepted = log.event_type.includes('ACCEPTED') || log.event_type === 'BOOKED';
 
-                <div className="text-[10px] text-gray-400 font-bold">
-                  ID: {m.id.slice(0, 8)}...
-                </div>
-              </div>
-            ))
+                return (
+                  <div
+                    key={log.id}
+                    className="p-4 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${
+                          isDeclineOrDelete
+                            ? 'bg-red-100 text-red-800 border-red-300 dark:bg-red-950/60 dark:text-red-300'
+                            : isAccepted
+                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300'
+                            : isReschedule
+                            ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300'
+                            : 'bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-300'
+                        }`}>
+                          {log.event_type.replace(/_/g, ' ')}
+                        </span>
+                        <span className="font-extrabold text-germany-black dark:text-white">
+                          Student: {log.studentName}
+                        </span>
+                        {log.studentEmail && (
+                          <span className="text-[11px] text-gray-400">({log.studentEmail})</span>
+                        )}
+                      </div>
+
+                      <div className="text-[11px] text-gray-600 dark:text-gray-300">
+                        {log.details?.reason && (
+                          <span className="italic font-medium">Reason: "{log.details.reason}" • </span>
+                        )}
+                        {log.details?.message && (
+                          <span className="font-medium">{log.details.message} • </span>
+                        )}
+                        <span className="text-gray-400">
+                          Triggered by: <strong>{log.actorName}</strong> ({log.actor_role})
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="text-[11px] font-bold text-gray-400 shrink-0">
+                      {log.humanCreatedAt}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
       )}
 
-      {/* Outcome Recording Modal */}
-      {isOutcomeOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-[#111622] rounded-3xl border border-gray-200/80 dark:border-gray-800 shadow-2xl w-full max-w-md p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-display font-extrabold text-base text-germany-black dark:text-white">
-                Record Meeting Outcome
-              </h3>
-              <button onClick={() => setIsOutcomeOpen(false)} className="text-gray-400 hover:text-gray-600">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs font-black uppercase tracking-wider text-gray-500">Attendance</label>
-                <div className="grid grid-cols-2 gap-2 mt-1">
-                  <button
-                    type="button"
-                    onClick={() => setAttendance('attended')}
-                    className={`py-2 px-3 rounded-xl border text-xs font-black transition-all ${
-                      attendance === 'attended'
-                        ? 'bg-emerald-500 text-white border-emerald-500 shadow-xs'
-                        : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'
-                    }`}
-                  >
-                    Student Attended
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAttendance('no_show')}
-                    className={`py-2 px-3 rounded-xl border text-xs font-black transition-all ${
-                      attendance === 'no_show'
-                        ? 'bg-amber-500 text-white border-amber-500 shadow-xs'
-                        : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'
-                    }`}
-                  >
-                    No Show
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-black uppercase tracking-wider text-gray-500">
-                  Consultation Notes / Action Items
-                </label>
-                <textarea
-                  value={outcomeNotes}
-                  onChange={(e) => setOutcomeNotes(e.target.value)}
-                  placeholder="Summary of decisions, recommended university choices, or required documents..."
-                  rows={3}
-                  className="w-full text-xs p-3 rounded-xl bg-gray-50 dark:bg-[#0E121A] border border-gray-200/80 dark:border-gray-800 mt-1 focus:ring-2 focus:ring-germany-red text-germany-black dark:text-white"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button
-                onClick={() => setIsOutcomeOpen(false)}
-                className="neu-btn-secondary px-4 py-2 text-xs font-black"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSubmitOutcome}
-                disabled={isSubmittingOutcome}
-                className="neu-btn-primary px-5 py-2 text-xs font-black flex items-center gap-1.5"
-              >
-                {isSubmittingOutcome && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                <span>Save Outcome</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Cancellation Modal */}
       {isCancelOpen && (
@@ -871,6 +906,66 @@ export function CounsellorMeetingsView() {
               >
                 {isSubmittingCancel && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 <span>Confirm Cancellation</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete / Decline Reschedule Modal */}
+      {confirmDeleteModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#111622] rounded-3xl border border-gray-200/80 dark:border-gray-800 shadow-2xl w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                <AlertCircle className="w-5 h-5 text-amber-500" />
+                <h3 className="font-display font-extrabold text-base text-germany-black dark:text-white">
+                  {confirmDeleteModal.title || 'Delete Meeting Schedule?'}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteModal((prev) => ({ ...prev, isOpen: false }))}
+                className="text-gray-400 hover:text-gray-600 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+              {confirmDeleteModal.message}
+            </p>
+
+            <div>
+              <label className="text-[11px] font-black uppercase text-gray-500 tracking-wider">
+                Reason (Optional)
+              </label>
+              <input
+                type="text"
+                value={confirmDeleteModal.reason}
+                onChange={(e) => setConfirmDeleteModal((prev) => ({ ...prev, reason: e.target.value }))}
+                placeholder="e.g. Reschedule proposal declined, will offer other slots..."
+                className="w-full text-xs p-2.5 rounded-xl bg-gray-50 dark:bg-[#0E121A] border border-gray-200/80 dark:border-gray-800 mt-1 focus:ring-2 focus:ring-germany-red text-germany-black dark:text-white"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteModal((prev) => ({ ...prev, isOpen: false }))}
+                className="neu-btn-secondary px-4 py-2 text-xs font-black cursor-pointer"
+                disabled={confirmDeleteModal.isSubmitting}
+              >
+                Keep Proposal
+              </button>
+              <button
+                type="button"
+                onClick={executeDeclineReschedule}
+                disabled={confirmDeleteModal.isSubmitting}
+                className="neu-btn-primary bg-germany-red hover:bg-[#D62839] text-white px-5 py-2 text-xs font-black flex items-center gap-1.5 cursor-pointer"
+              >
+                {confirmDeleteModal.isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                <span>Delete Schedule</span>
               </button>
             </div>
           </div>
@@ -985,7 +1080,8 @@ export function CounsellorMeetingsView() {
           mode={rescheduleMode}
           userRole="counsellor"
           existingMeetingId={selectedMeeting.id}
-          currentMeetingHumanTime={selectedMeeting.humanTime}
+          currentMeetingHumanTime={selectedMeeting.displayTime || selectedMeeting.humanTime}
+          counsellorId={selectedMeeting.counsellor_user_id}
           studentUserId={selectedMeeting.student_user_id}
           studentName={selectedMeeting.studentName}
         />

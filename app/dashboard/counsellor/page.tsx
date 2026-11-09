@@ -364,12 +364,16 @@ export default function CounsellorDashboard() {
                   <div className="space-y-0.5">
                     <div className="text-xs font-bold text-germany-black dark:text-white flex items-center gap-1.5">
                       <span>{s.studentName}</span>
-                      <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
-                        {s.status}
+                      <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+                        s.hasPendingReschedule
+                          ? 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/50 dark:text-amber-300'
+                          : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
+                      }`}>
+                        {s.hasPendingReschedule ? 'Needs Acceptance' : s.status}
                       </span>
                     </div>
                     <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
-                      {s.agenda || '1-on-1 Germany Consultation'} • <strong className="text-germany-red">{s.humanTime?.split('•')[1]?.trim() || s.humanTime}</strong>
+                      {s.agenda || '1-on-1 Germany Consultation'} • <strong className="text-germany-red">{s.displayTime?.split('•')[1]?.trim() || s.displayTime || s.humanTime}</strong>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
