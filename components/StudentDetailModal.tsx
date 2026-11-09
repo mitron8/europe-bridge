@@ -222,6 +222,7 @@ export function StudentDetailModal({
   onClose,
   isPage = false,
 }: StudentDetailModalProps) {
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'universities' | 'notes' | 'admission'>('overview');
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
@@ -2072,6 +2073,14 @@ export function StudentDetailModal({
 
           {/* Quick Contact Bar */}
           <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsScheduleModalOpen(true)}
+              className="neu-btn-primary py-2 px-3.5 text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow"
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Schedule Meeting</span>
+            </button>
             <a
               href={`mailto:${student.email}`}
               className="neu-btn-primary py-2 px-3.5 text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow"

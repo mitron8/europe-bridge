@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   MessageSquare, 
+  Calendar,
   Send, 
   Search, 
   ArrowLeft, 
@@ -13,6 +14,7 @@ import {
   ShieldAlert,
   Lock
 } from 'lucide-react';
+import { MeetingBookingModal } from '@/components/MeetingBookingModal';
 import { ClaySelect } from '@/components/ClaySelect';
 import { getChatSocket } from '@/lib/socket';
 import { formatChatTimestamp, formatFullTimestamp, formatDateDivider, isDifferentDay } from '@/lib/chatUtils';
@@ -65,6 +67,7 @@ export default function StudentHelpPage() {
   const [tickets, setTickets] = useState<TicketSummary[]>([]);
   const [loadingTickets, setLoadingTickets] = useState<boolean>(true);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
   const [ticketDetail, setTicketDetail] = useState<TicketDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState<boolean>(false);
 
@@ -387,8 +390,16 @@ export default function StudentHelpPage() {
           </div>
 
           <button
-            onClick={() => fetchTickets()}
-            title="Refresh Queries"
+              type="button"
+              onClick={() => setIsMeetingModalOpen(true)}
+              className="neu-btn-primary py-2 px-3.5 text-xs font-black inline-flex items-center gap-1.5 shadow-sm"
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Book Strategy Meeting</span>
+            </button>
+            <button
+              onClick={() => fetchTickets()}
+              title="Refresh Queries"
             className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer"
           >
             <RotateCw className="w-4 h-4" />

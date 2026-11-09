@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   Zap,
   Timer,
+  Video,
 } from 'lucide-react';
 
 const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
@@ -88,6 +89,27 @@ export default function CounsellorDashboard() {
     };
     fetchServices();
   }, []);
+
+  // Meetings Overview Data
+  const [meetingsOverview, setMeetingsOverview] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchMeetings = async () => {
+      try {
+        const res = await fetch(`${NEXT_PUBLIC_API_URL}/meetings/counsellor/overview`, {
+          credentials: 'include',
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setMeetingsOverview(data);
+        }
+      } catch (err) {
+        console.error('Failed to load meetings overview', err);
+      }
+    };
+    fetchMeetings();
+  }, []);
+
 
   // Time & Urgency Calculations
   const { unattendedOrders, attendedOrders, urgentOrders, oldestOrder, waitingText } = useMemo(() => {
@@ -258,16 +280,26 @@ export default function CounsellorDashboard() {
         </Link>
 
         {/* Metric 2: Scheduled Today */}
-        <div className="bg-white dark:bg-[#111622] rounded-xl border border-gray-200/80 dark:border-gray-800 shadow-xs p-5 space-y-2">
+        <Link
+          href="/dashboard/counsellor/deadlines"
+          className="bg-white dark:bg-[#111622] hover:bg-gray-50/80 dark:hover:bg-[#151B27] rounded-xl border border-gray-200/80 dark:border-gray-800 hover:border-germany-red/40 shadow-xs p-5 space-y-2 transition-all block group"
+        >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-400 dark:text-gray-400">Scheduled Today</span>
+            <span className="text-xs font-bold text-gray-400 dark:text-gray-400 group-hover:text-germany-red transition-colors">
+              Scheduled Today
+            </span>
             <div className="p-2 bg-germany-red/10 dark:bg-red-950/40 rounded-xl text-germany-red">
               <Calendar className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-display font-bold text-germany-black dark:text-white">4 Consults</div>
-          <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400">Next at 2:00 PM</p>
-        </div>
+          <div className="text-2xl font-display font-bold text-germany-black dark:text-white">
+            {meetingsOverview?.summary?.todayCount ?? 0} Consults
+          </div>
+          <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 flex items-center justify-between">
+            <span>{meetingsOverview?.summary?.upcomingCount || 0} upcoming sessions</span>
+            <span className="font-bold text-germany-red">Open Hub →</span>
+          </p>
+        </Link>
 
         {/* Metric 3: Student Help Inquiries */}
         <Link
@@ -309,29 +341,60 @@ export default function CounsellorDashboard() {
         <div className="lg:col-span-7 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-xs p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-display font-bold text-base text-germany-black dark:text-white">Today's Strategy Sessions</h3>
-            <span className="text-xs font-bold text-gray-400 dark:text-gray-400">3 Sessions Pending</span>
+            <Link
+              href="/dashboard/counsellor/deadlines"
+              className="text-xs font-bold text-germany-red hover:underline flex items-center gap-0.5"
+            >
+              <span>{meetingsOverview?.todaysMeetings?.length || 0} Sessions Today</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
           <div className="divide-y divide-gray-100 dark:divide-gray-800">
-            {[
-              { student: 'Aarav Sharma', time: '2:00 PM - 2:45 PM', topic: 'TUM Statement of Purpose Finalization', status: 'Upcoming' },
-              { student: 'Simran Kaur', time: '3:30 PM - 4:15 PM', topic: 'APS Document Verification & Notary Check', status: 'Upcoming' },
-              { student: 'Vikram Joshi', time: '5:00 PM - 5:30 PM', topic: 'Blocked Account (Expatrio) & Visa Prep', status: 'Upcoming' },
-            ].map((s) => (
-              <div key={s.student} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="space-y-0.5">
-                  <div className="text-xs font-bold text-germany-black dark:text-white">{s.student}</div>
-                  <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400">{s.topic} • <strong className="text-germany-red">{s.time}</strong></div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button className="bg-germany-red hover:bg-[#D62839] text-white py-1.5 px-3 text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer">
-                    Launch Meet
-                  </button>
-                  <button className="p-1.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-germany-red rounded-xl shadow-xs transition-colors cursor-pointer">
-                    <MessageSquare className="w-4 h-4" />
-                  </button>
-                </div>
+            {(!meetingsOverview?.todaysMeetings || meetingsOverview.todaysMeetings.length === 0) ? (
+              <div className="py-8 text-center text-xs font-bold text-gray-400 space-y-1.5">
+                <Calendar className="w-6 h-6 mx-auto text-gray-300 dark:text-gray-600 mb-1" />
+                <p>No strategy sessions scheduled for today.</p>
+                <Link href="/dashboard/counsellor/deadlines" className="text-germany-red hover:underline block font-extrabold text-[11px]">
+                  Manage availability & upcoming sessions →
+                </Link>
               </div>
-            ))}
+            ) : (
+              meetingsOverview.todaysMeetings.map((s: any) => (
+                <div key={s.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-bold text-germany-black dark:text-white flex items-center gap-1.5">
+                      <span>{s.studentName}</span>
+                      <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
+                        {s.status}
+                      </span>
+                    </div>
+                    <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
+                      {s.agenda || '1-on-1 Germany Consultation'} • <strong className="text-germany-red">{s.humanTime?.split('•')[1]?.trim() || s.humanTime}</strong>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {s.meeting_link && (
+                      <a
+                        href={s.meeting_link}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="bg-germany-red hover:bg-[#D62839] text-white py-1.5 px-3 text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer inline-flex items-center gap-1"
+                      >
+                        <Video className="w-3.5 h-3.5" />
+                        <span>Launch Meet</span>
+                      </a>
+                    )}
+                    <Link
+                      href="/dashboard/counsellor/deadlines"
+                      className="p-1.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-germany-red rounded-xl shadow-xs transition-colors cursor-pointer"
+                      title="Manage Meeting"
+                    >
+                      <ArrowUpRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 

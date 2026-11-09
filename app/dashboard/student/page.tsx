@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { MeetingBookingModal } from '@/components/MeetingBookingModal';
 import {
   ArrowRight,
   CheckCircle2,
@@ -18,6 +19,8 @@ import {
   UserCheck,
   ShieldCheck,
   ExternalLink,
+  Video,
+  X,
 } from 'lucide-react';
 
 export default function StudentDashboard() {
@@ -25,6 +28,29 @@ export default function StudentDashboard() {
   const [matchingData, setMatchingData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Meetings State
+  const [meetingsData, setMeetingsData] = useState<any>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [bookingMode, setBookingMode] = useState<'student_book' | 'reschedule' | 'counterproposal'>('student_book');
+  const [selectedMeetingForReschedule, setSelectedMeetingForReschedule] = useState<any | null>(null);
+
+  const fetchStudentMeetings = async () => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const res = await fetch(`${API_URL}/meetings/student/my-meetings`, {
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMeetingsData(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch student meetings', err);
+    }
+  };
+
 
   useEffect(() => {
     let mounted = true;
@@ -34,9 +60,10 @@ export default function StudentDashboard() {
         setError(null);
         const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
-        const [profRes, matchRes] = await Promise.all([
+        const [profRes, matchRes, meetRes] = await Promise.all([
           fetch(`${API_URL}/student/profile`, { credentials: 'include' }).catch(() => null),
           fetch(`${API_URL}/matching/results`, { credentials: 'include' }).catch(() => null),
+          fetch(`${API_URL}/meetings/student/my-meetings`, { credentials: 'include' }).catch(() => null),
         ]);
 
         if (profRes && profRes.ok) {
@@ -46,6 +73,10 @@ export default function StudentDashboard() {
         if (matchRes && matchRes.ok) {
           const matchData = await matchRes.json();
           if (mounted) setMatchingData(matchData);
+        }
+        if (meetRes && meetRes.ok) {
+          const meetData = await meetRes.json();
+          if (mounted) setMeetingsData(meetData);
         }
       } catch (err: any) {
         if (mounted) setError(err.message || 'Failed to load dashboard data');
@@ -192,6 +223,124 @@ export default function StudentDashboard() {
 
   // Recent real documents
   const recentDocs = profile?.recentDocuments || [];
+
+    const handleAcceptInvitation = async (meetingId: string) => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const res = await fetch(`${API_URL}/meetings/${meetingId}/student/accept-invitation`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to accept invitation');
+      }
+      alert('Meeting confirmed successfully!');
+      fetchStudentMeetings();
+    } catch (err: any) {
+      alert(err.message || 'Failed to accept invitation');
+    }
+  };
+
+  const handleDeclineInvitation = async (meetingId: string) => {
+    const reason = prompt('Please share a reason for declining:');
+    if (reason === null) return;
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const res = await fetch(`${API_URL}/meetings/${meetingId}/student/decline-invitation`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ reason }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to decline');
+      }
+      alert('Invitation declined.');
+      fetchStudentMeetings();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleAcceptReschedule = async (meetingId: string) => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const res = await fetch(`${API_URL}/meetings/${meetingId}/student/accept-reschedule`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to accept reschedule');
+      }
+      alert('Rescheduled meeting confirmed!');
+      fetchStudentMeetings();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleDeclineReschedule = async (meetingId: string) => {
+    const reason = prompt('Reason for declining proposed reschedule:');
+    if (reason === null) return;
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const res = await fetch(`${API_URL}/meetings/${meetingId}/student/decline-reschedule`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ reason }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to decline reschedule');
+      }
+      alert('Reschedule declined. Existing meeting remains confirmed.');
+      fetchStudentMeetings();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleCancelMeeting = async (meetingId: string) => {
+    const reason = prompt('Please provide a reason for cancelling this meeting:');
+    if (!reason) return;
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const res = await fetch(`${API_URL}/meetings/${meetingId}/student/cancel`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ cancellationReason: reason }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to cancel meeting');
+      }
+      alert('Meeting cancelled. Slot has been freed.');
+      fetchStudentMeetings();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
 
   if (loading) {
     return (
@@ -632,9 +781,164 @@ export default function StudentDashboard() {
                   )}
                 </div>
 
+                
+                {/* Active / Upcoming Strategy Meeting Preview */}
+                {meetingsData?.upcoming?.[0] && (
+                  <div className="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-2xl border border-emerald-300 dark:border-emerald-800/60 text-xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
+                        <Calendar className="w-3 h-3 text-emerald-600" />
+                        Next Confirmed Session
+                      </span>
+                      <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200">
+                        {meetingsData.upcoming[0].status}
+                      </span>
+                    </div>
+                    <div className="font-extrabold text-germany-black dark:text-white text-xs">
+                      {meetingsData.upcoming[0].humanTime}
+                    </div>
+                    {meetingsData.upcoming[0].agenda && (
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400">
+                        Topic: {meetingsData.upcoming[0].agenda}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 pt-1">
+                      {meetingsData.upcoming[0].meeting_link && (
+                        <a
+                          href={meetingsData.upcoming[0].meeting_link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex-1 py-1.5 px-2.5 rounded-xl bg-germany-red text-white text-[11px] font-black text-center shadow-xs flex items-center justify-center gap-1"
+                        >
+                          <Video className="w-3 h-3" />
+                          <span>Join Meet</span>
+                        </a>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedMeetingForReschedule(meetingsData.upcoming[0]);
+                          setBookingMode('reschedule');
+                          setIsBookingModalOpen(true);
+                        }}
+                        className="py-1.5 px-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-[11px] font-bold text-gray-700 dark:text-gray-300 hover:border-gray-500"
+                      >
+                        Reschedule
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleCancelMeeting(meetingsData.upcoming[0].id)}
+                        className="p-1.5 text-gray-400 hover:text-germany-red rounded-xl"
+                        title="Cancel Meeting"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Counsellor Invitation Banner */}
+                {meetingsData?.pendingInvitations?.[0] && (
+                  <div className="p-3.5 bg-purple-50 dark:bg-purple-950/40 rounded-2xl border border-purple-300 dark:border-purple-800 text-xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase text-purple-800 dark:text-purple-300">
+                        Meeting Invitation Received
+                      </span>
+                      <span className="text-[9px] font-bold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/60 px-2 py-0.5 rounded-full">
+                        30m Expiry
+                      </span>
+                    </div>
+                    <div className="font-extrabold text-germany-black dark:text-white">
+                      {meetingsData.pendingInvitations[0].humanTime}
+                    </div>
+                    <div className="flex items-center gap-1.5 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => handleAcceptInvitation(meetingsData.pendingInvitations[0].id)}
+                        className="flex-1 py-1.5 px-2 rounded-xl bg-purple-600 text-white text-[11px] font-black text-center shadow-xs"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedMeetingForReschedule(meetingsData.pendingInvitations[0]);
+                          setBookingMode('reschedule');
+                          setIsBookingModalOpen(true);
+                        }}
+                        className="py-1.5 px-2 rounded-xl border border-purple-300 text-[11px] font-bold text-purple-800 dark:text-purple-200"
+                      >
+                        Reschedule
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeclineInvitation(meetingsData.pendingInvitations[0].id)}
+                        className="py-1.5 px-2 text-[11px] font-bold text-gray-500 hover:text-red-500"
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Counsellor Reschedule Proposal Banner */}
+                {meetingsData?.pendingReschedules?.find((m: any) => m.reschedule_proposed_by === 'counsellor') && (() => {
+                  const m = meetingsData.pendingReschedules.find((item: any) => item.reschedule_proposed_by === 'counsellor');
+                  return (
+                    <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 rounded-2xl border border-amber-300 dark:border-amber-800 text-xs space-y-2">
+                      <span className="text-[10px] font-black uppercase text-amber-800 dark:text-amber-300">
+                        Counsellor Proposed Reschedule
+                      </span>
+                      <div className="font-extrabold text-germany-black dark:text-white">
+                        New Slot: {m.pendingRescheduleHumanTime}
+                      </div>
+                      <div className="flex items-center gap-1.5 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => handleAcceptReschedule(m.id)}
+                          className="flex-1 py-1.5 px-2 rounded-xl bg-amber-600 text-white text-[11px] font-black text-center shadow-xs"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedMeetingForReschedule(m);
+                            setBookingMode('counterproposal');
+                            setIsBookingModalOpen(true);
+                          }}
+                          className="py-1.5 px-2 rounded-xl border border-amber-300 text-[11px] font-bold text-amber-800 dark:text-amber-200"
+                        >
+                          Counter-Slot
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeclineReschedule(m.id)}
+                          className="py-1.5 px-2 text-[11px] font-bold text-gray-500 hover:text-red-500"
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBookingMode('student_book');
+                    setSelectedMeetingForReschedule(null);
+                    setIsBookingModalOpen(true);
+                  }}
+                  className="w-full neu-btn-primary py-2.5 text-xs font-black cursor-pointer inline-flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <Calendar className="w-4 h-4" />
+                  <span>Book Strategy Meeting</span>
+                </button>
+
                 <Link
                   href="/dashboard/student/help"
-                  className="w-full neu-btn py-2.5 text-xs font-extrabold text-germany-black dark:text-white hover:text-germany-red cursor-pointer inline-flex items-center justify-center gap-1.5"
+                  className="w-full neu-btn py-2 text-xs font-bold text-germany-black dark:text-white hover:text-germany-red cursor-pointer inline-flex items-center justify-center gap-1.5"
                 >
                   Open Counsellor Helpdesk
                 </Link>
@@ -749,6 +1053,25 @@ export default function StudentDashboard() {
           </div>
         </div>
       </div>
+      {/* BookMyShow-Style Meeting Booking Modal */}
+      {isBookingModalOpen && (
+        <MeetingBookingModal
+          isOpen={isBookingModalOpen}
+          onClose={() => {
+            setIsBookingModalOpen(false);
+            setSelectedMeetingForReschedule(null);
+          }}
+          onSuccess={() => {
+            fetchStudentMeetings();
+          }}
+          mode={bookingMode}
+          userRole="student"
+          counsellorId={assignedCounsellor?.id}
+          counsellorName={assignedCounsellor?.name}
+          existingMeetingId={selectedMeetingForReschedule?.id}
+          currentMeetingHumanTime={selectedMeetingForReschedule?.humanTime}
+        />
+      )}
     </div>
   );
 }
