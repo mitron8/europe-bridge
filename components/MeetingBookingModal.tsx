@@ -289,40 +289,40 @@ export function MeetingBookingModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150">
-      <div className="bg-white dark:bg-[#111622] rounded-3xl border border-gray-200/90 dark:border-gray-800 shadow-2xl w-full max-w-4xl overflow-hidden my-4 sm:my-6 relative">
-        {/* Top Header Card with Reichstag Building Graphic */}
-        <div className="p-5 sm:p-6 border-b border-gray-100 dark:border-gray-800 flex items-start justify-between relative overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150">
+      <div className="bg-white dark:bg-[#111622] rounded-2xl sm:rounded-3xl border border-gray-200/90 dark:border-gray-800 shadow-2xl w-full max-w-2xl overflow-hidden my-2 sm:my-4 relative">
+        {/* Top Header Card */}
+        <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between relative overflow-hidden">
           {/* Header Left Info */}
-          <div className="flex items-start gap-3.5 z-10 max-w-lg">
-            <div className="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200/60 dark:border-red-900/60 text-[#E63946] flex items-center justify-center shrink-0">
-              <Calendar className="w-6 h-6 stroke-[1.75]" />
+          <div className="flex items-center gap-2.5 z-10 max-w-md">
+            <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200/60 dark:border-red-900/60 text-[#E63946] flex items-center justify-center shrink-0">
+              <Calendar className="w-4.5 h-4.5 stroke-[2]" />
             </div>
             <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-display font-bold text-base sm:text-lg text-gray-900 dark:text-white">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h3 className="font-display font-bold text-sm sm:text-base text-gray-900 dark:text-white leading-tight">
                   {mode === 'counsellor_invite'
                     ? `Invite Student to Meeting`
                     : mode === 'reschedule' || mode === 'counterproposal'
                     ? 'Reschedule Strategy Session'
                     : 'Book 1-on-1 Counselling Session'}
                 </h3>
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#E63946] bg-red-50 dark:bg-red-950/50 border border-red-200/70 dark:border-red-900/60 px-2 py-0.5 rounded-full">
-                  <Clock className="w-3 h-3" />
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#E63946] bg-red-50 dark:bg-red-950/50 border border-red-200/70 dark:border-red-900/60 px-2 py-0.2 rounded-full">
+                  <Clock className="w-2.5 h-2.5" />
                   <span>IST (Asia/Kolkata)</span>
                 </span>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 font-medium leading-tight truncate">
                 {mode === 'counsellor_invite'
-                  ? `Inviting student: ${studentName || 'Assigned Student'}`
+                  ? `Inviting: ${studentName || 'Assigned Student'}`
                   : `Meet with our counsellor for a personalised 60-minute session.`}
               </p>
             </div>
           </div>
 
           {/* Header Right Graphic (German Reichstag Building) */}
-          <div className="hidden md:block relative h-24 w-64 shrink-0 -my-6 -mr-6 pointer-events-none">
-            <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white dark:from-[#111622] to-transparent z-10" />
+          <div className="hidden sm:block relative h-16 w-44 shrink-0 -my-4 -mr-5 pointer-events-none">
+            <div className="absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-white dark:from-[#111622] to-transparent z-10" />
             <Image
               src="/images/germany-header.jpg"
               alt="Germany"
@@ -335,54 +335,54 @@ export function MeetingBookingModal({
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors z-20"
+            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors z-20"
             title="Close"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Existing Meeting Info Banner (for Rescheduling) */}
         {currentMeetingHumanTime && (
-          <div className="bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900/50 px-6 py-2.5 flex items-center gap-2 text-xs font-bold text-amber-900 dark:text-amber-200">
-            <Clock className="w-4 h-4 shrink-0 text-amber-600" />
+          <div className="bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900/50 px-5 py-2 flex items-center gap-2 text-[11px] font-bold text-amber-900 dark:text-amber-200">
+            <Clock className="w-3.5 h-3.5 shrink-0 text-amber-600" />
             <span>Current confirmed slot: <strong>{currentMeetingHumanTime}</strong></span>
           </div>
         )}
 
         {/* Modal Scrollable Body */}
-        <div className="p-5 sm:p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+        <div className="p-4 sm:p-5 space-y-4 max-h-[calc(85vh-110px)] overflow-y-auto">
           {loading ? (
-            <div className="py-16 flex flex-col items-center justify-center gap-3">
-              <Loader2 className="w-8 h-8 animate-spin text-[#E63946]" />
+            <div className="py-10 flex flex-col items-center justify-center gap-2.5">
+              <Loader2 className="w-6 h-6 animate-spin text-[#E63946]" />
               <p className="text-xs font-bold text-gray-500 dark:text-gray-400">
                 Fetching real-time counsellor availability...
               </p>
             </div>
           ) : successData ? (
             /* Success State */
-            <div className="py-8 text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 mx-auto flex items-center justify-center">
-                <CheckCircle2 className="w-8 h-8" />
+            <div className="py-6 text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 mx-auto flex items-center justify-center">
+                <CheckCircle2 className="w-6 h-6" />
               </div>
-              <div className="space-y-1">
-                <h4 className="text-lg font-display font-bold text-gray-900 dark:text-white">
+              <div className="space-y-0.5">
+                <h4 className="text-base font-display font-bold text-gray-900 dark:text-white">
                   {mode === 'student_book'
                     ? 'Meeting Confirmed Instantly!'
                     : mode === 'counsellor_invite'
                     ? 'Invitation Sent to Student!'
                     : 'Reschedule Proposal Sent!'}
                 </h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
                   {mode === 'student_book'
-                    ? `Your 1-hour session with ${effectiveCounsellorName} is confirmed for ${successData.humanTime || 'the selected slot'}. A Google Meet link has been generated.`
+                    ? `Your 1-hour session with ${effectiveCounsellorName} is confirmed for ${successData.humanTime || 'the selected slot'}.`
                     : mode === 'counsellor_invite'
                     ? `Your student has 30 minutes to accept the proposed slot.`
                     : `The proposed new time is held for 30 minutes awaiting acceptance.`}
                 </p>
               </div>
 
-              <div className="p-4 bg-gray-50 dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800 text-left text-xs space-y-2 max-w-md mx-auto">
+              <div className="p-3 bg-gray-50 dark:bg-[#0E121A] rounded-xl border border-gray-200/80 dark:border-gray-800 text-left text-xs space-y-1.5 max-w-sm mx-auto">
                 <div className="flex justify-between">
                   <span className="text-gray-400 font-semibold">Meeting Time:</span>
                   <span className="font-bold text-gray-900 dark:text-white">
@@ -405,7 +405,7 @@ export function MeetingBookingModal({
 
               <button
                 onClick={onClose}
-                className="bg-[#E63946] hover:bg-[#D62839] text-white px-8 py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                className="bg-[#E63946] hover:bg-[#D62839] text-white px-6 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer"
               >
                 Done
               </button>
@@ -414,68 +414,68 @@ export function MeetingBookingModal({
             <>
               {/* Error Banner */}
               {errorMessage && (
-                <div className="p-3.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-2xl flex items-start gap-2.5 text-xs font-bold text-[#E63946] animate-in fade-in duration-150">
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-xl flex items-start gap-2 text-xs font-bold text-[#E63946] animate-in fade-in duration-150">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                   <span className="flex-1">{errorMessage}</span>
                 </div>
               )}
 
               {/* Top 3 Metadata Chips Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-4 border-b border-gray-100 dark:border-gray-800">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-[#E63946] flex items-center justify-center shrink-0">
-                    <Clock className="w-4 h-4" />
+              <div className="grid grid-cols-3 gap-2 pb-3 border-b border-gray-100 dark:border-gray-800">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-950/40 text-[#E63946] flex items-center justify-center shrink-0">
+                    <Clock className="w-3.5 h-3.5" />
                   </div>
-                  <div>
-                    <div className="font-bold text-xs text-gray-900 dark:text-white">60 Minutes</div>
-                    <div className="text-[11px] text-gray-500 dark:text-gray-400">1-on-1 Session</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 sm:border-l sm:border-gray-100 dark:sm:border-gray-800 sm:pl-4">
-                  <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-[#E63946] flex items-center justify-center shrink-0">
-                    <Video className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-xs text-gray-900 dark:text-white">Google Meet</div>
-                    <div className="text-[11px] text-gray-500 dark:text-gray-400">Online (Link after booking)</div>
+                  <div className="min-w-0">
+                    <div className="font-bold text-[11px] text-gray-900 dark:text-white truncate">60 Minutes</div>
+                    <div className="text-[10px] text-gray-500 dark:text-gray-400 truncate">1-on-1 Session</div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 sm:border-l sm:border-gray-100 dark:sm:border-gray-800 sm:pl-4">
-                  <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-[#E63946] flex items-center justify-center shrink-0">
-                    <User className="w-4 h-4" />
+                <div className="flex items-center gap-2 sm:border-l sm:border-gray-100 dark:sm:border-gray-800 sm:pl-3">
+                  <div className="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-950/40 text-[#E63946] flex items-center justify-center shrink-0">
+                    <Video className="w-3.5 h-3.5" />
                   </div>
-                  <div>
-                    <div className="font-bold text-xs text-gray-900 dark:text-white truncate">
+                  <div className="min-w-0">
+                    <div className="font-bold text-[11px] text-gray-900 dark:text-white truncate">Google Meet</div>
+                    <div className="text-[10px] text-gray-500 dark:text-gray-400 truncate">Online Link</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 sm:border-l sm:border-gray-100 dark:sm:border-gray-800 sm:pl-3">
+                  <div className="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-950/40 text-[#E63946] flex items-center justify-center shrink-0">
+                    <User className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-bold text-[11px] text-gray-900 dark:text-white truncate">
                       {effectiveCounsellorName}
                     </div>
-                    <div className="text-[11px] text-gray-500 dark:text-gray-400">Your Germany Expert</div>
+                    <div className="text-[10px] text-gray-500 dark:text-gray-400 truncate">Germany Expert</div>
                   </div>
                 </div>
               </div>
 
               {/* Step 1: Select a Date */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-6 h-6 rounded-full bg-red-100 dark:bg-red-950/60 text-[#E63946] font-bold text-xs flex items-center justify-center shrink-0">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between flex-wrap gap-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-red-100 dark:bg-red-950/60 text-[#E63946] font-bold text-[10px] flex items-center justify-center shrink-0">
                       1
                     </span>
                     <div>
-                      <h4 className="text-sm font-bold text-gray-900 dark:text-white">Select a Date</h4>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Choose a convenient date (shows next 3 days).</p>
+                      <h4 className="text-xs font-bold text-gray-900 dark:text-white">Select a Date</h4>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">Choose a convenient date (next 3 days).</p>
                     </div>
                   </div>
-                  <div className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 flex items-center gap-1.5 bg-gray-50/50 dark:bg-gray-800/40">
-                    <Calendar className="w-3.5 h-3.5 text-gray-500" />
+                  <div className="text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 flex items-center gap-1 bg-gray-50/50 dark:bg-gray-800/40">
+                    <Calendar className="w-3 h-3 text-gray-500" />
                     <span>3-Day Window</span>
-                    <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                    <ChevronDown className="w-3 h-3 text-gray-400" />
                   </div>
                 </div>
 
                 {/* 3 Date Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-2.5">
                   {availability?.days.map((day, idx) => {
                     const isSelected = selectedDateIdx === idx;
                     const isSunday = day.isSunday;
@@ -490,32 +490,32 @@ export function MeetingBookingModal({
                           setErrorMessage(null);
                         }}
                         disabled={isSunday}
-                        className={`p-4 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 relative cursor-pointer ${
+                        className={`py-2 px-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-0.5 relative cursor-pointer ${
                           isSunday
                             ? 'bg-gray-100/70 dark:bg-white/5 border-gray-200 dark:border-white/5 text-gray-400 cursor-not-allowed opacity-60'
                             : isSelected
-                            ? 'bg-[#E63946] text-white border-[#E63946] shadow-md'
+                            ? 'bg-[#E63946] text-white border-[#E63946] shadow-sm'
                             : 'bg-white dark:bg-[#141B2D] border-gray-200/90 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 text-gray-900 dark:text-white'
                         }`}
                       >
                         {isSelected && (
-                          <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-white text-[#E63946] flex items-center justify-center shadow-xs">
-                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                          <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-white text-[#E63946] flex items-center justify-center shadow-xs">
+                            <Check className="w-2.5 h-2.5 stroke-[3]" />
                           </div>
                         )}
                         <span
-                          className={`text-xs font-bold uppercase tracking-wider ${
+                          className={`text-[10px] font-bold uppercase tracking-wider ${
                             isSelected ? 'text-white/90' : 'text-gray-500 dark:text-gray-400'
                           }`}
                         >
                           {day.dayName.slice(0, 3)}
                         </span>
-                        <span className="text-xl sm:text-2xl font-display font-bold leading-tight">
+                        <span className="text-sm sm:text-base font-display font-bold leading-tight">
                           {formatDayDate(day)}
                         </span>
                         {day.isToday && (
                           <span
-                            className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full mt-1 ${
+                            className={`text-[9px] font-bold px-2 py-0.2 rounded-full mt-0.5 ${
                               isSelected
                                 ? 'bg-white/20 text-white'
                                 : 'bg-red-50 text-[#E63946] dark:bg-red-950/40'
@@ -525,8 +525,8 @@ export function MeetingBookingModal({
                           </span>
                         )}
                         {isSunday && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-200 dark:bg-white/10 text-gray-500 mt-1 flex items-center gap-1">
-                            <Ban className="w-2.5 h-2.5" /> Closed
+                          <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-gray-200 dark:bg-white/10 text-gray-500 mt-0.5 flex items-center gap-1">
+                            <Ban className="w-2 h-2" /> Closed
                           </span>
                         )}
                       </button>
@@ -537,39 +537,39 @@ export function MeetingBookingModal({
 
               {/* Sunday Restricted Notice */}
               {currentDay?.isSunday ? (
-                <div className="p-6 bg-gray-50 dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800 text-center space-y-2">
-                  <div className="w-10 h-10 rounded-full bg-gray-200/80 dark:bg-white/10 text-gray-500 mx-auto flex items-center justify-center">
-                    <Ban className="w-5 h-5" />
+                <div className="p-4 bg-gray-50 dark:bg-[#0E121A] rounded-xl border border-gray-200/80 dark:border-gray-800 text-center space-y-1.5">
+                  <div className="w-8 h-8 rounded-full bg-gray-200/80 dark:bg-white/10 text-gray-500 mx-auto flex items-center justify-center">
+                    <Ban className="w-4 h-4" />
                   </div>
-                  <h4 className="font-display font-bold text-sm text-gray-900 dark:text-white">
+                  <h4 className="font-display font-bold text-xs text-gray-900 dark:text-white">
                     No Counselling Meetings on Sundays
                   </h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
                     EuroBridge counselling sessions operate Monday through Saturday. Please select an alternate day above.
                   </p>
                 </div>
               ) : (
                 /* Step 2: Select a Time Slot */
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-6 h-6 rounded-full bg-red-100 dark:bg-red-950/60 text-[#E63946] font-bold text-xs flex items-center justify-center shrink-0">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-red-100 dark:bg-red-950/60 text-[#E63946] font-bold text-[10px] flex items-center justify-center shrink-0">
                       2
                     </span>
                     <div>
-                      <h4 className="text-sm font-bold text-gray-900 dark:text-white">Select a Time Slot</h4>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Pick an available 60-minute slot.</p>
+                      <h4 className="text-xs font-bold text-gray-900 dark:text-white">Select a Time Slot</h4>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">Pick an available 60-minute slot.</p>
                     </div>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {/* Morning Sessions */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                      <div className="bg-[#FFF0F2] dark:bg-red-950/20 text-gray-900 dark:text-white font-bold text-xs p-3.5 rounded-xl sm:w-80 shrink-0 flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <div className="bg-[#FFF0F2] dark:bg-red-950/20 text-gray-900 dark:text-white font-bold text-[11px] py-2 px-3 rounded-xl sm:w-64 shrink-0 flex items-center gap-1.5">
                         <span>☀️</span>
-                        <span>Morning Sessions <span className="font-normal text-gray-600 dark:text-gray-300">(9:00 AM – 12:00 PM IST)</span></span>
+                        <span>Morning <span className="font-normal text-gray-600 dark:text-gray-300">(9:00 AM – 12:00 PM IST)</span></span>
                       </div>
 
-                      <div className="flex-1 grid grid-cols-3 gap-2.5">
+                      <div className="flex-1 grid grid-cols-3 gap-2">
                         {currentDay?.morningSlots.map((slot) => {
                           const isSelected = selectedSlot?.slotId === slot.slotId;
                           const isAvail = slot.isAvailable;
@@ -580,7 +580,7 @@ export function MeetingBookingModal({
                               type="button"
                               onClick={() => handleSlotSelect(slot)}
                               disabled={!isAvail}
-                              className={`p-2.5 rounded-xl border text-center transition-all relative ${
+                              className={`py-1.5 px-2 rounded-xl border text-center transition-all relative ${
                                 isSelected
                                   ? 'bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-700 text-[#E63946]'
                                   : isAvail
@@ -589,14 +589,14 @@ export function MeetingBookingModal({
                               }`}
                             >
                               {isSelected && (
-                                <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#E63946] text-white flex items-center justify-center">
-                                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+                                <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#E63946] text-white flex items-center justify-center">
+                                  <Check className="w-2 h-2 stroke-[3]" />
                                 </div>
                               )}
-                              <div className={`font-bold text-xs ${isSelected ? 'text-[#E63946]' : ''}`}>
+                              <div className={`font-bold text-[11px] ${isSelected ? 'text-[#E63946]' : ''}`}>
                                 {slot.label.split('–')[0].trim()}
                               </div>
-                              <div className="text-[10px] text-gray-400 mt-0.5">
+                              <div className="text-[9px] text-gray-400">
                                 60 min
                               </div>
                             </button>
@@ -606,13 +606,13 @@ export function MeetingBookingModal({
                     </div>
 
                     {/* Afternoon Sessions */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                      <div className="bg-[#FFF5ED] dark:bg-amber-950/20 text-gray-900 dark:text-white font-bold text-xs p-3.5 rounded-xl sm:w-80 shrink-0 flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <div className="bg-[#FFF5ED] dark:bg-amber-950/20 text-gray-900 dark:text-white font-bold text-[11px] py-2 px-3 rounded-xl sm:w-64 shrink-0 flex items-center gap-1.5">
                         <span>🌤️</span>
-                        <span>Afternoon Sessions <span className="font-normal text-gray-600 dark:text-gray-300">(2:00 PM – 5:00 PM IST)</span></span>
+                        <span>Afternoon <span className="font-normal text-gray-600 dark:text-gray-300">(2:00 PM – 5:00 PM IST)</span></span>
                       </div>
 
-                      <div className="flex-1 grid grid-cols-3 gap-2.5">
+                      <div className="flex-1 grid grid-cols-3 gap-2">
                         {currentDay?.afternoonSlots.map((slot) => {
                           const isSelected = selectedSlot?.slotId === slot.slotId;
                           const isAvail = slot.isAvailable;
@@ -623,7 +623,7 @@ export function MeetingBookingModal({
                               type="button"
                               onClick={() => handleSlotSelect(slot)}
                               disabled={!isAvail}
-                              className={`p-2.5 rounded-xl border text-center transition-all relative ${
+                              className={`py-1.5 px-2 rounded-xl border text-center transition-all relative ${
                                 isSelected
                                   ? 'bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-700 text-[#E63946]'
                                   : isAvail
@@ -632,14 +632,14 @@ export function MeetingBookingModal({
                               }`}
                             >
                               {isSelected && (
-                                <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#E63946] text-white flex items-center justify-center">
-                                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+                                <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#E63946] text-white flex items-center justify-center">
+                                  <Check className="w-2 h-2 stroke-[3]" />
                                 </div>
                               )}
-                              <div className={`font-bold text-xs ${isSelected ? 'text-[#E63946]' : ''}`}>
+                              <div className={`font-bold text-[11px] ${isSelected ? 'text-[#E63946]' : ''}`}>
                                 {slot.label.split('–')[0].trim()}
                               </div>
-                              <div className="text-[10px] text-gray-400 mt-0.5">
+                              <div className="text-[9px] text-gray-400">
                                 60 min
                               </div>
                             </button>
@@ -652,19 +652,19 @@ export function MeetingBookingModal({
               )}
 
               {/* Step 3: Session Agenda / Topic */}
-              <div className="space-y-3 pt-1">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-6 h-6 rounded-full bg-red-100 dark:bg-red-950/60 text-[#E63946] font-bold text-xs flex items-center justify-center shrink-0">
+              <div className="space-y-2 pt-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-red-100 dark:bg-red-950/60 text-[#E63946] font-bold text-[10px] flex items-center justify-center shrink-0">
                     3
                   </span>
                   <div>
-                    <h4 className="text-sm font-bold text-gray-900 dark:text-white">Session Agenda / Topic</h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Select what you'd like to discuss (you can choose multiple).</p>
+                    <h4 className="text-xs font-bold text-gray-900 dark:text-white">Session Agenda / Topic</h4>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400">Select what you'd like to discuss (choose multiple).</p>
                   </div>
                 </div>
 
                 {/* Agenda Pills (Multi-Select) */}
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {COMMON_AGENDAS.map((item) => {
                     const isSelected = selectedAgendas.includes(item);
                     return (
@@ -672,13 +672,13 @@ export function MeetingBookingModal({
                         key={item}
                         type="button"
                         onClick={() => toggleAgenda(item)}
-                        className={`px-3.5 py-1.5 rounded-full text-xs transition-all flex items-center gap-1.5 cursor-pointer ${
+                        className={`px-3 py-1 rounded-full text-[11px] transition-all flex items-center gap-1 cursor-pointer ${
                           isSelected
                             ? 'bg-red-50 dark:bg-red-950/40 border border-red-300 dark:border-red-700 text-[#E63946] font-bold'
                             : 'bg-white dark:bg-[#141B2D] border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 font-medium'
                         }`}
                       >
-                        {isSelected && <Check className="w-3.5 h-3.5 stroke-[3] text-[#E63946]" />}
+                        {isSelected && <Check className="w-3 h-3 stroke-[3] text-[#E63946]" />}
                         <span>{item}</span>
                       </button>
                     );
@@ -686,16 +686,16 @@ export function MeetingBookingModal({
                 </div>
 
                 {/* Optional Notes with character counter */}
-                <div className="relative rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#141B2D] p-3 flex items-start gap-2.5 focus-within:ring-2 focus-within:ring-[#E63946]/20 focus-within:border-[#E63946] transition-all">
-                  <FileText className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
+                <div className="relative rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#141B2D] p-2.5 flex items-start gap-2 focus-within:ring-2 focus-within:ring-[#E63946]/20 focus-within:border-[#E63946] transition-all">
+                  <FileText className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" />
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value.slice(0, 500))}
                     placeholder="Optional notes: specific universities, questions, or document concerns you want to discuss..."
-                    rows={2}
-                    className="w-full text-xs text-gray-800 dark:text-gray-100 placeholder:text-gray-400 bg-transparent border-none focus:outline-none resize-none font-medium pr-12 pb-3"
+                    rows={1}
+                    className="w-full text-xs text-gray-800 dark:text-gray-100 placeholder:text-gray-400 bg-transparent border-none focus:outline-none resize-none font-medium pr-12 pb-1"
                   />
-                  <div className="absolute right-3 bottom-2 text-[10px] text-gray-400 font-medium">
+                  <div className="absolute right-2.5 bottom-1.5 text-[9px] text-gray-400 font-medium">
                     {notes.length} / 500
                   </div>
                 </div>
@@ -706,12 +706,12 @@ export function MeetingBookingModal({
 
         {/* Modal Footer Actions */}
         {!successData && !loading && (
-          <div className="p-4 sm:p-5 bg-gray-50/70 dark:bg-[#0E121A] border-t border-gray-200/80 dark:border-gray-800 flex items-center justify-between gap-3">
+          <div className="px-4 py-3 sm:px-5 sm:py-3.5 bg-gray-50/70 dark:bg-[#0E121A] border-t border-gray-200/80 dark:border-gray-800 flex items-center justify-between gap-3">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              className="px-4 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
             >
               Cancel
             </button>
@@ -720,16 +720,16 @@ export function MeetingBookingModal({
               type="button"
               onClick={handleSubmit}
               disabled={submitting || !selectedSlot || currentDay?.isSunday}
-              className="bg-[#E63946] hover:bg-[#D62839] text-white font-bold px-6 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-[#E63946] hover:bg-[#D62839] text-white font-bold px-5 py-2 rounded-xl text-xs flex items-center gap-2 shadow-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   <span>Reserving Slot...</span>
                 </>
               ) : (
                 <>
-                  <Calendar className="w-4 h-4" />
+                  <Calendar className="w-3.5 h-3.5" />
                   <span>
                     {mode === 'counsellor_invite'
                       ? 'Send Meeting Invitation'
@@ -737,7 +737,7 @@ export function MeetingBookingModal({
                       ? 'Propose Reschedule'
                       : 'Confirm Strategy Meeting'}
                   </span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <ArrowRight className="w-3 h-3" />
                 </>
               )}
             </button>
