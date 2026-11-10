@@ -329,6 +329,10 @@ p * {
   .neu-dropdown-item {
     border-radius: 12px;
     transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.35;
   }
 
   .neu-dropdown-item:hover {
@@ -514,6 +518,10 @@ body {
   border-radius: 8px !important;
   color: #334155 !important;
   transition: background-color 0.15s ease, color 0.15s ease !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.35 !important;
 }
 
 :root:not(.dark) .dashboard-container .neu-dropdown-item:hover {
@@ -595,6 +603,16 @@ body {
 
 .dark .dashboard-container .neu-dropdown-item {
   color: #CBD5E1 !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.35 !important;
+}
+
+.dashboard-container select,
+.dashboard-container select option {
+  white-space: normal !important;
+  word-break: break-word !important;
 }
 
 .dark .dashboard-container .neu-dropdown-item:hover {

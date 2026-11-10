@@ -382,7 +382,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                       <select
                         value={intake}
                         onChange={(e) => setIntake(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl border border-[#ded8cb] bg-white text-xs sm:text-sm text-[#16161a] focus:outline-none focus:border-[#16161a] focus:ring-1 focus:ring-[#16161a] transition-all cursor-pointer"
+                        className="w-full px-3 py-2 rounded-xl border border-[#ded8cb] bg-white text-xs sm:text-sm text-[#16161a] focus:outline-none focus:border-[#16161a] focus:ring-1 focus:ring-[#16161a] transition-all cursor-pointer whitespace-normal break-words"
                       >
                         <option value="Winter Semester 2026">Winter 2026 (Oct 2026)</option>
                         <option value="Summer Semester 2027">Summer 2027 (Apr 2027)</option>
@@ -399,7 +399,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                     <select
                       value={field}
                       onChange={(e) => setField(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-[#ded8cb] bg-white text-xs sm:text-sm text-[#16161a] focus:outline-none focus:border-[#16161a] focus:ring-1 focus:ring-[#16161a] transition-all cursor-pointer"
+                      className="w-full px-3 py-2 rounded-xl border border-[#ded8cb] bg-white text-xs sm:text-sm text-[#16161a] focus:outline-none focus:border-[#16161a] focus:ring-1 focus:ring-[#16161a] transition-all cursor-pointer whitespace-normal break-words"
                     >
                       <option value="Computer Science / IT / AI">Computer Science / IT / AI / Data</option>
                       <option value="Mechanical / Automotive / Mechatronics">Mechanical / Automotive / Mechatronics</option>

@@ -990,7 +990,7 @@ export function CounsellorMeetingsView() {
                 <select
                   value={blockDate}
                   onChange={(e) => setBlockDate(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200/80 dark:border-gray-800 bg-gray-50 dark:bg-[#0E121A] mt-1 text-germany-black dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-gray-200/80 dark:border-gray-800 bg-gray-50 dark:bg-[#0E121A] mt-1 text-germany-black dark:text-white whitespace-normal break-words cursor-pointer"
                 >
                   {availability?.days?.filter((d: any) => !d.isSunday).map((d: any) => (
                     <option key={d.dateString} value={d.dateString}>
@@ -1019,7 +1019,7 @@ export function CounsellorMeetingsView() {
                   <select
                     value={blockStartHour}
                     onChange={(e) => setBlockStartHour(parseInt(e.target.value, 10))}
-                    className="w-full p-2.5 rounded-xl border border-gray-200/80 dark:border-gray-800 bg-gray-50 dark:bg-[#0E121A] mt-1 text-germany-black dark:text-white"
+                    className="w-full p-2.5 rounded-xl border border-gray-200/80 dark:border-gray-800 bg-gray-50 dark:bg-[#0E121A] mt-1 text-germany-black dark:text-white whitespace-normal break-words cursor-pointer"
                   >
                     <option value={9}>9:00 AM – 10:00 AM</option>
                     <option value={10}>10:00 AM – 11:00 AM</option>

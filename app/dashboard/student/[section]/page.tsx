@@ -649,7 +649,7 @@ function MatchingSection() {
                       <span className="text-[10px] font-extrabold text-germany-red uppercase tracking-wider">
                         #{r.rank} • {r.universityType ?? 'University'}
                       </span>
-                      <h3 className="font-display text-sm text-germany-black dark:text-white leading-tight truncate">{r.universityName}</h3>
+                      <h3 className="font-display text-sm text-germany-black dark:text-white leading-tight whitespace-normal break-words">{r.universityName}</h3>
                       <p className="text-xs font-bold text-gray-500 dark:text-gray-300 leading-snug">{r.programName}</p>
                       <p className="text-[10px] text-gray-400 font-medium">{r.degree}</p>
                     </div>
@@ -917,7 +917,7 @@ function ShortlistSection() {
                   <span className="text-[10px] font-extrabold text-germany-red uppercase tracking-wider">
                     {rec.universityType || rec.type || 'Public University'}
                   </span>
-                  <h3 className="font-display text-sm text-germany-black leading-tight truncate">
+                  <h3 className="font-display text-sm text-germany-black leading-tight whitespace-normal break-words">
                     {rec.universityName || rec.name}
                   </h3>
                   <p className="text-xs font-bold text-gray-700 leading-snug">

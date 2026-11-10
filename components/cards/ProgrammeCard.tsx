@@ -104,7 +104,7 @@ export function ProgrammeCard({
               #{rank} • {universityType}
             </span>
           )}
-          <h4 className="font-display text-sm sm:text-base text-germany-black dark:text-white leading-tight truncate" title={universityName}>
+          <h4 className="font-display text-sm sm:text-base text-germany-black dark:text-white leading-tight whitespace-normal break-words" title={universityName}>
             {universityName}
           </h4>
           <p className="text-xs font-extrabold text-gray-600 dark:text-gray-300 leading-snug" title={programName}>

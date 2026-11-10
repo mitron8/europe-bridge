@@ -110,9 +110,9 @@ function AssignCounsellorModal({ student, onClose, onSuccess }: { student: Stude
               <button
                 type="button"
                 onClick={() => setIsSelectOpen(!isSelectOpen)}
-                className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0] text-germany-black text-left flex items-center justify-between cursor-pointer focus:outline-none focus:ring-2 focus:ring-germany-red/30"
+                className="w-full px-4 py-2.5 neu-input text-xs font-bold bg-[#EBE7E0] text-germany-black text-left flex items-center justify-between cursor-pointer focus:outline-none focus:ring-2 focus:ring-germany-red/30 min-h-[42px]"
               >
-                <span>
+                <span className="whitespace-normal break-words leading-snug pr-2">
                   {selectedCounsellorId
                     ? (() => {
                         const c = counsellors.find((x) => x.id === selectedCounsellorId);
@@ -120,7 +120,7 @@ function AssignCounsellorModal({ student, onClose, onSuccess }: { student: Stude
                       })()
                     : '— Choose a counsellor —'}
                 </span>
-                <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isSelectOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 shrink-0 ${isSelectOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {isSelectOpen && (
@@ -156,7 +156,7 @@ function AssignCounsellorModal({ student, onClose, onSuccess }: { student: Stude
                           setSelectedCounsellorId(c.id);
                           setIsSelectOpen(false);
                         }}
-                        className={`w-full text-left px-3 py-2 text-xs font-bold neu-dropdown-item transition-all ${
+                        className={`w-full text-left px-3 py-2 text-xs font-bold neu-dropdown-item transition-all whitespace-normal break-words leading-snug ${
                           selectedCounsellorId === c.id
                             ? 'neu-dropdown-item-active'
                             : 'text-germany-black hover:bg-[#EBE7E0]'

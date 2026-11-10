@@ -4391,7 +4391,7 @@ export function StudentDetailModal({
                                 setMatchUniFilter(e.target.value);
                                 setMatchPage(1);
                               }}
-                              className="text-xs font-extrabold bg-[#F8F9FA] dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl px-3 py-2 text-gray-700 dark:text-gray-300 focus:outline-none focus:border-germany-red max-w-[220px] truncate cursor-pointer"
+                              className="text-xs font-extrabold bg-[#F8F9FA] dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl px-3 py-2 text-gray-700 dark:text-gray-300 focus:outline-none focus:border-germany-red max-w-[340px] sm:max-w-md cursor-pointer whitespace-normal break-words leading-snug"
                             >
                               <option value="ALL">
                                 All Universities ({matchingResults.filter((r: any) => r.eligibilityStatus !== 'NOT_ELIGIBLE').length})
@@ -5181,11 +5181,11 @@ export function StudentDetailModal({
                                 <span className="text-[10px] font-black text-germany-red shrink-0">
                                   #{idx + 1}
                                 </span>
-                                <span className="font-extrabold text-germany-black dark:text-white truncate block">
+                                <span className="font-extrabold text-germany-black dark:text-white whitespace-normal break-words leading-tight block">
                                   {uniName}
                                 </span>
                               </div>
-                              <p className="text-[11px] text-gray-600 dark:text-gray-300 truncate">
+                              <p className="text-[11px] text-gray-600 dark:text-gray-300 whitespace-normal break-words leading-snug">
                                 {progName}
                               </p>
                               <div className="flex items-center gap-1.5 pt-0.5">

@@ -231,7 +231,7 @@ export function CourseFiltersSidebar({
                         }
                         className="rounded border-[#c9c4b8] text-[#16161a] accent-[#16161a] focus:ring-[#16161a]"
                       />
-                      <span className={`text-[12.5px] truncate max-w-[190px] ${checked ? "font-semibold text-[#16161a]" : "text-[#4a4740]"}`}>
+                      <span className={`text-[12.5px] whitespace-normal break-words leading-tight max-w-[210px] ${checked ? "font-semibold text-[#16161a]" : "text-[#4a4740]"}`}>
                         {f.label}
                       </span>
                     </div>

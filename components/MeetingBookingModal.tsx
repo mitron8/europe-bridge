@@ -447,10 +447,10 @@ export function MeetingBookingModal({
                     <User className="w-3.5 h-3.5" />
                   </div>
                   <div className="min-w-0">
-                    <div className="font-bold text-[11px] text-gray-900 dark:text-white truncate">
+                    <div className="font-bold text-[11px] text-gray-900 dark:text-white whitespace-normal break-words leading-tight">
                       {effectiveCounsellorName}
                     </div>
-                    <div className="text-[10px] text-gray-500 dark:text-gray-400 truncate">Germany Expert</div>
+                    <div className="text-[10px] text-gray-500 dark:text-gray-400">Germany Expert</div>
                   </div>
                 </div>
               </div>

@@ -619,7 +619,7 @@ export function CounsellorServicesQueue() {
           <select
             value={sortOption}
             onChange={(e) => setSortOption(e.target.value as SortOption)}
-            className="p-1.5 px-3 rounded-xl border border-[#dcd7cb] dark:border-gray-700 bg-white dark:bg-[#0A0D14] text-xs font-bold text-[#16161a] dark:text-white focus:outline-hidden focus:ring-1 focus:ring-germany-red cursor-pointer"
+            className="p-1.5 px-3 rounded-xl border border-[#dcd7cb] dark:border-gray-700 bg-white dark:bg-[#0A0D14] text-xs font-bold text-[#16161a] dark:text-white focus:outline-hidden focus:ring-1 focus:ring-germany-red cursor-pointer whitespace-normal break-words"
           >
             <option value="oldest">Oldest First (Serve First • FIFO)</option>
             <option value="urgent">Urgent / Soonest Deadline</option>
@@ -995,7 +995,7 @@ export function CounsellorServicesQueue() {
                 <select
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="w-full p-3 rounded-xl border border-[#dcd7cb] dark:border-gray-700 bg-white dark:bg-[#0A0D14] text-xs font-bold text-[#16161a] dark:text-white focus:outline-hidden focus:ring-1 focus:ring-germany-red cursor-pointer"
+                  className="w-full p-3 rounded-xl border border-[#dcd7cb] dark:border-gray-700 bg-white dark:bg-[#0A0D14] text-xs font-bold text-[#16161a] dark:text-white focus:outline-hidden focus:ring-1 focus:ring-germany-red cursor-pointer whitespace-normal break-words"
                 >
                   <optgroup label="Unattended / In Queue">
                     <option value="BOOKED">BOOKED (Order Received / In Queue)</option>
@@ -1023,7 +1023,7 @@ export function CounsellorServicesQueue() {
                 <select
                   value={selectedPaymentStatus}
                   onChange={(e) => setSelectedPaymentStatus(e.target.value)}
-                  className="w-full p-3 rounded-xl border border-[#dcd7cb] dark:border-gray-700 bg-white dark:bg-[#0A0D14] text-xs font-bold text-[#16161a] dark:text-white focus:outline-hidden focus:ring-1 focus:ring-germany-red cursor-pointer"
+                  className="w-full p-3 rounded-xl border border-[#dcd7cb] dark:border-gray-700 bg-white dark:bg-[#0A0D14] text-xs font-bold text-[#16161a] dark:text-white focus:outline-hidden focus:ring-1 focus:ring-germany-red cursor-pointer whitespace-normal break-words"
                 >
                   <option value="UNPAID">UNPAID (Payment Pending / Milestone)</option>
                   <option value="PAYMENT_PENDING">PAYMENT_PENDING (Invoice Sent to Student)</option>

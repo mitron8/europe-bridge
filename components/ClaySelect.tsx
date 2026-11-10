@@ -26,6 +26,7 @@ export interface ClaySelectProps<T = any> {
   isLoading?: boolean;
   loadOptions?: (inputValue: string) => Promise<(ClaySelectOption<T> | T)[]>;
   noOptionsMessage?: string | ((obj: { inputValue: string }) => string);
+  dropdownClassName?: string;
 }
 
 export function ClaySelect<T = any>({
@@ -43,6 +44,7 @@ export function ClaySelect<T = any>({
   isLoading = false,
   loadOptions,
   noOptionsMessage,
+  dropdownClassName = '',
 }: ClaySelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -194,13 +196,13 @@ export function ClaySelect<T = any>({
               multiSelectedOptions.map((opt) => (
                 <span
                   key={String(opt.value)}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-germany-black dark:text-gray-100 text-[11px] font-bold border border-gray-200 dark:border-gray-700 shrink-0"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-germany-black dark:text-gray-100 text-[11px] font-bold border border-gray-200 dark:border-gray-700 max-w-full text-left"
                 >
-                  <span className="truncate max-w-[180px]">{opt.label}</span>
+                  <span className="whitespace-normal break-words leading-tight">{opt.label}</span>
                   {!disabled && (
                     <span
                       onClick={(e) => handleRemoveChip(e, opt.value)}
-                      className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-germany-red cursor-pointer inline-flex items-center justify-center transition-colors"
+                      className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-germany-red cursor-pointer inline-flex items-center justify-center transition-colors shrink-0"
                       title={`Remove ${opt.label}`}
                     >
                       <X className="w-3 h-3" />
@@ -209,18 +211,18 @@ export function ClaySelect<T = any>({
                 </span>
               ))
             ) : (
-              <span className="text-gray-400 dark:text-gray-500 font-medium truncate">
+              <span className="text-gray-400 dark:text-gray-500 font-medium whitespace-normal break-words">
                 {placeholder}
               </span>
             )
           ) : (
-            <span className={`truncate ${!singleSelectedOption?.label ? 'text-gray-400 dark:text-gray-500 font-medium' : 'text-germany-black dark:text-white'}`}>
+            <span className={`whitespace-normal break-words leading-snug text-left ${!singleSelectedOption?.label ? 'text-gray-400 dark:text-gray-500 font-medium' : 'text-germany-black dark:text-white'}`}>
               {singleSelectedOption ? singleSelectedOption.label : placeholder}
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 shrink-0 text-gray-400">
+        <div className="flex items-center gap-1.5 shrink-0 text-gray-400 ml-2">
           {(isLoading || isAsyncLoading) && <Loader2 className="w-3.5 h-3.5 animate-spin text-germany-red" />}
           <ChevronDown
             className={`w-4 h-4 transition-transform duration-200 ${
@@ -238,7 +240,7 @@ export function ClaySelect<T = any>({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="absolute left-0 right-0 mt-1.5 p-1.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800 rounded-xl shadow-lg dark:shadow-2xl z-50 max-h-64 flex flex-col overflow-hidden"
+            className={`absolute left-0 right-0 mt-1.5 p-1.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800 rounded-xl shadow-lg dark:shadow-2xl z-50 max-h-72 flex flex-col overflow-hidden min-w-full ${dropdownClassName}`}
           >
             {/* Optional Search Bar */}
             {shouldShowSearch && (
@@ -256,12 +258,12 @@ export function ClaySelect<T = any>({
             )}
 
             {/* Options List */}
-            <div className="overflow-y-auto space-y-1 custom-scrollbar max-h-52 pr-0.5">
+            <div className="overflow-y-auto space-y-1 custom-scrollbar max-h-60 pr-0.5">
               {!effectiveMultiple && placeholder && !shouldShowSearch && (
                 <button
                   type="button"
                   onClick={() => handleSelectSingle('' as any)}
-                  className="w-full text-left px-3 py-2 text-xs font-medium text-gray-400 dark:text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1E2638] transition-colors"
+                  className="w-full text-left px-3 py-2 text-xs font-medium text-gray-400 dark:text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1E2638] transition-colors whitespace-normal break-words leading-snug cursor-pointer"
                 >
                   {placeholder}
                 </button>
@@ -287,21 +289,21 @@ export function ClaySelect<T = any>({
                       key={String(opt.value)}
                       type="button"
                       onClick={() => effectiveMultiple ? handleToggleMultiple(opt.value) : handleSelectSingle(opt.value)}
-                      className={`w-full text-left px-3 py-2 text-xs font-bold rounded-lg flex items-center justify-between transition-colors cursor-pointer ${
+                      className={`w-full text-left px-3 py-2.5 text-xs font-bold rounded-lg flex items-start justify-between gap-2 transition-colors cursor-pointer ${
                         isSelected
                           ? 'bg-germany-red text-white'
                           : 'text-germany-black dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#1E2638]'
                       }`}
                     >
-                      <div className="flex flex-col min-w-0 pr-2">
-                        <span className="truncate">{opt.label}</span>
+                      <div className="flex flex-col min-w-0 pr-1 flex-1">
+                        <span className="whitespace-normal break-words leading-snug">{opt.label}</span>
                         {opt.sublabel && (
-                          <span className={`text-[10px] font-medium truncate ${isSelected ? 'text-white/80' : 'text-gray-400'}`}>
+                          <span className={`text-[10px] font-medium whitespace-normal break-words leading-tight mt-0.5 ${isSelected ? 'text-white/85' : 'text-gray-400 dark:text-gray-400'}`}>
                             {opt.sublabel}
                           </span>
                         )}
                       </div>
-                      {isSelected && <Check className="w-3.5 h-3.5 shrink-0" />}
+                      {isSelected && <Check className="w-3.5 h-3.5 shrink-0 mt-0.5" />}
                     </button>
                   );
                 })

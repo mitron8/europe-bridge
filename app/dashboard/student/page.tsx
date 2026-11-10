@@ -753,14 +753,14 @@ export default function StudentDashboard() {
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-bold text-sm text-gray-900 dark:text-white truncate">
+                          <h4 className="font-bold text-sm text-gray-900 dark:text-white whitespace-normal break-words leading-snug">
                             {prog.universityName}
                           </h4>
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 shrink-0">
                             {prog.universityType || 'Public'} · {prog.country || 'Germany'}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5 truncate">
+                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5 whitespace-normal break-words leading-snug">
                           {prog.programName}
                         </p>
                         <div className="flex items-center gap-4 mt-2 text-[11px] text-gray-500 dark:text-gray-400 flex-wrap">

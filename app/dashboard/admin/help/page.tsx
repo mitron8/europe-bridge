@@ -1035,7 +1035,7 @@ export default function AdminHelpPage() {
                 <select
                   value={escalateReason}
                   onChange={(e) => setEscalateReason(e.target.value)}
-                  className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-germany-red"
+                  className="w-full p-2.5 bg-white dark:bg-[#111622] border border-gray-200 dark:border-gray-700 text-germany-black dark:text-white rounded-xl text-xs font-medium focus:outline-none focus:border-germany-red whitespace-normal break-words cursor-pointer"
                 >
                   {ESCALATION_REASONS.map((r) => (
                     <option key={r} value={r}>

@@ -970,7 +970,7 @@ export function StudentSopGenerator({ onBack }: SopGeneratorProps) {
                       <select
                         value={formData.intakeSeason}
                         onChange={(e) => handleIntakeChange(e.target.value, formData.intakeYear)}
-                        className="w-full px-3.5 py-2.5 text-xs font-bold rounded-xl bg-white dark:bg-[#111622] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white cursor-pointer focus:ring-1 focus:ring-germany-red"
+                        className="w-full px-3.5 py-2.5 text-xs font-bold rounded-xl bg-white dark:bg-[#111622] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white cursor-pointer focus:ring-1 focus:ring-germany-red whitespace-normal break-words"
                       >
                         <option value="WINTER">WINTER (Oct/Nov)</option>
                         <option value="SUMMER">SUMMER (Mar/Apr)</option>
@@ -984,7 +984,7 @@ export function StudentSopGenerator({ onBack }: SopGeneratorProps) {
                       <select
                         value={formData.intakeYear}
                         onChange={(e) => handleIntakeChange(formData.intakeSeason, Number(e.target.value))}
-                        className="w-full px-3.5 py-2.5 text-xs font-bold rounded-xl bg-white dark:bg-[#111622] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white cursor-pointer focus:ring-1 focus:ring-germany-red"
+                        className="w-full px-3.5 py-2.5 text-xs font-bold rounded-xl bg-white dark:bg-[#111622] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white cursor-pointer focus:ring-1 focus:ring-germany-red whitespace-normal break-words"
                       >
                         {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + i).map((y) => (
                           <option key={y} value={y}>
@@ -1689,7 +1689,7 @@ export function StudentSopGenerator({ onBack }: SopGeneratorProps) {
                 <select
                   value={gpaGradingSystem}
                   onChange={(e) => setGpaGradingSystem(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white font-bold"
+                  className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white font-bold cursor-pointer whitespace-normal break-words"
                 >
                   <option value="CGPA/10">CGPA / 10</option>
                   <option value="CGPA/4">CGPA / 4</option>
