@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   Calendar,
   Clock,
@@ -10,11 +11,11 @@ import {
   X,
   Loader2,
   User,
-  ShieldCheck,
-  Ban,
   ArrowRight,
-  Info,
-  CalendarDays,
+  Check,
+  FileText,
+  ChevronDown,
+  Ban,
 } from 'lucide-react';
 
 export interface MeetingSlot {
@@ -99,7 +100,9 @@ export function MeetingBookingModal({
   const [availability, setAvailability] = useState<AvailabilityData | null>(null);
   const [selectedDateIdx, setSelectedDateIdx] = useState<number>(0);
   const [selectedSlot, setSelectedSlot] = useState<MeetingSlot | null>(null);
-  const [agenda, setAgenda] = useState<string>('University Shortlisting & Profile Review');
+  const [selectedAgendas, setSelectedAgendas] = useState<string[]>([
+    'University Shortlisting & Profile Review',
+  ]);
   const [notes, setNotes] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successData, setSuccessData] = useState<any | null>(null);
@@ -143,6 +146,7 @@ export function MeetingBookingModal({
       setErrorMessage(null);
       setSelectedSlot(null);
       setNotes('');
+      setSelectedAgendas(['University Shortlisting & Profile Review']);
       fetchAvailability();
     }
   }, [isOpen, counsellorId]);
@@ -157,6 +161,17 @@ export function MeetingBookingModal({
     setErrorMessage(null);
   };
 
+  const toggleAgenda = (item: string) => {
+    setSelectedAgendas((prev) => {
+      if (prev.includes(item)) {
+        if (prev.length === 1) return prev; // Keep at least one
+        return prev.filter((a) => a !== item);
+      } else {
+        return [...prev, item];
+      }
+    });
+  };
+
   const handleSubmit = async () => {
     if (!currentDay || !selectedSlot) {
       setErrorMessage('Please select a date and an available 1-hour time slot.');
@@ -165,6 +180,8 @@ export function MeetingBookingModal({
 
     setSubmitting(true);
     setErrorMessage(null);
+
+    const agendaString = selectedAgendas.join(', ') || 'General Admission Consultation';
 
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -178,7 +195,7 @@ export function MeetingBookingModal({
           counsellorUserId: availability?.counsellor?.id || counsellorId,
           dateString: currentDay.dateString,
           startHour: selectedSlot.startHour,
-          agenda,
+          agenda: agendaString,
           notes: notes.trim() || undefined,
         };
       } else if (mode === 'counsellor_invite') {
@@ -190,7 +207,7 @@ export function MeetingBookingModal({
           studentUserId,
           dateString: currentDay.dateString,
           startHour: selectedSlot.startHour,
-          agenda,
+          agenda: agendaString,
           notes: notes.trim() || undefined,
         };
       } else if (mode === 'reschedule') {
@@ -204,7 +221,7 @@ export function MeetingBookingModal({
         payload = {
           newDateString: currentDay.dateString,
           newStartHour: selectedSlot.startHour,
-          reason: notes.trim() || agenda,
+          reason: notes.trim() || agendaString,
         };
       } else if (mode === 'counterproposal') {
         if (!existingMeetingId) {
@@ -217,7 +234,7 @@ export function MeetingBookingModal({
         payload = {
           newDateString: currentDay.dateString,
           newStartHour: selectedSlot.startHour,
-          reason: notes.trim() || agenda,
+          reason: notes.trim() || agendaString,
         };
       }
 
@@ -234,7 +251,6 @@ export function MeetingBookingModal({
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        // Concurrency conflict: slot already booked
         if (res.status === 409 || data.message?.includes('booked')) {
           setErrorMessage(
             data.message ||
@@ -258,40 +274,69 @@ export function MeetingBookingModal({
   };
 
   const effectiveCounsellorName =
-    availability?.counsellor?.name || counsellorName || 'EuroBridge Senior Advisor';
+    availability?.counsellor?.name || counsellorName || 'Counsellor User';
+
+  const formatDayDate = (day: BookingDay) => {
+    try {
+      const d = new Date(day.dateString);
+      if (!isNaN(d.getTime())) {
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${d.getDate()} ${monthNames[d.getMonth()]}`;
+      }
+    } catch {}
+    const raw = day.displayLabel.split('(')[1]?.replace(')', '');
+    return raw || day.dateString.slice(5);
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150">
-      <div className="bg-white dark:bg-[#111622] rounded-3xl border border-gray-200/80 dark:border-gray-800 shadow-2xl w-full max-w-2xl overflow-hidden my-6">
-        {/* Top Header */}
-        <div className="p-5 sm:p-6 bg-gradient-to-r from-gray-50 via-white to-gray-50 dark:from-[#0E121A] dark:via-[#111622] dark:to-[#0E121A] border-b border-gray-200/80 dark:border-gray-800 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-germany-red/10 dark:bg-red-950/40 text-germany-red flex items-center justify-center font-black shadow-xs">
-              <Calendar className="w-5 h-5" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150">
+      <div className="bg-white dark:bg-[#111622] rounded-3xl border border-gray-200/90 dark:border-gray-800 shadow-2xl w-full max-w-4xl overflow-hidden my-4 sm:my-6 relative">
+        {/* Top Header Card with Reichstag Building Graphic */}
+        <div className="p-5 sm:p-6 border-b border-gray-100 dark:border-gray-800 flex items-start justify-between relative overflow-hidden">
+          {/* Header Left Info */}
+          <div className="flex items-start gap-3.5 z-10 max-w-lg">
+            <div className="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200/60 dark:border-red-900/60 text-[#E63946] flex items-center justify-center shrink-0">
+              <Calendar className="w-6 h-6 stroke-[1.75]" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-display font-extrabold text-base sm:text-lg text-germany-black dark:text-white">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-display font-bold text-base sm:text-lg text-gray-900 dark:text-white">
                   {mode === 'counsellor_invite'
                     ? `Invite Student to Meeting`
                     : mode === 'reschedule' || mode === 'counterproposal'
                     ? 'Reschedule Strategy Session'
                     : 'Book 1-on-1 Counselling Session'}
                 </h3>
-                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-germany-gold/20 text-germany-black dark:text-amber-300">
-                  IST (Asia/Kolkata)
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#E63946] bg-red-50 dark:bg-red-950/50 border border-red-200/70 dark:border-red-900/60 px-2 py-0.5 rounded-full">
+                  <Clock className="w-3 h-3" />
+                  <span>IST (Asia/Kolkata)</span>
                 </span>
               </div>
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">
                 {mode === 'counsellor_invite'
                   ? `Inviting student: ${studentName || 'Assigned Student'}`
-                  : `With ${effectiveCounsellorName} • Exactly 60-Minute Focused Session`}
+                  : `Meet with our counsellor for a personalised 60-minute session.`}
               </p>
             </div>
           </div>
+
+          {/* Header Right Graphic (German Reichstag Building) */}
+          <div className="hidden md:block relative h-24 w-64 shrink-0 -my-6 -mr-6 pointer-events-none">
+            <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white dark:from-[#111622] to-transparent z-10" />
+            <Image
+              src="/images/germany-header.jpg"
+              alt="Germany"
+              fill
+              className="object-cover object-right"
+              priority
+            />
+          </div>
+
+          {/* Close Button */}
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors z-20"
+            title="Close"
           >
             <X className="w-5 h-5" />
           </button>
@@ -305,11 +350,11 @@ export function MeetingBookingModal({
           </div>
         )}
 
-        {/* Body Content */}
+        {/* Modal Scrollable Body */}
         <div className="p-5 sm:p-6 space-y-6 max-h-[75vh] overflow-y-auto">
           {loading ? (
             <div className="py-16 flex flex-col items-center justify-center gap-3">
-              <Loader2 className="w-8 h-8 animate-spin text-germany-red" />
+              <Loader2 className="w-8 h-8 animate-spin text-[#E63946]" />
               <p className="text-xs font-bold text-gray-500 dark:text-gray-400">
                 Fetching real-time counsellor availability...
               </p>
@@ -321,7 +366,7 @@ export function MeetingBookingModal({
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <div className="space-y-1">
-                <h4 className="text-lg font-display font-extrabold text-germany-black dark:text-white">
+                <h4 className="text-lg font-display font-bold text-gray-900 dark:text-white">
                   {mode === 'student_book'
                     ? 'Meeting Confirmed Instantly!'
                     : mode === 'counsellor_invite'
@@ -330,37 +375,37 @@ export function MeetingBookingModal({
                 </h4>
                 <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto">
                   {mode === 'student_book'
-                    ? `Your 1-hour session with ${effectiveCounsellorName} is confirmed for ${successData.humanTime || 'the selected slot'}. A notification has been sent to your counsellor.`
+                    ? `Your 1-hour session with ${effectiveCounsellorName} is confirmed for ${successData.humanTime || 'the selected slot'}. A Google Meet link has been generated.`
                     : mode === 'counsellor_invite'
-                    ? `Your student has 30 minutes to accept the proposed slot. The slot is held until accepted or expired.`
-                    : `The proposed new time is held for 30 minutes awaiting acceptance. Your existing meeting remains confirmed until accepted.`}
+                    ? `Your student has 30 minutes to accept the proposed slot.`
+                    : `The proposed new time is held for 30 minutes awaiting acceptance.`}
                 </p>
               </div>
 
-              <div className="p-4 bg-gray-50 dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800 text-left text-xs space-y-1.5 max-w-md mx-auto">
+              <div className="p-4 bg-gray-50 dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800 text-left text-xs space-y-2 max-w-md mx-auto">
                 <div className="flex justify-between">
-                  <span className="text-gray-400 font-bold">Meeting Time:</span>
-                  <span className="font-extrabold text-germany-black dark:text-white">
+                  <span className="text-gray-400 font-semibold">Meeting Time:</span>
+                  <span className="font-bold text-gray-900 dark:text-white">
                     {successData.humanTime || `${currentDay?.dateString} at ${selectedSlot?.label}`}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400 font-bold">Platform:</span>
-                  <span className="font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                    <Video className="w-3.5 h-3.5" /> EuroBridge Video Meet
+                  <span className="text-gray-400 font-semibold">Platform:</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                    <Video className="w-3.5 h-3.5" /> Google Meet
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400 font-bold">Status:</span>
-                  <span className="font-extrabold uppercase px-2 py-0.5 rounded-full text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
-                    {successData.status || 'CONFIRMED'}
+                  <span className="text-gray-400 font-semibold">Counsellor:</span>
+                  <span className="font-bold text-gray-900 dark:text-white">
+                    {effectiveCounsellorName}
                   </span>
                 </div>
               </div>
 
               <button
                 onClick={onClose}
-                className="neu-btn-primary px-8 py-2.5 text-xs font-black"
+                className="bg-[#E63946] hover:bg-[#D62839] text-white px-8 py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer"
               >
                 Done
               </button>
@@ -369,25 +414,68 @@ export function MeetingBookingModal({
             <>
               {/* Error Banner */}
               {errorMessage && (
-                <div className="p-3.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-2xl flex items-start gap-2.5 text-xs font-bold text-germany-red animate-in fade-in duration-150">
+                <div className="p-3.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-2xl flex items-start gap-2.5 text-xs font-bold text-[#E63946] animate-in fade-in duration-150">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                   <span className="flex-1">{errorMessage}</span>
                 </div>
               )}
 
-              {/* Step 1: BookMyShow Date Selection Strip (Rolling 3 Days) */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
-                    <CalendarDays className="w-3.5 h-3.5 text-germany-red" />
-                    <span>Select Date (Rolling 3-Day Window)</span>
-                  </label>
-                  <span className="text-[11px] font-bold text-gray-400">
-                    Midnight IST Refresh
-                  </span>
+              {/* Top 3 Metadata Chips Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-4 border-b border-gray-100 dark:border-gray-800">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-[#E63946] flex items-center justify-center shrink-0">
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-xs text-gray-900 dark:text-white">60 Minutes</div>
+                    <div className="text-[11px] text-gray-500 dark:text-gray-400">1-on-1 Session</div>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2.5">
+                <div className="flex items-center gap-3 sm:border-l sm:border-gray-100 dark:sm:border-gray-800 sm:pl-4">
+                  <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-[#E63946] flex items-center justify-center shrink-0">
+                    <Video className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-xs text-gray-900 dark:text-white">Google Meet</div>
+                    <div className="text-[11px] text-gray-500 dark:text-gray-400">Online (Link after booking)</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 sm:border-l sm:border-gray-100 dark:sm:border-gray-800 sm:pl-4">
+                  <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-[#E63946] flex items-center justify-center shrink-0">
+                    <User className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-xs text-gray-900 dark:text-white truncate">
+                      {effectiveCounsellorName}
+                    </div>
+                    <div className="text-[11px] text-gray-500 dark:text-gray-400">Your Germany Expert</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 1: Select a Date */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-6 h-6 rounded-full bg-red-100 dark:bg-red-950/60 text-[#E63946] font-bold text-xs flex items-center justify-center shrink-0">
+                      1
+                    </span>
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-900 dark:text-white">Select a Date</h4>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Choose a convenient date (shows next 3 days).</p>
+                    </div>
+                  </div>
+                  <div className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 flex items-center gap-1.5 bg-gray-50/50 dark:bg-gray-800/40">
+                    <Calendar className="w-3.5 h-3.5 text-gray-500" />
+                    <span>3-Day Window</span>
+                    <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                  </div>
+                </div>
+
+                {/* 3 Date Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {availability?.days.map((day, idx) => {
                     const isSelected = selectedDateIdx === idx;
                     const isSunday = day.isSunday;
@@ -402,42 +490,43 @@ export function MeetingBookingModal({
                           setErrorMessage(null);
                         }}
                         disabled={isSunday}
-                        className={`p-3.5 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 relative ${
+                        className={`p-4 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 relative cursor-pointer ${
                           isSunday
                             ? 'bg-gray-100/70 dark:bg-white/5 border-gray-200 dark:border-white/5 text-gray-400 cursor-not-allowed opacity-60'
                             : isSelected
-                            ? 'bg-germany-red text-white border-germany-red shadow-[0_4px_14px_rgba(230,57,70,0.3)] ring-2 ring-germany-red/40'
-                            : 'bg-white dark:bg-[#0E121A] border-gray-200/80 dark:border-gray-800 hover:border-germany-red/50 text-germany-black dark:text-white cursor-pointer hover:scale-[1.01]'
+                            ? 'bg-[#E63946] text-white border-[#E63946] shadow-md'
+                            : 'bg-white dark:bg-[#141B2D] border-gray-200/90 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 text-gray-900 dark:text-white'
                         }`}
                       >
+                        {isSelected && (
+                          <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-white text-[#E63946] flex items-center justify-center shadow-xs">
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                          </div>
+                        )}
                         <span
-                          className={`text-[10px] font-black uppercase tracking-wider ${
-                            isSelected
-                              ? 'text-white/80'
-                              : isSunday
-                              ? 'text-gray-400'
-                              : 'text-gray-500 dark:text-gray-400'
+                          className={`text-xs font-bold uppercase tracking-wider ${
+                            isSelected ? 'text-white/90' : 'text-gray-500 dark:text-gray-400'
                           }`}
                         >
                           {day.dayName.slice(0, 3)}
                         </span>
-                        <span className="text-sm font-display font-extrabold leading-tight">
-                          {day.displayLabel.split('(')[1]?.replace(')', '') || day.dateString.slice(5)}
+                        <span className="text-xl sm:text-2xl font-display font-bold leading-tight">
+                          {formatDayDate(day)}
                         </span>
                         {day.isToday && (
                           <span
-                            className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full mt-0.5 ${
+                            className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full mt-1 ${
                               isSelected
                                 ? 'bg-white/20 text-white'
-                                : 'bg-germany-gold/20 text-germany-black dark:text-amber-300'
+                                : 'bg-red-50 text-[#E63946] dark:bg-red-950/40'
                             }`}
                           >
                             Today
                           </span>
                         )}
                         {isSunday && (
-                          <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-gray-200 dark:bg-white/10 text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-0.5">
-                            <Ban className="w-2.5 h-2.5" /> Sunday Closed
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-200 dark:bg-white/10 text-gray-500 mt-1 flex items-center gap-1">
+                            <Ban className="w-2.5 h-2.5" /> Closed
                           </span>
                         )}
                       </button>
@@ -452,189 +541,177 @@ export function MeetingBookingModal({
                   <div className="w-10 h-10 rounded-full bg-gray-200/80 dark:bg-white/10 text-gray-500 mx-auto flex items-center justify-center">
                     <Ban className="w-5 h-5" />
                   </div>
-                  <h4 className="font-display font-bold text-sm text-germany-black dark:text-white">
+                  <h4 className="font-display font-bold text-sm text-gray-900 dark:text-white">
                     No Counselling Meetings on Sundays
                   </h4>
                   <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
-                    EuroBridge counselling sessions operate Monday through Saturday. Please select Monday or Tuesday above to book your slot.
+                    EuroBridge counselling sessions operate Monday through Saturday. Please select an alternate day above.
                   </p>
                 </div>
               ) : (
-                /* BookMyShow Slot Grid */
-                <div className="space-y-4">
-                  {/* Morning Slots (9 AM - 12 PM) */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-black uppercase tracking-wider text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-germany-gold" />
-                        <span>Morning Sessions (9:00 AM – 12:00 PM IST)</span>
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                      {currentDay?.morningSlots.map((slot) => {
-                        const isSelected = selectedSlot?.slotId === slot.slotId;
-                        const isAvail = slot.isAvailable;
-
-                        return (
-                          <button
-                            key={slot.slotId}
-                            type="button"
-                            onClick={() => handleSlotSelect(slot)}
-                            disabled={!isAvail}
-                            className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between gap-2 ${
-                              isSelected
-                                ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500 text-emerald-950 dark:text-emerald-100 ring-2 ring-emerald-400/40 shadow-xs'
-                                : isAvail
-                                ? 'bg-white dark:bg-[#0E121A] border-gray-200/80 dark:border-gray-800 hover:border-emerald-400/70 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/20 text-germany-black dark:text-white cursor-pointer hover:scale-[1.01]'
-                                : 'bg-gray-100/70 dark:bg-white/5 border-gray-200 dark:border-white/5 text-gray-400 cursor-not-allowed opacity-60'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="font-extrabold text-xs">{slot.label.split('–')[0]}</span>
-                              {isSelected ? (
-                                <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-600 text-white flex items-center gap-0.5">
-                                  <CheckCircle2 className="w-2.5 h-2.5" /> Selected
-                                </span>
-                              ) : isAvail ? (
-                                <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
-                                  Available
-                                </span>
-                              ) : (
-                                <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-gray-200 dark:bg-white/10 text-gray-500 dark:text-gray-400 truncate max-w-[90px]">
-                                  {slot.unavailableReason || 'Unavailable'}
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-[10px] text-gray-400 dark:text-gray-500 font-bold">
-                              60 min • 1-on-1
-                            </div>
-                          </button>
-                        );
-                      })}
+                /* Step 2: Select a Time Slot */
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-6 h-6 rounded-full bg-red-100 dark:bg-red-950/60 text-[#E63946] font-bold text-xs flex items-center justify-center shrink-0">
+                      2
+                    </span>
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-900 dark:text-white">Select a Time Slot</h4>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Pick an available 60-minute slot.</p>
                     </div>
                   </div>
 
-                  {/* Afternoon Slots (2 PM - 5 PM) */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-black uppercase tracking-wider text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-germany-red" />
-                        <span>Afternoon Sessions (2:00 PM – 5:00 PM IST)</span>
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                      {currentDay?.afternoonSlots.map((slot) => {
-                        const isSelected = selectedSlot?.slotId === slot.slotId;
-                        const isAvail = slot.isAvailable;
-
-                        return (
-                          <button
-                            key={slot.slotId}
-                            type="button"
-                            onClick={() => handleSlotSelect(slot)}
-                            disabled={!isAvail}
-                            className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between gap-2 ${
-                              isSelected
-                                ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500 text-emerald-950 dark:text-emerald-100 ring-2 ring-emerald-400/40 shadow-xs'
-                                : isAvail
-                                ? 'bg-white dark:bg-[#0E121A] border-gray-200/80 dark:border-gray-800 hover:border-emerald-400/70 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/20 text-germany-black dark:text-white cursor-pointer hover:scale-[1.01]'
-                                : 'bg-gray-100/70 dark:bg-white/5 border-gray-200 dark:border-white/5 text-gray-400 cursor-not-allowed opacity-60'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="font-extrabold text-xs">{slot.label.split('–')[0]}</span>
-                              {isSelected ? (
-                                <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-600 text-white flex items-center gap-0.5">
-                                  <CheckCircle2 className="w-2.5 h-2.5" /> Selected
-                                </span>
-                              ) : isAvail ? (
-                                <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
-                                  Available
-                                </span>
-                              ) : (
-                                <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-gray-200 dark:bg-white/10 text-gray-500 dark:text-gray-400 truncate max-w-[90px]">
-                                  {slot.unavailableReason || 'Unavailable'}
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-[10px] text-gray-400 dark:text-gray-500 font-bold">
-                              60 min • 1-on-1
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Meeting Agenda & Notes */}
-                  <div className="space-y-3 pt-2">
-                    <label className="text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
-                      <CalendarDays className="w-3.5 h-3.5 text-germany-gold" />
-                      <span>Session Agenda / Topic</span>
-                    </label>
-
-                    {/* Quick Agenda Chips */}
-                    <div className="flex flex-wrap gap-1.5">
-                      {COMMON_AGENDAS.map((item) => (
-                        <button
-                          key={item}
-                          type="button"
-                          onClick={() => setAgenda(item)}
-                          className={`text-[11px] font-bold px-3 py-1 rounded-full border transition-all ${
-                            agenda === item
-                              ? 'bg-germany-black text-white dark:bg-white dark:text-germany-black border-transparent shadow-xs'
-                              : 'bg-white dark:bg-[#0E121A] text-gray-600 dark:text-gray-300 border-gray-200/80 dark:border-gray-800 hover:border-gray-400'
-                          }`}
-                        >
-                          {item}
-                        </button>
-                      ))}
-                    </div>
-
-                    <textarea
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Optional notes: specific universities, questions, or document concerns you want to discuss..."
-                      rows={2}
-                      className="w-full text-xs font-medium p-3 rounded-2xl bg-gray-50 dark:bg-[#0E121A] border border-gray-200/80 dark:border-gray-800 focus:outline-hidden focus:ring-2 focus:ring-germany-red text-germany-black dark:text-white"
-                    />
-                  </div>
-
-                  {/* Booking Summary Box */}
-                  {selectedSlot && currentDay && (
-                    <div className="p-4 bg-emerald-50/80 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between gap-3 animate-in fade-in duration-150">
-                      <div className="space-y-0.5">
-                        <span className="text-[10px] font-black uppercase text-emerald-800 dark:text-emerald-300">
-                          Booking Summary
-                        </span>
-                        <div className="text-xs font-extrabold text-germany-black dark:text-white">
-                          {currentDay.dayName}, {currentDay.dateString} • {selectedSlot.label}
-                        </div>
-                        <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
-                          With {effectiveCounsellorName} • Duration: 60 minutes
-                        </div>
+                  <div className="space-y-3">
+                    {/* Morning Sessions */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                      <div className="bg-[#FFF0F2] dark:bg-red-950/20 text-gray-900 dark:text-white font-bold text-xs p-3.5 rounded-xl sm:w-80 shrink-0 flex items-center gap-2">
+                        <span>☀️</span>
+                        <span>Morning Sessions <span className="font-normal text-gray-600 dark:text-gray-300">(9:00 AM – 12:00 PM IST)</span></span>
                       </div>
-                      <span className="text-xs font-black text-emerald-700 dark:text-emerald-300 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/60 rounded-full border border-emerald-300 dark:border-emerald-700">
-                        {mode === 'student_book' ? 'Instant Confirmation' : 'Requires Acceptance'}
-                      </span>
+
+                      <div className="flex-1 grid grid-cols-3 gap-2.5">
+                        {currentDay?.morningSlots.map((slot) => {
+                          const isSelected = selectedSlot?.slotId === slot.slotId;
+                          const isAvail = slot.isAvailable;
+
+                          return (
+                            <button
+                              key={slot.slotId}
+                              type="button"
+                              onClick={() => handleSlotSelect(slot)}
+                              disabled={!isAvail}
+                              className={`p-2.5 rounded-xl border text-center transition-all relative ${
+                                isSelected
+                                  ? 'bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-700 text-[#E63946]'
+                                  : isAvail
+                                  ? 'bg-white dark:bg-[#141B2D] border-gray-200 dark:border-gray-800 hover:border-gray-300 text-gray-900 dark:text-white cursor-pointer'
+                                  : 'bg-gray-100/70 dark:bg-white/5 border-gray-200 dark:border-white/5 text-gray-400 cursor-not-allowed opacity-60'
+                              }`}
+                            >
+                              {isSelected && (
+                                <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#E63946] text-white flex items-center justify-center">
+                                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+                                </div>
+                              )}
+                              <div className={`font-bold text-xs ${isSelected ? 'text-[#E63946]' : ''}`}>
+                                {slot.label.split('–')[0].trim()}
+                              </div>
+                              <div className="text-[10px] text-gray-400 mt-0.5">
+                                60 min
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  )}
+
+                    {/* Afternoon Sessions */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                      <div className="bg-[#FFF5ED] dark:bg-amber-950/20 text-gray-900 dark:text-white font-bold text-xs p-3.5 rounded-xl sm:w-80 shrink-0 flex items-center gap-2">
+                        <span>🌤️</span>
+                        <span>Afternoon Sessions <span className="font-normal text-gray-600 dark:text-gray-300">(2:00 PM – 5:00 PM IST)</span></span>
+                      </div>
+
+                      <div className="flex-1 grid grid-cols-3 gap-2.5">
+                        {currentDay?.afternoonSlots.map((slot) => {
+                          const isSelected = selectedSlot?.slotId === slot.slotId;
+                          const isAvail = slot.isAvailable;
+
+                          return (
+                            <button
+                              key={slot.slotId}
+                              type="button"
+                              onClick={() => handleSlotSelect(slot)}
+                              disabled={!isAvail}
+                              className={`p-2.5 rounded-xl border text-center transition-all relative ${
+                                isSelected
+                                  ? 'bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-700 text-[#E63946]'
+                                  : isAvail
+                                  ? 'bg-white dark:bg-[#141B2D] border-gray-200 dark:border-gray-800 hover:border-gray-300 text-gray-900 dark:text-white cursor-pointer'
+                                  : 'bg-gray-100/70 dark:bg-white/5 border-gray-200 dark:border-white/5 text-gray-400 cursor-not-allowed opacity-60'
+                              }`}
+                            >
+                              {isSelected && (
+                                <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#E63946] text-white flex items-center justify-center">
+                                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+                                </div>
+                              )}
+                              <div className={`font-bold text-xs ${isSelected ? 'text-[#E63946]' : ''}`}>
+                                {slot.label.split('–')[0].trim()}
+                              </div>
+                              <div className="text-[10px] text-gray-400 mt-0.5">
+                                60 min
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
+
+              {/* Step 3: Session Agenda / Topic */}
+              <div className="space-y-3 pt-1">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-6 h-6 rounded-full bg-red-100 dark:bg-red-950/60 text-[#E63946] font-bold text-xs flex items-center justify-center shrink-0">
+                    3
+                  </span>
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-900 dark:text-white">Session Agenda / Topic</h4>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Select what you'd like to discuss (you can choose multiple).</p>
+                  </div>
+                </div>
+
+                {/* Agenda Pills (Multi-Select) */}
+                <div className="flex flex-wrap gap-2">
+                  {COMMON_AGENDAS.map((item) => {
+                    const isSelected = selectedAgendas.includes(item);
+                    return (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => toggleAgenda(item)}
+                        className={`px-3.5 py-1.5 rounded-full text-xs transition-all flex items-center gap-1.5 cursor-pointer ${
+                          isSelected
+                            ? 'bg-red-50 dark:bg-red-950/40 border border-red-300 dark:border-red-700 text-[#E63946] font-bold'
+                            : 'bg-white dark:bg-[#141B2D] border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 font-medium'
+                        }`}
+                      >
+                        {isSelected && <Check className="w-3.5 h-3.5 stroke-[3] text-[#E63946]" />}
+                        <span>{item}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Optional Notes with character counter */}
+                <div className="relative rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#141B2D] p-3 flex items-start gap-2.5 focus-within:ring-2 focus-within:ring-[#E63946]/20 focus-within:border-[#E63946] transition-all">
+                  <FileText className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value.slice(0, 500))}
+                    placeholder="Optional notes: specific universities, questions, or document concerns you want to discuss..."
+                    rows={2}
+                    className="w-full text-xs text-gray-800 dark:text-gray-100 placeholder:text-gray-400 bg-transparent border-none focus:outline-none resize-none font-medium pr-12 pb-3"
+                  />
+                  <div className="absolute right-3 bottom-2 text-[10px] text-gray-400 font-medium">
+                    {notes.length} / 500
+                  </div>
+                </div>
+              </div>
             </>
           )}
         </div>
 
-        {/* Footer Actions */}
+        {/* Modal Footer Actions */}
         {!successData && !loading && (
-          <div className="p-5 sm:p-6 bg-gray-50 dark:bg-[#0E121A] border-t border-gray-200/80 dark:border-gray-800 flex items-center justify-between gap-3">
+          <div className="p-4 sm:p-5 bg-gray-50/70 dark:bg-[#0E121A] border-t border-gray-200/80 dark:border-gray-800 flex items-center justify-between gap-3">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="neu-btn-secondary px-5 py-2.5 text-xs font-black"
+              className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
             >
               Cancel
             </button>
@@ -643,7 +720,7 @@ export function MeetingBookingModal({
               type="button"
               onClick={handleSubmit}
               disabled={submitting || !selectedSlot || currentDay?.isSunday}
-              className="neu-btn-primary px-7 py-2.5 text-xs font-black flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+              className="bg-[#E63946] hover:bg-[#D62839] text-white font-bold px-6 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? (
                 <>
@@ -652,6 +729,7 @@ export function MeetingBookingModal({
                 </>
               ) : (
                 <>
+                  <Calendar className="w-4 h-4" />
                   <span>
                     {mode === 'counsellor_invite'
                       ? 'Send Meeting Invitation'

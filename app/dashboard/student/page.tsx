@@ -224,10 +224,10 @@ export default function StudentDashboard() {
     ? gpaNum <= 1.5
       ? 'Very Good (Sehr gut)'
       : gpaNum <= 2.5
-      ? 'Good (Gut)'
-      : gpaNum <= 3.5
-      ? 'Satisfactory (Befriedigend)'
-      : 'Sufficient'
+        ? 'Good (Gut)'
+        : gpaNum <= 3.5
+          ? 'Satisfactory (Befriedigend)'
+          : 'Sufficient'
     : 'Good (Gut)';
 
   // Overall journey completion points (5 equal stages of 20 points each)
@@ -286,17 +286,17 @@ export default function StudentDashboard() {
   // Matched Universities to display (uses real matching results if available, else curated defaults)
   const displayMatches: MatchedProgramItem[] = (matchingData?.results && Array.isArray(matchingData.results) && matchingData.results.length > 0)
     ? matchingData.results.slice(0, 3).map((item: any, idx: number) => ({
-        id: item.programmeId || item.id || `prog-${idx}`,
-        programmeId: item.programmeId || item.id,
-        universityName: item.universityName || item.university_name || 'German University',
-        programName: item.name || item.program || item.programName || item.program_name || 'M.Sc. Program',
-        universityType: item.universityType || 'Public',
-        country: item.country || 'Germany',
-        tuition: item.tuition || item.tuitionPerSemester ? `€${item.tuition || item.tuitionPerSemester}/semester` : 'Free / None (public university..)',
-        deadline: item.nonEuDeadline || item.deadline || 'Upcoming Window',
-        status: 'Eligible',
-        logo: getUniversityLogo(item.universityName || item.university_name),
-      }))
+      id: item.programmeId || item.id || `prog-${idx}`,
+      programmeId: item.programmeId || item.id,
+      universityName: item.universityName || item.university_name || 'German University',
+      programName: item.name || item.program || item.programName || item.program_name || 'M.Sc. Program',
+      universityType: item.universityType || 'Public',
+      country: item.country || 'Germany',
+      tuition: item.tuition || item.tuitionPerSemester ? `€${item.tuition || item.tuitionPerSemester}/semester` : 'Free / None (public university..)',
+      deadline: item.nonEuDeadline || item.deadline || 'Upcoming Window',
+      status: 'Eligible',
+      logo: getUniversityLogo(item.universityName || item.university_name),
+    }))
     : DEFAULT_MATCHED_PROGRAMS;
 
   const handleToggleShortlist = async (prog: MatchedProgramItem) => {
@@ -620,15 +620,14 @@ export default function StudentDashboard() {
                       href={step.href}
                       className="flex flex-col items-center text-center group cursor-pointer"
                     >
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                        isCompleted
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isCompleted
                           ? 'bg-emerald-500 text-white shadow-xs'
                           : isPurple
-                          ? 'bg-purple-600 text-white shadow-xs'
-                          : isReview
-                          ? 'bg-white dark:bg-[#111622] border-2 border-[#E63946] text-[#E63946]'
-                          : 'bg-white dark:bg-[#111622] border-2 border-gray-300 dark:border-gray-700 text-gray-400'
-                      }`}>
+                            ? 'bg-purple-600 text-white shadow-xs'
+                            : isReview
+                              ? 'bg-white dark:bg-[#111622] border-2 border-[#E63946] text-[#E63946]'
+                              : 'bg-white dark:bg-[#111622] border-2 border-gray-300 dark:border-gray-700 text-gray-400'
+                        }`}>
                         <Icon className="w-4 h-4 stroke-[2.5]" />
                       </div>
 
