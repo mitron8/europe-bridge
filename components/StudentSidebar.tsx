@@ -42,7 +42,7 @@ const admissionNavItems = [
   { name: 'My Services', path: '/dashboard/student/services', icon: Layers, step: 'Services' },
   { name: 'Document Hub', path: '/dashboard/student/documents', icon: FileText, step: 'Step 4' },
   { name: 'APS Checklist', path: '/dashboard/student/aps', icon: CheckCircle2, step: 'Step 5' },
-  { name: 'Admission & Apps', path: '/dashboard/student/admission', icon: Send, step: 'Step 6' },
+  { name: 'Applications', path: '/dashboard/student/applications', icon: Send, step: 'Step 6' },
   { name: 'Visa Assistance', path: '/dashboard/student/visa', icon: Plane, step: 'Step 7' },
   { name: 'Help & Support', path: '/dashboard/student/help', icon: Bot, step: 'Help' },
 ];
@@ -101,11 +101,11 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
     return false;
   };
 
-  const initials = user 
-    ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() 
+  const initials = user
+    ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase()
     : 'AS';
-    
-  const fullName = user 
+
+  const fullName = user
     ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Student'
     : 'Ankur Sah';
 
@@ -118,28 +118,26 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
       border-r border-[#1E293B]/70 shadow-xl lg:shadow-none
     `}>
       {/* Brand Header */}
-      <div className={`p-4 pb-3 border-b border-[#1E293B]/70 flex items-center ${isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'}`}>
-        <Link href="/" className="flex items-center gap-3 group" title="EuropeBridge Student Portal">
-          <div className="w-9 h-9 rounded-xl bg-[#E63946] text-white flex items-center justify-center shadow-sm group-hover:scale-105 transition-all shrink-0 font-extrabold text-xs tracking-wider">
-            EB
-          </div>
-          {!isCollapsed && (
-            <div className="flex flex-col min-w-0">
-              <div className="flex items-center">
-                <Image
-                  src="/logo-white.png"
-                  alt="EuropeBridge"
-                  width={150}
-                  height={28}
-                  priority
-                  className="h-5 w-auto object-contain"
-                />
-              </div>
-              <div className="flex items-center gap-1.5 mt-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Student Portal</span>
-              </div>
-            </div>
+      <div className={`p-4 pb-3.5 border-b border-[#1E293B]/70 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+        <Link href="/" className="inline-flex items-center group py-1" title="EuropeBridge">
+          {!isCollapsed ? (
+            <Image
+              src="/logo-white.png"
+              alt="EuropeBridge"
+              width={165}
+              height={32}
+              priority
+              className="h-7 w-auto object-contain"
+            />
+          ) : (
+            <Image
+              src="/logo-white.png"
+              alt="EuropeBridge"
+              width={48}
+              height={24}
+              priority
+              className="h-5 w-auto object-contain"
+            />
           )}
         </Link>
 
@@ -194,7 +192,7 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
                   </div>
                   {!isCollapsed && <span className="truncate">{item.name}</span>}
                 </div>
-                
+
                 {!isCollapsed && (
                   item.path === '/dashboard/student/help' && unreadCount > 0 ? (
                     <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-[#E63946] text-white shadow-xs animate-pulse shrink-0">
@@ -249,7 +247,7 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
                   </div>
                   {!isCollapsed && <span className="truncate">{item.name}</span>}
                 </div>
-                
+
                 {!isCollapsed && (
                   item.path === '/dashboard/student/help' && unreadCount > 0 ? (
                     <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-[#E63946] text-white shadow-xs animate-pulse shrink-0">
