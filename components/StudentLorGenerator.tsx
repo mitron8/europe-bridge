@@ -22,6 +22,10 @@ import {
   Check,
   Edit3,
   RefreshCw,
+  Printer,
+  Phone,
+  MapPin,
+  GraduationCap,
 } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
@@ -30,16 +34,22 @@ export interface LorGeneratorProps {
   onBack?: () => void;
 }
 
+export type LorRoleType = 'academic_professor' | 'head_of_department' | 'thesis_advisor';
+
 interface LorDataState {
   recommenderName: string;
   recommenderTitle: string;
   recommenderInstitution: string;
   recommenderDepartment: string;
   recommenderEmail: string;
+  recommenderPhone: string;
+  recommenderAddress: string;
+  lorType: LorRoleType;
   relationshipDuration: string;
   capacityKnown: string;
   courseTaught: string;
   studentRank: string;
+  thesisTitle: string;
   keyAchievements: string;
   softSkills: string[];
   targetProgram: string;
@@ -47,6 +57,47 @@ interface LorDataState {
 }
 
 type LorSection = 'recommender' | 'relationship' | 'research';
+
+const LOR_ROLE_PRESETS: Record<LorRoleType, {
+  label: string;
+  badge: string;
+  defaultTitle: string;
+  defaultCapacity: string;
+  defaultDuration: string;
+  defaultAchievements: string;
+}> = {
+  academic_professor: {
+    label: 'Course Instructor / Professor',
+    badge: 'Coursework & Theory Focus',
+    defaultTitle: 'Associate Professor & Senior Lecturer',
+    defaultCapacity: 'Course Instructor & Undergraduate Seminar Mentor',
+    defaultDuration: 'over 2 years (4 academic semesters)',
+    defaultAchievements: 'Excelled in advanced theory exams, grasped complex theoretical proofs with finesse, and was an active, respectful participant in classroom seminars.',
+  },
+  head_of_department: {
+    label: 'Head of Department (HOD) / Dean',
+    badge: 'Institutional & Leadership Endorsement',
+    defaultTitle: 'Professor & Head of Department',
+    defaultCapacity: 'Professor and Department Head',
+    defaultDuration: 'four years',
+    defaultAchievements: 'Maintained excellent marks across all academic terms, demonstrated immense working efficiency, and served as leader of the student technical forum organizing hackathons and volunteer arrangements.',
+  },
+  thesis_advisor: {
+    label: 'Bachelor Thesis & Project Supervisor',
+    badge: 'Research & Lab Independence Focus',
+    defaultTitle: 'Professor & Capstone Project Director',
+    defaultCapacity: 'Supervising Professor & Capstone Laboratory Mentor',
+    defaultDuration: 'over 2 years (Capstone Research & Thesis)',
+    defaultAchievements: 'Conducted rigorous independent scientific research (Selbstständigkeit), consulted peer-reviewed literature, designed experimental test benches, and authored an extraordinary thesis paper.',
+  },
+};
+
+const COHORT_PERCENTILE_PRESETS = [
+  { label: 'Truly Outstanding (Top 5%)', value: 'Top 5% of 140 undergraduate students in the cohort' },
+  { label: 'Exceptional (Top 10%)', value: 'Top 10% of 140 undergraduate students in the cohort' },
+  { label: 'Very Good (Top 25%)', value: 'Top 25% of 140 undergraduate students in the cohort' },
+  { label: 'Above Average (Top 50%)', value: 'Top 50% of the cohort with consistent upward trajectory' },
+];
 
 export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
   // Screen mode: 'intake' vs 'result'
@@ -68,20 +119,25 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const [formData, setFormData] = useState<LorDataState>({
-    recommenderName: 'Prof. Dr. Rajesh Sharma',
-    recommenderTitle: 'Professor & Dean of Academic Affairs',
+    recommenderName: 'Associate Professor Peter Johnson',
+    recommenderTitle: 'Associate Professor & Chair of Applied Informatics',
     recommenderInstitution: 'National Institute of Technology',
     recommenderDepartment: 'Department of Computer Science & Engineering',
-    recommenderEmail: 'r.sharma@university.edu',
-    relationshipDuration: 'over 2 years (4 academic semesters)',
+    recommenderEmail: 'p.johnson@nit.ac.in',
+    recommenderPhone: '+91 98765 43210',
+    recommenderAddress: 'Campus Directorate, Academic Block III, Tech City',
+    lorType: 'academic_professor',
+    relationshipDuration: 'four years',
     capacityKnown: 'Course Instructor and Undergraduate Thesis Advisor',
-    courseTaught: 'Design and Analysis of Algorithms, Advanced Operating Systems',
-    studentRank: 'Top 5% of 120 undergraduate students in the cohort',
-    keyAchievements: 'Demonstrated outstanding capability in algorithmic optimization, empirical benchmarking, and scientific literature synthesis during supervised capstone research.',
+    courseTaught: 'Design & Analysis of Algorithms, Distributed Operating Systems',
+    studentRank: 'Top 5% of 140 undergraduate students in the cohort',
+    thesisTitle: 'Autonomous Edge Computing for Real-Time Sensor Networks',
+    keyAchievements: 'Achieved outstanding marks in advanced coursework, produced an extraordinary thesis paper for seminar presentation, and led the student technical forum conducting hackathons and technical quizzes.',
     softSkills: [
       'Independent Scientific Research (Selbstständigkeit)',
-      'Analytical Rigor',
+      'Algorithmic & Mathematical Rigor',
       'Systematic Problem Solving',
+      'Peer Collaboration & Technical Forum Leadership',
       'High Academic Integrity',
     ],
     targetProgram: 'Master of Science in Germany',
@@ -117,10 +173,14 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
           recommenderInstitution: data.lorData.recommenderInstitution ?? prev.recommenderInstitution ?? '',
           recommenderDepartment: data.lorData.recommenderDepartment ?? prev.recommenderDepartment ?? '',
           recommenderEmail: data.lorData.recommenderEmail ?? prev.recommenderEmail ?? '',
+          recommenderPhone: data.lorData.recommenderPhone ?? prev.recommenderPhone ?? '',
+          recommenderAddress: data.lorData.recommenderAddress ?? prev.recommenderAddress ?? '',
+          lorType: (data.lorData.lorType as LorRoleType) || prev.lorType || 'academic_professor',
           relationshipDuration: data.lorData.relationshipDuration ?? prev.relationshipDuration ?? '',
           capacityKnown: data.lorData.capacityKnown ?? prev.capacityKnown ?? '',
           courseTaught: data.lorData.courseTaught ?? prev.courseTaught ?? '',
           studentRank: data.lorData.studentRank ?? prev.studentRank ?? '',
+          thesisTitle: data.lorData.thesisTitle ?? prev.thesisTitle ?? '',
           keyAchievements: data.lorData.keyAchievements ?? prev.keyAchievements ?? '',
           softSkills: Array.isArray(data.lorData.softSkills) && data.lorData.softSkills.length > 0
             ? data.lorData.softSkills
@@ -139,6 +199,17 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleRolePresetSelect = (role: LorRoleType) => {
+    const preset = LOR_ROLE_PRESETS[role];
+    setFormData((prev) => ({
+      ...prev,
+      lorType: role,
+      recommenderTitle: prev.recommenderTitle || preset.defaultTitle,
+      capacityKnown: prev.capacityKnown || preset.defaultCapacity,
+      relationshipDuration: prev.relationshipDuration || preset.defaultDuration,
+    }));
   };
 
   const handleSaveDraft = async () => {
@@ -166,7 +237,7 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
   const onInitiateGenerate = () => {
     if (remainingAttempts <= 0) {
       setStatusMessage({
-        text: `You have reached your limit of ${maxGenerations} generations. `,
+        text: `You have reached your limit of ${maxGenerations} generations. Please contact your counsellor for additional attempts.`,
         type: 'error',
       });
       return;
@@ -177,7 +248,8 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
   const handleGenerate = async () => {
     try {
       setIsGenerating(true);
-      setStatusMessage({ text: 'Structuring German institutional recommendation appraisal...', type: 'info' });
+      setShowConfirmModal(false);
+      setStatusMessage({ text: 'Generating formal German academic Letter of Recommendation...', type: 'info' });
 
       const res = await fetch(`${API_URL}/student/lor/generate`, {
         method: 'POST',
@@ -229,7 +301,7 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
         credentials: 'include',
         body: JSON.stringify({
           documentContent: formData.generatedLor,
-          filename: `LOR_${formData.recommenderName.replace(/[^a-zA-Z0-9]/g, '_')}.txt`,
+          filename: `LOR_${(formData.recommenderName || 'Professor').replace(/[^a-zA-Z0-9]/g, '_')}.txt`,
         }),
       });
       if (!res.ok) throw new Error('Submission failed');
@@ -251,15 +323,83 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleDownload = () => {
+  // Export 1: Plain Text (.txt)
+  const handleDownloadTxt = () => {
     if (!formData.generatedLor) return;
     const blob = new Blob([formData.generatedLor], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `LOR_${formData.recommenderName.replace(/\s+/g, '_')}.txt`;
+    a.download = `LOR_${(formData.recommenderName || 'Recommendation').replace(/\s+/g, '_')}.txt`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  // Export 2: Microsoft Word (.doc) with complete academic styling
+  const handleDownloadWord = () => {
+    if (!formData.generatedLor) return;
+    const content = formData.generatedLor;
+    const headerHtml = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <title>Letter of Recommendation - ${formData.recommenderName}</title>
+        <style>
+          @page {
+            size: A4;
+            margin: 1in;
+          }
+          body {
+            font-family: 'Times New Roman', serif;
+            font-size: 11.5pt;
+            line-height: 1.45;
+            color: #111111;
+          }
+          p { margin-bottom: 11pt; text-align: justify; }
+          .header-box { margin-bottom: 20pt; font-size: 10pt; color: #444444; border-bottom: 1.5pt solid #222222; padding-bottom: 8pt; }
+          .subject-line { font-weight: bold; margin-top: 14pt; margin-bottom: 14pt; font-size: 12pt; }
+          .section-heading { font-weight: bold; font-size: 11.5pt; margin-top: 12pt; margin-bottom: 4pt; color: #111111; }
+          .signature-box { margin-top: 32pt; page-break-inside: avoid; }
+        </style>
+      </head>
+      <body>
+        <div class="header-box">
+          <strong>${formData.recommenderInstitution.toUpperCase()}</strong><br/>
+          ${formData.recommenderDepartment}<br/>
+          Address: ${formData.recommenderAddress || 'Institutional Campus, University Directorate'}<br/>
+          Official Contact: ${formData.recommenderEmail} ${formData.recommenderPhone ? `| Phone: ${formData.recommenderPhone}` : ''}
+        </div>
+    `;
+
+    const paragraphs = content.split(/\n\n+/).map((p) => {
+      const formatted = p.trim().replace(/\n/g, '<br/>');
+      if (formatted.startsWith('### ')) {
+        return `<p class="section-heading">${formatted.replace(/^###\s*/, '')}</p>`;
+      }
+      if (formatted.startsWith('SUBJECT:')) {
+        return `<p class="subject-line">${formatted}</p>`;
+      }
+      if (formatted.startsWith('[OFFICIAL INSTITUTION LETTERHEAD]') || formatted.startsWith('[UNIVERSITY LETTERHEAD]')) {
+        return '';
+      }
+      return `<p>${formatted}</p>`;
+    }).filter(Boolean).join('');
+
+    const footerHtml = `</body></html>`;
+    const fullDoc = headerHtml + paragraphs + footerHtml;
+
+    const blob = new Blob(['\ufeff', fullDoc], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `LOR_${(formData.recommenderName || 'Professor').replace(/\s+/g, '_')}.doc`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Export 3: Print / Save as PDF
+  const handlePrint = () => {
+    window.print();
   };
 
   const addSkill = () => {
@@ -293,7 +433,7 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       {/* Top Header & Navigation Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-800">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-800 print:hidden">
         <div className="flex items-center gap-3">
           {onBack && (
             <button
@@ -314,20 +454,19 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
               </span>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              Evidence-based recommendation from professors or research mentors validating your cohort rank and independent scientific research (Selbstständigkeit).
+              Production-ready recommendation engine aligned with DIW Berlin and German admissions standards.
             </p>
           </div>
         </div>
 
-        {/* Remaining Quota Badge */}
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700">
-          <Award className="w-3.5 h-3.5 text-germany-red" />
-          <span>{remainingAttempts} of {maxGenerations} generations remaining</span>
-        </div>
+        {/* Quota & Mode Switcher */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700">
+            <Award className="w-3.5 h-3.5 text-germany-red" />
+            <span>{remainingAttempts} of {maxGenerations} generations left</span>
+          </div>
 
-        {/* Mode Switcher Pills (If draft already exists) */}
-        <div className="flex items-center gap-2">
-          {formData.generatedLor ? (
+          {formData.generatedLor && (
             <div className="flex items-center p-1 bg-gray-100 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
               <button
                 onClick={() => setScreenMode('intake')}
@@ -349,20 +488,16 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
                 }`}
               >
                 <FileText className="w-3.5 h-3.5 text-blue-600" />
-                <span>Generated Letter &amp; Export</span>
+                <span>Letter &amp; Export</span>
               </button>
             </div>
-          ) : (
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
-              Draft Preparation
-            </span>
           )}
         </div>
       </div>
 
       {statusMessage && (
         <div
-          className={`p-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+          className={`p-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all print:hidden ${
             statusMessage.type === 'success'
               ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
               : statusMessage.type === 'error'
@@ -376,13 +511,55 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
       )}
 
       {/* ========================================================================= */}
-      {/* SCREEN 1 & 2: INTAKE WIZARD (Referee, Standing, Evidence) */}
+      {/* SCREEN 1: INTAKE WIZARD */}
       {/* ========================================================================= */}
       {screenMode === 'intake' && (
-        <div className="space-y-6">
-          {/* 3 Step Selector Cards */}
+        <div className="space-y-6 print:hidden">
+          {/* LOR Recommendation Style Preset Buttons */}
+          <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-900/60 border border-gray-200/80 dark:border-gray-800 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+                <GraduationCap className="w-4 h-4 text-germany-red" />
+                <span>Select Recommendation Profile Type</span>
+              </span>
+              <span className="text-[11px] font-bold text-gray-400">
+                Tailors academic tone to your professor&apos;s role
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              {(Object.keys(LOR_ROLE_PRESETS) as LorRoleType[]).map((roleKey) => {
+                const preset = LOR_ROLE_PRESETS[roleKey];
+                const isSelected = formData.lorType === roleKey;
+                return (
+                  <button
+                    key={roleKey}
+                    type="button"
+                    onClick={() => handleRolePresetSelect(roleKey)}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                      isSelected
+                        ? 'border-gray-900 dark:border-white bg-white dark:bg-[#151B27] shadow-xs ring-1 ring-gray-900 dark:ring-white'
+                        : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111622] hover:border-gray-300 dark:hover:border-gray-700'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black text-gray-900 dark:text-gray-100">
+                        {preset.label}
+                      </span>
+                      {isSelected && <Check className="w-3.5 h-3.5 text-germany-red" />}
+                    </div>
+                    <span className="text-[10px] font-extrabold text-gray-400 dark:text-gray-500 block mt-0.5">
+                      {preset.badge}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 3 Step Navigation Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {/* Card 1: Referee Profile */}
+            {/* Step 1: Referee Profile */}
             <div
               onClick={() => setSelectedSection('recommender')}
               className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-3.5 ${
@@ -407,12 +584,12 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
                 </div>
                 <h3 className="text-xs font-black text-gray-900 dark:text-gray-100 mt-0.5">Referee Profile</h3>
                 <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 truncate">
-                  {formData.recommenderName || 'Professor details'}
+                  {formData.recommenderName || 'Professor credentials'}
                 </p>
               </div>
             </div>
 
-            {/* Card 2: Academic Standing */}
+            {/* Step 2: Cohort Standing */}
             <div
               onClick={() => setSelectedSection('relationship')}
               className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-3.5 ${
@@ -442,7 +619,7 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
               </div>
             </div>
 
-            {/* Card 3: Research Evidence */}
+            {/* Step 3: Research & Evidence */}
             <div
               onClick={() => setSelectedSection('research')}
               className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-3.5 ${
@@ -465,25 +642,25 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
                   <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Step 3</span>
                   {formData.keyAchievements && <Check className="w-3.5 h-3.5 text-emerald-500" />}
                 </div>
-                <h3 className="text-xs font-black text-gray-900 dark:text-gray-100 mt-0.5">Research &amp; Skills</h3>
+                <h3 className="text-xs font-black text-gray-900 dark:text-gray-100 mt-0.5">Thesis &amp; Leadership</h3>
                 <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 truncate">
-                  Supervised projects &amp; aptitude
+                  {formData.thesisTitle || 'Research paper & forum work'}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Form Container for the Selected Option */}
+          {/* Form Step Details */}
           <div className="neu-card p-6 md:p-8 bg-white dark:bg-[#111622] border border-gray-200 dark:border-gray-800 rounded-3xl shadow-sm space-y-6">
-            {/* OPTION 1: RECOMMENDER PROFILE */}
+            {/* STEP 1: RECOMMENDER PROFILE */}
             {selectedSection === 'recommender' && (
               <div className="space-y-5">
                 <div className="border-b border-gray-100 dark:border-gray-800 pb-3">
                   <h2 className="text-sm font-black text-gray-900 dark:text-gray-100">
-                    Step 1: Professor &amp; Referee Academic Profile
+                    Step 1: Professor &amp; Referee Academic Credentials
                   </h2>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    Official credentials of the university faculty member providing the recommendation.
+                    Official contact information to be printed on your university letterhead.
                   </p>
                 </div>
 
@@ -496,20 +673,20 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
                       type="text"
                       value={formData.recommenderName || ''}
                       onChange={(e) => setFormData({ ...formData, recommenderName: e.target.value })}
-                      placeholder="e.g. Prof. Dr. Rajesh Sharma"
+                      placeholder="e.g. Associate Professor Peter Johnson"
                       className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white"
                     />
                   </div>
 
                   <div>
                     <label className="text-xs font-black text-gray-700 dark:text-gray-300 block mb-1">
-                      Designation &amp; Academic Title
+                      Designation &amp; Academic Chair
                     </label>
                     <input
                       type="text"
                       value={formData.recommenderTitle || ''}
                       onChange={(e) => setFormData({ ...formData, recommenderTitle: e.target.value })}
-                      placeholder="e.g. Professor & Dean of Academic Affairs"
+                      placeholder="e.g. Associate Professor & Chair of Applied Informatics"
                       className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white"
                     />
                   </div>
@@ -543,23 +720,47 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-xs font-black text-gray-700 dark:text-gray-300 block mb-1">
-                    Referee Official Institutional Email (.edu / .ac)
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.recommenderEmail || ''}
-                    onChange={(e) => setFormData({ ...formData, recommenderEmail: e.target.value })}
-                    placeholder="e.g. r.sharma@nit.ac.in (German universities require institutional email)"
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white"
-                  />
-                  <p className="text-[11px] text-gray-400 mt-1">
-                    ⚠️ German universities discard letters using public Gmail or Yahoo accounts.
-                  </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-black text-gray-700 dark:text-gray-300 block mb-1">
+                      Official Institutional Email (.edu / .ac)
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.recommenderEmail || ''}
+                      onChange={(e) => setFormData({ ...formData, recommenderEmail: e.target.value })}
+                      placeholder="e.g. p.johnson@nit.ac.in"
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-black text-gray-700 dark:text-gray-300 block mb-1">
+                      Official Contact Phone / Mobile
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.recommenderPhone || ''}
+                      onChange={(e) => setFormData({ ...formData, recommenderPhone: e.target.value })}
+                      placeholder="e.g. +91 98765 43210 (German universities verify via phone)"
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white"
+                    />
+                  </div>
                 </div>
 
-                {/* Bottom Navigation */}
+                <div>
+                  <label className="text-xs font-black text-gray-700 dark:text-gray-300 block mb-1">
+                    Campus / Directorate Address
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.recommenderAddress || ''}
+                    onChange={(e) => setFormData({ ...formData, recommenderAddress: e.target.value })}
+                    placeholder="e.g. Campus Directorate, Academic Block III, Tech City"
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white"
+                  />
+                </div>
+
                 <div className="flex items-center justify-end pt-4 border-t border-gray-100 dark:border-gray-800">
                   <button
                     onClick={() => setSelectedSection('relationship')}
@@ -572,15 +773,15 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
               </div>
             )}
 
-            {/* OPTION 2: RELATIONSHIP & COHORT STANDING */}
+            {/* STEP 2: RELATIONSHIP & COHORT STANDING */}
             {selectedSection === 'relationship' && (
               <div className="space-y-5">
                 <div className="border-b border-gray-100 dark:border-gray-800 pb-3">
                   <h2 className="text-sm font-black text-gray-900 dark:text-gray-100">
-                    Step 2: Academic Relationship &amp; Cohort Standing
+                    Step 2: Academic Standing &amp; Cohort Benchmark (DIW Berlin Matrix)
                   </h2>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    German selection boards require an objective percentile benchmark rather than subjective praise.
+                    German admission boards require quantifiable percentile rankings over general subjective compliments.
                   </p>
                 </div>
 
@@ -593,7 +794,7 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
                       type="text"
                       value={formData.relationshipDuration || ''}
                       onChange={(e) => setFormData({ ...formData, relationshipDuration: e.target.value })}
-                      placeholder="e.g. over 2 years (4 academic semesters)"
+                      placeholder="e.g. four years / over 2 years (4 academic semesters)"
                       className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white"
                     />
                   </div>
@@ -606,7 +807,7 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
                       type="text"
                       value={formData.capacityKnown || ''}
                       onChange={(e) => setFormData({ ...formData, capacityKnown: e.target.value })}
-                      placeholder="e.g. Course Instructor & Undergraduate Thesis Advisor"
+                      placeholder="e.g. Professor and Head of Department / Thesis Advisor"
                       className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white"
                     />
                   </div>
@@ -614,34 +815,46 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
 
                 <div>
                   <label className="text-xs font-black text-gray-700 dark:text-gray-300 block mb-1">
-                    Advanced Courses Taught by This Professor
+                    Advanced Courses / Seminars Taught by This Referee
                   </label>
                   <input
                     type="text"
                     value={formData.courseTaught || ''}
                     onChange={(e) => setFormData({ ...formData, courseTaught: e.target.value })}
-                    placeholder="e.g. Advanced Algorithms, Distributed Operating Systems"
+                    placeholder="e.g. Design & Analysis of Algorithms, Distributed Operating Systems"
                     className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white"
                   />
                 </div>
 
-                <div>
-                  <label className="text-xs font-black text-gray-700 dark:text-gray-300 block mb-1">
-                    Student Cohort Rank / Percentile Standing (Crucial for Germany)
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-700 dark:text-gray-300 block">
+                    Cohort Rank / Relative Academic Standing (Crucial for Germany)
                   </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {COHORT_PERCENTILE_PRESETS.map((p) => (
+                      <button
+                        key={p.label}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, studentRank: p.value })}
+                        className={`p-2.5 text-left rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                          formData.studentRank === p.value
+                            ? 'border-germany-red bg-red-50/50 dark:bg-red-950/30 text-germany-red font-black'
+                            : 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300'
+                        }`}
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
                   <input
                     type="text"
                     value={formData.studentRank || ''}
                     onChange={(e) => setFormData({ ...formData, studentRank: e.target.value })}
-                    placeholder="e.g. Top 5% of 120 undergraduate students in the cohort"
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white"
+                    placeholder="e.g. Top 5% in a cohort of 140 undergraduate students"
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white mt-1"
                   />
-                  <p className="text-[11px] text-gray-400 mt-1">
-                    German admission committees (e.g. TUM, RWTH) specifically evaluate class rank.
-                  </p>
                 </div>
 
-                {/* Bottom Navigation */}
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
                   <button
                     onClick={() => setSelectedSection('recommender')}
@@ -653,34 +866,50 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
                     onClick={() => setSelectedSection('research')}
                     className="px-5 py-2.5 bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-900 text-xs font-black rounded-xl flex items-center gap-2 cursor-pointer"
                   >
-                    <span>Continue to Evidence</span>
+                    <span>Continue to Thesis &amp; Evidence</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
             )}
 
-            {/* OPTION 3: RESEARCH EVIDENCE & APTITUDE */}
+            {/* STEP 3: THESIS & LEADERSHIP */}
             {selectedSection === 'research' && (
               <div className="space-y-5">
                 <div className="border-b border-gray-100 dark:border-gray-800 pb-3">
                   <h2 className="text-sm font-black text-gray-900 dark:text-gray-100">
-                    Step 3: Supervised Research &amp; Scientific Independence
+                    Step 3: Thesis Presentation, Technical Forum &amp; Scientific Independence
                   </h2>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    Evidence of independent research (Selbstständigkeit), capstone performance, and problem solving.
+                    Concrete achievements including seminar thesis paper, circuitry/coding projects, and leadership in student technical forums.
                   </p>
                 </div>
 
                 <div>
                   <label className="text-xs font-black text-gray-700 dark:text-gray-300 block mb-1">
-                    Supervised Project, Lab Work, or Capstone Investigation
+                    Bachelor Thesis / Seminar Paper Title &amp; Topic
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.thesisTitle || ''}
+                    onChange={(e) => setFormData({ ...formData, thesisTitle: e.target.value })}
+                    placeholder="e.g. Autonomous Edge Computing for Real-Time Sensor Networks"
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white"
+                  />
+                  <p className="text-[11px] text-gray-400 mt-1">
+                    Highlights your seminar thesis presentation directly to the German examination board.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="text-xs font-black text-gray-700 dark:text-gray-300 block mb-1">
+                    Key Academic &amp; Technical Achievements (Projects, Circuitry, Coding, Forum Leadership)
                   </label>
                   <textarea
                     rows={4}
                     value={formData.keyAchievements || ''}
                     onChange={(e) => setFormData({ ...formData, keyAchievements: e.target.value })}
-                    placeholder="Describe specific project work, laboratory experiments, or research challenges overcome under this professor's supervision..."
+                    placeholder="Describe laboratory achievements, handling complex concepts with finesse, coding, and role in student technical forum or volunteer work..."
                     className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white"
                   />
                 </div>
@@ -693,7 +922,7 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
                     type="text"
                     value={formData.targetProgram || ''}
                     onChange={(e) => setFormData({ ...formData, targetProgram: e.target.value })}
-                    placeholder="e.g. Master of Science in Informatics"
+                    placeholder="e.g. Master of Science in Computer Science (Public University, Germany)"
                     className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white"
                   />
                 </div>
@@ -701,7 +930,7 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
                 {/* Demonstrated Scientific Competencies */}
                 <div className="space-y-3">
                   <label className="text-xs font-black text-gray-800 dark:text-gray-200 block">
-                    Demonstrated Competencies (Selbstständigkeit)
+                    Evaluated Competency Dimensions (DIW Berlin Matrix)
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -709,7 +938,7 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
                       value={newSkill}
                       onChange={(e) => setNewSkill(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-                      placeholder="e.g. Empirical Benchmark Design or Scientific Literature Synthesis"
+                      placeholder="e.g. Empirical Benchmark Design or Peer Forum Leadership"
                       className="flex-1 px-3.5 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white"
                     />
                     <button
@@ -737,7 +966,7 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
                   </div>
                 </div>
 
-                {/* Bottom Trigger: Big Generate AI Button */}
+                {/* Bottom Trigger: Generate AI Button */}
                 <div className="pt-4 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <button
                     onClick={() => setSelectedSection('relationship')}
@@ -775,12 +1004,12 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
       )}
 
       {/* ========================================================================= */}
-      {/* SCREEN 3: GENERATED LETTER, CHECKLIST, DOWNLOAD & COUNSELLOR SUBMIT */}
+      {/* SCREEN 2: GENERATED LETTER, PRINT, WORD EXPORT & SUBMIT */}
       {/* ========================================================================= */}
       {screenMode === 'result' && (
         <div className="space-y-6">
-          {/* Top Bar on Result Screen: Status, Edit Button, and Actions */}
-          <div className="neu-card p-5 bg-white dark:bg-[#111622] border border-gray-200 dark:border-gray-800 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          {/* Top Bar on Result Screen: Status & Export Actions */}
+          <div className="neu-card p-5 bg-white dark:bg-[#111622] border border-gray-200 dark:border-gray-800 rounded-2xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 print:hidden">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/40 shrink-0">
                 <CheckCircle2 className="w-5 h-5" />
@@ -795,14 +1024,14 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
               </div>
             </div>
 
-            {/* Quick Action Buttons */}
-            <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+            {/* Quick Action Export Buttons */}
+            <div className="flex items-center gap-2 flex-wrap w-full lg:w-auto">
               <button
                 onClick={() => setScreenMode('intake')}
                 className="px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-extrabold flex items-center gap-1.5 cursor-pointer"
               >
                 <Edit3 className="w-3.5 h-3.5" />
-                <span>Edit Form Inputs</span>
+                <span>Edit Inputs</span>
               </button>
 
               <button
@@ -817,8 +1046,26 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
                   <RefreshCw className="w-3.5 h-3.5" />
                 )}
                 <span>
-                  {remainingAttempts <= 0 ? 'Quota Reached (0 left)' : `Re-draft with AI (${remainingAttempts} left)`}
+                  {remainingAttempts <= 0 ? 'Quota Reached (0 left)' : `Re-draft (${remainingAttempts} left)`}
                 </span>
+              </button>
+
+              <button
+                onClick={handleDownloadWord}
+                className="px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/40 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800 text-xs font-extrabold flex items-center gap-1.5 cursor-pointer"
+                title="Download Microsoft Word .doc ready to print on college letterhead"
+              >
+                <Download className="w-3.5 h-3.5 text-blue-600" />
+                <span>Word (.doc)</span>
+              </button>
+
+              <button
+                onClick={handlePrint}
+                className="px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-extrabold flex items-center gap-1.5 cursor-pointer"
+                title="Print or Save as PDF"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Print / PDF</span>
               </button>
 
               <button
@@ -826,15 +1073,7 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
                 className="px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-extrabold flex items-center gap-1.5 cursor-pointer"
               >
                 <Copy className="w-3.5 h-3.5" />
-                <span>{copied ? 'Copied!' : 'Copy Text'}</span>
-              </button>
-
-              <button
-                onClick={handleDownload}
-                className="px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-extrabold flex items-center gap-1.5 cursor-pointer"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Download (.txt)</span>
+                <span>{copied ? 'Copied!' : 'Copy'}</span>
               </button>
 
               <button
@@ -843,56 +1082,60 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
                 className="px-3.5 py-2 rounded-xl bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-900 text-xs font-black flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 <Save className="w-3.5 h-3.5" />
-                <span>{isSaving ? 'Saving...' : 'Save Draft'}</span>
+                <span>{isSaving ? 'Saving...' : 'Save'}</span>
               </button>
             </div>
           </div>
 
-          {/* Official German Validity Checklist */}
-          <div className="neu-card p-5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/60 rounded-3xl space-y-3">
+          {/* Official Physical Submission Checklist */}
+          <div className="neu-card p-5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/60 rounded-3xl space-y-3 print:hidden">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               <h3 className="text-xs font-black text-blue-900 dark:text-blue-200">
-                German University LOR Physical Submission Checklist
+                German University Submission Guidelines (Physical Ink &amp; Seal)
               </h3>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-blue-800 dark:text-blue-300">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs text-blue-800 dark:text-blue-300">
               <div className="flex items-center gap-2 p-3 bg-white dark:bg-gray-900 rounded-2xl border border-blue-200/60 dark:border-blue-900/40">
                 <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
-                <span>Print on College Letterhead</span>
+                <span>Official Letterhead (Briefkopf)</span>
               </div>
               <div className="flex items-center gap-2 p-3 bg-white dark:bg-gray-900 rounded-2xl border border-blue-200/60 dark:border-blue-900/40">
                 <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
-                <span>Must show .edu / .ac email</span>
+                <span>Institutional Email (.edu/.ac)</span>
               </div>
               <div className="flex items-center gap-2 p-3 bg-white dark:bg-gray-900 rounded-2xl border border-blue-200/60 dark:border-blue-900/40">
                 <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
-                <span>Physical Ink &amp; Stamp</span>
+                <span>Phone Number for Verification</span>
+              </div>
+              <div className="flex items-center gap-2 p-3 bg-white dark:bg-gray-900 rounded-2xl border border-blue-200/60 dark:border-blue-900/40">
+                <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
+                <span>Physical Ink Signature &amp; Stamp</span>
               </div>
             </div>
           </div>
 
-          {/* Full-Width Recommendation Letter View & Live Editor */}
-          <div className="neu-card p-6 md:p-8 bg-white dark:bg-[#111622] border border-gray-200 dark:border-gray-800 rounded-3xl space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800">
+          {/* Letterhead Paper Representation & Live Editor */}
+          <div className="neu-card p-8 md:p-12 bg-[#FCFBFA] dark:bg-[#111622] border border-gray-300/80 dark:border-gray-800 rounded-3xl shadow-md space-y-5 print:p-0 print:border-none print:shadow-none print:bg-white">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-800 print:hidden">
               <span className="text-xs font-black text-gray-800 dark:text-gray-200 flex items-center gap-2">
                 <FileText className="w-4 h-4 text-germany-red" />
                 <span>Empfehlungsschreiben Draft Text</span>
               </span>
               <span className="text-[11px] font-bold text-gray-400">
-                Edit or customize any section below before bringing it to your professor for signature
+                Directly editable below before printing for professor&apos;s physical signature
               </span>
             </div>
 
             <textarea
-              rows={22}
+              rows={24}
               value={formData.generatedLor || ''}
               onChange={(e) => setFormData({ ...formData, generatedLor: e.target.value })}
-              className="w-full p-5 rounded-2xl font-mono text-xs leading-relaxed bg-gray-50/70 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-800 text-gray-800 dark:text-gray-200 resize-y focus:outline-none focus:ring-1 focus:ring-germany-red"
+              className="w-full p-6 sm:p-8 rounded-2xl font-serif text-sm leading-relaxed bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-gray-100 resize-y focus:outline-none focus:ring-1 focus:ring-germany-red shadow-inner print:border-none print:p-0 print:text-black print:bg-transparent"
             />
 
             {/* Bottom Actions: Submit for Counsellor Verification */}
-            <div className="p-4 rounded-2xl bg-gray-50/80 dark:bg-[#151B27] border border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="p-4 rounded-2xl bg-gray-50/80 dark:bg-[#151B27] border border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 print:hidden">
               <div className="space-y-1">
                 <div className="text-xs font-black">
                   {documentStatus?.status === 'VERIFIED' ? (
@@ -934,7 +1177,7 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
                 <button
                   onClick={handleSubmitForReview}
                   disabled={isSubmitting || !formData.generatedLor}
-                  className={`px-6 py-3 text-white text-xs font-black rounded-none flex items-center justify-center gap-2 shadow-xs cursor-pointer disabled:opacity-50 transition-colors ${
+                  className={`px-6 py-3 text-white text-xs font-black rounded-xl flex items-center justify-center gap-2 shadow-xs cursor-pointer disabled:opacity-50 transition-colors ${
                     documentStatus?.status === 'PENDING'
                       ? 'bg-amber-600 hover:bg-amber-700'
                       : 'bg-emerald-600 hover:bg-emerald-700'
@@ -949,8 +1192,8 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
                   )}
                   <span>
                     {documentStatus?.status === 'PENDING'
-                      ? 'Re-submit / Update Draft'
-                      : 'Submit to Counsellor for Verification'}
+                      ? 'Update Submission'
+                      : 'Submit to Counsellor Review'}
                   </span>
                 </button>
               </div>
@@ -958,53 +1201,56 @@ export function StudentLorGenerator({ onBack }: LorGeneratorProps) {
           </div>
         </div>
       )}
+
       {/* Confirmation Modal */}
       {showConfirmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="w-full max-w-md p-6 bg-white dark:bg-[#111622] rounded-none border border-gray-300 dark:border-gray-700 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 print:hidden">
+          <div className="neu-card p-6 max-w-md w-full bg-white dark:bg-[#111622] border border-gray-200 dark:border-gray-800 rounded-3xl shadow-xl space-y-4">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-none bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                <AlertCircle className="w-6 h-6" />
+              <div className="p-3 bg-red-50 text-germany-red dark:bg-red-950/50 rounded-2xl">
+                <BookOpen className="w-6 h-6" />
               </div>
               <div>
                 <h3 className="text-sm font-black text-gray-900 dark:text-gray-100">
-                  Confirm LOR Generation
+                  Generate Academic LOR
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Are you sure you want to proceed?
+                  This will consume 1 generation attempt ({remainingAttempts} remaining).
                 </p>
               </div>
             </div>
 
-            <div className="p-4 rounded-none bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/40 space-y-1.5">
-              <p className="text-xs font-black text-amber-900 dark:text-amber-200">
-                Are you sure you want to proceed?
+            <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/60 border border-gray-200/80 dark:border-gray-800 text-xs text-gray-600 dark:text-gray-300 space-y-1.5">
+              <p>
+                <strong>Referee:</strong> {formData.recommenderName} ({formData.recommenderInstitution})
               </p>
-              <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
-                You have <span className="font-black text-amber-950 dark:text-white underline decoration-amber-500">{remainingAttempts} remaining generation{remainingAttempts === 1 ? '' : 's'}</span> (out of {maxGenerations} total).
+              <p>
+                <strong>Role:</strong> {LOR_ROLE_PRESETS[formData.lorType]?.label}
               </p>
-              <p className="text-[11px] text-amber-700 dark:text-amber-400">
-                Each generation or re-draft consumes 1 attempt from your remaining attempts.
+              <p>
+                <strong>Standing:</strong> {formData.studentRank}
               </p>
+              {formData.thesisTitle && (
+                <p>
+                  <strong>Thesis:</strong> {formData.thesisTitle}
+                </p>
+              )}
             </div>
 
-            <div className="flex items-center justify-end gap-2.5 pt-2">
+            <div className="flex items-center justify-end gap-3 pt-2">
               <button
-                type="button"
                 onClick={() => setShowConfirmModal(false)}
-                className="px-4 py-2.5 rounded-none border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold cursor-pointer"
               >
                 Cancel
               </button>
               <button
-                type="button"
-                onClick={() => {
-                  setShowConfirmModal(false);
-                  handleGenerate();
-                }}
-                className="px-5 py-2.5 bg-germany-red hover:bg-[#D62839] text-white text-xs font-black rounded-none cursor-pointer shadow-xs transition-colors"
+                onClick={handleGenerate}
+                disabled={isGenerating}
+                className="px-5 py-2.5 bg-germany-red hover:bg-[#D62839] text-white text-xs font-black rounded-xl cursor-pointer shadow-xs flex items-center gap-2"
               >
-                Proceed &amp; Generate ({remainingAttempts} left)
+                {isGenerating && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                <span>Confirm &amp; Generate</span>
               </button>
             </div>
           </div>
