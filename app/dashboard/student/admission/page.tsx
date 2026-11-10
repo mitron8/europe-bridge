@@ -18,7 +18,7 @@ import {
   Check,
   Loader2,
   Building2,
-  Sparkles,
+  FileCheck,
   Upload,
   RefreshCw,
   FolderOpen,
@@ -490,7 +490,7 @@ export default function StudentAdmissionPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-800 pb-4">
               <div>
                 <h3 className="text-base font-black text-gray-900 dark:text-white flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-germany-gold" />
+                  <FileCheck className="w-4 h-4 text-germany-gold" />
                   <span>Statements of Purpose (SOP) by Programme</span>
                 </h3>
                 <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">
@@ -562,7 +562,7 @@ export default function StudentAdmissionPage() {
                             href="/dashboard/student/documents"
                             className="px-3 py-1.5 bg-germany-red text-white text-xs font-extrabold rounded-lg hover:bg-germany-red/90 flex items-center gap-1"
                           >
-                            <Sparkles className="w-3 h-3" />
+                            <FileCheck className="w-3 h-3" />
                             <span>Generate</span>
                           </Link>
                         )}

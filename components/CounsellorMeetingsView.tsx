@@ -15,7 +15,6 @@ import {
   ArrowRight,
   Info,
   CalendarDays,
-  Sparkles,
   Plus,
   Trash2,
   Check,

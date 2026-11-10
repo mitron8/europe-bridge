@@ -15,7 +15,6 @@ import {
   ArrowRight,
   Info,
   CalendarDays,
-  Sparkles,
 } from 'lucide-react';
 
 export interface MeetingSlot {
@@ -572,7 +571,7 @@ export function MeetingBookingModal({
                   {/* Meeting Agenda & Notes */}
                   <div className="space-y-3 pt-2">
                     <label className="text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-germany-gold" />
+                      <CalendarDays className="w-3.5 h-3.5 text-germany-gold" />
                       <span>Session Agenda / Topic</span>
                     </label>
 

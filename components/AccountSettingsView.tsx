@@ -13,7 +13,7 @@ import {
   Eye,
   EyeOff,
   Layers,
-  Sparkles,
+  Award,
   Check,
   ArrowRight,
   Loader2,
@@ -861,7 +861,7 @@ export default function AccountSettingsView({ forcedRole }: AccountSettingsViewP
                             </>
                           ) : (
                             <>
-                              <Sparkles className="w-4 h-4" />
+                              <Award className="w-4 h-4" />
                               <span>Choose &amp; Activate Plan</span>
                             </>
                           )}
@@ -878,7 +878,7 @@ export default function AccountSettingsView({ forcedRole }: AccountSettingsViewP
           <div className="p-6 bg-[#faf8f3] dark:bg-[#151B27] rounded-2xl border border-[#e5e0d3] dark:border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <h4 className="text-sm font-bold text-germany-black dark:text-white flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-germany-red" />
+                <Award className="w-4 h-4 text-germany-red" />
                 <span>Specialized Document &amp; Visa Services</span>
               </h4>
               <p className="text-xs text-gray-500 dark:text-gray-400">
