@@ -548,7 +548,7 @@ export function StudentDocumentHub() {
         </div>
 
         {/* Active Academic Curriculum Vitae (CV) Generator Card */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl border border-amber-200/80 dark:border-amber-900/40 bg-gradient-to-r from-amber-50/70 via-white to-amber-50/30 dark:from-amber-950/20 dark:via-[#151B27] dark:to-[#151B27] shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl border border-amber-200/80 dark:border-amber-900/40 bg-white dark:bg-[#151B27] shadow-xs">
           <div className="flex items-start gap-3.5">
             <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200/70 dark:border-amber-900/50 shrink-0 mt-0.5 shadow-xs">
               <FileText className="w-5 h-5" />

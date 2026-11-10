@@ -55,6 +55,8 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
   const pathname = usePathname();
   const [user, setUser] = useState<{ firstName?: string; lastName?: string; role?: string } | null>(null);
   const [gates, setGates] = useState<{
+    hasActivePlan?: boolean;
+    planName?: string | null;
     matchingUnlocked?: boolean;
     shortlistUnlocked?: boolean;
     documentsUnlocked?: boolean;
@@ -316,6 +318,13 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
             <div className="flex-1 min-w-0">
               <p className="font-bold text-xs text-germany-black dark:text-white truncate">{fullName}</p>
               <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 truncate">{displayRole}</p>
+              <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 truncate">
+                {gates?.hasActivePlan && gates?.planName ? (
+                  <span className="font-extrabold text-germany-red">{gates.planName}</span>
+                ) : (
+                  displayRole
+                )}
+              </p>
               <Link href="/dashboard/student/account" className="text-[10px] font-bold text-germany-red hover:underline block truncate mt-0.5">
                 Account & Membership →
               </Link>

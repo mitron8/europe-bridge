@@ -19,7 +19,7 @@ import {
   Info,
   Check,
   RefreshCw,
-  Sparkles,
+  Calculator,
   X,
   ShieldCheck,
   CheckSquare,
@@ -1112,7 +1112,7 @@ export function StudentSopGenerator({ onBack }: SopGeneratorProps) {
                 <div className="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <span className="text-xs font-black text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
-                      <Sparkles className="w-4 h-4 text-germany-red" />
+                      <GraduationCap className="w-4 h-4 text-germany-red" />
                       <span>German Bavarian GPA: {formData.bachelorGpa || 'Pending Calculation'}</span>
                     </span>
                     <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5">
@@ -1663,7 +1663,7 @@ export function StudentSopGenerator({ onBack }: SopGeneratorProps) {
           <div className="w-full max-w-md p-6 bg-white dark:bg-[#111622] rounded-3xl border border-gray-300 dark:border-gray-700 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-germany-red" />
+                <Calculator className="w-4 h-4 text-germany-red" />
                 <h3 className="text-sm font-black text-gray-900 dark:text-gray-100">
                   Update &amp; Recalculate German GPA
                 </h3>

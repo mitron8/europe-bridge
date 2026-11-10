@@ -7,7 +7,6 @@ import {
   ArrowRight, 
   ShieldCheck, 
   Star, 
-  Sparkles, 
   Zap, 
   HelpCircle,
   GraduationCap,
@@ -172,7 +171,7 @@ export const PricingCards: React.FC<PricingCardsProps> = ({ onSelectPlan }) => {
           >
             {/* Pill Tag */}
             <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#9e2a2b] text-white px-3.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-1.5 whitespace-nowrap">
-              <Sparkles className="w-3 h-3" />
+              <Star className="w-3 h-3 fill-current" />
               <span>Most Popular Choice</span>
             </div>
 

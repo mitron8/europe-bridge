@@ -43,7 +43,7 @@ import {
   Lock,
   Unlock,
   Bookmark,
-  Sparkles,
+  PlusCircle,
   ChevronLeft,
   ChevronRight,
   BookOpen,
@@ -2831,7 +2831,7 @@ export function StudentDetailModal({
                       className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
                       title="Allot +2 extra SOP generation attempts to student"
                     >
-                      {grantingDocType === 'sop' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-amber-600" />}
+                      {grantingDocType === 'sop' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <PlusCircle className="w-3.5 h-3.5 text-amber-600" />}
                       <span>+ Allot Extra</span>
                     </button>
 
@@ -3118,7 +3118,7 @@ export function StudentDetailModal({
                             : 'Allot +1 extra CV generation attempt to student'
                         }
                       >
-                        {grantingDocType === 'cv' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-amber-600" />}
+                        {grantingDocType === 'cv' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <PlusCircle className="w-3.5 h-3.5 text-amber-600" />}
                         <span>+ Allot Extra</span>
                       </button>
                     </div>
@@ -3411,7 +3411,7 @@ export function StudentDetailModal({
                             {grantingDocType === 'cv' ? (
                               <Loader2 className="w-3.5 h-3.5 animate-spin" />
                             ) : (
-                              <Sparkles className="w-3.5 h-3.5" />
+                              <PlusCircle className="w-3.5 h-3.5" />
                             )}
                             <span>
                               {dossierLimits?.cv?.extraAttemptsGranted
@@ -3797,7 +3797,7 @@ export function StudentDetailModal({
                                         {grantingDocType === 'cv' ? (
                                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
                                         ) : (
-                                          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                                          <PlusCircle className="w-3.5 h-3.5 text-amber-600" />
                                         )}
                                         <span>+ Allot Extra</span>
                                       </button>
@@ -5145,7 +5145,7 @@ export function StudentDetailModal({
                     {isMatchingLocked ? (
                       <Lock className="w-3.5 h-3.5 text-gray-400" />
                     ) : (
-                      <Sparkles className="w-3.5 h-3.5 text-germany-gold" />
+                      <Award className="w-3.5 h-3.5 text-germany-gold" />
                     )}
                     <span>{isMatchingLocked ? 'Auto-fill Locked' : 'Auto-fill Top Matches'}</span>
                   </button>

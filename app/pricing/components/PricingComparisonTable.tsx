@@ -1,6 +1,6 @@
 "use client";
 import React from 'react';
-import { Check, X, Sparkles, Award, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Check, X, Award, ShieldCheck, ArrowRight } from 'lucide-react';
 
 interface PricingComparisonTableProps {
   onSelectPlan: (planName: string, price: string) => void;

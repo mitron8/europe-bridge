@@ -640,14 +640,14 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
 
       {/* Generation Status & Verification Alerts */}
       {isGenerating && (
-        <div className="neu-card p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-900 rounded-2xl flex items-start gap-3.5 shadow-sm">
-          <Loader2 className="w-5 h-5 text-blue-600 animate-spin shrink-0 mt-0.5" />
+        <div className="neu-card p-5 bg-blue-50/90 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/60 text-blue-900 dark:text-blue-200 rounded-2xl flex items-start gap-3.5 shadow-sm">
+          <Loader2 className="w-5 h-5 text-blue-600 dark:text-blue-400 animate-spin shrink-0 mt-0.5" />
           <div className="flex-1">
-            <h3 className="text-xs font-black uppercase tracking-wider text-blue-800">Your CV is being generated</h3>
-            <p className="text-xs font-bold text-blue-700 mt-1">
+            <h3 className="text-xs font-black uppercase tracking-wider text-blue-800 dark:text-blue-300">Your CV is being generated</h3>
+            <p className="text-xs font-bold text-blue-700 dark:text-blue-300/80 mt-1">
               Our durable background engine is formulating your summary, structuring experience bullets, and compiling the registered HTML template.
             </p>
-            <p className="text-[11px] font-extrabold text-blue-600/90 mt-1.5 flex items-center gap-1.5">
+            <p className="text-[11px] font-extrabold text-blue-600/90 dark:text-blue-400 mt-1.5 flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
               <span>You can close your browser or navigate away. Your document generation will safely persist and complete on our servers.</span>
             </p>
@@ -656,18 +656,18 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
       )}
 
       {isPendingVerification && !isGenerating && (
-        <div className="neu-card p-5 bg-amber-50/90 border border-amber-200 text-amber-900 rounded-2xl flex items-start gap-3.5 shadow-sm">
-          <Clock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+        <div className="neu-card p-5 bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 text-amber-900 dark:text-amber-200 rounded-2xl flex items-start gap-3.5 shadow-sm">
+          <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xs font-black uppercase tracking-wider text-amber-800">CV Generated • Pending Counsellor Review</h3>
-                <span className="px-2 py-0.5 bg-amber-200 text-amber-900 rounded-full text-[10px] font-extrabold">In Review</span>
+                <h3 className="text-xs font-black uppercase tracking-wider text-amber-800 dark:text-amber-300">CV Generated • Pending Counsellor Review</h3>
+                <span className="px-2 py-0.5 bg-amber-200 dark:bg-amber-900/60 text-amber-900 dark:text-amber-300 rounded-full text-[10px] font-extrabold">In Review</span>
               </div>
-              <p className="text-xs font-bold text-amber-700 mt-1">
+              <p className="text-xs font-bold text-amber-700 dark:text-amber-300/80 mt-1">
                 Your academic CV has been generated and queued for counsellor verification. To maintain strict German application quality standards, official downloads are released upon counsellor sign-off.
               </p>
-              <p className="text-[11px] font-medium text-amber-600 mt-1">
+              <p className="text-[11px] font-medium text-amber-600 dark:text-amber-400 mt-1">
                 Generated: {formData.document?.uploadedAt ? new Date(formData.document.uploadedAt).toLocaleString() : 'Recently'}
               </p>
             </div>
@@ -687,15 +687,15 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
       )}
 
       {isVerified && !isGenerating && (
-        <div className="neu-card p-5 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl flex items-start gap-3.5 shadow-sm">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+        <div className="neu-card p-5 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/60 text-emerald-900 dark:text-emerald-200 rounded-2xl flex items-start gap-3.5 shadow-sm">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
           <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xs font-black uppercase tracking-wider text-emerald-800">Verified &amp; Approved</h3>
-                <span className="px-2 py-0.5 bg-emerald-200 text-emerald-900 rounded-full text-[10px] font-extrabold">Ready for Submission</span>
+                <h3 className="text-xs font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-300">Verified &amp; Approved</h3>
+                <span className="px-2 py-0.5 bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-300 rounded-full text-[10px] font-extrabold">Ready for Submission</span>
               </div>
-              <p className="text-xs font-bold text-emerald-700 mt-0.5">
+              <p className="text-xs font-bold text-emerald-700 dark:text-emerald-300/80 mt-0.5">
                 Your counsellor has verified your academic CV. It is officially certified for uni-assist and university portal uploads.
               </p>
             </div>
@@ -715,11 +715,11 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
       )}
 
       {isRejected && !isGenerating && (
-        <div className="neu-card p-5 bg-red-50 border border-red-200 text-red-900 rounded-2xl flex items-start gap-3.5 shadow-sm">
-          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+        <div className="neu-card p-5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/60 text-red-900 dark:text-red-200 rounded-2xl flex items-start gap-3.5 shadow-sm">
+          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
           <div className="flex-1">
-            <h3 className="text-xs font-black uppercase tracking-wider text-red-800">Revision Requested by Counsellor</h3>
-            <p className="text-xs font-bold text-red-700 mt-1">
+            <h3 className="text-xs font-black uppercase tracking-wider text-red-800 dark:text-red-300">Revision Requested by Counsellor</h3>
+            <p className="text-xs font-bold text-red-700 dark:text-red-300/80 mt-1">
               Note: {formData.document?.rejectionNote || 'Please update your details and re-generate your CV.'}
             </p>
           </div>
@@ -727,12 +727,12 @@ export function StudentCvGenerator({ onBack }: CvGeneratorProps) {
       )}
 
       {isFailed && !isGenerating && (
-        <div className="neu-card p-5 bg-red-50 border border-red-200 text-red-900 rounded-2xl flex items-start gap-3.5 shadow-sm">
-          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+        <div className="neu-card p-5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/60 text-red-900 dark:text-red-200 rounded-2xl flex items-start gap-3.5 shadow-sm">
+          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
           <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="text-xs font-black uppercase tracking-wider text-red-800">Generation Issue</h3>
-              <p className="text-xs font-bold text-red-700 mt-0.5">
+              <h3 className="text-xs font-black uppercase tracking-wider text-red-800 dark:text-red-300">Generation Issue</h3>
+              <p className="text-xs font-bold text-red-700 dark:text-red-300/80 mt-0.5">
                 {formData.latestJob?.error_message || 'An error occurred during CV compilation. Please try again.'}
               </p>
             </div>

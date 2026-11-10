@@ -14,6 +14,9 @@ type Student = {
   phone: string | null;
   whatsapp: string | null;
   status: string | null;
+  planId?: string | null;
+  planName?: string | null;
+  planAmount?: number | null;
   // these come from the LEFT JOIN on the assignments table — null if unassigned
   counsellorId: string | null;
   counsellorFirstName: string | null;
@@ -321,6 +324,20 @@ export default function AdminStudentsPage() {
                           <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-germany-gold/10 text-germany-gold font-extrabold capitalize">
                             {formatStatus(student.status)}
                           </span>
+                          <div className="flex flex-col gap-1 items-start">
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold capitalize ${
+                              student.status === 'plan_purchased'
+                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
+                                : 'bg-germany-gold/10 text-germany-gold'
+                            }`}>
+                              {formatStatus(student.status)}
+                            </span>
+                            {student.planName ? (
+                              <span className="text-[10px] font-bold text-germany-red bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 px-1.5 py-0.5 rounded-md">
+                                {student.planName}
+                              </span>
+                            ) : null}
+                          </div>
                         </td>
                         <td className="py-3.5 text-right">
                           <div className="relative inline-block text-left">

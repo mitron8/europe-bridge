@@ -1,7 +1,21 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CheckCircle2, ShieldCheck, ArrowRight, Phone, Mail, User, GraduationCap, Calendar, Sparkles } from 'lucide-react';
+import {
+  X,
+  CheckCircle2,
+  ShieldCheck,
+  ArrowRight,
+  Phone,
+  Mail,
+  User,
+  GraduationCap,
+  Calendar,
+  Award,
+  AlertCircle,
+  Loader2,
+} from 'lucide-react';
 
 interface PricingModalProps {
   isOpen: boolean;
@@ -14,7 +28,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
   isOpen,
   onClose,
   selectedPlan,
-  selectedPrice
+  selectedPrice,
 }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -22,34 +36,194 @@ export const PricingModal: React.FC<PricingModalProps> = ({
   const [intake, setIntake] = useState('Winter Semester 2026');
   const [field, setField] = useState('Computer Science / IT / AI');
   const [gpa, setGpa] = useState('');
-  const [paymentPreference, setPaymentPreference] = useState<'online' | 'emi' | 'counselor'>('online');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [paymentDetails, setPaymentDetails] = useState<{
+    orderId?: string;
+    paymentId?: string;
+  }>({});
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      setErrorMessage(null);
     } else {
       document.body.style.overflow = 'unset';
       setIsSubmitted(false);
+      setErrorMessage(null);
     }
     return () => {
       document.body.style.overflow = 'unset';
     };
   }, [isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !email || !phone) return;
+  const isFree =
+    selectedPlan.toLowerCase().includes('free') ||
+    selectedPrice === '₹0' ||
+    selectedPrice === 'Free';
 
-    setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-    }, 700);
+  // Helper to load Razorpay Standard Checkout SDK
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if ((window as any).Razorpay) return resolve(true);
+      const existing = document.querySelector('script[src*="checkout.razorpay.com"]');
+      if (existing) {
+        existing.addEventListener('load', () => resolve(true));
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
   };
 
-  const isFree = selectedPlan.toLowerCase().includes('free') || selectedPrice === '₹0' || selectedPrice === 'Free';
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !email || !phone) return;
+    setErrorMessage(null);
+
+    // Free Consultation booking
+    if (isFree) {
+      setIsSubmitting(true);
+      setTimeout(() => {
+        setIsSubmitting(false);
+        setIsSubmitted(true);
+      }, 700);
+      return;
+    }
+
+    // Paid Plan Razorpay Standard Web Checkout
+    try {
+      setIsSubmitting(true);
+
+      // Parse amount from selectedPrice (e.g. "₹29,999" -> 2999900 paise)
+      const cleanNumeric = parseInt(selectedPrice.replace(/[^0-9]/g, ''), 10);
+      const priceInr = !isNaN(cleanNumeric) && cleanNumeric > 0 ? cleanNumeric : 29999;
+      const amountInPaise = priceInr * 100;
+
+      // Ensure Razorpay SDK script is loaded
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        throw new Error('Razorpay SDK failed to load. Please check your internet connection.');
+      }
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+      // 1. Backend Create Order
+      const orderRes = await fetch(`${apiUrl}/create-order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          amount: amountInPaise,
+          currency: 'INR',
+          receipt: `eb_rcpt_${Date.now()}`,
+          notes: {
+            name,
+            email: email.trim().toLowerCase(),
+            phone,
+            planName: selectedPlan,
+            selectedPrice,
+            gpa,
+            intake,
+            field,
+          },
+        }),
+      });
+
+      if (!orderRes.ok) {
+        const errJson = await orderRes.json().catch(() => ({}));
+        throw new Error(errJson.message || `Failed to create payment order (${orderRes.status})`);
+      }
+
+      const orderData = await orderRes.json();
+      const razorpayKey =
+        orderData.key_id ||
+        process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
+        'rzp_test_Tw7frcXLaL9h8I';
+
+      // 2. Open Razorpay Standard Checkout Modal
+      const options = {
+        key: razorpayKey,
+        amount: orderData.amount,
+        currency: orderData.currency || 'INR',
+        name: 'EuropeBridge',
+        description: selectedPlan,
+        order_id: orderData.order_id || orderData.orderId,
+        prefill: {
+          name,
+          email: email.trim().toLowerCase(),
+          contact: phone,
+        },
+        theme: {
+          color: '#9e2a2b',
+        },
+        modal: {
+          ondismiss: function () {
+            setIsSubmitting(false);
+          },
+        },
+        handler: async function (response: any) {
+          try {
+            setIsVerifying(true);
+
+            // 3. Backend Verify Signature
+            const verifyRes = await fetch(`${apiUrl}/verify-payment`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                notes: {
+                  name,
+                  email: email.trim().toLowerCase(),
+                  phone,
+                  planName: selectedPlan,
+                  selectedPrice,
+                  gpa,
+                  intake,
+                  field,
+                },
+              }),
+            });
+
+            const verifyData = await verifyRes.json().catch(() => ({}));
+            if (!verifyRes.ok || !verifyData.success) {
+              throw new Error(verifyData.message || 'Payment verification failed');
+            }
+
+            setPaymentDetails({
+              orderId: response.razorpay_order_id,
+              paymentId: response.razorpay_payment_id,
+            });
+            setIsSubmitted(true);
+          } catch (verifyErr: any) {
+            setErrorMessage(verifyErr.message || 'Payment verification failed. Please contact support.');
+          } finally {
+            setIsVerifying(false);
+            setIsSubmitting(false);
+          }
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', function (resp: any) {
+        setErrorMessage(resp.error?.description || 'Payment was unsuccessful or cancelled by user.');
+        setIsSubmitting(false);
+      });
+      rzp.open();
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Unable to start checkout. Please try again.');
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -94,7 +268,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-3 h-3 text-[#9e2a2b]" />
+                        <ShieldCheck className="w-3.5 h-3.5 text-[#9e2a2b]" />
                         Official Admission Enrollment
                       </>
                     )}
@@ -107,10 +281,27 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                     <span className="text-xs text-[#787369]">
                       {isFree
                         ? "30-min strategy call · No sales pressure · Direct alumni guidance"
-                        : "One-time fee · No hidden charges"}
+                        : "One-time fee · Razorpay Secured · Instant Account Activation"}
                     </span>
                   </div>
                 </div>
+
+                {/* Error Banner */}
+                {errorMessage && (
+                  <div className="mb-3 p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="font-bold">{errorMessage}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setErrorMessage(null)}
+                      className="text-red-500 hover:text-red-800"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-3">
@@ -220,8 +411,8 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                     </select>
                   </div>
 
-                  {/* Free vs Paid Dynamic Options */}
-                  {isFree ? (
+                  {/* Free Plan Assessment Pill */}
+                  {isFree && (
                     <div className="rounded-xl bg-[#ede7dc]/60 border border-[#ded8cb] px-3.5 py-2.5 text-xs text-[#4a4740] flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-[#2e7d46] shrink-0" />
@@ -233,67 +424,35 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                         100% Free
                       </span>
                     </div>
-                  ) : (
-                    <div>
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#4a4740] block mb-1.5">
-                        Preferred Next Step
-                      </label>
-                      <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                        <button
-                          type="button"
-                          onClick={() => setPaymentPreference('online')}
-                          className={`py-2 px-2 rounded-lg border font-bold text-xs transition-all cursor-pointer ${
-                            paymentPreference === 'online'
-                              ? 'bg-[#16161a] text-white border-[#16161a]'
-                              : 'bg-white border-[#ded8cb] text-[#4a4740] hover:border-[#16161a]'
-                          }`}
-                        >
-                          Instant UPI
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPaymentPreference('emi')}
-                          className={`py-2 px-2 rounded-lg border font-bold text-xs transition-all cursor-pointer ${
-                            paymentPreference === 'emi'
-                              ? 'bg-[#16161a] text-white border-[#16161a]'
-                              : 'bg-white border-[#ded8cb] text-[#4a4740] hover:border-[#16161a]'
-                          }`}
-                        >
-                          No-Cost EMI
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPaymentPreference('counselor')}
-                          className={`py-2 px-2 rounded-lg border font-bold text-xs transition-all cursor-pointer ${
-                            paymentPreference === 'counselor'
-                              ? 'bg-[#16161a] text-white border-[#16161a]'
-                              : 'bg-white border-[#ded8cb] text-[#4a4740] hover:border-[#16161a]'
-                          }`}
-                        >
-                          Counselor Call
-                        </button>
-                      </div>
-                    </div>
                   )}
 
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isVerifying}
                     className="w-full py-3 px-4 rounded-xl bg-[#9e2a2b] text-white hover:bg-[#852324] active:scale-[0.99] transition-all text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer shadow-md hover:shadow-lg disabled:opacity-50 mt-2"
                   >
-                    {isSubmitting ? (
-                      <span>{isFree ? "Scheduling Your Session..." : "Reserving Your Seat..."}</span>
+                    {isVerifying ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Verifying Payment...</span>
+                      </>
+                    ) : isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>{isFree ? "Scheduling Your Session..." : "Connecting to Razorpay..."}</span>
+                      </>
                     ) : (
                       <>
-                        <span>{isFree ? "Schedule Free Consultation" : "Confirm Admission Plan Enrollment"}</span>
+                        <span>{isFree ? "Schedule Free Consultation" : `Confirm & Pay with Razorpay (${selectedPrice})`}</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
                   </button>
 
-                  <p className="text-[10.5px] text-center text-[#787369] pt-0.5 leading-tight">
-                    🔒 Strict Privacy Guarantee · An EuropeBridge counsellor contacts you within 2 business hours.
+                  <p className="text-[10.5px] text-center text-[#787369] pt-0.5 leading-tight flex items-center justify-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#2e7d46]" />
+                    <span>Razorpay Standard Checkout · 256-Bit SSL Encrypted · Instant Admission Activation</span>
                   </p>
                 </form>
               </div>
@@ -304,7 +463,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
                 <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#16161a]">
-                  {isFree ? "Consultation Booked!" : "Application Received!"}
+                  {isFree ? "Consultation Booked!" : "Payment Confirmed & Seat Reserved!"}
                 </h3>
                 <p className="text-xs sm:text-sm text-[#5e5b54] max-w-sm mx-auto leading-relaxed">
                   {isFree ? (
@@ -313,31 +472,66 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                     </>
                   ) : (
                     <>
-                      Thank you, <strong className="text-[#16161a]">{name}</strong>. We have registered your enrollment for the <strong className="text-[#9e2a2b]">{selectedPlan}</strong>.
+                      Thank you, <strong className="text-[#16161a]">{name}</strong>. Your payment for <strong className="text-[#9e2a2b]">{selectedPlan}</strong> was verified and your student account is active.
                     </>
                   )}
                 </p>
+
                 <div className="p-3.5 rounded-xl bg-[#faf8f3] border border-[#e5e0d3] text-left text-xs text-[#4a4740] space-y-2 max-w-sm mx-auto">
                   <div className="flex justify-between">
-                    <span className="text-[#787369]">WhatsApp Confirmation:</span>
+                    <span className="text-[#787369]">Registered Email:</span>
+                    <strong className="text-[#16161a]">{email}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#787369]">WhatsApp Number:</span>
                     <strong className="text-[#16161a]">{phone}</strong>
                   </div>
+                  {paymentDetails.paymentId && (
+                    <div className="flex justify-between">
+                      <span className="text-[#787369]">Payment ID:</span>
+                      <strong className="text-[#2e7d46] font-mono text-[11px]">{paymentDetails.paymentId}</strong>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-[#787369]">Target Intake:</span>
                     <strong className="text-[#16161a]">{intake}</strong>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#787369]">Counselor Status:</span>
-                    <strong className="text-[#2e7d46]">{isFree ? "Assigned (Free Session)" : "Assigned (Onboarding Lead)"}</strong>
+                    <span className="text-[#787369]">Access Status:</span>
+                    <strong className="text-[#2e7d46]">
+                      {isFree ? "Consultation Scheduled" : "Full Access Unlocked (Plan Active)"}
+                    </strong>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-6 py-2.5 rounded-xl bg-[#16161a] text-white text-xs font-bold hover:bg-[#303038] transition-all cursor-pointer mt-3"
-                >
-                  Done
-                </button>
+
+                {!isFree && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200/80 rounded-xl text-left text-xs text-emerald-900 space-y-1 max-w-sm mx-auto">
+                    <p className="font-bold flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>Ready to Access Your Services?</span>
+                    </p>
+                    <p className="text-[11px] text-emerald-800">
+                      Log in using your Gmail (<strong>{email}</strong>) to immediately access restricted services, document generation, and your assigned advisor.
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="px-5 py-2.5 rounded-xl border border-[#ded8cb] bg-white text-[#16161a] text-xs font-bold hover:bg-[#f4f1ea] transition-all cursor-pointer"
+                  >
+                    Close
+                  </button>
+                  <Link
+                    href="/login"
+                    className="px-5 py-2.5 rounded-xl bg-[#16161a] text-white text-xs font-bold hover:bg-[#303038] transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+                  >
+                    <span>Proceed to Login</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
               </div>
             )}
           </motion.div>
