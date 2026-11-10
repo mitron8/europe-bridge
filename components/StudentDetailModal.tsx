@@ -454,6 +454,7 @@ export function StudentDetailModal({
       });
       if (!res.ok) throw new Error('Failed to verify document');
       await loadVisaChecklist(effectiveStudentId);
+      fetchDocuments();
     } catch (err: any) {
       alert(err.message || 'Failed to verify document');
     } finally {
@@ -481,6 +482,7 @@ export function StudentDetailModal({
       setVisaRejectItem(null);
       setVisaRejectReason('');
       await loadVisaChecklist(effectiveStudentId);
+      fetchDocuments();
     } catch (err: any) {
       alert(err.message || 'Error requesting correction');
     } finally {
@@ -506,6 +508,7 @@ export function StudentDetailModal({
         });
         if (!res.ok) throw new Error('Failed to update requirement');
         await loadVisaChecklist(effectiveStudentId);
+        fetchDocuments();
       } catch (err: any) {
         alert(err.message || 'Error updating requirement');
       } finally {
@@ -534,6 +537,7 @@ export function StudentDetailModal({
       setVisaExemptItem(null);
       setVisaExemptReason('');
       await loadVisaChecklist(effectiveStudentId);
+      fetchDocuments();
     } catch (err: any) {
       alert(err.message || 'Error saving exemption');
     } finally {
@@ -651,7 +655,7 @@ export function StudentDetailModal({
   const [uploadingCorrectedId, setUploadingCorrectedId] = useState<string | null>(null);
   const [downloadingWordId, setDownloadingWordId] = useState<string | null>(null);
 
-  const fetchStudentSops = async () => {
+  const fetchStudentSops = useCallback(async () => {
     if (!effectiveStudentId) return;
     try {
       setSopsLoading(true);
@@ -666,9 +670,9 @@ export function StudentDetailModal({
     } finally {
       setSopsLoading(false);
     }
-  };
+  }, [API_URL, effectiveStudentId]);
 
-  const fetchDocuments = async () => {
+  const fetchDocuments = useCallback(async () => {
     if (!effectiveStudentId) return;
     try {
       setDocsLoading(true);
@@ -687,7 +691,38 @@ export function StudentDetailModal({
     } finally {
       setDocsLoading(false);
     }
-  };
+  }, [API_URL, effectiveStudentId]);
+
+  // Real-time synchronization when switching to Documents tab
+  useEffect(() => {
+    if (activeTab === 'documents' && effectiveStudentId) {
+      fetchDocuments();
+      fetchStudentSops();
+      if (docCategory === 'visa') {
+        loadVisaChecklist(effectiveStudentId);
+      }
+    }
+  }, [activeTab, docCategory, effectiveStudentId, fetchDocuments, fetchStudentSops, loadVisaChecklist]);
+
+  // Window focus & tab visibility synchronization (native lightweight real-time sync)
+  useEffect(() => {
+    if (!effectiveStudentId) return;
+    const handleSyncOnFocus = () => {
+      if (document.visibilityState === 'visible') {
+        fetchDocuments();
+        fetchStudentSops();
+        if (docCategory === 'visa') {
+          loadVisaChecklist(effectiveStudentId);
+        }
+      }
+    };
+    window.addEventListener('focus', handleSyncOnFocus);
+    document.addEventListener('visibilitychange', handleSyncOnFocus);
+    return () => {
+      window.removeEventListener('focus', handleSyncOnFocus);
+      document.removeEventListener('visibilitychange', handleSyncOnFocus);
+    };
+  }, [effectiveStudentId, docCategory, fetchDocuments, fetchStudentSops, loadVisaChecklist]);
 
   // AI Academic Dossier Quotas & Counsellor Allotments
   const [dossierLimits, setDossierLimits] = useState<{
@@ -1342,6 +1377,13 @@ export function StudentDetailModal({
         message: `"${mapped.name}" has been verified and marked as accepted.`,
       });
       setTimeout(() => setDocActionFeedback(null), 3500);
+
+      // Re-sync documents & checklist counts in background
+      fetchDocuments();
+      fetchStudentSops();
+      if (effectiveStudentId) {
+        loadVisaChecklist(effectiveStudentId);
+      }
     } catch (err: any) {
       setDocActionFeedback({
         type: 'error',
@@ -1548,6 +1590,13 @@ export function StudentDetailModal({
       setTimeout(() => setDocActionFeedback(null), 3500);
       setRejectingDoc(null);
       setRejectionReasonInput('');
+
+      // Re-sync documents & checklist counts in background
+      fetchDocuments();
+      fetchStudentSops();
+      if (effectiveStudentId) {
+        loadVisaChecklist(effectiveStudentId);
+      }
     } catch (err: any) {
       setDocActionFeedback({
         type: 'error',
@@ -1864,9 +1913,18 @@ export function StudentDetailModal({
   // Deduplicate documents by documentType so historical replacements or multiple records never inflate counts
   const distinctUploadedDocs = React.useMemo(() => {
     const map = new Map<string, StudentDocument>();
-    documents.filter((doc) => doc.documentType !== 'sop' && doc.section !== 'sop').forEach((doc) => {
+    const nonSopDocs = documents.filter((doc) => doc.documentType !== 'sop' && doc.section !== 'sop');
+    // Sort so verified takes top priority, then pending, then newest uploaded
+    const sorted = [...nonSopDocs].sort((a, b) => {
+      if (a.status === 'verified' && b.status !== 'verified') return -1;
+      if (b.status === 'verified' && a.status !== 'verified') return 1;
+      if (a.status === 'pending' && b.status === 'rejected') return -1;
+      if (b.status === 'pending' && a.status === 'rejected') return 1;
+      return new Date(b.uploadDate || 0).getTime() - new Date(a.uploadDate || 0).getTime();
+    });
+    sorted.forEach((doc) => {
       const key = doc.documentType || doc.id;
-      if (!map.has(key) || doc.status === 'verified') {
+      if (!map.has(key)) {
         map.set(key, doc);
       }
     });
@@ -3374,7 +3432,7 @@ export function StudentDetailModal({
                 )}
                 {/* Completeness & Progress Overview Card */}
                 <div className="p-4 sm:p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <Target className="w-4 h-4 text-germany-red" />
                       <h4 className="text-xs font-black uppercase tracking-wider text-gray-600 dark:text-gray-400">
@@ -3391,9 +3449,25 @@ export function StudentDetailModal({
                         )
                       </h4>
                     </div>
-                    <span className="text-[11px] font-extrabold text-gray-400">
-                      {statsUploaded} of {statsTotalExpected} Expected Uploaded
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[11px] font-extrabold text-gray-400">
+                        {statsUploaded} of {statsTotalExpected} Expected Uploaded
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          fetchDocuments();
+                          fetchStudentSops();
+                          if (effectiveStudentId) loadVisaChecklist(effectiveStudentId);
+                        }}
+                        disabled={docsLoading || visaLoading}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-gray-600 dark:text-gray-300 hover:text-germany-red dark:hover:text-white bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer"
+                        title="Sync latest document status and checklist"
+                      >
+                        <RefreshCw className={`w-3.5 h-3.5 ${docsLoading || visaLoading ? 'animate-spin text-germany-red' : ''}`} />
+                        <span>Sync</span>
+                      </button>
+                    </div>
                   </div>
 
                   {/* 6 Metric Overview Tiles */}

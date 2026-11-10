@@ -112,13 +112,14 @@ export default function CounsellorDashboard() {
 
 
   // Time & Urgency Calculations
-  const { unattendedOrders, attendedOrders, urgentOrders, oldestOrder, waitingText } = useMemo(() => {
+  const { unattendedOrders, attendedOrders, completedOrders, urgentOrders, oldestOrder, waitingText } = useMemo(() => {
     const unattended = serviceOrders.filter((o) =>
       ['BOOKED', 'ASSIGNED', 'REVISION_REQUESTED'].includes(o.status)
     );
     const attended = serviceOrders.filter((o) =>
       ['IN_PROGRESS', 'DRAFT_READY'].includes(o.status)
     );
+    const completed = serviceOrders.filter((o) => o.status === 'COMPLETED');
 
     // Sort unattended strictly by oldest first (FIFO)
     unattended.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
@@ -148,6 +149,7 @@ export default function CounsellorDashboard() {
     return {
       unattendedOrders: unattended,
       attendedOrders: attended,
+      completedOrders: completed,
       urgentOrders: urgent,
       oldestOrder: oldest,
       waitingText: text,
@@ -323,17 +325,27 @@ export default function CounsellorDashboard() {
           </p>
         </Link>
 
-        {/* Metric 4: Admissions Secured */}
-        <div className="bg-white dark:bg-[#111622] rounded-xl border border-gray-200/80 dark:border-gray-800 shadow-xs p-5 space-y-2">
+        {/* Metric 4: Completed Deliverables */}
+        <Link
+          href="/dashboard/counsellor/services"
+          className="bg-white dark:bg-[#111622] hover:bg-gray-50/80 dark:hover:bg-[#151B27] rounded-xl border border-gray-200/80 dark:border-gray-800 hover:border-emerald-500/40 shadow-xs p-5 space-y-2 transition-all block group cursor-pointer"
+        >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-400 dark:text-gray-400">Admissions Secured</span>
-            <div className="p-2 bg-blue-50 dark:bg-blue-950/40 rounded-xl text-blue-700 dark:text-blue-400">
-              <Clock className="w-4 h-4" />
+            <span className="text-xs font-bold text-gray-400 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+              Completed Deliverables
+            </span>
+            <div className="p-2 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-display font-bold text-germany-black dark:text-white">19 Offers</div>
-          <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400">TUM, RWTH, Heidelberg</p>
-        </div>
+          <div className="text-2xl font-display font-bold text-germany-black dark:text-white">
+            {completedOrders.length} Done
+          </div>
+          <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 flex items-center justify-between">
+            <span>SOPs, CVs &amp; LORs delivered</span>
+            <span className="font-bold text-emerald-600 dark:text-emerald-400">View All →</span>
+          </p>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
