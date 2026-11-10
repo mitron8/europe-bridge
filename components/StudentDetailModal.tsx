@@ -214,6 +214,7 @@ export interface StudentDetailModalProps {
   studentId?: string;
   onClose?: () => void;
   isPage?: boolean;
+  readOnly?: boolean;
 }
 
 export function StudentDetailModal({
@@ -221,6 +222,7 @@ export function StudentDetailModal({
   studentId,
   onClose,
   isPage = false,
+  readOnly = false,
 }: StudentDetailModalProps) {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'universities' | 'notes' | 'admission'>('overview');
@@ -2110,10 +2112,17 @@ export function StudentDetailModal({
                     ? 'Shortlist Locked'
                     : formatStatus(summaryData?.status || student?.status)}
                 </span>
-                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-extrabold rounded-full text-[10px] flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  <span>Assigned to You</span>
-                </span>
+                {readOnly ? (
+                  <span className="px-2 py-0.5 bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 font-extrabold rounded-full text-[10px] flex items-center gap-1 border border-amber-200 dark:border-amber-800">
+                    <ShieldCheck className="w-3 h-3" />
+                    <span>Supervisor View (Read-Only)</span>
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-extrabold rounded-full text-[10px] flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" />
+                    <span>Assigned to You</span>
+                  </span>
+                )}
               </div>
 
               <div className="flex items-center gap-3 text-xs font-bold text-gray-500 flex-wrap">
@@ -2131,14 +2140,16 @@ export function StudentDetailModal({
 
           {/* Quick Contact Bar */}
           <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={() => setIsScheduleModalOpen(true)}
-              className="neu-btn-primary py-2 px-3.5 text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow"
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              <span>Schedule Meeting</span>
-            </button>
+            {!readOnly && (
+              <button
+                type="button"
+                onClick={() => setIsScheduleModalOpen(true)}
+                className="neu-btn-primary py-2 px-3.5 text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow"
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                <span>Schedule Meeting</span>
+              </button>
+            )}
             <a
               href={`mailto:${student.email}`}
               className="neu-btn-primary py-2 px-3.5 text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow"
@@ -2203,16 +2214,18 @@ export function StudentDetailModal({
             </span>
           </button>
 
-          <button
-            onClick={() => setActiveTab('notes')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${activeTab === 'notes'
-              ? 'bg-germany-red text-white shadow-md'
-              : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
-              }`}
-          >
-            <Save className="w-3.5 h-3.5" />
-            <span>Strategy Notes &amp; Tasks</span>
-          </button>
+          {!readOnly && (
+            <button
+              onClick={() => setActiveTab('notes')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${activeTab === 'notes'
+                ? 'bg-germany-red text-white shadow-md'
+                : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
+                }`}
+            >
+              <Save className="w-3.5 h-3.5" />
+              <span>Strategy Notes &amp; Tasks</span>
+            </button>
+          )}
 
           <button
             onClick={() => setActiveTab('admission')}
@@ -2782,58 +2795,62 @@ export function StudentDetailModal({
                   </div>
 
                   <div className="flex items-center gap-2 flex-wrap">
-                    {studentSops.length > 0 && (
-                      <button
-                        onClick={() => {
-                          if (selectedSopRecIds.length === studentSops.length) {
-                            setSelectedSopRecIds([]);
-                          } else {
-                            setSelectedSopRecIds(studentSops.map((s) => s.recommendationId));
-                          }
-                        }}
-                        className="px-2.5 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
-                        title="Toggle select all SOPs"
-                      >
-                        {selectedSopRecIds.length === studentSops.length && studentSops.length > 0 ? (
-                          <CheckSquare className="w-3.5 h-3.5 text-germany-red" />
-                        ) : (
-                          <Square className="w-3.5 h-3.5 text-gray-400" />
+                    {!readOnly && (
+                      <>
+                        {studentSops.length > 0 && (
+                          <button
+                            onClick={() => {
+                              if (selectedSopRecIds.length === studentSops.length) {
+                                setSelectedSopRecIds([]);
+                              } else {
+                                setSelectedSopRecIds(studentSops.map((s) => s.recommendationId));
+                              }
+                            }}
+                            className="px-2.5 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                            title="Toggle select all SOPs"
+                          >
+                            {selectedSopRecIds.length === studentSops.length && studentSops.length > 0 ? (
+                              <CheckSquare className="w-3.5 h-3.5 text-germany-red" />
+                            ) : (
+                              <Square className="w-3.5 h-3.5 text-gray-400" />
+                            )}
+                            <span>Select All</span>
+                          </button>
                         )}
-                        <span>Select All</span>
-                      </button>
+
+                        {selectedSopRecIds.length > 0 && (
+                          <button
+                            onClick={() => handleRegenerateSops(selectedSopRecIds)}
+                            disabled={regeneratingSops}
+                            className="px-3 py-1.5 rounded-xl text-xs font-black bg-germany-red hover:bg-[#D62839] text-white flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-50"
+                            title="Re-generate selected SOPs from scratch"
+                          >
+                            {regeneratingSops ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                            <span>Re-generate Selected ({selectedSopRecIds.length})</span>
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => handleRegenerateSops()}
+                          disabled={regeneratingSops || studentSops.length === 0}
+                          className="px-3 py-1.5 rounded-xl text-xs font-black bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-50"
+                          title="Re-generate all shortlisted programme SOPs from scratch"
+                        >
+                          {regeneratingSops && selectedSopRecIds.length === 0 ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                          <span>Re-generate All SOPs</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleGrantAttempts('sop')}
+                          disabled={grantingDocType === 'sop'}
+                          className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                          title="Allot +2 extra SOP generation attempts to student"
+                        >
+                          {grantingDocType === 'sop' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <PlusCircle className="w-3.5 h-3.5 text-amber-600" />}
+                          <span>+ Allot Extra</span>
+                        </button>
+                      </>
                     )}
-
-                    {selectedSopRecIds.length > 0 && (
-                      <button
-                        onClick={() => handleRegenerateSops(selectedSopRecIds)}
-                        disabled={regeneratingSops}
-                        className="px-3 py-1.5 rounded-xl text-xs font-black bg-germany-red hover:bg-[#D62839] text-white flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-50"
-                        title="Re-generate selected SOPs from scratch"
-                      >
-                        {regeneratingSops ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                        <span>Re-generate Selected ({selectedSopRecIds.length})</span>
-                      </button>
-                    )}
-
-                    <button
-                      onClick={() => handleRegenerateSops()}
-                      disabled={regeneratingSops || studentSops.length === 0}
-                      className="px-3 py-1.5 rounded-xl text-xs font-black bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-50"
-                      title="Re-generate all shortlisted programme SOPs from scratch"
-                    >
-                      {regeneratingSops && selectedSopRecIds.length === 0 ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                      <span>Re-generate All SOPs</span>
-                    </button>
-
-                    <button
-                      onClick={() => handleGrantAttempts('sop')}
-                      disabled={grantingDocType === 'sop'}
-                      className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
-                      title="Allot +2 extra SOP generation attempts to student"
-                    >
-                      {grantingDocType === 'sop' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <PlusCircle className="w-3.5 h-3.5 text-amber-600" />}
-                      <span>+ Allot Extra</span>
-                    </button>
 
                     <button
                       onClick={fetchStudentSops}
@@ -2997,78 +3014,82 @@ export function StudentDetailModal({
                               </button>
                             )}
 
-                            {/* Approve button */}
-                            {isApproved ? (
-                              <div
-                                className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1 rounded-xl bg-emerald-100/80 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60"
-                                title="SOP approved and verified"
-                              >
-                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                                <span>Approved</span>
-                              </div>
-                            ) : sop.documentId ? (
-                              <button
-                                onClick={() => handleVerifyDoc(sop.documentId)}
-                                disabled={docActionLoading === sop.documentId}
-                                className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center gap-1 cursor-pointer shadow-xs"
-                                title="Approve SOP and release to student"
-                              >
-                                {docActionLoading === sop.documentId ? (
-                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                ) : (
-                                  <CheckCircle2 className="w-3.5 h-3.5" />
-                                )}
-                                <span>Approve</span>
-                              </button>
-                            ) : null}
+                            {!readOnly && (
+                              <>
+                                {/* Approve button / Status */}
+                                {isApproved ? (
+                                  <div
+                                    className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1 rounded-xl bg-emerald-100/80 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60"
+                                    title="SOP approved and verified"
+                                  >
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                    <span>Approved</span>
+                                  </div>
+                                ) : sop.documentId ? (
+                                  <button
+                                    onClick={() => handleVerifyDoc(sop.documentId)}
+                                    disabled={docActionLoading === sop.documentId}
+                                    className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center gap-1 cursor-pointer shadow-xs"
+                                    title="Approve SOP and release to student"
+                                  >
+                                    {docActionLoading === sop.documentId ? (
+                                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    ) : (
+                                      <CheckCircle2 className="w-3.5 h-3.5" />
+                                    )}
+                                    <span>Approve</span>
+                                  </button>
+                                ) : null}
 
-                            {/* Download Word (.docx) */}
-                            <button
-                              onClick={() =>
-                                handleDownloadWord(
-                                  'sop',
-                                  sop.recommendationId,
-                                  `SOP_${(sop.universityName || 'Uni').replace(/[^a-zA-Z0-9]/g, '_')}_${(sop.programName || 'Prog').replace(/[^a-zA-Z0-9]/g, '_')}.docx`,
-                                )
-                              }
-                              disabled={downloadingWordId === sop.recommendationId}
-                              className="px-2.5 py-1.5 rounded-xl text-xs font-extrabold bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-colors flex items-center gap-1 cursor-pointer shadow-xs"
-                              title="Download editable Microsoft Word (.docx) document"
-                            >
-                              {downloadingWordId === sop.recommendationId ? (
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              ) : (
-                                <Download className="w-3.5 h-3.5 text-blue-600" />
-                              )}
-                              <span>Word (.docx)</span>
-                            </button>
-
-                            {/* Upload Corrected */}
-                            <label
-                              className={`px-2.5 py-1.5 rounded-xl text-xs font-extrabold bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 transition-colors flex items-center gap-1 cursor-pointer shadow-xs ${uploadingCorrectedId === sop.recommendationId ? 'opacity-60 pointer-events-none' : ''
-                                }`}
-                              title="Upload corrected SOP (marks as approved, replaces generated document)"
-                            >
-                              {uploadingCorrectedId === sop.recommendationId ? (
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              ) : (
-                                <Upload className="w-3.5 h-3.5 text-purple-600" />
-                              )}
-                              <span>Upload Corrected</span>
-                              <input
-                                type="file"
-                                accept=".pdf,.docx,.doc"
-                                className="hidden"
-                                disabled={uploadingCorrectedId === sop.recommendationId}
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) {
-                                    handleUploadCorrected('sop', file, sop.recommendationId);
-                                    e.target.value = '';
+                                {/* Download Word (.docx) */}
+                                <button
+                                  onClick={() =>
+                                    handleDownloadWord(
+                                      'sop',
+                                      sop.recommendationId,
+                                      `SOP_${(sop.universityName || 'Uni').replace(/[^a-zA-Z0-9]/g, '_')}_${(sop.programName || 'Prog').replace(/[^a-zA-Z0-9]/g, '_')}.docx`,
+                                    )
                                   }
-                                }}
-                              />
-                            </label>
+                                  disabled={downloadingWordId === sop.recommendationId}
+                                  className="px-2.5 py-1.5 rounded-xl text-xs font-extrabold bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-colors flex items-center gap-1 cursor-pointer shadow-xs"
+                                  title="Download editable Microsoft Word (.docx) document"
+                                >
+                                  {downloadingWordId === sop.recommendationId ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  ) : (
+                                    <Download className="w-3.5 h-3.5 text-blue-600" />
+                                  )}
+                                  <span>Word (.docx)</span>
+                                </button>
+
+                                {/* Upload Corrected */}
+                                <label
+                                  className={`px-2.5 py-1.5 rounded-xl text-xs font-extrabold bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 transition-colors flex items-center gap-1 cursor-pointer shadow-xs ${uploadingCorrectedId === sop.recommendationId ? 'opacity-60 pointer-events-none' : ''
+                                    }`}
+                                  title="Upload corrected SOP (marks as approved, replaces generated document)"
+                                >
+                                  {uploadingCorrectedId === sop.recommendationId ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  ) : (
+                                    <Upload className="w-3.5 h-3.5 text-purple-600" />
+                                  )}
+                                  <span>Upload Corrected</span>
+                                  <input
+                                    type="file"
+                                    accept=".pdf,.docx,.doc"
+                                    className="hidden"
+                                    disabled={uploadingCorrectedId === sop.recommendationId}
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        handleUploadCorrected('sop', file, sop.recommendationId);
+                                        e.target.value = '';
+                                      }
+                                    }}
+                                  />
+                                </label>
+                              </>
+                            )}
                           </div>
                         </div>
                       );
@@ -3094,39 +3115,41 @@ export function StudentDetailModal({
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <button
-                        onClick={handleRegenerateCv}
-                        disabled={regeneratingCv}
-                        className="px-3 py-1.5 rounded-xl text-xs font-black bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-50"
-                        title="Re-generate CV from scratch"
-                      >
-                        {regeneratingCv ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                        <span>Re-generate CV</span>
-                      </button>
+                    {!readOnly && (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                          onClick={handleRegenerateCv}
+                          disabled={regeneratingCv}
+                          className="px-3 py-1.5 rounded-xl text-xs font-black bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-50"
+                          title="Re-generate CV from scratch"
+                        >
+                          {regeneratingCv ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                          <span>Re-generate CV</span>
+                        </button>
 
-                      <button
-                        onClick={() => handleGrantAttempts('cv')}
-                        disabled={grantingDocType === 'cv' || Boolean(dossierLimits?.cv?.extraAttemptsGranted)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-colors shadow-xs ${dossierLimits?.cv?.extraAttemptsGranted
-                          ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed'
-                          : 'bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 cursor-pointer'
-                          }`}
-                        title={
-                          dossierLimits?.cv?.extraAttemptsGranted
-                            ? 'Max 1 extra attempt already allotted'
-                            : 'Allot +1 extra CV generation attempt to student'
-                        }
-                      >
-                        {grantingDocType === 'cv' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <PlusCircle className="w-3.5 h-3.5 text-amber-600" />}
-                        <span>+ Allot Extra</span>
-                      </button>
-                    </div>
+                        <button
+                          onClick={() => handleGrantAttempts('cv')}
+                          disabled={grantingDocType === 'cv' || Boolean(dossierLimits?.cv?.extraAttemptsGranted)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-colors shadow-xs ${dossierLimits?.cv?.extraAttemptsGranted
+                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed'
+                            : 'bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 cursor-pointer'
+                            }`}
+                          title={
+                            dossierLimits?.cv?.extraAttemptsGranted
+                              ? 'Max 1 extra attempt already allotted'
+                              : 'Allot +1 extra CV generation attempt to student'
+                          }
+                        >
+                          {grantingDocType === 'cv' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <PlusCircle className="w-3.5 h-3.5 text-amber-600" />}
+                          <span>+ Allot Extra</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 
                 {/* AI Academic Dossier Quotas & Clearance Hub */}
-                {(docCategory === 'cv' || docCategory === 'lor') && (
+                {!readOnly && (docCategory === 'cv' || docCategory === 'lor') && (
                   <div className="p-5 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm space-y-5">
                     {/* German Tricolor Accent Line */}
                     <div className="flex h-1 w-20 rounded-full overflow-hidden">
@@ -3233,7 +3256,11 @@ export function StudentDetailModal({
 
                         {/* Allot Button / Helper Info */}
                         <div className="pt-2">
-                          {dossierLimits?.sop?.canGrantExtra ? (
+                          {readOnly ? (
+                            <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 text-center py-1">
+                              Supervisor View • {dossierLimits?.sop?.extraAttemptsGranted ? 'Extra attempts allotted' : 'Standard quota active'}
+                            </p>
+                          ) : dossierLimits?.sop?.canGrantExtra ? (
                             <button
                               onClick={() => handleGrantAttempts('sop')}
                               disabled={grantingDocType === 'sop'}
@@ -3314,7 +3341,11 @@ export function StudentDetailModal({
 
                         {/* Allot Button / Helper Info */}
                         <div className="pt-2">
-                          {dossierLimits?.lor?.canGrantExtra ? (
+                          {readOnly ? (
+                            <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 text-center py-1">
+                              Supervisor View • {dossierLimits?.lor?.extraAttemptsGranted ? 'Extra attempts allotted' : 'Standard quota active'}
+                            </p>
+                          ) : dossierLimits?.lor?.canGrantExtra ? (
                             <button
                               onClick={() => handleGrantAttempts('lor')}
                               disabled={grantingDocType === 'lor'}
@@ -3395,35 +3426,43 @@ export function StudentDetailModal({
 
                         {/* Allot Button / Helper Info */}
                         <div className="pt-2 space-y-1.5">
-                          <button
-                            onClick={() => handleGrantAttempts('cv')}
-                            disabled={grantingDocType === 'cv' || Boolean(dossierLimits?.cv?.extraAttemptsGranted)}
-                            className={`w-full py-2 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 shadow-xs transition-colors ${dossierLimits?.cv?.extraAttemptsGranted
-                              ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed'
-                              : 'bg-amber-600 hover:bg-amber-700 text-white cursor-pointer disabled:opacity-50'
-                              }`}
-                            title={
-                              dossierLimits?.cv?.extraAttemptsGranted
-                                ? 'Max 1 extra attempt already allotted'
-                                : 'Allot +1 extra CV generation attempt to student'
-                            }
-                          >
-                            {grantingDocType === 'cv' ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              <PlusCircle className="w-3.5 h-3.5" />
-                            )}
-                            <span>
-                              {dossierLimits?.cv?.extraAttemptsGranted
-                                ? 'Max 1 Extra Allotted'
-                                : 'Allot +1 CV Attempt'}
-                            </span>
-                          </button>
-                          {!dossierLimits?.cv?.extraAttemptsGranted && !dossierLimits?.cv?.canGrantExtra && (
-                            <div className="text-[11px] text-gray-500 dark:text-gray-400 py-0.5 flex items-center gap-1.5">
-                              <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                              <span>Student has {dossierLimits?.cv?.remainingAttempts ?? 3} initial attempts left. +1 extra can be allotted once initial 3 are crossed.</span>
-                            </div>
+                          {readOnly ? (
+                            <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 text-center py-1">
+                              Supervisor View • {dossierLimits?.cv?.extraAttemptsGranted ? 'Extra attempt allotted' : 'Standard quota active'}
+                            </p>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleGrantAttempts('cv')}
+                                disabled={grantingDocType === 'cv' || Boolean(dossierLimits?.cv?.extraAttemptsGranted)}
+                                className={`w-full py-2 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 shadow-xs transition-colors ${dossierLimits?.cv?.extraAttemptsGranted
+                                  ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed'
+                                  : 'bg-amber-600 hover:bg-amber-700 text-white cursor-pointer disabled:opacity-50'
+                                  }`}
+                                title={
+                                  dossierLimits?.cv?.extraAttemptsGranted
+                                    ? 'Max 1 extra attempt already allotted'
+                                    : 'Allot +1 extra CV generation attempt to student'
+                                }
+                              >
+                                {grantingDocType === 'cv' ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <PlusCircle className="w-3.5 h-3.5" />
+                                )}
+                                <span>
+                                  {dossierLimits?.cv?.extraAttemptsGranted
+                                    ? 'Max 1 Extra Allotted'
+                                    : 'Allot +1 CV Attempt'}
+                                </span>
+                              </button>
+                              {!dossierLimits?.cv?.extraAttemptsGranted && !dossierLimits?.cv?.canGrantExtra && (
+                                <div className="text-[11px] text-gray-500 dark:text-gray-400 py-0.5 flex items-center gap-1.5">
+                                  <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                                  <span>Student has {dossierLimits?.cv?.remainingAttempts ?? 3} initial attempts left. +1 extra can be allotted once initial 3 are crossed.</span>
+                                </div>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>
@@ -3692,115 +3731,119 @@ export function StudentDetailModal({
                                     <Eye className="w-3.5 h-3.5" />
                                     <span>Preview</span>
                                   </button>
-                                  {doc.url && (
-                                    <a
-                                      href={doc.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="py-1.5 px-3 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:text-germany-black dark:hover:text-white bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
-                                    >
-                                      <ExternalLink className="w-3.5 h-3.5" />
-                                      <span>Open</span>
-                                    </a>
-                                  )}
-
-                                  {isVerified ? (
-                                    <div className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-emerald-100/70 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
-                                      <CheckCircle2 className="w-3.5 h-3.5" />
-                                      <span>Approved</span>
-                                    </div>
-                                  ) : (
-                                    <button
-                                      onClick={() => handleVerifyDoc(doc.id)}
-                                      disabled={docActionLoading === doc.id}
-                                      className="py-1.5 px-3.5 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
-                                    >
-                                      {docActionLoading === doc.id ? (
-                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                      ) : (
-                                        <CheckCircle2 className="w-3.5 h-3.5" />
-                                      )}
-                                      <span>Accept</span>
-                                    </button>
-                                  )}
-
-                                  {doc.documentType === 'cv' && (
+                                  {!readOnly && (
                                     <>
-                                      <button
-                                        onClick={() => {
-                                          const studentName = student
-                                            ? [student.firstName, student.lastName].filter(Boolean).join('_')
-                                            : 'Applicant';
-                                          handleDownloadWord(
-                                            'cv',
-                                            undefined,
-                                            `CV_${studentName || 'Applicant'}.docx`,
-                                          );
-                                        }}
-                                        disabled={downloadingWordId === 'cv'}
-                                        className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-colors cursor-pointer shadow-xs"
-                                      >
-                                        {downloadingWordId === 'cv' ? (
-                                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                        ) : (
-                                          <Download className="w-3.5 h-3.5 text-blue-600" />
-                                        )}
-                                        <span>Word (.docx)</span>
-                                      </button>
+                                      {doc.url && (
+                                        <a
+                                          href={doc.url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="py-1.5 px-3 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:text-germany-black dark:hover:text-white bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                                        >
+                                          <ExternalLink className="w-3.5 h-3.5" />
+                                          <span>Open</span>
+                                        </a>
+                                      )}
 
-                                      <label
-                                        className={`py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 transition-colors cursor-pointer shadow-xs ${uploadingCorrectedId === 'cv' ? 'opacity-60 pointer-events-none' : ''
-                                          }`}
-                                      >
-                                        {uploadingCorrectedId === 'cv' ? (
-                                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                        ) : (
-                                          <Upload className="w-3.5 h-3.5 text-purple-600" />
-                                        )}
-                                        <span>Upload Corrected</span>
-                                        <input
-                                          type="file"
-                                          accept=".pdf,.docx,.doc"
-                                          className="hidden"
-                                          disabled={uploadingCorrectedId === 'cv'}
-                                          onChange={(e) => {
-                                            const file = e.target.files?.[0];
-                                            if (file) {
-                                              handleUploadCorrected('cv', file);
-                                              e.target.value = '';
-                                            }
-                                          }}
-                                        />
-                                      </label>
+                                      {isVerified ? (
+                                        <div className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-emerald-100/70 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+                                          <CheckCircle2 className="w-3.5 h-3.5" />
+                                          <span>Approved</span>
+                                        </div>
+                                      ) : (
+                                        <button
+                                          onClick={() => handleVerifyDoc(doc.id)}
+                                          disabled={docActionLoading === doc.id}
+                                          className="py-1.5 px-3.5 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                                        >
+                                          {docActionLoading === doc.id ? (
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                          ) : (
+                                            <CheckCircle2 className="w-3.5 h-3.5" />
+                                          )}
+                                          <span>Accept</span>
+                                        </button>
+                                      )}
 
-                                      <button
-                                        onClick={handleRegenerateCv}
-                                        disabled={regeneratingCv}
-                                        className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors cursor-pointer shadow-xs"
-                                      >
-                                        {regeneratingCv ? (
-                                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                        ) : (
-                                          <RefreshCw className="w-3.5 h-3.5" />
-                                        )}
-                                        <span>Re-generate</span>
-                                      </button>
+                                      {doc.documentType === 'cv' && (
+                                        <>
+                                          <button
+                                            onClick={() => {
+                                              const studentName = student
+                                                ? [student.firstName, student.lastName].filter(Boolean).join('_')
+                                                : 'Applicant';
+                                              handleDownloadWord(
+                                                'cv',
+                                                undefined,
+                                                `CV_${studentName || 'Applicant'}.docx`,
+                                              );
+                                            }}
+                                            disabled={downloadingWordId === 'cv'}
+                                            className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-colors cursor-pointer shadow-xs"
+                                          >
+                                            {downloadingWordId === 'cv' ? (
+                                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            ) : (
+                                              <Download className="w-3.5 h-3.5 text-blue-600" />
+                                            )}
+                                            <span>Word (.docx)</span>
+                                          </button>
 
-                                      <button
-                                        onClick={() => handleGrantAttempts('cv')}
-                                        disabled={grantingDocType === 'cv' || Boolean(dossierLimits?.cv?.extraAttemptsGranted)}
-                                        className={`py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl border transition-colors shadow-xs ${dossierLimits?.cv?.extraAttemptsGranted
-                                          ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed'
-                                          : 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 cursor-pointer'
-                                          }`}
-                                      >
-                                        {grantingDocType === 'cv' ? (
-                                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                        ) : (
-                                          <PlusCircle className="w-3.5 h-3.5 text-amber-600" />
-                                        )}
-                                        <span>+ Allot Extra</span>
-                                      </button>
+                                          <label
+                                            className={`py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 transition-colors cursor-pointer shadow-xs ${uploadingCorrectedId === 'cv' ? 'opacity-60 pointer-events-none' : ''
+                                              }`}
+                                          >
+                                            {uploadingCorrectedId === 'cv' ? (
+                                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            ) : (
+                                              <Upload className="w-3.5 h-3.5 text-purple-600" />
+                                            )}
+                                            <span>Upload Corrected</span>
+                                            <input
+                                              type="file"
+                                              accept=".pdf,.docx,.doc"
+                                              className="hidden"
+                                              disabled={uploadingCorrectedId === 'cv'}
+                                              onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                  handleUploadCorrected('cv', file);
+                                                  e.target.value = '';
+                                                }
+                                              }}
+                                            />
+                                          </label>
+
+                                          <button
+                                            onClick={handleRegenerateCv}
+                                            disabled={regeneratingCv}
+                                            className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors cursor-pointer shadow-xs"
+                                          >
+                                            {regeneratingCv ? (
+                                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            ) : (
+                                              <RefreshCw className="w-3.5 h-3.5" />
+                                            )}
+                                            <span>Re-generate</span>
+                                          </button>
+
+                                          <button
+                                            onClick={() => handleGrantAttempts('cv')}
+                                            disabled={grantingDocType === 'cv' || Boolean(dossierLimits?.cv?.extraAttemptsGranted)}
+                                            className={`py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl border transition-colors shadow-xs ${dossierLimits?.cv?.extraAttemptsGranted
+                                              ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed'
+                                              : 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 cursor-pointer'
+                                              }`}
+                                          >
+                                            {grantingDocType === 'cv' ? (
+                                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            ) : (
+                                              <PlusCircle className="w-3.5 h-3.5 text-amber-600" />
+                                            )}
+                                            <span>+ Allot Extra</span>
+                                          </button>
+                                        </>
+                                      )}
                                     </>
                                   )}
                                 </div>
@@ -3823,30 +3866,32 @@ export function StudentDetailModal({
                             </p>
                           </div>
 
-                          <div className="bg-white dark:bg-[#151B27] rounded-xl p-4 border border-gray-200/80 dark:border-gray-800 space-y-2.5 shadow-2xs">
-                            <div className="flex items-center justify-between">
-                              <label className="text-xs font-extrabold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
-                                <FileCheck2 className="w-4 h-4 text-germany-red" />
-                                <span>Overall Visa Strategy Instructions for Student</span>
-                              </label>
-                              <button
-                                type="button"
-                                onClick={handleSaveVisaGeneralNotes}
-                                disabled={visaGeneralNotesSaving}
-                                className="px-3 py-1.5 bg-germany-red hover:bg-germany-red/90 text-white text-xs font-extrabold rounded-xl shadow-xs transition-all flex items-center gap-1 cursor-pointer"
-                              >
-                                {visaGeneralNotesSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
-                                <span>Save Strategy Notes</span>
-                              </button>
+                          {!readOnly && (
+                            <div className="bg-white dark:bg-[#151B27] rounded-xl p-4 border border-gray-200/80 dark:border-gray-800 space-y-2.5 shadow-2xs">
+                              <div className="flex items-center justify-between">
+                                <label className="text-xs font-extrabold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+                                  <FileCheck2 className="w-4 h-4 text-germany-red" />
+                                  <span>Overall Visa Strategy Instructions for Student</span>
+                                </label>
+                                <button
+                                  type="button"
+                                  onClick={handleSaveVisaGeneralNotes}
+                                  disabled={visaGeneralNotesSaving}
+                                  className="px-3 py-1.5 bg-germany-red hover:bg-germany-red/90 text-white text-xs font-extrabold rounded-xl shadow-xs transition-all flex items-center gap-1 cursor-pointer"
+                                >
+                                  {visaGeneralNotesSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                                  <span>Save Strategy Notes</span>
+                                </button>
+                              </div>
+                              <textarea
+                                rows={2}
+                                placeholder="e.g. Schedule VFS appointment under Mumbai jurisdiction as soon as admission arrives. Ensure blocked account is funded 15 days before appointment."
+                                value={visaGeneralNotes}
+                                onChange={(e) => setVisaGeneralNotes(e.target.value)}
+                                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#111622] text-xs text-gray-900 dark:text-white"
+                              />
                             </div>
-                            <textarea
-                              rows={2}
-                              placeholder="e.g. Schedule VFS appointment under Mumbai jurisdiction as soon as admission arrives. Ensure blocked account is funded 15 days before appointment."
-                              value={visaGeneralNotes}
-                              onChange={(e) => setVisaGeneralNotes(e.target.value)}
-                              className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#111622] text-xs text-gray-900 dark:text-white"
-                            />
-                          </div>
+                          )}
                         </div>
                       )}
 
@@ -3998,78 +4043,82 @@ export function StudentDetailModal({
                                           <span>Preview</span>
                                         </button>
 
-                                        {/* Open in new tab */}
-                                        {doc.url && (
-                                          <a
-                                            href={doc.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="py-1.5 px-3 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:text-germany-black dark:hover:text-white bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
-                                            title="Open original file in new tab"
-                                          >
-                                            <ExternalLink className="w-3.5 h-3.5" />
-                                            <span>Open</span>
-                                          </a>
-                                        )}
-
-                                        {/* Accept / Verify */}
-                                        {isVerified ? (
-                                          <div className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-emerald-100/70 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
-                                            <CheckCircle2 className="w-3.5 h-3.5" />
-                                            <span>Approved</span>
-                                          </div>
-                                        ) : (
-                                          <button
-                                            type="button"
-                                            onClick={() => handleVerifyDoc(doc.id)}
-                                            disabled={docActionLoading === doc.id}
-                                            className="py-1.5 px-3.5 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
-                                            title="Accept and verify document"
-                                          >
-                                            {docActionLoading === doc.id ? (
-                                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                            ) : (
-                                              <CheckCircle2 className="w-3.5 h-3.5" />
-                                            )}
-                                            <span>Accept</span>
-                                          </button>
-                                        )}
-
-                                        {/* Reject / Edit Reason */}
-                                        {isRejected ? (
+                                        {!readOnly && (
                                           <>
-                                            <button
-                                              type="button"
-                                              onClick={() => handleOpenRejectModal(doc)}
-                                              disabled={docActionLoading === doc.id}
-                                              className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-white dark:bg-[#151B27] border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 shadow-xs"
-                                              title="Update rejection feedback"
-                                            >
-                                              <AlertTriangle className="w-3.5 h-3.5" />
-                                              <span>Edit Reason</span>
-                                            </button>
-                                            <button
-                                              type="button"
-                                              onClick={() => handleOpenRejectModal(doc)}
-                                              disabled={docActionLoading === doc.id}
-                                              className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-red-600 hover:bg-red-700 text-white shadow-xs"
-                                              title="Re-request student re-upload"
-                                            >
-                                              <AlertCircle className="w-3.5 h-3.5" />
-                                              <span>Request Re-upload</span>
-                                            </button>
+                                            {/* Open in new tab */}
+                                            {doc.url && (
+                                              <a
+                                                href={doc.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="py-1.5 px-3 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:text-germany-black dark:hover:text-white bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                                                title="Open original file in new tab"
+                                              >
+                                                <ExternalLink className="w-3.5 h-3.5" />
+                                                <span>Open</span>
+                                              </a>
+                                            )}
+
+                                            {/* Accept / Verify */}
+                                            {isVerified ? (
+                                              <div className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl bg-emerald-100/70 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+                                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                                <span>Approved</span>
+                                              </div>
+                                            ) : (
+                                              <button
+                                                type="button"
+                                                onClick={() => handleVerifyDoc(doc.id)}
+                                                disabled={docActionLoading === doc.id}
+                                                className="py-1.5 px-3.5 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                                                title="Accept and verify document"
+                                              >
+                                                {docActionLoading === doc.id ? (
+                                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                ) : (
+                                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                                )}
+                                                <span>Accept</span>
+                                              </button>
+                                            )}
+
+                                            {/* Reject / Edit Reason */}
+                                            {isRejected ? (
+                                              <>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => handleOpenRejectModal(doc)}
+                                                  disabled={docActionLoading === doc.id}
+                                                  className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-white dark:bg-[#151B27] border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 shadow-xs"
+                                                  title="Update rejection feedback"
+                                                >
+                                                  <AlertTriangle className="w-3.5 h-3.5" />
+                                                  <span>Edit Reason</span>
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => handleOpenRejectModal(doc)}
+                                                  disabled={docActionLoading === doc.id}
+                                                  className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-red-600 hover:bg-red-700 text-white shadow-xs"
+                                                  title="Re-request student re-upload"
+                                                >
+                                                  <AlertCircle className="w-3.5 h-3.5" />
+                                                  <span>Request Re-upload</span>
+                                                </button>
+                                              </>
+                                            ) : (
+                                              <button
+                                                type="button"
+                                                onClick={() => handleOpenRejectModal(doc)}
+                                                disabled={docActionLoading === doc.id}
+                                                className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 shadow-xs"
+                                                title="Reject document and request revision"
+                                              >
+                                                <AlertTriangle className="w-3.5 h-3.5" />
+                                                <span>Reject</span>
+                                              </button>
+                                            )}
                                           </>
-                                        ) : (
-                                          <button
-                                            type="button"
-                                            onClick={() => handleOpenRejectModal(doc)}
-                                            disabled={docActionLoading === doc.id}
-                                            className="py-1.5 px-3 text-xs font-extrabold inline-flex items-center gap-1.5 rounded-xl transition-all cursor-pointer bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 shadow-xs"
-                                            title="Reject document and request revision"
-                                          >
-                                            <AlertTriangle className="w-3.5 h-3.5" />
-                                            <span>Reject</span>
-                                          </button>
                                         )}
                                       </div>
                                     ) : (
@@ -4089,13 +4138,15 @@ export function StudentDetailModal({
                                         <span className="font-black uppercase tracking-wider text-[10px] text-red-700 dark:text-red-300">
                                           Counsellor Feedback &amp; Revision Required:
                                         </span>
-                                        <button
-                                          type="button"
-                                          onClick={() => handleOpenRejectModal(doc)}
-                                          className="text-[10px] font-extrabold text-red-700 dark:text-red-300 hover:underline cursor-pointer"
-                                        >
-                                          Edit Feedback
-                                        </button>
+                                        {!readOnly && (
+                                          <button
+                                            type="button"
+                                            onClick={() => handleOpenRejectModal(doc)}
+                                            className="text-[10px] font-extrabold text-red-700 dark:text-red-300 hover:underline cursor-pointer"
+                                          >
+                                            Edit Feedback
+                                          </button>
+                                        )}
                                       </div>
                                       <p className="font-medium text-gray-800 dark:text-gray-200">{doc.rejectionReason}</p>
                                     </div>
@@ -4132,28 +4183,35 @@ export function StudentDetailModal({
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
-                <button
-                  id="counsellor-run-matching-btn"
-                  onClick={handleRunMatching}
-                  disabled={runningMatching || isMatchingLocked}
-                  title={isMatchingLocked ? 'Shortlist and matching are locked. Unlock before re-running matching.' : undefined}
-                  className={`flex items-center gap-1.5 py-2 px-3.5 text-xs font-extrabold rounded-xl shadow-xs transition-colors ${isMatchingLocked
-                    ? 'bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800 cursor-not-allowed opacity-75'
-                    : 'bg-germany-red hover:bg-[#D62839] disabled:opacity-60 text-white cursor-pointer'
-                    }`}
-                >
-                  {isMatchingLocked ? (
-                    <><Lock className="w-3.5 h-3.5 text-purple-700 dark:text-purple-300" /> Shortlist Locked</>
-                  ) : runningMatching ? (
-                    <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Starting…</>
-                  ) : matchingRun?.status === 'running' || matchingRun?.status === 'pending' ? (
-                    <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Re-start Matching</>
-                  ) : matchingRun?.status === 'completed' ? (
-                    <><RefreshCw className="w-3.5 h-3.5" /> Re-run Matching</>
-                  ) : (
-                    <><Compass className="w-3.5 h-3.5" /> Run Matching Engine</>
-                  )}
-                </button>
+                {readOnly ? (
+                  <div className="flex items-center gap-1.5 py-1.5 px-3 text-xs font-extrabold rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 border border-gray-200 dark:border-gray-700">
+                    <Compass className="w-3.5 h-3.5 text-gray-400" />
+                    <span>Matching Engine (View Only)</span>
+                  </div>
+                ) : (
+                  <button
+                    id="counsellor-run-matching-btn"
+                    onClick={handleRunMatching}
+                    disabled={runningMatching || isMatchingLocked}
+                    title={isMatchingLocked ? 'Shortlist and matching are locked. Unlock before re-running matching.' : undefined}
+                    className={`flex items-center gap-1.5 py-2 px-3.5 text-xs font-extrabold rounded-xl shadow-xs transition-colors ${isMatchingLocked
+                      ? 'bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800 cursor-not-allowed opacity-75'
+                      : 'bg-germany-red hover:bg-[#D62839] disabled:opacity-60 text-white cursor-pointer'
+                      }`}
+                  >
+                    {isMatchingLocked ? (
+                      <><Lock className="w-3.5 h-3.5 text-purple-700 dark:text-purple-300" /> Shortlist Locked</>
+                    ) : runningMatching ? (
+                      <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Starting…</>
+                    ) : matchingRun?.status === 'running' || matchingRun?.status === 'pending' ? (
+                      <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Re-start Matching</>
+                    ) : matchingRun?.status === 'completed' ? (
+                      <><RefreshCw className="w-3.5 h-3.5" /> Re-run Matching</>
+                    ) : (
+                      <><Compass className="w-3.5 h-3.5" /> Run Matching Engine</>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -4205,25 +4263,42 @@ export function StudentDetailModal({
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
-                <button
-                  id="counsellor-toggle-lock-btn"
-                  onClick={handleToggleLock}
-                  disabled={togglingLock}
-                  className={`flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-extrabold transition-colors cursor-pointer border ${isMatchingLocked
-                    ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-100'
-                    : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100'
-                    }`}
-                  title={isMatchingLocked ? 'Shortlist and matching are locked for this student. Click to unlock.' : 'Student can modify shortlist and re-run matching. Click to lock.'}
-                >
-                  {togglingLock ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : isMatchingLocked ? (
-                    <Lock className="w-3.5 h-3.5 text-red-600" />
-                  ) : (
-                    <Unlock className="w-3.5 h-3.5 text-emerald-600" />
-                  )}
-                  <span>{isMatchingLocked ? 'Shortlist Locked' : 'Shortlist Unlocked'}</span>
-                </button>
+                {readOnly ? (
+                  <div
+                    id="counsellor-toggle-lock-status"
+                    className={`flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-extrabold border ${isMatchingLocked
+                      ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800'
+                      : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                      }`}
+                  >
+                    {isMatchingLocked ? (
+                      <Lock className="w-3.5 h-3.5 text-red-600" />
+                    ) : (
+                      <Unlock className="w-3.5 h-3.5 text-emerald-600" />
+                    )}
+                    <span>{isMatchingLocked ? 'Shortlist Locked' : 'Shortlist Unlocked'}</span>
+                  </div>
+                ) : (
+                  <button
+                    id="counsellor-toggle-lock-btn"
+                    onClick={handleToggleLock}
+                    disabled={togglingLock}
+                    className={`flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-extrabold transition-colors cursor-pointer border ${isMatchingLocked
+                      ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-100'
+                      : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100'
+                      }`}
+                    title={isMatchingLocked ? 'Shortlist and matching are locked for this student. Click to unlock.' : 'Student can modify shortlist and re-run matching. Click to lock.'}
+                  >
+                    {togglingLock ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : isMatchingLocked ? (
+                      <Lock className="w-3.5 h-3.5 text-red-600" />
+                    ) : (
+                      <Unlock className="w-3.5 h-3.5 text-emerald-600" />
+                    )}
+                    <span>{isMatchingLocked ? 'Shortlist Locked' : 'Shortlist Unlocked'}</span>
+                  </button>
+                )}
 
                 <button
                   onClick={() => setShowCurationPanel(!showCurationPanel)}
@@ -4273,27 +4348,29 @@ export function StudentDetailModal({
                   </span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => setMatchingSubTab('catalogue')}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${matchingSubTab === 'catalogue'
-                    ? 'bg-germany-red text-white shadow-xs'
-                    : 'bg-gray-100 dark:bg-[#151B27] text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                    }`}
-                >
-                  <Building2 className="w-3.5 h-3.5" />
-                  <span>Other Universities / Catalogue</span>
-                  {notepadProgrammes.length > 0 && (
-                    <span
-                      className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${matchingSubTab === 'catalogue'
-                        ? 'bg-white/20 text-white'
-                        : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
-                        }`}
-                    >
-                      {notepadProgrammes.length} in Notepad
-                    </span>
-                  )}
-                </button>
+                {!readOnly && (
+                  <button
+                    type="button"
+                    onClick={() => setMatchingSubTab('catalogue')}
+                    className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${matchingSubTab === 'catalogue'
+                      ? 'bg-germany-red text-white shadow-xs'
+                      : 'bg-gray-100 dark:bg-[#151B27] text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      }`}
+                  >
+                    <Building2 className="w-3.5 h-3.5" />
+                    <span>Other Universities / Catalogue</span>
+                    {notepadProgrammes.length > 0 && (
+                      <span
+                        className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${matchingSubTab === 'catalogue'
+                          ? 'bg-white/20 text-white'
+                          : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
+                          }`}
+                      >
+                        {notepadProgrammes.length} in Notepad
+                      </span>
+                    )}
+                  </button>
+                )}
               </div>
 
               <p className="text-[11px] font-bold text-gray-400">
@@ -4469,51 +4546,60 @@ export function StudentDetailModal({
                                     requirementGaps={r.requirementGaps}
                                     gpaFallbackUsed={r.gpaFallbackUsed}
                                     programUrl={r.programUrl}
-                                    isLocked={isMatchingLocked}
+                                    isLocked={readOnly || isMatchingLocked}
                                     isCurated={isCurated}
-                                    onDelete={() => handleDeleteMatchedProgramme(progIdStr)}
-                                    deleteTitle={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Dismiss / remove programme from matches'}
-                                    deleteDisabled={isMatchingLocked}
+                                    onDelete={readOnly ? undefined : () => handleDeleteMatchedProgramme(progIdStr)}
+                                    deleteTitle={readOnly ? 'Supervisor View (Read-Only)' : isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Dismiss / remove programme from matches'}
+                                    deleteDisabled={readOnly || isMatchingLocked}
                                     actionSlot={
-                                      <button
-                                        type="button"
-                                        onClick={() => handleToggleCuratedProgramme(progIdStr)}
-                                        disabled={savingCuration || isMatchingLocked || (!isCurated && (!studentSubscription || isDisplayFull))}
-                                        className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl transition-colors border ${isMatchingLocked
-                                          ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
-                                          : isCurated
-                                            ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
-                                            : 'bg-germany-black dark:bg-white text-white dark:text-germany-black border-transparent hover:opacity-90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
-                                          }`}
-                                        title={
-                                          isMatchingLocked
-                                            ? 'Shortlist and curation are locked. Unlock to modify.'
-                                            : !studentSubscription
-                                              ? 'Student must have an active subscription'
-                                              : !isCurated && isDisplayFull
-                                                ? `Plan display limit reached (${maxDisplay})`
-                                                : isCurated
-                                                  ? 'Remove from student display'
-                                                  : 'Add to student display'
-                                        }
-                                      >
-                                        {isMatchingLocked ? (
-                                          <>
-                                            <Lock className="w-3 h-3 text-gray-400" />
-                                            <span>Locked</span>
-                                          </>
-                                        ) : isCurated ? (
-                                          <>
+                                      readOnly ? (
+                                        isCurated ? (
+                                          <span className="inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
                                             <Check className="w-3 h-3 text-emerald-600" />
                                             <span>On Student Display</span>
-                                          </>
-                                        ) : (
-                                          <>
-                                            <Plus className="w-3 h-3" />
-                                            <span>Add to Display</span>
-                                          </>
-                                        )}
-                                      </button>
+                                          </span>
+                                        ) : null
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleToggleCuratedProgramme(progIdStr)}
+                                          disabled={savingCuration || isMatchingLocked || (!isCurated && (!studentSubscription || isDisplayFull))}
+                                          className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl transition-colors border ${isMatchingLocked
+                                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
+                                            : isCurated
+                                              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
+                                              : 'bg-germany-black dark:bg-white text-white dark:text-germany-black border-transparent hover:opacity-90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
+                                            }`}
+                                          title={
+                                            isMatchingLocked
+                                              ? 'Shortlist and curation are locked. Unlock to modify.'
+                                              : !studentSubscription
+                                                ? 'Student must have an active subscription'
+                                                : !isCurated && isDisplayFull
+                                                  ? `Plan display limit reached (${maxDisplay})`
+                                                  : isCurated
+                                                    ? 'Remove from student display'
+                                                    : 'Add to student display'
+                                          }
+                                        >
+                                          {isMatchingLocked ? (
+                                            <>
+                                              <Lock className="w-3 h-3 text-gray-400" />
+                                              <span>Locked</span>
+                                            </>
+                                          ) : isCurated ? (
+                                            <>
+                                              <Check className="w-3 h-3 text-emerald-600" />
+                                              <span>On Student Display</span>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <Plus className="w-3 h-3" />
+                                              <span>Add to Display</span>
+                                            </>
+                                          )}
+                                        </button>
+                                      )
                                     }
                                   />
                                 );
@@ -4897,25 +4983,27 @@ export function StudentDetailModal({
                                                     <span>Saved in Notepad</span>
                                                   </button>
                                                 ) : p.isRelevant ? (
-                                                  <button
-                                                    type="button"
-                                                    onClick={() => handleSaveProgrammeToNotepad(p)}
-                                                    disabled={savingRecommendation || isMatchingLocked}
-                                                    className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl border border-transparent transition-colors ${isMatchingLocked
-                                                      ? 'bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed opacity-50'
-                                                      : 'bg-germany-black dark:bg-white text-white dark:text-germany-black hover:opacity-90 cursor-pointer disabled:opacity-40'
-                                                      }`}
-                                                    title={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Save this programme to your Counsellor Notepad'}
-                                                  >
-                                                    {savingRecommendation ? (
-                                                      <Loader2 className="w-3 h-3 animate-spin" />
-                                                    ) : isMatchingLocked ? (
-                                                      <Lock className="w-3 h-3 text-gray-400" />
-                                                    ) : (
-                                                      <Plus className="w-3 h-3" />
-                                                    )}
-                                                    <span>{isMatchingLocked ? 'Locked' : 'Add to Notepad'}</span>
-                                                  </button>
+                                                  !readOnly ? (
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => handleSaveProgrammeToNotepad(p)}
+                                                      disabled={savingRecommendation || isMatchingLocked}
+                                                      className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl border border-transparent transition-colors ${isMatchingLocked
+                                                        ? 'bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed opacity-50'
+                                                        : 'bg-germany-black dark:bg-white text-white dark:text-germany-black hover:opacity-90 cursor-pointer disabled:opacity-40'
+                                                        }`}
+                                                      title={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Save this programme to your Counsellor Notepad'}
+                                                    >
+                                                      {savingRecommendation ? (
+                                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                                      ) : isMatchingLocked ? (
+                                                        <Lock className="w-3 h-3 text-gray-400" />
+                                                      ) : (
+                                                        <Plus className="w-3 h-3" />
+                                                      )}
+                                                      <span>{isMatchingLocked ? 'Locked' : 'Add to Notepad'}</span>
+                                                    </button>
+                                                  ) : null
                                                 ) : null}
                                               </div>
                                             </div>
@@ -5049,51 +5137,60 @@ export function StudentDetailModal({
                                 notes={uni.notes}
                                 programUrl={uniUrl}
                                 programUrlLabel="Website"
-                                isLocked={isMatchingLocked}
+                                isLocked={readOnly || isMatchingLocked}
                                 isCurated={isCurated}
-                                onDelete={() => handleDeleteRecommendation(uni.id)}
-                                deleteTitle={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Remove programme from notepad'}
-                                deleteDisabled={isMatchingLocked}
+                                onDelete={readOnly ? undefined : () => handleDeleteRecommendation(uni.id)}
+                                deleteTitle={readOnly ? 'Supervisor View (Read-Only)' : isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Remove programme from notepad'}
+                                deleteDisabled={readOnly || isMatchingLocked}
                                 actionSlot={
-                                  <button
-                                    type="button"
-                                    onClick={() => handleToggleCuratedProgramme(progIdStr)}
-                                    disabled={savingCuration || isMatchingLocked || (!isCurated && (!studentSubscription || isDisplayFull))}
-                                    className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl transition-colors border ${isMatchingLocked
-                                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
-                                      : isCurated
-                                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
-                                        : 'bg-germany-black dark:bg-white text-white dark:text-germany-black border-transparent hover:opacity-90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
-                                      }`}
-                                    title={
-                                      isMatchingLocked
-                                        ? 'Shortlist and curation are locked. Unlock to modify.'
-                                        : !studentSubscription
-                                          ? 'Student must have an active subscription'
-                                          : !isCurated && isDisplayFull
-                                            ? `Plan display limit reached (${maxDisplay}). Remove an item from Student Display Curation to make space.`
-                                            : isCurated
-                                              ? 'Remove from student display (frees up a display slot)'
-                                              : 'Add to student display'
-                                    }
-                                  >
-                                    {isMatchingLocked ? (
-                                      <>
-                                        <Lock className="w-3 h-3 text-gray-400" />
-                                        <span>Locked</span>
-                                      </>
-                                    ) : isCurated ? (
-                                      <>
+                                  readOnly ? (
+                                    isCurated ? (
+                                      <span className="inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
                                         <Check className="w-3 h-3 text-emerald-600" />
                                         <span>On Display</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Plus className="w-3 h-3" />
-                                        <span>Add to Display</span>
-                                      </>
-                                    )}
-                                  </button>
+                                      </span>
+                                    ) : null
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleToggleCuratedProgramme(progIdStr)}
+                                      disabled={savingCuration || isMatchingLocked || (!isCurated && (!studentSubscription || isDisplayFull))}
+                                      className={`inline-flex items-center gap-1 text-[11px] font-extrabold py-1.5 px-3 rounded-xl transition-colors border ${isMatchingLocked
+                                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
+                                        : isCurated
+                                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
+                                          : 'bg-germany-black dark:bg-white text-white dark:text-germany-black border-transparent hover:opacity-90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
+                                        }`}
+                                      title={
+                                        isMatchingLocked
+                                          ? 'Shortlist and curation are locked. Unlock to modify.'
+                                          : !studentSubscription
+                                            ? 'Student must have an active subscription'
+                                            : !isCurated && isDisplayFull
+                                              ? `Plan display limit reached (${maxDisplay}). Remove an item from Student Display Curation to make space.`
+                                              : isCurated
+                                                ? 'Remove from student display (frees up a display slot)'
+                                                : 'Add to student display'
+                                      }
+                                    >
+                                      {isMatchingLocked ? (
+                                        <>
+                                          <Lock className="w-3 h-3 text-gray-400" />
+                                          <span>Locked</span>
+                                        </>
+                                      ) : isCurated ? (
+                                        <>
+                                          <Check className="w-3 h-3 text-emerald-600" />
+                                          <span>On Display</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Plus className="w-3 h-3" />
+                                          <span>Add to Display</span>
+                                        </>
+                                      )}
+                                    </button>
+                                  )
                                 }
                               />
                             );
@@ -5128,27 +5225,29 @@ export function StudentDetailModal({
                   </div>
 
                   {/* Auto-fill Button */}
-                  <button
-                    type="button"
-                    onClick={handleAutoFillTopMatches}
-                    disabled={savingCuration || isMatchingLocked || !studentSubscription || matchingResults.length === 0}
-                    className={`w-full flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-extrabold rounded-xl transition-colors ${isMatchingLocked
-                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
-                      : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/30 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
-                      }`}
-                    title={
-                      isMatchingLocked
-                        ? 'Shortlist and curation are locked. Unlock to modify.'
-                        : 'Fill student display with the highest ranked eligible programmes up to plan limit'
-                    }
-                  >
-                    {isMatchingLocked ? (
-                      <Lock className="w-3.5 h-3.5 text-gray-400" />
-                    ) : (
-                      <Award className="w-3.5 h-3.5 text-germany-gold" />
-                    )}
-                    <span>{isMatchingLocked ? 'Auto-fill Locked' : 'Auto-fill Top Matches'}</span>
-                  </button>
+                  {!readOnly && (
+                    <button
+                      type="button"
+                      onClick={handleAutoFillTopMatches}
+                      disabled={savingCuration || isMatchingLocked || !studentSubscription || matchingResults.length === 0}
+                      className={`w-full flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-extrabold rounded-xl transition-colors ${isMatchingLocked
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
+                        : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/30 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
+                        }`}
+                      title={
+                        isMatchingLocked
+                          ? 'Shortlist and curation are locked. Unlock to modify.'
+                          : 'Fill student display with the highest ranked eligible programmes up to plan limit'
+                      }
+                    >
+                      {isMatchingLocked ? (
+                        <Lock className="w-3.5 h-3.5 text-gray-400" />
+                      ) : (
+                        <Award className="w-3.5 h-3.5 text-germany-gold" />
+                      )}
+                      <span>{isMatchingLocked ? 'Auto-fill Locked' : 'Auto-fill Top Matches'}</span>
+                    </button>
+                  )}
 
                   {/* Curated Items List */}
                   <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1">
@@ -5204,74 +5303,89 @@ export function StudentDetailModal({
 
                             <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
                               {/* Shortlist Toggle Button on the Student Display Curation card */}
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleToggleShortlist({
-                                    programmeId: Number(progId),
-                                    universityName: uniName,
-                                    programName: progName,
-                                    degree: matchItem?.degree || curatedItem?.degree || 'Master',
-                                    city: matchItem?.city || curatedItem?.city || 'Germany',
-                                    country: matchItem?.country || curatedItem?.country || 'Germany',
-                                    tuitionPerSemester: matchItem?.tuitionPerSemester || curatedItem?.tuitionPerSemester || 'Free / None',
-                                    nonEuDeadline: matchItem?.nonEuDeadline || curatedItem?.nonEuDeadline || 'NA',
-                                    universityType: matchItem?.universityType || curatedItem?.universityType || 'Public University',
-                                    relevanceScore: matchItem?.relevanceScore || 90,
-                                  })
-                                }
-                                disabled={togglingShortlist === String(progId) || isMatchingLocked || (!isShortlisted && isShortlistFull)}
-                                className={`inline-flex items-center gap-1 text-[10px] font-extrabold py-1 px-2 rounded-lg transition-colors border ${isMatchingLocked
-                                  ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
-                                  : isShortlisted
-                                    ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
-                                    : isShortlistFull
-                                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-50'
-                                      : 'bg-white dark:bg-[#151B27] text-gray-700 dark:text-gray-300 border-gray-200/80 dark:border-gray-800 hover:border-blue-400 hover:text-blue-600 cursor-pointer'
-                                  }`}
-                                title={
-                                  isMatchingLocked
-                                    ? 'Shortlist is locked. Unlock to modify.'
-                                    : isShortlisted
-                                      ? 'Click to remove from student shortlist'
-                                      : isShortlistFull
-                                        ? `Student shortlist limit reached (${studentShortlistCount}/${maxShortlist} max for ${studentSubscription?.planId || 'Plan'}). Remove an existing shortlisted programme first.`
-                                        : 'Add to student shortlist'
-                                }
-                              >
-                                {togglingShortlist === String(progId) ? (
-                                  <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                                ) : isMatchingLocked ? (
-                                  <Lock className="w-2.5 h-2.5 text-gray-400" />
+                              {readOnly ? (
+                                isShortlisted ? (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-extrabold py-1 px-2 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-800">
+                                    <Bookmark className="w-2.5 h-2.5 fill-current text-blue-600" />
+                                    <span>Shortlisted</span>
+                                  </span>
                                 ) : (
-                                  <Bookmark className={`w-2.5 h-2.5 ${isShortlisted ? 'fill-current text-blue-600' : ''}`} />
-                                )}
-                                <span>
-                                  {isMatchingLocked && isShortlisted
-                                    ? 'Shortlisted (Locked)'
-                                    : isMatchingLocked
-                                      ? 'Locked'
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold py-1 px-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700">
+                                    <span>Not Shortlisted</span>
+                                  </span>
+                                )
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleToggleShortlist({
+                                      programmeId: Number(progId),
+                                      universityName: uniName,
+                                      programName: progName,
+                                      degree: matchItem?.degree || curatedItem?.degree || 'Master',
+                                      city: matchItem?.city || curatedItem?.city || 'Germany',
+                                      country: matchItem?.country || curatedItem?.country || 'Germany',
+                                      tuitionPerSemester: matchItem?.tuitionPerSemester || curatedItem?.tuitionPerSemester || 'Free / None',
+                                      nonEuDeadline: matchItem?.nonEuDeadline || curatedItem?.nonEuDeadline || 'NA',
+                                      universityType: matchItem?.universityType || curatedItem?.universityType || 'Public University',
+                                      relevanceScore: matchItem?.relevanceScore || 90,
+                                    })
+                                  }
+                                  disabled={togglingShortlist === String(progId) || isMatchingLocked || (!isShortlisted && isShortlistFull)}
+                                  className={`inline-flex items-center gap-1 text-[10px] font-extrabold py-1 px-2 rounded-lg transition-colors border ${isMatchingLocked
+                                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
+                                    : isShortlisted
+                                      ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
+                                      : isShortlistFull
+                                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-50'
+                                        : 'bg-white dark:bg-[#151B27] text-gray-700 dark:text-gray-300 border-gray-200/80 dark:border-gray-800 hover:border-blue-400 hover:text-blue-600 cursor-pointer'
+                                    }`}
+                                  title={
+                                    isMatchingLocked
+                                      ? 'Shortlist is locked. Unlock to modify.'
                                       : isShortlisted
-                                        ? 'Shortlisted'
+                                        ? 'Click to remove from student shortlist'
                                         : isShortlistFull
-                                          ? 'Limit Reached'
-                                          : 'Shortlist'}
-                                </span>
-                              </button>
+                                          ? `Student shortlist limit reached (${studentShortlistCount}/${maxShortlist} max for ${studentSubscription?.planId || 'Plan'}). Remove an existing shortlisted programme first.`
+                                          : 'Add to student shortlist'
+                                  }
+                                >
+                                  {togglingShortlist === String(progId) ? (
+                                    <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                                  ) : isMatchingLocked ? (
+                                    <Lock className="w-2.5 h-2.5 text-gray-400" />
+                                  ) : (
+                                    <Bookmark className={`w-2.5 h-2.5 ${isShortlisted ? 'fill-current text-blue-600' : ''}`} />
+                                  )}
+                                  <span>
+                                    {isMatchingLocked && isShortlisted
+                                      ? 'Shortlisted (Locked)'
+                                      : isMatchingLocked
+                                        ? 'Locked'
+                                        : isShortlisted
+                                          ? 'Shortlisted'
+                                          : isShortlistFull
+                                            ? 'Limit Reached'
+                                            : 'Shortlist'}
+                                  </span>
+                                </button>
+                              )}
 
                               {/* Remove from Curation / Display Button */}
-                              <button
-                                type="button"
-                                onClick={() => handleToggleCuratedProgramme(progId)}
-                                disabled={isMatchingLocked}
-                                title={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Remove from student display (frees up a display slot)'}
-                                className={`p-1 rounded-lg transition-colors shrink-0 ${isMatchingLocked
-                                  ? 'text-gray-300 dark:text-gray-700 cursor-not-allowed opacity-40'
-                                  : 'text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer'
-                                  }`}
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                              {!readOnly && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleCuratedProgramme(progId)}
+                                  disabled={isMatchingLocked}
+                                  title={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Remove from student display (frees up a display slot)'}
+                                  className={`p-1 rounded-lg transition-colors shrink-0 ${isMatchingLocked
+                                    ? 'text-gray-300 dark:text-gray-700 cursor-not-allowed opacity-40'
+                                    : 'text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer'
+                                    }`}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
                             </div>
                           </div>
                         );
@@ -5301,7 +5415,7 @@ export function StudentDetailModal({
         {/* ========================================================
                 TAB 4: STRATEGY NOTES & TASKS
             ======================================================== */}
-        {activeTab === 'notes' && (
+        {activeTab === 'notes' && !readOnly && (
           <div className="space-y-4">
             {/* Notes Editor */}
             <div className="p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
@@ -5322,24 +5436,27 @@ export function StudentDetailModal({
 
               <textarea
                 value={note}
+                readOnly={readOnly}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="Document consultation takeaways (e.g. Target TUM Data Engineering, advised to re-take German A2 Goethe exam in October, notarization complete for APS Delhi)..."
+                placeholder={readOnly ? "No counsellor notes recorded yet." : "Document consultation takeaways (e.g. Target TUM Data Engineering, advised to re-take German A2 Goethe exam in October, notarization complete for APS Delhi)..."}
                 rows={4}
                 className="w-full p-3 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-900 dark:text-white placeholder:text-gray-400 placeholder:font-normal resize-none focus:outline-none focus:border-germany-red shadow-xs"
               />
 
               <div className="flex items-center justify-between pt-1">
                 <p className="text-[10px] font-bold text-gray-400">
-                  Notes are kept private to counsellors and automatically saved.
+                  {readOnly ? 'Viewing counsellor consultation notes (Supervisor Mode).' : 'Notes are kept private to counsellors and automatically saved.'}
                 </p>
-                <button
-                  type="button"
-                  onClick={handleSaveNote}
-                  className="py-1.5 px-3.5 text-xs font-extrabold flex items-center gap-1.5 text-germany-black dark:text-white hover:text-germany-red dark:hover:text-germany-red bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl cursor-pointer shadow-xs transition-colors"
-                >
-                  <Save className="w-3.5 h-3.5" />
-                  <span>Save Notes</span>
-                </button>
+                {!readOnly && (
+                  <button
+                    type="button"
+                    onClick={handleSaveNote}
+                    className="py-1.5 px-3.5 text-xs font-extrabold flex items-center gap-1.5 text-germany-black dark:text-white hover:text-germany-red dark:hover:text-germany-red bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl cursor-pointer shadow-xs transition-colors"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    <span>Save Notes</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -5353,8 +5470,8 @@ export function StudentDetailModal({
                 {tasks.map((t) => (
                   <div
                     key={t.id}
-                    onClick={() => handleToggleTask(t.id)}
-                    className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 text-xs font-bold cursor-pointer transition-colors ${t.completed
+                    onClick={readOnly ? undefined : () => handleToggleTask(t.id)}
+                    className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 text-xs font-bold transition-colors ${readOnly ? 'cursor-default' : 'cursor-pointer'} ${t.completed
                       ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/40 text-gray-500 dark:text-gray-400 line-through'
                       : 'bg-[#FDFBF7] dark:bg-[#151B27] border-[#EBE7E0] dark:border-gray-800/80 text-germany-black dark:text-white hover:bg-white dark:hover:bg-[#1A2130]'
                       }`}
@@ -5372,22 +5489,24 @@ export function StudentDetailModal({
                 ))}
               </div>
 
-              <form onSubmit={handleAddTask} className="flex items-center gap-2 pt-2">
-                <input
-                  type="text"
-                  placeholder="Add an advising follow-up item..."
-                  value={newTaskText}
-                  onChange={(e) => setNewTaskText(e.target.value)}
-                  className="flex-1 p-2 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:border-germany-red shadow-xs"
-                />
-                <button
-                  type="submit"
-                  className="py-2 px-3 text-xs font-extrabold flex items-center gap-1 shrink-0 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-germany-black dark:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-[#1A2130] shadow-xs cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add Task</span>
-                </button>
-              </form>
+              {!readOnly && (
+                <form onSubmit={handleAddTask} className="flex items-center gap-2 pt-2">
+                  <input
+                    type="text"
+                    placeholder="Add an advising follow-up item..."
+                    value={newTaskText}
+                    onChange={(e) => setNewTaskText(e.target.value)}
+                    className="flex-1 p-2 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:border-germany-red shadow-xs"
+                  />
+                  <button
+                    type="submit"
+                    className="py-2 px-3 text-xs font-extrabold flex items-center gap-1 shrink-0 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-germany-black dark:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-[#1A2130] shadow-xs cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Task</span>
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         )}
@@ -5483,19 +5602,32 @@ export function StudentDetailModal({
                         </div>
 
                         <div className="flex items-center gap-2">
-                          {/* Application Status Dropdown */}
-                          <select
-                            value={form.applicationStatus || 'NOT_STARTED'}
-                            onChange={(e) => handleUpdateAdmissionForm(app.id, 'applicationStatus', e.target.value)}
-                            className="text-xs font-extrabold px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1A2234] text-gray-800 dark:text-gray-200 cursor-pointer"
-                          >
-                            <option value="NOT_STARTED">Not Started</option>
-                            <option value="IN_PROGRESS">In Progress</option>
-                            <option value="SUBMITTED">Submitted</option>
-                            <option value="ACCEPTED">Offer Received</option>
-                            <option value="REJECTED">Unsuccessful</option>
-                            <option value="WAITLISTED">Waitlisted</option>
-                          </select>
+                          {/* Application Status */}
+                          {readOnly ? (
+                            <span className="text-xs font-extrabold px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                              {form.applicationStatus === 'NOT_STARTED' && 'Not Started'}
+                              {form.applicationStatus === 'IN_PROGRESS' && 'In Progress'}
+                              {form.applicationStatus === 'SUBMITTED' && 'Submitted'}
+                              {form.applicationStatus === 'ACCEPTED' && 'Offer Received'}
+                              {form.applicationStatus === 'REJECTED' && 'Unsuccessful'}
+                              {form.applicationStatus === 'WAITLISTED' && 'Waitlisted'}
+                              {!['NOT_STARTED', 'IN_PROGRESS', 'SUBMITTED', 'ACCEPTED', 'REJECTED', 'WAITLISTED'].includes(form.applicationStatus) && (form.applicationStatus || 'Not Started')}
+                            </span>
+                          ) : (
+                            <select
+                              value={form.applicationStatus || 'NOT_STARTED'}
+                              disabled={readOnly}
+                              onChange={(e) => handleUpdateAdmissionForm(app.id, 'applicationStatus', e.target.value)}
+                              className="text-xs font-extrabold px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1A2234] text-gray-800 dark:text-gray-200 cursor-pointer"
+                            >
+                              <option value="NOT_STARTED">Not Started</option>
+                              <option value="IN_PROGRESS">In Progress</option>
+                              <option value="SUBMITTED">Submitted</option>
+                              <option value="ACCEPTED">Offer Received</option>
+                              <option value="REJECTED">Unsuccessful</option>
+                              <option value="WAITLISTED">Waitlisted</option>
+                            </select>
+                          )}
                         </div>
                       </div>
 
@@ -5509,7 +5641,8 @@ export function StudentDetailModal({
                           <div className="flex items-center gap-1.5">
                             <input
                               type="text"
-                              placeholder="e.g. https://campus.tum.de or uni-assist.de"
+                              readOnly={readOnly}
+                              placeholder={readOnly ? "No portal URL configured" : "e.g. https://campus.tum.de or uni-assist.de"}
                               value={form.portalUrl || ''}
                               onChange={(e) => handleUpdateAdmissionForm(app.id, 'portalUrl', e.target.value)}
                               className="flex-1 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111622] text-gray-900 dark:text-white"
@@ -5535,7 +5668,8 @@ export function StudentDetailModal({
                           </label>
                           <input
                             type="text"
-                            placeholder="e.g. TUM-2026-99210 or UA-88219"
+                            readOnly={readOnly}
+                            placeholder={readOnly ? "No application ID provided" : "e.g. TUM-2026-99210 or UA-88219"}
                             value={form.applicationId || ''}
                             onChange={(e) => handleUpdateAdmissionForm(app.id, 'applicationId', e.target.value)}
                             className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111622] text-gray-900 dark:text-white"
@@ -5549,6 +5683,7 @@ export function StudentDetailModal({
                           </label>
                           <input
                             type="date"
+                            disabled={readOnly}
                             value={form.submissionDate || ''}
                             onChange={(e) => handleUpdateAdmissionForm(app.id, 'submissionDate', e.target.value)}
                             className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111622] text-gray-900 dark:text-white"
@@ -5562,6 +5697,7 @@ export function StudentDetailModal({
                           </label>
                           <input
                             type="date"
+                            disabled={readOnly}
                             value={form.deadline || ''}
                             onChange={(e) => handleUpdateAdmissionForm(app.id, 'deadline', e.target.value)}
                             className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111622] text-gray-900 dark:text-white"
@@ -5570,7 +5706,8 @@ export function StudentDetailModal({
                       </div>
 
                       {/* Encrypted Credentials Section */}
-                      <div className="p-4 bg-gray-50/70 dark:bg-[#111622] rounded-2xl border border-gray-200/60 dark:border-gray-800 space-y-3">
+                      {!readOnly && (
+  <div className="p-4 bg-gray-50/70 dark:bg-[#111622] rounded-2xl border border-gray-200/60 dark:border-gray-800 space-y-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5 font-black text-xs text-gray-800 dark:text-gray-200">
                             <KeyRound className="w-3.5 h-3.5 text-germany-gold" />
@@ -5618,34 +5755,37 @@ export function StudentDetailModal({
                           </div>
                         )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                          <div className="space-y-1">
-                            <label className="font-bold text-gray-600 dark:text-gray-400">
-                              Set / Update Portal Username or Email
-                            </label>
-                            <input
-                              type="text"
-                              placeholder={creds?.username ? creds.username : 'Enter portal username/email'}
-                              value={form.portalUsername || ''}
-                              onChange={(e) => handleUpdateAdmissionForm(app.id, 'portalUsername', e.target.value)}
-                              className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#151B27] text-gray-900 dark:text-white"
-                            />
-                          </div>
+                        {!readOnly && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                            <div className="space-y-1">
+                              <label className="font-bold text-gray-600 dark:text-gray-400">
+                                Set / Update Portal Username or Email
+                              </label>
+                              <input
+                                type="text"
+                                placeholder={creds?.username ? creds.username : 'Enter portal username/email'}
+                                value={form.portalUsername || ''}
+                                onChange={(e) => handleUpdateAdmissionForm(app.id, 'portalUsername', e.target.value)}
+                                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#151B27] text-gray-900 dark:text-white"
+                              />
+                            </div>
 
-                          <div className="space-y-1">
-                            <label className="font-bold text-gray-600 dark:text-gray-400">
-                              Set / Update Portal Password
-                            </label>
-                            <input
-                              type="text"
-                              placeholder={app.hasCredentials ? '•••••••• (Enter new to overwrite)' : 'Enter initial password'}
-                              value={form.portalPassword || ''}
-                              onChange={(e) => handleUpdateAdmissionForm(app.id, 'portalPassword', e.target.value)}
-                              className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#151B27] text-gray-900 dark:text-white font-mono"
-                            />
+                            <div className="space-y-1">
+                              <label className="font-bold text-gray-600 dark:text-gray-400">
+                                Set / Update Portal Password
+                              </label>
+                              <input
+                                type="text"
+                                placeholder={app.hasCredentials ? '•••••••• (Enter new to overwrite)' : 'Enter initial password'}
+                                value={form.portalPassword || ''}
+                                onChange={(e) => handleUpdateAdmissionForm(app.id, 'portalPassword', e.target.value)}
+                                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#151B27] text-gray-900 dark:text-white font-mono"
+                              />
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
+)}
 
                       {/* Counsellor Instructions & Notes */}
                       <div className="space-y-1 text-xs">
@@ -5654,7 +5794,8 @@ export function StudentDetailModal({
                         </label>
                         <textarea
                           rows={2}
-                          placeholder="e.g. Please verify your certified high school certificates and sign the declaration before submission."
+                          readOnly={readOnly}
+                          placeholder={readOnly ? "No instructions recorded yet." : "e.g. Please verify your certified high school certificates and sign the declaration before submission."}
                           value={form.counsellorNotes || ''}
                           onChange={(e) => handleUpdateAdmissionForm(app.id, 'counsellorNotes', e.target.value)}
                           className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111622] text-gray-900 dark:text-white resize-y"
@@ -5672,24 +5813,26 @@ export function StudentDetailModal({
                           )}
                         </div>
 
-                        <button
-                          type="button"
-                          onClick={() => handleSaveAdmissionApp(app.id)}
-                          disabled={isSaving}
-                          className="px-4 py-2 bg-germany-red text-white hover:bg-germany-red/90 disabled:opacity-50 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
-                        >
-                          {isSaving ? (
-                            <>
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              <span>Encrypting &amp; Saving...</span>
-                            </>
-                          ) : (
-                            <>
-                              <Save className="w-3.5 h-3.5" />
-                              <span>Save Application Information</span>
-                            </>
-                          )}
-                        </button>
+                        {!readOnly && (
+                          <button
+                            type="button"
+                            onClick={() => handleSaveAdmissionApp(app.id)}
+                            disabled={isSaving}
+                            className="px-4 py-2 bg-germany-red text-white hover:bg-germany-red/90 disabled:opacity-50 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+                          >
+                            {isSaving ? (
+                              <>
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                <span>Encrypting &amp; Saving...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Save className="w-3.5 h-3.5" />
+                                <span>Save Application Information</span>
+                              </>
+                            )}
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
@@ -5890,32 +6033,34 @@ export function StudentDetailModal({
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleVerifyDoc(previewDoc.id)}
-                    disabled={docActionLoading === previewDoc.id}
-                    className="neu-btn-primary py-1.5 px-3 text-xs font-extrabold flex items-center gap-1 shadow-xs cursor-pointer"
-                  >
-                    {docActionLoading === previewDoc.id ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                    )}
-                    <span>Verify / Accept</span>
-                  </button>
-                  {previewDoc.documentType !== 'cv' && previewDoc.documentType !== 'sop' && (
+                {!readOnly && (
+                  <div className="flex items-center gap-2">
                     <button
-                      onClick={() => {
-                        handleOpenRejectModal(previewDoc);
-                      }}
+                      onClick={() => handleVerifyDoc(previewDoc.id)}
                       disabled={docActionLoading === previewDoc.id}
-                      className="py-1.5 px-3 text-xs font-extrabold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl flex items-center gap-1 shadow-xs cursor-pointer"
+                      className="neu-btn-primary py-1.5 px-3 text-xs font-extrabold flex items-center gap-1 shadow-xs cursor-pointer"
                     >
-                      <AlertTriangle className="w-3.5 h-3.5" />
-                      <span>Reject</span>
+                      {docActionLoading === previewDoc.id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      )}
+                      <span>Verify / Accept</span>
                     </button>
-                  )}
-                </div>
+                    {previewDoc.documentType !== 'cv' && previewDoc.documentType !== 'sop' && (
+                      <button
+                        onClick={() => {
+                          handleOpenRejectModal(previewDoc);
+                        }}
+                        disabled={docActionLoading === previewDoc.id}
+                        className="py-1.5 px-3 text-xs font-extrabold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl flex items-center gap-1 shadow-xs cursor-pointer"
+                      >
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        <span>Reject</span>
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>
