@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { StudentDocumentItemRow } from '@/components/StudentDocumentItemRow';
+import StudentStageGate from '@/components/StudentStageGate';
 import {
   FileText,
   Send,
@@ -100,9 +101,9 @@ const APP_STATUS_STYLES: Record<string, { label: string; style: string }> = {
   WAITLISTED: { label: 'Waitlisted', style: 'bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 border-purple-300 dark:border-purple-800' },
 };
 
-export default function StudentAdmissionPage() {
+export default function StudentAdmissionPage({ defaultTab }: { defaultTab?: 'documents' | 'applications' } = {}) {
   const searchParams = useSearchParams();
-  const initialTab = searchParams.get('tab') === 'applications' ? 'applications' : 'documents';
+  const initialTab = defaultTab || (searchParams.get('tab') === 'applications' ? 'applications' : 'documents');
   const [activeTab, setActiveTab] = useState<'documents' | 'applications'>(initialTab);
 
   // Document Hub State
@@ -318,12 +319,57 @@ export default function StudentAdmissionPage() {
     setTimeout(() => setCopiedField(null), 2500);
   };
 
+  const [gates, setGates] = useState<any>(null);
+  const [gatesLoading, setGatesLoading] = useState(true);
+
   // Group categories for filtering
   const categories = ['ALL', ...Array.from(new Set(documents.map((d) => d.category)))];
   const filteredDocuments =
     selectedCategory === 'ALL'
       ? documents
       : documents.filter((d) => d.category === selectedCategory);
+
+  useEffect(() => {
+    const fetchGates = async () => {
+      try {
+        const res = await fetch(`${API_URL}/student/gates`, { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setGates(data);
+        }
+      } catch (e) {
+        console.error('Failed to load gates in admission', e);
+      } finally {
+        setGatesLoading(false);
+      }
+    };
+    fetchGates();
+  }, []);
+
+  if (gatesLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 animate-spin text-germany-red" />
+          <p className="text-xs font-bold text-gray-400">Loading admission & applications...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (gates && !gates.applicationsUnlocked) {
+    if (!gates.hasActivePlan) {
+      return <StudentStageGate type="applications_plan_needed" />;
+    }
+    return <StudentStageGate type="applications_lock_needed" />;
+  }
+
+  if (appsError && (appsError.toLowerCase().includes('plan') || docError.toLowerCase().includes('plan'))) {
+    return <StudentStageGate type="applications_plan_needed" />;
+  }
+  if (appsError && (appsError.toLowerCase().includes('locked') || appsError.toLowerCase().includes('shortlist') || docError.toLowerCase().includes('locked') || docError.toLowerCase().includes('shortlist'))) {
+    return <StudentStageGate type="applications_lock_needed" />;
+  }
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 py-6">

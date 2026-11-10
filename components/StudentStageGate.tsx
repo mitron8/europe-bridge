@@ -21,7 +21,11 @@ export type StageGateType =
   | 'documents_plan_needed'
   | 'documents_lock_needed'
   | 'aps_plan_needed'
-  | 'aps_lock_needed';
+  | 'aps_lock_needed'
+  | 'applications_plan_needed'
+  | 'applications_lock_needed'
+  | 'visa_plan_needed'
+  | 'visa_lock_needed';
 
 interface StudentStageGateProps {
   type: StageGateType;
@@ -135,6 +139,62 @@ export default function StudentStageGate({ type, userName }: StudentStageGatePro
       secondaryButtonText: 'Review Matching Results',
       secondaryButtonHref: '/dashboard/student/matching',
       secondaryIcon: ArrowLeft,
+    },
+    applications_lock_needed: {
+      badge: 'Shortlist Finalization Required',
+      titlePrefix: `Hi ${resolvedUserName}, `,
+      highlight: 'College Applications',
+      titleSuffix: ' unlock once your shortlist is finalized!',
+      description:
+        'Official university application tracking and portal credentials unlock once your assigned Germany counsellor reviews and locks your target university shortlist.',
+      primaryButtonText: 'View Your Shortlist (Step 3)',
+      primaryButtonHref: '/dashboard/student/shortlist',
+      primaryIcon: ListFilter,
+      secondaryButtonText: 'Contact Advisor / Help',
+      secondaryButtonHref: '/dashboard/student/help',
+      secondaryIcon: Headphones,
+    },
+    applications_plan_needed: {
+      badge: 'Admission Plan Required',
+      titlePrefix: `Hi ${resolvedUserName}, `,
+      highlight: 'College Applications',
+      titleSuffix: ' unlock once you activate a plan!',
+      description:
+        'An active admission plan is required to track university applications and receive verified portal credentials from your counsellor.',
+      primaryButtonText: 'View Admission Plans',
+      primaryButtonHref: '/pricing',
+      primaryIcon: Layers,
+      secondaryButtonText: 'Contact Advisor / Help',
+      secondaryButtonHref: '/dashboard/student/help',
+      secondaryIcon: Headphones,
+    },
+    visa_lock_needed: {
+      badge: 'Shortlist Finalization Required',
+      titlePrefix: `Hi ${resolvedUserName}, `,
+      highlight: 'Visa & Relocation Assistance',
+      titleSuffix: ' unlocks once your shortlist is finalized!',
+      description:
+        'Blocked account guidance, health insurance, and embassy visa checklists unlock once your university shortlist is finalized and locked by your counsellor.',
+      primaryButtonText: 'View Your Shortlist (Step 3)',
+      primaryButtonHref: '/dashboard/student/shortlist',
+      primaryIcon: ListFilter,
+      secondaryButtonText: 'Contact Advisor / Help',
+      secondaryButtonHref: '/dashboard/student/help',
+      secondaryIcon: Headphones,
+    },
+    visa_plan_needed: {
+      badge: 'Admission Plan Required',
+      titlePrefix: `Hi ${resolvedUserName}, `,
+      highlight: 'Visa & Relocation Assistance',
+      titleSuffix: ' unlocks once you activate a plan!',
+      description:
+        'An active admission plan is required to access official embassy checklists, blocked account setup, and visa counselling.',
+      primaryButtonText: 'View Admission Plans',
+      primaryButtonHref: '/pricing',
+      primaryIcon: Layers,
+      secondaryButtonText: 'Contact Advisor / Help',
+      secondaryButtonHref: '/dashboard/student/help',
+      secondaryIcon: Headphones,
     },
   };
 

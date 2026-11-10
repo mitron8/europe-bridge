@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { StudentDocumentItemRow, UnifiedDocumentItem } from '@/components/StudentDocumentItemRow';
+import StudentStageGate from '@/components/StudentStageGate';
 import {
   FileText,
   Plane,
@@ -283,6 +284,9 @@ export default function StudentVisaAssistancePage() {
     }
   };
 
+  const [gates, setGates] = useState<any>(null);
+  const [gatesLoading, setGatesLoading] = useState(true);
+
   // Group categories for filtering
   const categories = ['ALL', ...Array.from(new Set(checklist.map((c) => c.category)))];
   const filteredChecklist =
@@ -292,6 +296,48 @@ export default function StudentVisaAssistancePage() {
   const uploadableChecklist = filteredChecklist.filter(
     (item) => item.key !== 'motivation_letter_visa' && item.uploadDocumentType !== 'motivation_letter_visa'
   );
+
+  useEffect(() => {
+    const fetchGates = async () => {
+      try {
+        const res = await fetch(`${API_URL}/student/gates`, { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setGates(data);
+        }
+      } catch (e) {
+        console.error('Failed to load gates in visa', e);
+      } finally {
+        setGatesLoading(false);
+      }
+    };
+    fetchGates();
+  }, []);
+
+  if (gatesLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 animate-spin text-germany-red" />
+          <p className="text-xs font-bold text-gray-400">Loading visa assistance...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (gates && !gates.visaUnlocked) {
+    if (!gates.hasActivePlan) {
+      return <StudentStageGate type="visa_plan_needed" />;
+    }
+    return <StudentStageGate type="visa_lock_needed" />;
+  }
+
+  if (error && error.toLowerCase().includes('plan')) {
+    return <StudentStageGate type="visa_plan_needed" />;
+  }
+  if (error && (error.toLowerCase().includes('locked') || error.toLowerCase().includes('shortlist'))) {
+    return <StudentStageGate type="visa_lock_needed" />;
+  }
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 py-6">

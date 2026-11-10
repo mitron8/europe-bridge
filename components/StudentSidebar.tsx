@@ -62,6 +62,8 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
     shortlistUnlocked?: boolean;
     documentsUnlocked?: boolean;
     apsUnlocked?: boolean;
+    applicationsUnlocked?: boolean;
+    visaUnlocked?: boolean;
   } | null>(null);
   const isCollapsed = useAppStore((state) => state.isSidebarCollapsed);
   const toggleCollapse = useAppStore((state) => state.toggleSidebarCollapsed);
@@ -98,6 +100,8 @@ export function StudentSidebar({ isOpen = false, onClose }: StudentSidebarProps)
     if (itemName === 'My Shortlist') return !gates.shortlistUnlocked;
     if (itemName === 'Document Hub') return !gates.documentsUnlocked;
     if (itemName === 'APS Checklist') return !gates.apsUnlocked;
+    if (itemName === 'Applications' || itemName === 'Admission') return !gates.applicationsUnlocked;
+    if (itemName === 'Visa Assistance' || itemName === 'Visa') return !gates.visaUnlocked;
     return false;
   };
 

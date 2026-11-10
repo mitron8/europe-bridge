@@ -8,6 +8,8 @@ import StudentStageGate from '@/components/StudentStageGate';
 import { StudentDocumentHub } from '@/components/StudentDocumentHub';
 import { StudentServicesHub } from '@/components/StudentServicesHub';
 import AccountSettingsView from '@/components/AccountSettingsView';
+import StudentAdmissionPage from '../admission/page';
+import StudentVisaAssistancePage from '../visa/page';
 import {
   Compass,
   Bookmark,
@@ -1092,9 +1094,31 @@ export default function StudentSectionPage({ params }: { params: Promise<{ secti
               <StudentDocumentHub />
             )
           )}
+          {section === 'applications' && (
+            gates && !gates.applicationsUnlocked ? (
+              !gates.hasActivePlan ? (
+                <StudentStageGate type="applications_plan_needed" userName={userName} />
+              ) : (
+                <StudentStageGate type="applications_lock_needed" userName={userName} />
+              )
+            ) : (
+              <StudentAdmissionPage defaultTab="applications" />
+            )
+          )}
+          {section === 'visa' && (
+            gates && !gates.visaUnlocked ? (
+              !gates.hasActivePlan ? (
+                <StudentStageGate type="visa_plan_needed" userName={userName} />
+              ) : (
+                <StudentStageGate type="visa_lock_needed" userName={userName} />
+              )
+            ) : (
+              <StudentVisaAssistancePage />
+            )
+          )}
           {section === 'services' && <StudentServicesHub />}
           {section === 'account' && <AccountSettingsView forcedRole='student' />}
-          {!['matching', 'shortlist', 'documents', 'aps', 'services', 'account'].includes(section) && (
+          {!['matching', 'shortlist', 'documents', 'aps', 'applications', 'visa', 'services', 'account'].includes(section) && (
             <div className="neu-card p-8 bg-white dark:bg-[#111622] text-center space-y-4">
               <div className="max-w-md mx-auto space-y-3">
                 <h3 className="font-display text-xl text-germany-black dark:text-white">{config.title} Module</h3>
