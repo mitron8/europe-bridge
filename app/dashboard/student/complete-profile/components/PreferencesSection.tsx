@@ -107,10 +107,18 @@ export default function PreferencesSection({ data, onChange, onNext, onPrev }: P
                 });
                 if (!res.ok) return [];
                 const resData = await res.json();
-                return resData.map((u: any) => ({ 
-                  label: `${u.name} ${u.city ? `- ${u.city}` : ''} (${u.country})`, 
-                  value: u.name 
-                }));
+                const seen = new Set<string>();
+                const uniqueOptions: { label: string; value: string }[] = [];
+                for (const u of resData) {
+                  if (u?.name && !seen.has(u.name)) {
+                    seen.add(u.name);
+                    uniqueOptions.push({
+                      label: `${u.name}${u.city ? ` - ${u.city}` : ''} (${u.country || 'Germany'})`,
+                      value: u.name,
+                    });
+                  }
+                }
+                return uniqueOptions;
               } catch {
                 return [];
               }

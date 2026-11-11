@@ -193,9 +193,9 @@ export function ClaySelect<T = any>({
         <div className="flex-1 flex flex-wrap items-center gap-1.5 min-w-0 pr-2">
           {effectiveMultiple ? (
             multiSelectedOptions.length > 0 ? (
-              multiSelectedOptions.map((opt) => (
+              multiSelectedOptions.map((opt, idx) => (
                 <span
-                  key={String(opt.value)}
+                  key={`${String(opt.value)}-${idx}`}
                   className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-germany-black dark:text-gray-100 text-[11px] font-bold border border-gray-200 dark:border-gray-700 max-w-full text-left"
                 >
                   <span className="whitespace-normal break-words leading-tight">{opt.label}</span>
@@ -279,14 +279,14 @@ export function ClaySelect<T = any>({
                   {getNoOptionsText()}
                 </div>
               ) : (
-                filteredOptions.map((opt) => {
+                filteredOptions.map((opt, idx) => {
                   const isSelected = effectiveMultiple
                     ? selectedValues.some((v) => v === opt.value)
                     : opt.value === value;
 
                   return (
                     <button
-                      key={String(opt.value)}
+                      key={`${String(opt.value)}-${idx}`}
                       type="button"
                       onClick={() => effectiveMultiple ? handleToggleMultiple(opt.value) : handleSelectSingle(opt.value)}
                       className={`w-full text-left px-3 py-2.5 text-xs font-bold rounded-lg flex items-start justify-between gap-2 transition-colors cursor-pointer ${
