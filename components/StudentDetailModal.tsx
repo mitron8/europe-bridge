@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -230,6 +230,12 @@ export function StudentDetailModal({
   const [copiedId, setCopiedId] = useState(false);
   const [note, setNote] = useState('');
   const [noteSaved, setNoteSaved] = useState(false);
+  const [noteLoading, setNoteLoading] = useState(false);
+  const [isSavingNote, setIsSavingNote] = useState(false);
+  const [lastNoteUpdated, setLastNoteUpdated] = useState<string | null>(null);
+  const [isNoteDirty, setIsNoteDirty] = useState(false);
+  const isNoteFocusedRef = useRef(false);
+  const noteDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [showFullProfile, setShowFullProfile] = useState(false);
 
   const [fetchedStudent, setFetchedStudent] = useState<AssignedStudent | null>(null);
@@ -1210,6 +1216,8 @@ export function StudentDetailModal({
   // Consultation tasks
   const [tasks, setTasks] = useState<ConsultationTask[]>([]);
   const [newTaskText, setNewTaskText] = useState('');
+  const [newTaskDueDate, setNewTaskDueDate] = useState('');
+  const [isAddingTask, setIsAddingTask] = useState(false);
 
   // Close on Escape key press (only in modal mode)
   useEffect(() => {
@@ -1305,10 +1313,6 @@ export function StudentDetailModal({
     };
     fetchRecommendations();
 
-    // Load counsellor notes
-    const savedNote = localStorage.getItem(`eb_counsellor_notes_${effectiveStudentId}`);
-    setNote(savedNote || '');
-
     // Load Academic Dossier AI limits
     const fetchDossierLimits = async () => {
       try {
@@ -1324,30 +1328,7 @@ export function StudentDetailModal({
       }
     };
     fetchDossierLimits();
-
-    // Load tasks
-    const savedTasks = localStorage.getItem(`eb_student_tasks_${effectiveStudentId}`);
-    if (savedTasks) {
-      try {
-        setTasks(JSON.parse(savedTasks));
-      } catch {
-        setTasks(getDefaultTasks());
-      }
-    } else {
-      const defTasks = getDefaultTasks();
-      setTasks(defTasks);
-      localStorage.setItem(`eb_student_tasks_${effectiveStudentId}`, JSON.stringify(defTasks));
-    }
   }, [propStudent, studentId]);
-
-  function getDefaultTasks(): ConsultationTask[] {
-    return [
-      { id: 't-1', text: 'Verify notarized transcripts for APS New Delhi submission', completed: true, dueDate: 'Aug 25' },
-      { id: 't-2', text: 'Review revised Europass CV draft without graphical skills bars', completed: false, dueDate: 'Sept 08' },
-      { id: 't-3', text: 'Check TUM course credit module alignment in computer architecture', completed: false, dueDate: 'Sept 12' },
-      { id: 't-4', text: 'Schedule 1-on-1 strategy session for Expatrio Blocked Account', completed: false, dueDate: 'Sept 15' },
-    ];
-  }
 
   // Document Handlers (connected to real backend API)
   const handleVerifyDoc = async (docId: string) => {
@@ -1843,42 +1824,195 @@ export function StudentDetailModal({
 
   const handleAddUniversity = handleSaveRecommendation;
 
-  // Notes & Tasks Handlers
+  // Strategy Notes & Tasks Real-Time API Handlers (Counsellor Specific)
+  const fetchStrategyNotes = useCallback(async (silent = false) => {
+    const effectiveId = student?.userId || propStudent?.userId || studentId;
+    if (!effectiveId || readOnly) return;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+
+    if (!silent) setNoteLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/counsellor/students/${effectiveId}/strategy-notes`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Update note only if counsellor is not actively editing in textarea
+        if (!isNoteFocusedRef.current && !isNoteDirty) {
+          setNote(data.notes || '');
+          setLastNoteUpdated(data.updatedAt || null);
+        }
+        if (Array.isArray(data.tasks)) {
+          setTasks(data.tasks);
+        }
+      }
+    } catch (err) {
+      if (!silent) console.error('Failed to load strategy notes', err);
+    } finally {
+      if (!silent) setNoteLoading(false);
+    }
+  }, [student?.userId, propStudent?.userId, studentId, readOnly, isNoteDirty]);
+
+  // Real-time polling without websocket (polls every 3.5s when active tab is notes and window is visible)
+  useEffect(() => {
+    if (activeTab !== 'notes' || readOnly) return;
+    fetchStrategyNotes(false);
+
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
+      fetchStrategyNotes(true);
+    }, 3500);
+
+    return () => clearInterval(interval);
+  }, [activeTab, readOnly, fetchStrategyNotes]);
+
+  const saveNotesToServer = async (textToSave: string) => {
+    const effectiveId = student?.userId || propStudent?.userId || studentId;
+    if (!effectiveId || readOnly) return;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+
+    setIsSavingNote(true);
+    try {
+      const res = await fetch(`${API_URL}/counsellor/students/${effectiveId}/strategy-notes`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ notes: textToSave }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setIsNoteDirty(false);
+        setNoteSaved(true);
+        setLastNoteUpdated(data.updatedAt || new Date().toISOString());
+        setTimeout(() => setNoteSaved(false), 2500);
+      }
+    } catch (err) {
+      console.error('Failed to save strategy notes', err);
+    } finally {
+      setIsSavingNote(false);
+    }
+  };
+
+  const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newVal = e.target.value;
+    setNote(newVal);
+    setIsNoteDirty(true);
+
+    if (noteDebounceTimerRef.current) {
+      clearTimeout(noteDebounceTimerRef.current);
+    }
+    // Auto-save debounced in real time after 800ms of typing pause
+    noteDebounceTimerRef.current = setTimeout(() => {
+      saveNotesToServer(newVal);
+    }, 800);
+  };
+
+  const handleNoteBlur = () => {
+    isNoteFocusedRef.current = false;
+    if (isNoteDirty) {
+      if (noteDebounceTimerRef.current) clearTimeout(noteDebounceTimerRef.current);
+      saveNotesToServer(note);
+    }
+  };
+
   const handleSaveNote = () => {
-    const effectiveId = student?.userId || propStudent?.userId || studentId;
-    if (effectiveId) {
-      localStorage.setItem(`eb_counsellor_notes_${effectiveId}`, note);
-    }
-    setNoteSaved(true);
-    setTimeout(() => setNoteSaved(false), 2500);
+    if (noteDebounceTimerRef.current) clearTimeout(noteDebounceTimerRef.current);
+    saveNotesToServer(note);
   };
 
-  const handleToggleTask = (taskId: string) => {
-    const updated = tasks.map((t) => (t.id === taskId ? { ...t, completed: !t.completed } : t));
-    setTasks(updated);
+  const handleToggleTask = async (taskId: string) => {
+    if (readOnly) return;
+    const target = tasks.find((t) => t.id === taskId);
+    if (!target) return;
+    const nextCompleted = !target.completed;
+
+    // Optimistic UI update
+    setTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, completed: nextCompleted } : t)),
+    );
+
     const effectiveId = student?.userId || propStudent?.userId || studentId;
-    if (effectiveId) {
-      localStorage.setItem(`eb_student_tasks_${effectiveId}`, JSON.stringify(updated));
+    if (!effectiveId) return;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+
+    try {
+      const res = await fetch(
+        `${API_URL}/counsellor/students/${effectiveId}/strategy-tasks/${taskId}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ completed: nextCompleted }),
+        },
+      );
+      if (!res.ok) {
+        // Rollback on failure
+        setTasks((prev) =>
+          prev.map((t) => (t.id === taskId ? { ...t, completed: target.completed } : t)),
+        );
+      }
+    } catch {
+      setTasks((prev) =>
+        prev.map((t) => (t.id === taskId ? { ...t, completed: target.completed } : t)),
+      );
     }
   };
 
-  const handleAddTask = (e: React.FormEvent) => {
+  const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTaskText.trim()) return;
+    if (!newTaskText.trim() || readOnly) return;
 
-    const newTask: ConsultationTask = {
-      id: `task-${Date.now()}`,
-      text: newTaskText.trim(),
-      completed: false,
-      dueDate: 'Upcoming',
-    };
-    const updated = [...tasks, newTask];
-    setTasks(updated);
     const effectiveId = student?.userId || propStudent?.userId || studentId;
-    if (effectiveId) {
-      localStorage.setItem(`eb_student_tasks_${effectiveId}`, JSON.stringify(updated));
-    }
+    if (!effectiveId) return;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+
+    const text = newTaskText.trim();
+    const dueDate = newTaskDueDate.trim() || undefined;
+    setIsAddingTask(true);
     setNewTaskText('');
+    setNewTaskDueDate('');
+
+    try {
+      const res = await fetch(`${API_URL}/counsellor/students/${effectiveId}/strategy-tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ text, dueDate }),
+      });
+      if (res.ok) {
+        const createdTask = await res.json();
+        setTasks((prev) => [...prev, createdTask]);
+      }
+    } catch (err) {
+      console.error('Failed to add advising task', err);
+    } finally {
+      setIsAddingTask(false);
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (readOnly) return;
+    const prevTasks = [...tasks];
+    setTasks((prev) => prev.filter((t) => t.id !== taskId));
+
+    const effectiveId = student?.userId || propStudent?.userId || studentId;
+    if (!effectiveId) return;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+
+    try {
+      const res = await fetch(
+        `${API_URL}/counsellor/students/${effectiveId}/strategy-tasks/${taskId}`,
+        {
+          method: 'DELETE',
+          credentials: 'include',
+        },
+      );
+      if (!res.ok) {
+        setTasks(prevTasks);
+      }
+    } catch {
+      setTasks(prevTasks);
+    }
   };
 
   const handleCopyEmail = () => {
@@ -5426,18 +5560,33 @@ export function StudentDetailModal({
                     Private Counsellor Remarks &amp; Strategy
                   </h3>
                 </div>
-                {noteSaved && (
-                  <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 animate-in fade-in">
-                    <Check className="w-3.5 h-3.5" />
-                    Saved to browser!
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {isSavingNote ? (
+                    <span className="text-[11px] font-extrabold text-amber-600 dark:text-amber-400 flex items-center gap-1 animate-pulse">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Saving in real time...</span>
+                    </span>
+                  ) : noteSaved ? (
+                    <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 animate-in fade-in">
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Saved to server!</span>
+                    </span>
+                  ) : lastNoteUpdated ? (
+                    <span className="text-[10px] font-bold text-gray-400">
+                      Live sync active
+                    </span>
+                  ) : null}
+                </div>
               </div>
 
               <textarea
                 value={note}
                 readOnly={readOnly}
-                onChange={(e) => setNote(e.target.value)}
+                onChange={handleNoteChange}
+                onFocus={() => {
+                  isNoteFocusedRef.current = true;
+                }}
+                onBlur={handleNoteBlur}
                 placeholder={readOnly ? "No counsellor notes recorded yet." : "Document consultation takeaways (e.g. Target TUM Data Engineering, advised to re-take German A2 Goethe exam in October, notarization complete for APS Delhi)..."}
                 rows={4}
                 className="w-full p-3 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-900 dark:text-white placeholder:text-gray-400 placeholder:font-normal resize-none focus:outline-none focus:border-germany-red shadow-xs"
@@ -5445,15 +5594,16 @@ export function StudentDetailModal({
 
               <div className="flex items-center justify-between pt-1">
                 <p className="text-[10px] font-bold text-gray-400">
-                  {readOnly ? 'Viewing counsellor consultation notes (Supervisor Mode).' : 'Notes are kept private to counsellors and automatically saved.'}
+                  {readOnly ? 'Viewing counsellor consultation notes (Supervisor Mode).' : 'Notes are kept private to counsellors and automatically saved in real time.'}
                 </p>
                 {!readOnly && (
                   <button
                     type="button"
                     onClick={handleSaveNote}
-                    className="py-1.5 px-3.5 text-xs font-extrabold flex items-center gap-1.5 text-germany-black dark:text-white hover:text-germany-red dark:hover:text-germany-red bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl cursor-pointer shadow-xs transition-colors"
+                    disabled={isSavingNote}
+                    className="py-1.5 px-3.5 text-xs font-extrabold flex items-center gap-1.5 text-germany-black dark:text-white hover:text-germany-red dark:hover:text-germany-red bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl cursor-pointer shadow-xs transition-colors disabled:opacity-50"
                   >
-                    <Save className="w-3.5 h-3.5" />
+                    {isSavingNote ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                     <span>Save Notes</span>
                   </button>
                 )}
@@ -5462,35 +5612,63 @@ export function StudentDetailModal({
 
             {/* Consultation Follow-Up Checklist */}
             <div className="p-5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs space-y-3">
-              <h3 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white uppercase tracking-wider">
-                Advising Checklist &amp; Action Items
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs sm:text-sm font-extrabold text-germany-black dark:text-white uppercase tracking-wider">
+                  Advising Checklist &amp; Action Items
+                </h3>
+                {tasks.length > 0 && (
+                  <span className="text-[10px] font-bold text-gray-400">
+                    {tasks.filter((t) => t.completed).length} of {tasks.length} completed
+                  </span>
+                )}
+              </div>
 
               <div className="space-y-2">
-                {tasks.map((t) => (
-                  <div
-                    key={t.id}
-                    onClick={readOnly ? undefined : () => handleToggleTask(t.id)}
-                    className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 text-xs font-bold transition-colors ${readOnly ? 'cursor-default' : 'cursor-pointer'} ${t.completed
-                      ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/40 text-gray-500 dark:text-gray-400 line-through'
-                      : 'bg-[#FDFBF7] dark:bg-[#151B27] border-[#EBE7E0] dark:border-gray-800/80 text-germany-black dark:text-white hover:bg-white dark:hover:bg-[#1A2130]'
-                      }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      {t.completed ? (
-                        <CheckSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                      ) : (
-                        <Square className="w-4 h-4 text-gray-400 shrink-0" />
-                      )}
-                      <span>{t.text}</span>
-                    </div>
-                    <span className="text-[10px] text-gray-400 font-extrabold shrink-0">Due {t.dueDate}</span>
+                {tasks.length === 0 ? (
+                  <div className="p-5 text-center text-xs font-bold text-gray-400 bg-gray-50/70 dark:bg-[#151B27]/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-800">
+                    No advising action items yet. Add a follow-up item below.
                   </div>
-                ))}
+                ) : (
+                  tasks.map((t) => (
+                    <div
+                      key={t.id}
+                      onClick={readOnly ? undefined : () => handleToggleTask(t.id)}
+                      className={`group p-2.5 rounded-xl border flex items-center justify-between gap-3 text-xs font-bold transition-colors ${readOnly ? 'cursor-default' : 'cursor-pointer'} ${t.completed
+                        ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/40 text-gray-500 dark:text-gray-400 line-through'
+                        : 'bg-[#FDFBF7] dark:bg-[#151B27] border-[#EBE7E0] dark:border-gray-800/80 text-germany-black dark:text-white hover:bg-white dark:hover:bg-[#1A2130]'
+                        }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                        {t.completed ? (
+                          <CheckSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        ) : (
+                          <Square className="w-4 h-4 text-gray-400 shrink-0" />
+                        )}
+                        <span className="truncate">{t.text}</span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[10px] text-gray-400 font-extrabold">Due {t.dueDate || 'Upcoming'}</span>
+                        {!readOnly && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteTask(t.id);
+                            }}
+                            className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors cursor-pointer"
+                            title="Delete task"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
 
               {!readOnly && (
-                <form onSubmit={handleAddTask} className="flex items-center gap-2 pt-2">
+                <form onSubmit={handleAddTask} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2">
                   <input
                     type="text"
                     placeholder="Add an advising follow-up item..."
@@ -5498,11 +5676,23 @@ export function StudentDetailModal({
                     onChange={(e) => setNewTaskText(e.target.value)}
                     className="flex-1 p-2 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:border-germany-red shadow-xs"
                   />
+                  <input
+                    type="text"
+                    placeholder="Due date (optional)"
+                    value={newTaskDueDate}
+                    onChange={(e) => setNewTaskDueDate(e.target.value)}
+                    className="w-full sm:w-36 p-2 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:border-germany-red shadow-xs"
+                  />
                   <button
                     type="submit"
-                    className="py-2 px-3 text-xs font-extrabold flex items-center gap-1 shrink-0 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-germany-black dark:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-[#1A2130] shadow-xs cursor-pointer"
+                    disabled={isAddingTask || !newTaskText.trim()}
+                    className="py-2 px-3.5 text-xs font-extrabold flex items-center justify-center gap-1.5 shrink-0 bg-germany-red text-white hover:bg-germany-red/90 rounded-xl disabled:opacity-50 shadow-xs cursor-pointer transition-colors"
                   >
-                    <Plus className="w-3.5 h-3.5" />
+                    {isAddingTask ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Plus className="w-3.5 h-3.5" />
+                    )}
                     <span>Add Task</span>
                   </button>
                 </form>
