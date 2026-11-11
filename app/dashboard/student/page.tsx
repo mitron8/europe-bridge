@@ -36,6 +36,8 @@ import {
   CheckSquare,
   LayoutGrid,
   Mail,
+  Compass,
+  Lock,
 } from 'lucide-react';
 
 interface MatchedProgramItem {
@@ -50,33 +52,6 @@ interface MatchedProgramItem {
   status: string;
   logo: string;
 }
-
-const DEFAULT_MATCHED_PROGRAMS: MatchedProgramItem[] = [
-  {
-    id: 'rwth-aero-1',
-    programmeId: 'rwth-aero-1',
-    universityName: 'RWTH Aachen University',
-    programName: 'Aeronautical and Aerospace Engineering',
-    universityType: 'Public',
-    country: 'Germany',
-    tuition: 'Free / None (public university..)',
-    deadline: 'Upcoming Window',
-    status: 'Eligible',
-    logo: '/universities/rwth.svg',
-  },
-  {
-    id: 'stuttgart-aero-2',
-    programmeId: 'stuttgart-aero-2',
-    universityName: 'University of Stuttgart',
-    programName: 'Aerospace Engineering',
-    universityType: 'Public',
-    country: 'Germany',
-    tuition: '€1,500 / semester (Non-EU)',
-    deadline: 'Upcoming Window',
-    status: 'Eligible',
-    logo: '/universities/stuttgart.svg',
-  },
-];
 
 function getUniversityLogo(name?: string): string {
   if (!name) return '/universities/rwth.svg';
@@ -99,6 +74,7 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [notifications, setNotifications] = useState<any[]>([]);
 
   // Shortlisting state
   const [shortlistedIds, setShortlistedIds] = useState<Set<string>>(new Set());
@@ -110,13 +86,18 @@ export default function StudentDashboard() {
   const [bookingMode, setBookingMode] = useState<'student_book' | 'reschedule' | 'counterproposal'>('student_book');
   const [selectedMeetingForReschedule, setSelectedMeetingForReschedule] = useState<any | null>(null);
 
+  const getAuthHeaders = (): Record<string, string> => {
+    if (typeof window === 'undefined') return {};
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   const fetchStudentMeetings = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       const res = await fetch(`${API_URL}/meetings/student/my-meetings`, {
         credentials: 'include',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        headers: getAuthHeaders(),
       });
       if (res.ok) {
         const data = await res.json();
@@ -127,6 +108,26 @@ export default function StudentDashboard() {
     }
   };
 
+  const fetchMatchingResults = async () => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+      const res = await fetch(`${API_URL}/matching/results`, {
+        credentials: 'include',
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMatchingData(data);
+        if (data.recommendations && Array.isArray(data.recommendations)) {
+          const ids = new Set<string>(data.recommendations.map((r: any) => String(r.programmeId || r.id)));
+          setShortlistedIds(ids);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch matching results', err);
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
     const loadDashboardData = async () => {
@@ -134,11 +135,13 @@ export default function StudentDashboard() {
         setLoading(true);
         setError(null);
         const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
+        const authHeaders = getAuthHeaders();
 
-        const [profRes, matchRes, meetRes] = await Promise.all([
-          fetch(`${API_URL}/student/profile`, { credentials: 'include' }).catch(() => null),
-          fetch(`${API_URL}/matching/results`, { credentials: 'include' }).catch(() => null),
-          fetch(`${API_URL}/meetings/student/my-meetings`, { credentials: 'include' }).catch(() => null),
+        const [profRes, matchRes, meetRes, notifRes] = await Promise.all([
+          fetch(`${API_URL}/student/profile`, { credentials: 'include', headers: authHeaders }).catch(() => null),
+          fetch(`${API_URL}/matching/results`, { credentials: 'include', headers: authHeaders }).catch(() => null),
+          fetch(`${API_URL}/meetings/student/my-meetings`, { credentials: 'include', headers: authHeaders }).catch(() => null),
+          fetch(`${API_URL}/student/notifications`, { credentials: 'include', headers: authHeaders }).catch(() => null),
         ]);
 
         if (profRes && profRes.ok) {
@@ -159,6 +162,10 @@ export default function StudentDashboard() {
           const meetData = await meetRes.json();
           if (mounted) setMeetingsData(meetData);
         }
+        if (notifRes && notifRes.ok) {
+          const notifData = await notifRes.json();
+          if (mounted && Array.isArray(notifData)) setNotifications(notifData);
+        }
       } catch (err: any) {
         if (mounted) setError(err.message || 'Failed to load dashboard data');
       } finally {
@@ -172,11 +179,24 @@ export default function StudentDashboard() {
     };
   }, []);
 
+  // Poll while matching engine is actively calculating
+  useEffect(() => {
+    if (!matchingData?.run || (matchingData.run.status !== 'running' && matchingData.run.status !== 'pending')) return;
+    const timer = setInterval(() => {
+      fetchMatchingResults();
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [matchingData?.run?.status]);
+
   // ── Calculated Real States ──────────────────────────────────────────────────
   const leadStatus = profile?.leadStatus || 'signed_up';
   const isProfileComplete = profile?.completionPercentage === 100;
+
+  // Real Matching status
   const isMatchingRun = Boolean(matchingData?.run && matchingData.run.status === 'completed');
-  const matchedUnisCount = matchingData?.totalMatchedCount || matchingData?.results?.length || 15;
+  const isMatchingRunning = Boolean(matchingData?.run && (matchingData.run.status === 'running' || matchingData.run.status === 'pending'));
+  const hasNotRun = !matchingData || matchingData.status === 'NOT_RUN' || !matchingData.run;
+  const matchedUnisCount = hasNotRun ? 0 : (matchingData?.totalMatchedCount ?? matchingData?.results?.length ?? 0);
 
   // Plan detection (covers profile.subscription, matchingData.subscription, or lead status)
   const subData = profile?.subscription;
@@ -200,12 +220,8 @@ export default function StudentDashboard() {
   const isShortlistLocked = Boolean(profile?.isMatchingLocked || leadStatus === 'shortlist_locked');
   const shortlistedCount = matchingData?.recommendations?.length || shortlistedIds.size || 0;
 
-  // Assigned counsellor (from profile joined with users or fallback)
-  const assignedCounsellor = profile?.assignedCounsellor || {
-    name: 'Counsellor User',
-    email: 'counsellor@ebgst.com',
-    role: 'EuropeBridge Senior Counsellor',
-  };
+  // Assigned counsellor (from profile joined with users or null)
+  const assignedCounsellor = profile?.assignedCounsellor || null;
 
   // Unique checklist document statistics (APS + Admission + Visa unique canonical documents)
   const totalChecklistCount = profile?.documentSummary?.totalChecklistRequired || 14;
@@ -216,10 +232,10 @@ export default function StudentDashboard() {
     ? profile.documentSummary.pendingUnique
     : (profile?.documentSummary?.pending || 0);
 
-  // Bavarian GPA extraction
-  const bestEdu = profile?.educationRecords?.find((e: any) => e.germanGrade !== null && e.germanGrade !== undefined);
-  const gpa = bestEdu?.germanGrade || profile?.germanGpa;
-  const gpaNum = gpa ? Number(gpa) : null;
+  // Bavarian GPA extraction (Real calculation fallback to NA)
+  const bestEdu = profile?.educationRecords?.find((e: any) => e.germanGrade !== null && e.germanGrade !== undefined && !isNaN(Number(e.germanGrade)));
+  const gpa = bestEdu?.germanGrade ?? profile?.germanGpa ?? null;
+  const gpaNum = (gpa !== null && gpa !== undefined && gpa !== '' && !isNaN(Number(gpa))) ? Number(gpa) : null;
   const gpaTier = gpaNum !== null
     ? gpaNum <= 1.5
       ? 'Very Good (Sehr gut)'
@@ -228,7 +244,27 @@ export default function StudentDashboard() {
         : gpaNum <= 3.5
           ? 'Satisfactory (Befriedigend)'
           : 'Sufficient'
-    : 'Good (Gut)';
+    : 'NA';
+
+  // Target Intake & Course extraction
+  const intakeSeason = (profile?.intakeSeason || '').trim();
+  const intakeYear = profile?.intakeYear ? String(profile.intakeYear).trim() : '';
+  const targetIntakeDisplay = (intakeSeason && intakeYear)
+    ? `${intakeSeason.toUpperCase()} ${intakeYear}`
+    : (intakeSeason ? intakeSeason.toUpperCase() : (intakeYear || 'NA'));
+
+  const degree = (profile?.intendedDegreeLevel || profile?.targetDegree || '').trim();
+  const course = (profile?.preferredFieldOfStudy || profile?.fieldOfStudy || profile?.preferredSpecialization || profile?.targetCourse || '').trim();
+  const targetDegreeCourseDisplay = (degree && course)
+    ? `${degree} · ${course}`
+    : (degree || course || 'NA');
+
+  // Student name and initials
+  const studentFirstName = profile?.firstName?.trim() || '';
+  const studentLastName = profile?.lastName?.trim() || '';
+  const studentInitials = (studentFirstName || studentLastName)
+    ? `${studentFirstName?.[0] || ''}${studentLastName?.[0] || ''}`.toUpperCase()
+    : (profile?.email ? profile.email.slice(0, 2).toUpperCase() : 'NA');
 
   // Overall journey completion points (5 equal stages of 20 points each)
   let progressPoints = 0;
@@ -283,21 +319,23 @@ export default function StudentDashboard() {
     },
   ];
 
-  // Matched Universities to display (uses real matching results if available, else curated defaults)
+  // Matched Universities to display (uses real matching results if available, else empty)
   const displayMatches: MatchedProgramItem[] = (matchingData?.results && Array.isArray(matchingData.results) && matchingData.results.length > 0)
     ? matchingData.results.slice(0, 3).map((item: any, idx: number) => ({
       id: item.programmeId || item.id || `prog-${idx}`,
       programmeId: item.programmeId || item.id,
-      universityName: item.universityName || item.university_name || 'German University',
-      programName: item.name || item.program || item.programName || item.program_name || 'M.Sc. Program',
+      universityName: item.universityName || item.university_name || 'NA',
+      programName: item.name || item.program || item.programName || item.program_name || 'NA',
       universityType: item.universityType || 'Public',
       country: item.country || 'Germany',
-      tuition: item.tuition || item.tuitionPerSemester ? `€${item.tuition || item.tuitionPerSemester}/semester` : 'Free / None (public university..)',
+      tuition: item.tuition || item.tuitionPerSemester
+        ? (String(item.tuition || item.tuitionPerSemester).includes('€') ? String(item.tuition || item.tuitionPerSemester) : `€${item.tuition || item.tuitionPerSemester}/semester`)
+        : 'Free / None (public university..)',
       deadline: item.nonEuDeadline || item.deadline || 'Upcoming Window',
       status: 'Eligible',
       logo: getUniversityLogo(item.universityName || item.university_name),
     }))
-    : DEFAULT_MATCHED_PROGRAMS;
+    : [];
 
   const handleToggleShortlist = async (prog: MatchedProgramItem) => {
     const progId = String(prog.programmeId || prog.id);
@@ -306,30 +344,42 @@ export default function StudentDashboard() {
     try {
       const isAlready = shortlistedIds.has(progId);
       if (isAlready) {
-        await fetch(`${API_URL}/student/recommendations/${progId}`, {
+        const res = await fetch(`${API_URL}/student/recommendations/${progId}`, {
           method: 'DELETE',
           credentials: 'include',
-        }).catch(() => null);
+          headers: getAuthHeaders(),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || 'Failed to remove program from shortlist');
+        }
         setShortlistedIds((prev) => {
           const next = new Set(prev);
           next.delete(progId);
           return next;
         });
       } else {
-        await fetch(`${API_URL}/student/recommendations/shortlist-programme`, {
+        const res = await fetch(`${API_URL}/student/recommendations/shortlist-programme`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+          },
           credentials: 'include',
           body: JSON.stringify({ programmeId: progId }),
-        }).catch(() => null);
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || 'Failed to shortlist program');
+        }
         setShortlistedIds((prev) => {
           const next = new Set(prev);
           next.add(progId);
           return next;
         });
       }
-    } catch (err) {
-      console.error('Shortlist toggle failed', err);
+    } catch (err: any) {
+      alert(err.message || 'Could not update shortlist');
     } finally {
       setShortlistingProgId(null);
     }
@@ -517,9 +567,6 @@ export default function StudentDashboard() {
     );
   }
 
-  const studentFirstName = profile?.firstName || 'Ankur';
-  const studentInitials = `${profile?.firstName?.[0] || 'A'}${profile?.lastName?.[0] || 'S'}`.toUpperCase();
-
   return (
     <div className="space-y-6">
       {/* Top Search & Actions Bar */}
@@ -531,10 +578,15 @@ export default function StudentDashboard() {
             placeholder="Search universities, services, documents..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && searchQuery.trim()) {
+                window.location.href = `/dashboard/student/matching?q=${encodeURIComponent(searchQuery.trim())}`;
+              }
+            }}
             className="w-full bg-white dark:bg-[#111622] border border-gray-200/90 dark:border-gray-800 rounded-xl pl-9 pr-20 py-2.5 text-xs text-gray-800 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E63946]/20 focus:border-[#E63946] transition-all shadow-xs"
           />
           <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-gray-400 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-1.5 py-0.5 rounded">
-            Ctrl + K
+            ↵ Enter
           </kbd>
         </div>
         <div className="flex items-center gap-3 shrink-0">
@@ -544,7 +596,9 @@ export default function StudentDashboard() {
             title="Notifications"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#E63946] ring-2 ring-white dark:ring-[#111622]" />
+            {notifications.length > 0 && (
+              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#E63946] ring-2 ring-white dark:ring-[#111622]" />
+            )}
           </Link>
           <Link
             href="/dashboard/student/account"
@@ -567,7 +621,7 @@ export default function StudentDashboard() {
           <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/90 dark:border-gray-800 p-6 shadow-xs relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between min-h-[140px] gap-4">
             <div className="space-y-1.5 z-10 max-w-sm">
               <h1 className="text-xl sm:text-2xl font-bold font-display text-gray-900 dark:text-white tracking-tight">
-                Welcome back, {studentFirstName}
+                Welcome back{studentFirstName ? `, ${studentFirstName}` : ''}
               </h1>
               <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
                 Continue your Germany journey. You're making great progress!
@@ -654,11 +708,15 @@ export default function StudentDashboard() {
                 </div>
                 <div className="text-xs font-medium text-gray-500 dark:text-gray-400">German GPA</div>
                 <div className="text-2xl font-bold font-display text-gray-900 dark:text-white mt-1">
-                  {gpaNum !== null ? gpaNum.toFixed(2) : '1.60'}
+                  {gpaNum !== null ? gpaNum.toFixed(2) : 'NA'}
                 </div>
               </div>
               <div className="mt-2.5">
-                <span className="inline-block px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-semibold ${
+                  gpaNum !== null
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+                    : 'bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
+                }`}>
                   {gpaTier}
                 </span>
               </div>
@@ -672,11 +730,11 @@ export default function StudentDashboard() {
                 </div>
                 <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Matched Programs</div>
                 <div className="text-2xl font-bold font-display text-gray-900 dark:text-white mt-1">
-                  {matchedUnisCount}
+                  {hasNotRun ? 'NA' : matchedUnisCount}
                 </div>
               </div>
               <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-2.5">
-                Across Public Universities
+                {hasNotRun ? 'Matching engine yet to be run' : 'Across Public Universities'}
               </p>
             </div>
 
@@ -688,7 +746,7 @@ export default function StudentDashboard() {
                 </div>
                 <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Approved Documents</div>
                 <div className="text-2xl font-bold font-display text-gray-900 dark:text-white mt-1">
-                  {`${approvedCount} / ${totalChecklistCount}`}
+                  {profile?.documentSummary ? `${approvedCount} / ${totalChecklistCount}` : 'NA'}
                 </div>
               </div>
               <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-2.5">
@@ -704,11 +762,11 @@ export default function StudentDashboard() {
                 </div>
                 <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Target Intake</div>
                 <div className="text-xl font-bold font-display text-gray-900 dark:text-white mt-1 truncate">
-                  {(profile?.intakeSeason || 'WINTER').toUpperCase()} {profile?.intakeYear || 2027}
+                  {targetIntakeDisplay}
                 </div>
               </div>
-              <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-2.5 truncate" title="Master's · Aeronautical Engineering">
-                {profile?.targetDegree || "Master's"} · {profile?.fieldOfStudy || profile?.targetCourse || 'Aeronautical Engineering'}
+              <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-2.5 truncate" title={targetDegreeCourseDisplay}>
+                {targetDegreeCourseDisplay}
               </p>
             </div>
           </div>
@@ -724,80 +782,149 @@ export default function StudentDashboard() {
                 href="/dashboard/student/matching"
                 className="text-xs font-bold text-[#E63946] hover:text-[#D62839] flex items-center gap-1 transition-colors"
               >
-                <span>View All ({matchedUnisCount})</span>
+                <span>{hasNotRun ? 'Go to Matching Engine' : `View All (${matchedUnisCount})`}</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
 
-            <div className="space-y-3">
-              {displayMatches.map((prog) => {
-                const progId = String(prog.programmeId || prog.id);
-                const isShortlisted = shortlistedIds.has(progId);
-                const isProcessing = shortlistingProgId === progId;
+            {hasNotRun ? (
+              <div className="p-8 rounded-xl border border-dashed border-gray-200 dark:border-gray-800 text-center flex flex-col items-center justify-center space-y-3 bg-gray-50/50 dark:bg-white/[0.02]">
+                <div className="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-950/40 text-[#E63946] flex items-center justify-center">
+                  <Compass className="w-6 h-6" />
+                </div>
+                <div className="max-w-md space-y-1">
+                  <h4 className="font-bold text-sm text-gray-900 dark:text-white">Matching Engine Yet to Be Run</h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                    You haven't run the AI Matching Engine yet. Run the matching algorithm based on your GPA and target degree to discover eligible public German university programs.
+                  </p>
+                </div>
+                <Link
+                  href="/dashboard/student/matching"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#E63946] hover:bg-[#D62839] text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+                >
+                  <Compass className="w-4 h-4" />
+                  <span>Run AI Matching Engine</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            ) : isMatchingRunning ? (
+              <div className="p-8 rounded-xl border border-dashed border-blue-200 dark:border-blue-800/40 text-center flex flex-col items-center justify-center space-y-3 bg-blue-50/40 dark:bg-blue-950/20">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-400" />
+                <div className="max-w-md space-y-1">
+                  <h4 className="font-bold text-sm text-gray-900 dark:text-white">Matching Engine Running</h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                    The matching engine is currently evaluating your profile against German university admissions requirements. This page will update automatically.
+                  </p>
+                </div>
+              </div>
+            ) : displayMatches.length > 0 ? (
+              <div className="space-y-3">
+                {displayMatches.map((prog) => {
+                  const progId = String(prog.programmeId || prog.id);
+                  const isShortlisted = shortlistedIds.has(progId);
+                  const isProcessing = shortlistingProgId === progId;
 
-                return (
-                  <div
-                    key={prog.id}
-                    className="p-4 rounded-xl border border-gray-200/90 dark:border-gray-800 bg-white dark:bg-[#131B2E] hover:border-gray-300 dark:hover:border-gray-700 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
-                  >
-                    <div className="flex items-start gap-4 min-w-0">
-                      {/* University Logo */}
-                      <div className="w-14 h-14 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200/60 dark:border-gray-700 flex items-center justify-center p-2 shrink-0">
-                        <Image
-                          src={prog.logo}
-                          alt={prog.universityName}
-                          width={48}
-                          height={48}
-                          className="max-h-10 w-auto object-contain"
-                        />
+                  return (
+                    <div
+                      key={prog.id}
+                      className="p-4 rounded-xl border border-gray-200/90 dark:border-gray-800 bg-white dark:bg-[#131B2E] hover:border-gray-300 dark:hover:border-gray-700 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    >
+                      <div className="flex items-start gap-4 min-w-0">
+                        {/* University Logo */}
+                        <div className="w-14 h-14 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200/60 dark:border-gray-700 flex items-center justify-center p-2 shrink-0">
+                          <Image
+                            src={prog.logo}
+                            alt={prog.universityName}
+                            width={48}
+                            height={48}
+                            className="max-h-10 w-auto object-contain"
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="font-bold text-sm text-gray-900 dark:text-white whitespace-normal break-words leading-snug">
+                              {prog.universityName}
+                            </h4>
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 shrink-0">
+                              {prog.universityType || 'Public'} · {prog.country || 'Germany'}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5 whitespace-normal break-words leading-snug">
+                            {prog.programName}
+                          </p>
+                          <div className="flex items-center gap-4 mt-2 text-[11px] text-gray-500 dark:text-gray-400 flex-wrap">
+                            <span className="flex items-center gap-1">
+                              <Coins className="w-3.5 h-3.5 text-gray-400" />
+                              Tuition: <strong className="text-gray-700 dark:text-gray-200 font-semibold">{prog.tuition}</strong>
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                              Deadline: <strong className="text-gray-700 dark:text-gray-200 font-semibold">{prog.deadline}</strong>
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-bold text-sm text-gray-900 dark:text-white whitespace-normal break-words leading-snug">
-                            {prog.universityName}
-                          </h4>
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 shrink-0">
-                            {prog.universityType || 'Public'} · {prog.country || 'Germany'}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5 whitespace-normal break-words leading-snug">
-                          {prog.programName}
-                        </p>
-                        <div className="flex items-center gap-4 mt-2 text-[11px] text-gray-500 dark:text-gray-400 flex-wrap">
-                          <span className="flex items-center gap-1">
-                            <Coins className="w-3.5 h-3.5 text-gray-400" />
-                            Tuition: <strong className="text-gray-700 dark:text-gray-200 font-semibold">{prog.tuition}</strong>
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                            Deadline: <strong className="text-gray-700 dark:text-gray-200 font-semibold">{prog.deadline}</strong>
-                          </span>
-                        </div>
+
+                      <div className="flex items-center md:flex-col items-end gap-2 shrink-0">
+                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                          Eligible
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleShortlist(prog)}
+                          disabled={isProcessing}
+                          className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-1 cursor-pointer"
+                        >
+                          {isProcessing ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Star className={`w-3.5 h-3.5 ${isShortlisted ? 'text-amber-500 fill-amber-500' : 'text-gray-400'}`} />
+                          )}
+                          <span>{isShortlisted ? 'Shortlisted' : 'Shortlist'}</span>
+                        </button>
                       </div>
                     </div>
-
-                    <div className="flex items-center md:flex-col items-end gap-2 shrink-0">
-                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
-                        Eligible
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleToggleShortlist(prog)}
-                        disabled={isProcessing}
-                        className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-1 cursor-pointer"
-                      >
-                        {isProcessing ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Star className={`w-3.5 h-3.5 ${isShortlisted ? 'text-amber-500 fill-amber-500' : 'text-gray-400'}`} />
-                        )}
-                        <span>{isShortlisted ? 'Shortlisted' : 'Shortlist'}</span>
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            ) : matchingData?.status === 'SUBSCRIPTION_REQUIRED' ? (
+              <div className="p-8 rounded-xl border border-dashed border-amber-200 dark:border-amber-800/60 text-center flex flex-col items-center justify-center space-y-3 bg-amber-50/40 dark:bg-amber-950/20">
+                <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                  <Lock className="w-6 h-6" />
+                </div>
+                <div className="max-w-md space-y-1">
+                  <h4 className="font-bold text-sm text-gray-900 dark:text-white">Plan Activation Required</h4>
+                  <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                    Matching completed with {matchingData?.totalMatchedCount || 'multiple'} eligible programs found! Activate an admission plan to unlock your matched university results and shortlist.
+                  </p>
+                </div>
+                <Link
+                  href="/pricing"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#E63946] hover:bg-[#D62839] text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+                >
+                  <span>View Plans & Unlock</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            ) : (
+              <div className="p-8 rounded-xl border border-dashed border-gray-200 dark:border-gray-800 text-center flex flex-col items-center justify-center space-y-3 bg-gray-50/50 dark:bg-white/[0.02]">
+                <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 text-gray-400 flex items-center justify-center">
+                  <Search className="w-6 h-6" />
+                </div>
+                <div className="max-w-md space-y-1">
+                  <h4 className="font-bold text-sm text-gray-900 dark:text-white">No Matched Programs Found</h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                    No programs matched your exact profile criteria. Try updating your target course, degree level, or language scores.
+                  </p>
+                </div>
+                <Link
+                  href="/dashboard/student/complete-profile"
+                  className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <span>Update Academic Profile</span>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 
@@ -810,34 +937,63 @@ export default function StudentDashboard() {
               <h3 className="text-sm font-bold text-gray-900 dark:text-white">Your Germany Expert</h3>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-red-100 text-[#E63946] dark:bg-red-950/50 dark:text-red-400 font-bold text-sm flex items-center justify-center shrink-0">
-                {assignedCounsellor?.name
-                  ? assignedCounsellor.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
-                  : 'CU'}
-              </div>
-              <div className="min-w-0">
-                <div className="font-bold text-sm text-gray-900 dark:text-white truncate">
-                  {assignedCounsellor?.name || 'Counsellor User'}
+            {assignedCounsellor ? (
+              <>
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-full bg-red-100 text-[#E63946] dark:bg-red-950/50 dark:text-red-400 font-bold text-sm flex items-center justify-center shrink-0">
+                    {assignedCounsellor.name
+                      ? assignedCounsellor.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
+                      : 'NA'}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-bold text-sm text-gray-900 dark:text-white truncate">
+                      {assignedCounsellor.name || 'NA'}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      {assignedCounsellor.role || 'EuropeBridge Senior Counsellor'}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                  {assignedCounsellor?.role || 'EuropeBridge Senior Counsellor'}
-                </div>
-              </div>
-            </div>
 
-            <div className="space-y-1.5 pt-1">
-              <div className="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                <span>Directly Connected</span>
-              </div>
-              {assignedCounsellor?.email && (
-                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 truncate">
-                  <Mail className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                  <span className="truncate">{assignedCounsellor.email}</span>
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                    <span>Directly Connected</span>
+                  </div>
+                  {assignedCounsellor.email ? (
+                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 truncate">
+                      <Mail className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                      <span className="truncate">{assignedCounsellor.email}</span>
+                    </div>
+                  ) : (
+                    <div className="text-xs text-gray-400">NA</div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-full bg-gray-100 text-gray-400 dark:bg-gray-800 font-bold text-sm flex items-center justify-center shrink-0">
+                    NA
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-bold text-sm text-gray-900 dark:text-white truncate">
+                      NA
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      Advisor Allocation Pending
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                    <span className="w-2 h-2 rounded-full bg-gray-400 shrink-0" />
+                    <span>Assigned upon plan activation</span>
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* Upcoming / Active Meeting notification banner */}
             {meetingsData?.upcoming?.[0] && (
