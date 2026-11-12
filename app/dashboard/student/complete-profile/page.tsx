@@ -184,9 +184,9 @@ export default function CompleteProfilePage() {
       )}
 
       {/* Main Container Card */}
-      <div className="neu-card p-6 sm:p-8 relative overflow-hidden bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800/80 shadow-[2px_2px_8px_rgba(71,85,105,0.04)]">
+      <div className="neu-card p-6 sm:p-8 relative bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800/80 shadow-[2px_2px_8px_rgba(71,85,105,0.04)]">
         {/* Subtle German Tricolor Header Accent */}
-        <div className="absolute top-0 left-0 w-full h-[3px] flex">
+        <div className="absolute top-0 left-0 w-full h-[3px] flex overflow-hidden rounded-t-2xl">
           <div className="flex-1 bg-germany-black"></div>
           <div className="flex-1 bg-germany-red"></div>
           <div className="flex-1 bg-germany-gold"></div>

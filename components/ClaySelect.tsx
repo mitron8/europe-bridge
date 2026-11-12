@@ -47,6 +47,7 @@ export function ClaySelect<T = any>({
   dropdownClassName = '',
 }: ClaySelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
+  const [openUpward, setOpenUpward] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [asyncOptions, setAsyncOptions] = useState<ClaySelectOption<T>[]>([]);
   const [isAsyncLoading, setIsAsyncLoading] = useState(false);
@@ -55,6 +56,20 @@ export function ClaySelect<T = any>({
 
   const effectiveSearchable = isSearchable !== undefined ? isSearchable : searchable;
   const effectiveMultiple = isMulti !== undefined ? isMulti : multiple;
+
+  // Detect whether to open downward or upward based on viewport space
+  useEffect(() => {
+    if (isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      if (spaceBelow < 280 && spaceAbove > spaceBelow) {
+        setOpenUpward(true);
+      } else {
+        setOpenUpward(false);
+      }
+    }
+  }, [isOpen]);
 
   // Normalize static options to ClaySelectOption objects
   const normalizeOptions = useCallback((raw: (ClaySelectOption<T> | T)[]): ClaySelectOption<T>[] => {
@@ -147,6 +162,14 @@ export function ClaySelect<T = any>({
     return searchString.includes(normalizedSearch);
   });
 
+  const hasEmptyOption = baseOptions.some(
+    (opt) =>
+      opt.value === '' ||
+      opt.value === null ||
+      String(opt.label).trim().toLowerCase() === String(placeholder).trim().toLowerCase() ||
+      String(opt.value).trim().toLowerCase() === String(placeholder).trim().toLowerCase()
+  );
+
   const handleSelectSingle = (val: T) => {
     onChange(val, name);
     setIsOpen(false);
@@ -236,11 +259,13 @@ export function ClaySelect<T = any>({
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+            initial={{ opacity: 0, y: openUpward ? 6 : -6, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -6, scale: 0.98 }}
+            exit={{ opacity: 0, y: openUpward ? 6 : -6, scale: 0.98 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className={`absolute left-0 right-0 mt-1.5 p-1.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800 rounded-xl shadow-lg dark:shadow-2xl z-50 max-h-72 flex flex-col overflow-hidden min-w-full ${dropdownClassName}`}
+            className={`absolute left-0 right-0 ${
+              openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+            } p-1.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800 rounded-xl shadow-lg dark:shadow-2xl z-50 max-h-72 flex flex-col overflow-hidden min-w-full ${dropdownClassName}`}
           >
             {/* Optional Search Bar */}
             {shouldShowSearch && (
@@ -259,7 +284,7 @@ export function ClaySelect<T = any>({
 
             {/* Options List */}
             <div className="overflow-y-auto space-y-1 custom-scrollbar max-h-60 pr-0.5">
-              {!effectiveMultiple && placeholder && !shouldShowSearch && (
+              {!effectiveMultiple && placeholder && !shouldShowSearch && !hasEmptyOption && (
                 <button
                   type="button"
                   onClick={() => handleSelectSingle('' as any)}
