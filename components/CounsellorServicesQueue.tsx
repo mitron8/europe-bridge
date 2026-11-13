@@ -27,28 +27,14 @@ import {
 
 const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
-export interface CounsellorServiceOrder {
-  id: string;
-  student_user_id: string;
-  student_name: string;
-  student_email: string;
-  service_type: string;
-  plan_tier: string;
-  amount_inr: number;
-  status: string;
-  payment_status?: string;
-  target_deadline: string | null;
-  student_inputs: Record<string, any>;
-  deliverables: Array<{ title: string; url: string }>;
-  revisions_used: number;
-  max_revisions: number;
-  counsellor_notes: string | null;
-  created_at: string;
-  updated_at?: string;
-}
-
-type TabType = 'unattended' | 'attended' | 'completed' | 'all';
-type SortOption = 'oldest' | 'urgent' | 'newest';
+import {
+  CounsellorServiceOrder,
+  TabType,
+  SortOption,
+} from './services/types';
+import { DeliverDraftModal } from './services/DeliverDraftModal';
+import { UpdateOrderStatusModal } from './services/UpdateOrderStatusModal';
+import { CounsellorOrderCard } from './services/CounsellorOrderCard';
 
 export function CounsellorServicesQueue() {
   const [orders, setOrders] = useState<CounsellorServiceOrder[]>([]);
@@ -656,418 +642,53 @@ export function CounsellorServicesQueue() {
         </div>
       ) : (
         <div className="space-y-3.5">
-          {processedOrders.map((order, index) => {
-            const isExpress = order.plan_tier === 'EXPRESS';
-            const waiting = getTimeWaiting(order.created_at);
-            const dl = getDeadlineStatus(order.target_deadline);
-            const urgent = isOrderUrgent(order);
-            const orderIsUnattended = isUnattended(order.status);
-            const isFirstToServe = activeTab === 'unattended' && sortOption === 'oldest' && index === 0;
-
-            return (
-              <div
-                key={order.id}
-                className={`p-5 rounded-2xl bg-white dark:bg-[#111622] border transition-all space-y-4 shadow-xs ${
-                  isFirstToServe
-                    ? 'border-red-500/80 dark:border-red-500/60 ring-2 ring-red-500/20'
-                    : urgent
-                    ? 'border-amber-400/80 dark:border-amber-500/40'
-                    : 'border-[#e5e0d3] dark:border-gray-800'
-                }`}
-              >
-                {/* Top Status & Priority Bar */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e5e0d3] dark:border-gray-800 pb-3">
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      {/* Priority queue tag */}
-                      {isFirstToServe ? (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-germany-red text-white flex items-center gap-1.5 shadow-xs">
-                          <Clock className="w-3 h-3 text-white" />
-                          <span>Priority #1 • Waiting Longest</span>
-                        </span>
-                      ) : orderIsUnattended && sortOption === 'oldest' ? (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-gray-100 dark:bg-gray-800 text-[#16161a] dark:text-gray-300">
-                          Queue #{index + 1}
-                        </span>
-                      ) : null}
-
-                      {/* Service Title */}
-                      <span className="font-extrabold text-sm text-[#16161a] dark:text-white">
-                        {order.service_type.replace(/_/g, ' ')}
-                      </span>
-
-                      {/* Tier Badge */}
-                      {isExpress ? (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#16161a] dark:bg-amber-950/60 text-white dark:text-amber-300 border border-transparent dark:border-amber-800/50 flex items-center gap-1">
-                          <Zap className="w-3 h-3 fill-current text-[#c9a35b]" />
-                          <span>Express 24h</span>
-                        </span>
-                      ) : (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#ece7dd] dark:bg-[#1A2130] text-[#16161a] dark:text-gray-200 border border-[#dcd7cb] dark:border-gray-700">
-                          Standard
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Student Info & Order Timestamp */}
-                    <div className="text-xs text-[#5e5b54] dark:text-gray-400 font-medium flex flex-wrap items-center gap-2">
-                      <span>Order #{order.id.slice(0, 8)}</span>
-                      <span>•</span>
-                      <span className="font-bold text-[#16161a] dark:text-white flex items-center gap-1">
-                        <User className="w-3.5 h-3.5 text-[#787369]" />
-                        <span>{order.student_name}</span>
-                      </span>
-                      <span>({order.student_email})</span>
-                      <span>•</span>
-                      <span className="text-[11px] text-gray-500 dark:text-gray-400">
-                        Booked: {waiting.createdDateFormatted}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Badges and Quick Action Buttons */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    {/* Time Waiting Pill */}
-                    <span
-                      className={`px-2.5 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1 border ${
-                        waiting.isVeryOld
-                          ? 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900'
-                          : waiting.isOld
-                          ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900'
-                          : 'bg-[#faf8f3] dark:bg-[#151B27] text-[#5e5b54] dark:text-gray-300 border-[#e5e0d3] dark:border-gray-800'
-                      }`}
-                    >
-                      <Timer className="w-3 h-3" />
-                      <span>{waiting.text}</span>
-                    </span>
-
-                    {/* Deadline Pill */}
-                    <span
-                      className={`px-2.5 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1 border ${
-                        dl.isOverdue
-                          ? 'bg-red-600 text-white border-red-700 animate-pulse'
-                          : dl.isCritical
-                          ? 'bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800 font-black'
-                          : dl.isUrgent
-                          ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800'
-                          : 'bg-[#faf8f3] dark:bg-[#151B27] text-[#5e5b54] dark:text-gray-300 border-[#e5e0d3] dark:border-gray-800'
-                      }`}
-                    >
-                      <Calendar className="w-3 h-3" />
-                      <span>{dl.text}</span>
-                    </span>
-
-                    {/* Status badge */}
-                    <span
-                      className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${
-                        order.status === 'COMPLETED'
-                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
-                          : order.status === 'IN_PROGRESS' || order.status === 'DRAFT_READY'
-                          ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800'
-                          : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800'
-                      }`}
-                    >
-                      Status: {order.status}
-                    </span>
-
-                    {/* Payment status badge */}
-                    <span
-                      className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${
-                        order.payment_status === 'PAID'
-                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50'
-                          : 'bg-amber-50 dark:bg-amber-950/40 text-[#c9a35b] dark:text-[#e0bb6b] border-[#e5e0d3] dark:border-amber-800/50'
-                      }`}
-                    >
-                      {order.payment_status === 'PAID' ? 'Paid & Verified' : 'Payment Pending'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Questionnaire / Student Inputs Preview */}
-                {order.student_inputs && Object.keys(order.student_inputs).length > 0 && (
-                  <div className="p-3.5 bg-[#faf8f3] dark:bg-[#151B27] border border-[#e5e0d3] dark:border-gray-800 rounded-xl text-xs space-y-1.5">
-                    <span className="font-bold text-[#5e5b54] dark:text-gray-400 block">
-                      Student Questionnaire Inputs:
-                    </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[#16161a] dark:text-gray-200">
-                      {Object.entries(order.student_inputs).map(([key, val]) => {
-                        if (typeof val === 'object') return null;
-                        return (
-                          <div key={key}>
-                            <span className="text-[#6b6760] dark:text-gray-400 capitalize">
-                              {key.replace(/([A-Z])/g, ' $1')}:{' '}
-                            </span>
-                            <span className="font-bold text-[#16161a] dark:text-white">
-                              {String(val)}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Deliverables Delivered */}
-                {order.deliverables && order.deliverables.length > 0 && (
-                  <div className="p-3 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/50 rounded-xl text-xs space-y-1.5">
-                    <span className="font-bold text-blue-800 dark:text-blue-300 block">
-                      Delivered Drafts &amp; Files:
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                      {order.deliverables.map((d, dIdx) => (
-                        <a
-                          key={dIdx}
-                          href={d.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-[#111622] rounded-lg border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-bold hover:underline"
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                          <span>{d.title || `Draft #${dIdx + 1}`}</span>
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Notes & Revisions */}
-                {order.counsellor_notes && (
-                  <div className="p-3 bg-[#ece7dd] dark:bg-amber-950/20 border border-[#dcd7cb] dark:border-amber-800/40 rounded-xl text-xs text-[#16161a] dark:text-amber-200 space-y-1">
-                    <span className="font-bold block text-[#16161a] dark:text-amber-300">
-                      Revision History &amp; Notes:
-                    </span>
-                    <p className="whitespace-pre-line text-[#16161a] dark:text-gray-200">
-                      {order.counsellor_notes}
-                    </p>
-                  </div>
-                )}
-
-                {/* Action Buttons Footer */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                  <div className="text-[11px] text-[#5e5b54] dark:text-gray-400 font-medium">
-                    {orderIsUnattended ? (
-                      <span className="text-red-600 dark:text-red-400 font-bold inline-flex items-center gap-1.5">
-                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                        <span>Action Required: Mark as attended or deliver draft for this student.</span>
-                      </span>
-                    ) : (
-                      <span className="text-blue-600 dark:text-blue-400 font-bold inline-flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-blue-500" />
-                        <span>Currently in Attended state.</span>
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    {/* 1-Click "Mark as Attended (In Progress)" */}
-                    {orderIsUnattended && (
-                      <button
-                        onClick={() => handleQuickMarkAttended(order.id)}
-                        disabled={updatingOrderId === order.id}
-                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"
-                      >
-                        <Zap className="w-3.5 h-3.5" />
-                        <span>
-                          {updatingOrderId === order.id ? 'Attending...' : 'Mark as Attended (Start)'}
-                        </span>
-                      </button>
-                    )}
-
-                    <button
-                      onClick={() => handleOpenStatusModal(order)}
-                      className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#faf8f3] dark:bg-[#151B27] text-[#16161a] dark:text-white border border-[#dcd7cb] dark:border-gray-700 hover:bg-[#ece7dd] dark:hover:bg-[#1A2130] transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
-                    >
-                      <SlidersHorizontal className="w-3.5 h-3.5 text-[#c9a35b]" />
-                      <span>Update Status</span>
-                    </button>
-
-                    <button
-                      onClick={() => setSelectedOrder(order)}
-                      className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#16161a] text-white hover:bg-black dark:bg-white dark:text-[#16161a] dark:hover:bg-gray-100 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
-                    >
-                      <Upload className="w-3.5 h-3.5" />
-                      <span>Deliver Draft</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {processedOrders.map((order, index) => (
+            <CounsellorOrderCard
+              key={order.id}
+              order={order}
+              index={index}
+              activeTab={activeTab}
+              sortOption={sortOption}
+              getTimeWaiting={getTimeWaiting}
+              getDeadlineStatus={getDeadlineStatus}
+              isOrderUrgent={isOrderUrgent}
+              isUnattended={isUnattended}
+              handleQuickMarkAttended={handleQuickMarkAttended}
+              updatingOrderId={updatingOrderId}
+              handleOpenStatusModal={handleOpenStatusModal}
+              setSelectedOrder={setSelectedOrder}
+            />
+          ))}
         </div>
       )}
 
       {/* Deliver Draft Modal */}
-      {selectedOrder && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="p-6 bg-white dark:bg-[#111622] rounded-3xl border border-[#e5e0d3] dark:border-gray-800 max-w-lg w-full space-y-5 shadow-2xl">
-            <div className="space-y-1">
-              <h3 className="text-xl font-bold text-[#16161a] dark:text-white font-display">
-                Deliver Draft to Student
-              </h3>
-              <p className="text-xs text-[#5e5b54] dark:text-gray-400">
-                Student: <strong className="text-[#16161a] dark:text-white">{selectedOrder.student_name}</strong> •{' '}
-                {selectedOrder.service_type}
-              </p>
-            </div>
-
-            <form onSubmit={handleDeliverDraft} className="space-y-4">
-              <div>
-                <label className="text-xs font-bold text-[#16161a] dark:text-white block mb-1">
-                  Deliverable Document Title
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={draftTitle}
-                  onChange={(e) => setDraftTitle(e.target.value)}
-                  placeholder="e.g. RWTH Aachen Robotics SOP - First Draft v1"
-                  className="w-full p-3 rounded-xl border border-[#dcd7cb] dark:border-gray-700 bg-white dark:bg-[#0A0D14] text-xs font-medium text-[#16161a] dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-hidden focus:ring-1 focus:ring-germany-red"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-[#16161a] dark:text-white block mb-1">
-                  Document Download URL (Google Docs / Google Drive / ImageKit link) *
-                </label>
-                <input
-                  type="url"
-                  required
-                  value={draftUrl}
-                  onChange={(e) => setDraftUrl(e.target.value)}
-                  placeholder="https://docs.google.com/document/d/..."
-                  className="w-full p-3 rounded-xl border border-[#dcd7cb] dark:border-gray-700 bg-white dark:bg-[#0A0D14] text-xs font-medium text-[#16161a] dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-hidden focus:ring-1 focus:ring-germany-red"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-[#16161a] dark:text-white block mb-1">
-                  Notes / Instructions for Student
-                </label>
-                <textarea
-                  rows={3}
-                  value={counsellorNotes}
-                  onChange={(e) => setCounsellorNotes(e.target.value)}
-                  placeholder="e.g. Please review the highlighted sections on page 2 regarding your final semester thesis..."
-                  className="w-full p-3 rounded-xl border border-[#dcd7cb] dark:border-gray-700 bg-white dark:bg-[#0A0D14] text-xs font-medium text-[#16161a] dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-hidden focus:ring-1 focus:ring-germany-red"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedOrder(null)}
-                  className="px-4 py-2 text-xs font-bold text-[#5e5b54] dark:text-gray-400 hover:text-[#16161a] dark:hover:text-white cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmittingDraft || !draftUrl.trim()}
-                  className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#16161a] text-white hover:bg-black dark:bg-white dark:text-[#16161a] dark:hover:bg-gray-100 transition-colors disabled:opacity-50 cursor-pointer shadow-xs"
-                >
-                  {isSubmittingDraft ? 'Delivering...' : 'Send Draft to Student'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <DeliverDraftModal
+        order={selectedOrder}
+        onClose={() => setSelectedOrder(null)}
+        draftTitle={draftTitle}
+        setDraftTitle={setDraftTitle}
+        draftUrl={draftUrl}
+        setDraftUrl={setDraftUrl}
+        counsellorNotes={counsellorNotes}
+        setCounsellorNotes={setCounsellorNotes}
+        isSubmittingDraft={isSubmittingDraft}
+        onSubmit={handleDeliverDraft}
+      />
 
       {/* Update Order & Payment Status Modal */}
-      {orderForStatusUpdate && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="p-6 bg-white dark:bg-[#111622] rounded-3xl border border-[#e5e0d3] dark:border-gray-800 max-w-lg w-full space-y-5 shadow-2xl">
-            <div className="space-y-1">
-              <h3 className="text-xl font-bold text-[#16161a] dark:text-white font-display">
-                Update Service Order Status
-              </h3>
-              <p className="text-xs text-[#5e5b54] dark:text-gray-400">
-                Student: <strong className="text-[#16161a] dark:text-white">{orderForStatusUpdate.student_name}</strong> •{' '}
-                {orderForStatusUpdate.service_type}
-              </p>
-            </div>
-
-            <form onSubmit={handleUpdateStatus} className="space-y-4">
-              <div>
-                <label className="text-xs font-bold text-[#16161a] dark:text-white block mb-1">
-                  Service Delivery Status
-                </label>
-                <select
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="w-full p-3 rounded-xl border border-[#dcd7cb] dark:border-gray-700 bg-white dark:bg-[#0A0D14] text-xs font-bold text-[#16161a] dark:text-white focus:outline-hidden focus:ring-1 focus:ring-germany-red cursor-pointer whitespace-normal break-words"
-                >
-                  <optgroup label="Unattended / In Queue">
-                    <option value="BOOKED">BOOKED (Order Received / In Queue)</option>
-                    <option value="ASSIGNED">ASSIGNED (Assigned to Counselor)</option>
-                    <option value="REVISION_REQUESTED">REVISION_REQUESTED (Revision in Queue)</option>
-                  </optgroup>
-                  <optgroup label="Attended">
-                    <option value="IN_PROGRESS">IN_PROGRESS (Drafting in Progress)</option>
-                    <option value="DRAFT_READY">DRAFT_READY (Draft Delivered to Student)</option>
-                  </optgroup>
-                  <optgroup label="Finalized">
-                    <option value="COMPLETED">COMPLETED (Order Completed & Finalized)</option>
-                    <option value="CANCELLED">CANCELLED (Order Cancelled)</option>
-                  </optgroup>
-                </select>
-                <p className="text-[11px] text-[#5e5b54] dark:text-gray-400 mt-1">
-                  Choosing IN_PROGRESS or DRAFT_READY will move this order to the <strong>Attended</strong> tab.
-                </p>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-[#16161a] dark:text-white block mb-1">
-                  Payment Status
-                </label>
-                <select
-                  value={selectedPaymentStatus}
-                  onChange={(e) => setSelectedPaymentStatus(e.target.value)}
-                  className="w-full p-3 rounded-xl border border-[#dcd7cb] dark:border-gray-700 bg-white dark:bg-[#0A0D14] text-xs font-bold text-[#16161a] dark:text-white focus:outline-hidden focus:ring-1 focus:ring-germany-red cursor-pointer whitespace-normal break-words"
-                >
-                  <option value="UNPAID">UNPAID (Payment Pending / Milestone)</option>
-                  <option value="PAYMENT_PENDING">PAYMENT_PENDING (Invoice Sent to Student)</option>
-                  <option value="PAID">PAID (Payment Cleared & Verified)</option>
-                  <option value="WAIVED">WAIVED (Free / Package Included)</option>
-                </select>
-                <p className="text-[11px] text-[#5e5b54] dark:text-gray-400 mt-1">
-                  EuropeBridge does not charge students upfront at form submission. You can update payment status here once verified.
-                </p>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-[#16161a] dark:text-white block mb-1">
-                  Counselor Notes / Internal Remarks
-                </label>
-                <textarea
-                  rows={3}
-                  value={statusUpdateNotes}
-                  onChange={(e) => setStatusUpdateNotes(e.target.value)}
-                  placeholder="e.g. Student contacted via WhatsApp. Discussion scheduled for Friday."
-                  className="w-full p-3 rounded-xl border border-[#dcd7cb] dark:border-gray-700 bg-white dark:bg-[#0A0D14] text-xs font-medium text-[#16161a] dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-hidden focus:ring-1 focus:ring-germany-red"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setOrderForStatusUpdate(null)}
-                  className="px-4 py-2 text-xs font-bold text-[#5e5b54] dark:text-gray-400 hover:text-[#16161a] dark:hover:text-white cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isUpdatingStatus}
-                  className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#16161a] text-white hover:bg-black dark:bg-white dark:text-[#16161a] dark:hover:bg-gray-100 transition-colors disabled:opacity-50 cursor-pointer shadow-xs"
-                >
-                  {isUpdatingStatus ? 'Updating...' : 'Save Changes'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <UpdateOrderStatusModal
+        order={orderForStatusUpdate}
+        onClose={() => setOrderForStatusUpdate(null)}
+        selectedStatus={selectedStatus}
+        setSelectedStatus={setSelectedStatus}
+        selectedPaymentStatus={selectedPaymentStatus}
+        setSelectedPaymentStatus={setSelectedPaymentStatus}
+        statusUpdateNotes={statusUpdateNotes}
+        setStatusUpdateNotes={setStatusUpdateNotes}
+        isUpdatingStatus={isUpdatingStatus}
+        onSubmit={handleUpdateStatus}
+      />
     </div>
   );
 }

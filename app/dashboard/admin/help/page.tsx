@@ -2,87 +2,27 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Search, 
   RotateCw, 
   ArrowUpRight, 
   ShieldCheck,
   CheckCircle2,
-  AlertTriangle,
-  MessageSquare,
-  Send,
-  Lock,
-  ChevronRight,
-  User,
-  Headphones,
-  FileText,
-  Filter,
   Layers,
-  X,
-  AlertCircle,
-  Clock,
-  Check
+  Clock
 } from 'lucide-react';
-import { ClaySelect } from '@/components/ClaySelect';
 import { getChatSocket } from '@/lib/socket';
-import { formatChatTimestamp, formatFullTimestamp, formatDateDivider, isDifferentDay } from '@/lib/chatUtils';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
-const ESCALATION_REASONS = [
-  'APS Certificate & Name Mismatch clearance with liaison',
-  'University eligibility waiver / special partnership case',
-  'Urgent Embassy Visa slot escalation',
-  'Fee waiver or blocked account funding exception',
-  'Technical portal bug / profile verification hold',
-  'Official Institutional verification letter needed from Admin',
-  'Other Administrative Intervention Required'
-];
-
-interface AdminTicketSummary {
-  id: string;
-  ticketNumber: string;
-  title: string;
-  category: string;
-  priority: string;
-  status: string;
-  escalatedTo: string | null;
-  escalationReason: string | null;
-  escalatedAt: string | null;
-  resolvedAt: string | null;
-  resolutionSummary: string | null;
-  student: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  counsellor: {
-    id: string;
-    name: string;
-    email: string;
-  } | null;
-  totalMessages: number;
-  internalNotesCount: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface MessageItem {
-  id: string;
-  senderId: string;
-  senderName: string;
-  senderRole: string;
-  isInternalNote: boolean;
-  content: string;
-  isMe: boolean;
-  createdAt: string;
-}
-
-interface AdminTicketDetails extends AdminTicketSummary {
-  isEscalated: boolean;
-  canChat: boolean;
-  isTextable: boolean;
-  messages: MessageItem[];
-}
+import {
+  ESCALATION_REASONS,
+  AdminTicketSummary,
+  MessageItem,
+  AdminTicketDetails,
+} from '@/components/help/types';
+import { AdminEscalateModal } from '@/components/help/AdminEscalateModal';
+import { AdminResolveModal } from '@/components/help/AdminResolveModal';
+import { AdminTicketList } from '@/components/help/AdminTicketList';
+import { AdminTicketThread } from '@/components/help/AdminTicketThread';
 
 export default function AdminHelpPage() {
   const [tickets, setTickets] = useState<AdminTicketSummary[]>([]);
@@ -623,519 +563,66 @@ export default function AdminHelpPage() {
 
       {/* Split Pane: List on Left (5 cols), Details on Right (7 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Side: Filterable Inquiry List */}
-        <div className="lg:col-span-5 bg-white rounded-2xl border border-gray-200/80 shadow-xs flex flex-col h-[760px] overflow-hidden">
-          {/* Search, Counsellor, Student & Priority Controls */}
-          <div className="p-4 border-b border-gray-100 space-y-2.5 bg-gray-50/50">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by Ticket # (e.g. EB-...), Student, or Title..."
-                className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-germany-red transition-colors"
-              />
-            </div>
+        <AdminTicketList
+          search={search}
+          setSearch={setSearch}
+          counsellorFilter={counsellorFilter}
+          setCounsellorFilter={setCounsellorFilter}
+          studentFilter={studentFilter}
+          setStudentFilter={setStudentFilter}
+          priorityFilter={priorityFilter}
+          setPriorityFilter={setPriorityFilter}
+          uniqueCounsellors={uniqueCounsellors}
+          uniqueStudents={uniqueStudents}
+          filteredList={filteredList}
+          isLoadingList={isLoadingList}
+          activeTab={activeTab}
+          selectedTicketId={selectedTicketId}
+          onSelectTicket={(id) => setSelectedTicketId(id)}
+          getPriorityBadge={getPriorityBadge}
+          getStatusBadge={getStatusBadge}
+        />
 
-            {/* Counsellor-wise & Student-wise Dropdowns */}
-            <div className="grid grid-cols-2 gap-2">
-              <ClaySelect
-                value={counsellorFilter}
-                onChange={(val) => setCounsellorFilter(val)}
-                options={[
-                  { value: 'all', label: 'All Counsellors' },
-                  { value: 'unassigned', label: 'Unassigned' },
-                  ...uniqueCounsellors.map((c) => ({ value: c, label: c })),
-                ]}
-              />
-
-              <ClaySelect
-                value={studentFilter}
-                onChange={(val) => setStudentFilter(val)}
-                options={[
-                  { value: 'all', label: 'All Students' },
-                  ...uniqueStudents.map((s) => ({ value: s, label: s })),
-                ]}
-              />
-            </div>
-
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5 text-xs text-gray-400 font-bold">
-                <Filter className="w-3.5 h-3.5" />
-                <span>Priority:</span>
-              </div>
-              <div className="w-36">
-                <ClaySelect
-                  value={priorityFilter}
-                  onChange={(val) => setPriorityFilter(val)}
-                  options={[
-                    { value: 'all', label: 'All Priorities' },
-                    { value: 'urgent', label: 'Urgent' },
-                    { value: 'high', label: 'High' },
-                    { value: 'medium', label: 'Medium' },
-                    { value: 'low', label: 'Low' },
-                  ]}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Inquiry List Items */}
-          <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
-            {isLoadingList ? (
-              <div className="p-8 text-center text-xs text-gray-400">Loading inquiries...</div>
-            ) : filteredList.length === 0 ? (
-              <div className="p-8 text-center text-xs text-gray-400 space-y-2">
-                <p className="font-bold text-gray-600">No inquiries found</p>
-                <p className="text-[11px]">
-                  {search
-                    ? `No query matches "${search}". Check ticket number format.`
-                    : activeTab === 'escalated'
-                    ? 'No queries currently escalated to admin. All operational queries are handled by counsellors.'
-                    : 'No queries in this category.'}
-                </p>
-              </div>
-            ) : (
-              filteredList.map((ticket) => {
-                const isSelected = ticket.id === selectedTicketId;
-                return (
-                  <div
-                    key={ticket.id}
-                    onClick={() => setSelectedTicketId(ticket.id)}
-                    className={`p-4 transition-all cursor-pointer relative ${
-                      isSelected
-                        ? 'bg-[#FDFBF7] border-l-4 border-l-germany-red'
-                        : 'hover:bg-gray-50/80'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between text-[11px] mb-1">
-                      <span className="font-mono font-bold text-gray-800 bg-white px-2 py-0.5 rounded border border-gray-200 shadow-2xs">
-                        {ticket.ticketNumber}
-                      </span>
-                      {getPriorityBadge(ticket.priority)}
-                    </div>
-
-                    <div className="font-bold text-xs text-germany-black line-clamp-1 mb-1">
-                      {ticket.title}
-                    </div>
-
-                    <div className="flex items-center justify-between text-[11px] text-gray-500 font-medium">
-                      <span>Student: <strong className="text-gray-700">{ticket.student.name}</strong></span>
-                      {getStatusBadge(ticket.status)}
-                    </div>
-
-                    {ticket.counsellor && (
-                      <div className="text-[10px] text-gray-400 mt-1">
-                        Counsellor: <span className="font-bold text-gray-600">{ticket.counsellor.name}</span>
-                      </div>
-                    )}
-
-                    {ticket.escalationReason && ticket.status === 'escalated' && (
-                      <div className="mt-2 p-1.5 bg-red-50/80 border border-red-200/80 rounded-lg text-[10px] text-germany-red font-medium line-clamp-1">
-                        ⚡ {ticket.escalationReason}
-                      </div>
-                    )}
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-
-        {/* Right Side: Conversation Thread & Actions */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-gray-200/80 shadow-xs flex flex-col h-[760px] overflow-hidden">
-          {isLoadingDetails ? (
-            <div className="flex-1 flex items-center justify-center text-xs text-gray-400">
-              Loading inquiry thread...
-            </div>
-          ) : !ticketDetails ? (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-gray-400">
-              <MessageSquare className="w-10 h-10 text-gray-300 mb-3" />
-              <p className="text-xs font-bold text-gray-600">No Inquiry Selected</p>
-              <p className="text-[11px] text-gray-400 mt-1 max-w-xs">
-                Select a support ticket from the list on the left to inspect conversation history and take administrative action.
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* Ticket Top Info Bar */}
-              <div className="p-4 border-b border-gray-100 bg-[#FDFBF7] space-y-2 shrink-0">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-xs bg-white px-2.5 py-1 rounded-md border border-gray-300 text-gray-900 shadow-2xs">
-                      {ticketDetails.ticketNumber}
-                    </span>
-                    <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
-                      {ticketDetails.category}
-                    </span>
-                    {getPriorityBadge(ticketDetails.priority)}
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {getStatusBadge(ticketDetails.status)}
-                    
-                    {/* If ticket is escalated, show Resolve button */}
-                    {ticketDetails.status === 'escalated' && (
-                      <button
-                        onClick={() => setShowResolveModal(true)}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-xs transition-colors cursor-pointer flex items-center gap-1"
-                      >
-                        <Check className="w-3.5 h-3.5" />
-                        <span>Resolve</span>
-                      </button>
-                    )}
-
-                    {/* If ticket is in all queries and not yet escalated, admin can escalate it */}
-                    {ticketDetails.status !== 'escalated' && ticketDetails.status !== 'resolved' && ticketDetails.status !== 'closed' && (
-                      <button
-                        onClick={() => setShowEscalateModal(true)}
-                        className="bg-germany-red hover:bg-[#D62839] text-white px-3 py-1 rounded-lg text-xs font-bold shadow-xs transition-colors cursor-pointer flex items-center gap-1"
-                      >
-                        <ArrowUpRight className="w-3.5 h-3.5" />
-                        <span>Escalate to Admin</span>
-                      </button>
-                    )}
-
-                    {/* Close Chat Window Button */}
-                    <button
-                      onClick={() => {
-                        setSelectedTicketId(null);
-                        setTicketDetails(null);
-                      }}
-                      title="Close Chat Window"
-                      className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-200/60 rounded-lg transition-colors cursor-pointer ml-1"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                <h2 className="text-sm font-bold text-germany-black dark:text-white">{ticketDetails.title}</h2>
-
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-gray-500 font-medium">
-                  <span>Student: <strong className="text-gray-800">{ticketDetails.student.name}</strong> ({ticketDetails.student.email})</span>
-                  <span>Counsellor: <strong className="text-gray-800">{ticketDetails.counsellor?.name || 'Unassigned'}</strong></span>
-                </div>
-
-                {/* Escalation alert banner */}
-                {ticketDetails.status === 'escalated' && ticketDetails.escalationReason && (
-                  <div className="bg-red-50 border border-red-200 text-germany-red p-2.5 rounded-xl text-xs space-y-1 mt-2">
-                    <div className="font-bold flex items-center gap-1.5">
-                      <AlertTriangle className="w-4 h-4 text-germany-red" />
-                      <span>Escalated to Central Admin</span>
-                    </div>
-                    <p className="text-[11px] text-red-900 font-medium pl-5.5">
-                      <strong>Reason:</strong> {ticketDetails.escalationReason}
-                    </p>
-                  </div>
-                )}
-
-                {/* Resolution Summary banner */}
-                {(ticketDetails.status === 'resolved' || ticketDetails.status === 'closed') && ticketDetails.resolutionSummary && (
-                  <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 p-2.5 rounded-xl text-xs space-y-1 mt-2">
-                    <div className="font-bold flex items-center gap-1.5 text-emerald-700">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                      <span>Resolution Summary</span>
-                    </div>
-                    <p className="text-[11px] font-medium pl-5.5">
-                      {ticketDetails.resolutionSummary}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Instagram-Style Conversation Messages Thread */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FAF8F5] dark:bg-[#0B0E14]">
-                {ticketDetails.messages.length === 0 ? (
-                  <div className="p-8 text-center text-xs text-gray-400">
-                    No messages recorded in this inquiry yet.
-                  </div>
-                ) : (
-                  ticketDetails.messages.map((msg, idx) => {
-                    const itemKey = msg.id ? `${msg.id}-${idx}` : `msg-${idx}`;
-                    const prevMsg = idx > 0 ? ticketDetails.messages[idx - 1] : null;
-                    const showDateDivider = isDifferentDay(prevMsg?.createdAt, msg.createdAt);
-
-                    return (
-                      <React.Fragment key={itemKey}>
-                        {showDateDivider && (
-                          <div className="flex items-center justify-center my-2">
-                            <span className="px-3 py-1 bg-gray-200/80 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-full text-[10px] font-bold tracking-wide shadow-2xs">
-                              {formatDateDivider(msg.createdAt)}
-                            </span>
-                          </div>
-                        )}
-                        {msg.isInternalNote ? (
-                          <div
-                            className="mx-auto max-w-md bg-amber-50/90 border border-amber-300 text-amber-900 rounded-xl p-3 shadow-2xs space-y-1"
-                          >
-                            <div className="flex items-center justify-between text-[10px] font-bold text-amber-800">
-                              <span className="flex items-center gap-1">
-                                <Lock className="w-3 h-3 text-amber-700" />
-                                <span>CONFIDENTIAL STAFF NOTE</span>
-                              </span>
-                              <span
-                                className="cursor-default text-amber-600"
-                                title={formatFullTimestamp(msg.createdAt)}
-                              >
-                                {formatChatTimestamp(msg.createdAt)}
-                              </span>
-                            </div>
-                            <p className="text-xs font-medium text-amber-950 whitespace-pre-wrap">{msg.content}</p>
-                            <div className="text-[10px] text-amber-700 font-medium">By: {msg.senderName} ({msg.senderRole})</div>
-                          </div>
-                        ) : (
-                          <div
-                            className={`flex flex-col ${
-                              msg.senderRole === 'admin' || msg.senderRole === 'superadmin' ? 'items-end' : 'items-start'
-                            }`}
-                          >
-                            <span className="text-[10px] font-bold text-gray-400 mb-0.5 px-1">
-                              {msg.senderRole === 'admin' || msg.senderRole === 'superadmin' ? 'You (Admin)' : `${msg.senderName} (${msg.senderRole})`}
-                            </span>
-
-                            <div
-                              className={`max-w-[78%] px-4 py-2.5 rounded-2xl text-xs font-medium shadow-2xs whitespace-pre-wrap ${
-                                msg.senderRole === 'admin' || msg.senderRole === 'superadmin'
-                                  ? 'bg-slate-900 text-white rounded-br-xs'
-                                  : msg.senderRole === 'counsellor'
-                                  ? 'bg-red-50 text-germany-black border border-red-100 rounded-bl-xs'
-                                  : 'bg-white text-gray-900 border border-gray-200/80 rounded-bl-xs'
-                              }`}
-                            >
-                              {msg.content}
-                            </div>
-
-                            <span
-                              className="text-[9px] text-gray-400 mt-0.5 px-1 font-mono cursor-default"
-                              title={formatFullTimestamp(msg.createdAt)}
-                            >
-                              {formatChatTimestamp(msg.createdAt)}
-                            </span>
-                          </div>
-                        )}
-                      </React.Fragment>
-                    );
-                  })
-                )}
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* Chat Input or Scope Lock Notice */}
-              <div className="p-4 border-t border-gray-200/80 bg-white shrink-0">
-                {ticketDetails.status === 'resolved' || ticketDetails.status === 'closed' ? (
-                  <div className="p-3 bg-gray-50 border border-gray-200 text-gray-500 rounded-xl text-xs text-center font-medium">
-                    🔒 This ticket is resolved and closed for new messages (read-only).
-                  </div>
-                ) : !ticketDetails.canChat ? (
-                  // Requirement 1: In All Student Inquiries, admin can open/view, but CANNOT chat until escalated to admin!
-                  <div className="p-3.5 bg-amber-50/70 border border-amber-200 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3">
-                    <div className="space-y-0.5 text-center sm:text-left">
-                      <div className="text-xs font-bold text-amber-900 flex items-center justify-center sm:justify-start gap-1.5">
-                        <Lock className="w-3.5 h-3.5 text-amber-700" />
-                        <span>Counsellor Desk Scope (View-Only Mode)</span>
-                      </div>
-                      <p className="text-[11px] text-amber-800 font-medium">
-                        Admins can observe inquiry progress. Chat messaging is locked until this ticket is escalated to Admin.
-                      </p>
-                    </div>
-
-                    <button
-                      onClick={() => setShowEscalateModal(true)}
-                      className="bg-germany-red hover:bg-[#D62839] text-white px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-xs transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <ArrowUpRight className="w-3.5 h-3.5" />
-                      <span>Escalate to Admin</span>
-                    </button>
-                  </div>
-                ) : (
-                  // Requirement 2: Once escalated, Admin CAN chat!
-                  <form onSubmit={handleSendMessage} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <label className="flex items-center gap-1.5 text-[11px] font-bold text-gray-600 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={isInternalNote}
-                          onChange={(e) => setIsInternalNote(e.target.checked)}
-                          className="rounded text-amber-600 focus:ring-amber-500"
-                        />
-                        <span className="flex items-center gap-1">
-                          <Lock className="w-3 h-3 text-amber-600" />
-                          <span>Internal Staff Note (Never visible to student)</span>
-                        </span>
-                      </label>
-                      <span className="text-[10px] text-gray-400 font-medium">
-                        {isInternalNote ? 'Confidential Staff Audit' : 'Message to Student & Counsellor'}
-                      </span>
-                    </div>
-
-                    <div className="flex items-end gap-2">
-                      <textarea
-                        value={replyText}
-                        onChange={(e) => setReplyText(e.target.value)}
-                        placeholder={
-                          isInternalNote
-                            ? "Add confidential administrative note..."
-                            : "Write official admin response..."
-                        }
-                        rows={2}
-                        className={`flex-1 p-2.5 border rounded-xl text-xs font-medium focus:outline-none transition-colors resize-none ${
-                          isInternalNote
-                            ? 'bg-amber-50/50 border-amber-300 focus:border-amber-500'
-                            : 'bg-white border-gray-200 focus:border-germany-red'
-                        }`}
-                      />
-                      <button
-                        type="submit"
-                        disabled={!replyText.trim() || isSending}
-                        className={`px-4 py-2.5 rounded-xl text-xs font-bold text-white shadow-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
-                          isInternalNote ? 'bg-amber-700 hover:bg-amber-800' : 'bg-slate-900 hover:bg-slate-800'
-                        }`}
-                      >
-                        <Send className="w-3.5 h-3.5" />
-                        <span>Send</span>
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </div>
-            </>
-          )}
-        </div>
+        <AdminTicketThread
+          isLoadingDetails={isLoadingDetails}
+          ticketDetails={ticketDetails}
+          onCloseChat={() => {
+            setSelectedTicketId(null);
+            setTicketDetails(null);
+          }}
+          onOpenResolveModal={() => setShowResolveModal(true)}
+          onOpenEscalateModal={() => setShowEscalateModal(true)}
+          getPriorityBadge={getPriorityBadge}
+          getStatusBadge={getStatusBadge}
+          replyText={replyText}
+          setReplyText={setReplyText}
+          isInternalNote={isInternalNote}
+          setIsInternalNote={setIsInternalNote}
+          isSending={isSending}
+          handleSendMessage={handleSendMessage}
+          messagesEndRef={messagesEndRef}
+        />
       </div>
 
-      {/* Escalate Modal */}
-      {showEscalateModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-2xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-gray-200/80 shadow-2xl max-w-lg w-full p-6 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-red-50 text-germany-red rounded-xl">
-                  <ArrowUpRight className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-germany-black">Escalate Query to Admin</h3>
-                  <p className="text-[11px] text-gray-500">Enable admin intervention and open direct admin chat</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowEscalateModal(false)}
-                className="p-1 text-gray-400 hover:text-gray-600 rounded-lg cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+      <AdminEscalateModal
+        isOpen={showEscalateModal}
+        onClose={() => setShowEscalateModal(false)}
+        escalateReason={escalateReason}
+        setEscalateReason={setEscalateReason}
+        escalateAdminNotes={escalateAdminNotes}
+        setEscalateAdminNotes={setEscalateAdminNotes}
+        isEscalating={isEscalating}
+        onSubmit={handleEscalateSubmit}
+      />
 
-            <form onSubmit={handleEscalateSubmit} className="space-y-3">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Escalation Reason *
-                </label>
-                <select
-                  value={escalateReason}
-                  onChange={(e) => setEscalateReason(e.target.value)}
-                  className="w-full p-2.5 bg-white dark:bg-[#111622] border border-gray-200 dark:border-gray-700 text-germany-black dark:text-white rounded-xl text-xs font-medium focus:outline-none focus:border-germany-red whitespace-normal break-words cursor-pointer"
-                >
-                  {ESCALATION_REASONS.map((r) => (
-                    <option key={r} value={r}>
-                      {r}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Administrative Note (Optional)
-                </label>
-                <textarea
-                  value={escalateAdminNotes}
-                  onChange={(e) => setEscalateAdminNotes(e.target.value)}
-                  placeholder="Provide context or instructions for administrative handling..."
-                  rows={3}
-                  className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-germany-red"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowEscalateModal(false)}
-                  className="px-3.5 py-2 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-xl cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isEscalating}
-                  className="px-4 py-2 bg-germany-red hover:bg-[#D62839] text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  {isEscalating ? 'Escalating...' : 'Confirm Escalation'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Resolve Query Modal */}
-      {showResolveModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-2xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-gray-200/80 shadow-2xl max-w-lg w-full p-6 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-emerald-50 text-emerald-700 rounded-xl">
-                  <CheckCircle2 className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-germany-black">Mark Query as Resolved</h3>
-                  <p className="text-[11px] text-gray-500">Provide official closure summary for the audit trail</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowResolveModal(false)}
-                className="p-1 text-gray-400 hover:text-gray-600 rounded-lg cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleResolveSubmit} className="space-y-3">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Resolution Summary *
-                </label>
-                <textarea
-                  value={resolutionSummary}
-                  onChange={(e) => setResolutionSummary(e.target.value)}
-                  placeholder="Detail the actions taken, approvals granted, or guidance provided to resolve this inquiry..."
-                  rows={4}
-                  required
-                  className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-germany-red"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowResolveModal(false)}
-                  className="px-3.5 py-2 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-xl cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={!resolutionSummary.trim() || isResolving}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  {isResolving ? 'Resolving...' : 'Confirm Resolution'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <AdminResolveModal
+        isOpen={showResolveModal}
+        onClose={() => setShowResolveModal(false)}
+        resolutionSummary={resolutionSummary}
+        setResolutionSummary={setResolutionSummary}
+        isResolving={isResolving}
+        onSubmit={handleResolveSubmit}
+      />
     </div>
   );
 }

@@ -35,71 +35,13 @@ import { useSearchParams } from 'next/navigation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
-interface DocumentItem {
-  type: string;
-  category: string;
-  title: string;
-  description: string;
-  required: boolean;
-  isAiGenerated: boolean;
-  status: 'MISSING' | 'PENDING' | 'VERIFIED' | 'REJECTED' | 'NOT_GENERATED' | 'GENERATING' | 'FAILED';
-  uploadedAt: string | null;
-  url: string | null;
-  originalFilename: string | null;
-  rejectionNote: string | null;
-}
-
-interface ProgrammeSopItem {
-  recommendationId: string;
-  programmeId: number | null;
-  universityName: string;
-  programName: string;
-  degree?: string;
-  deadline?: string;
-  documentId: string | null;
-  status: 'MISSING' | 'PENDING' | 'VERIFIED' | 'REJECTED' | 'NOT_GENERATED' | 'GENERATING' | 'FAILED';
-  url: string | null;
-  originalFilename: string | null;
-  rejectionNote: string | null;
-  uploadedAt: string | null;
-}
-
-interface ApplicationItem {
-  id: string;
-  recommendationId: string;
-  programmeId: number | null;
-  universityName: string;
-  programmeName: string;
-  degree: string;
-  location: string;
-  portalUrl: string;
-  applicationId: string;
-  applicationStatus: string;
-  submissionDate: string | null;
-  deadline: string | null;
-  counsellorNotes: string;
-  hasCredentials: boolean;
-  updatedAt: string;
-}
-
-const STATUS_BADGES: Record<string, { label: string; style: string }> = {
-  VERIFIED: { label: 'Verified & Certified', style: 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800' },
-  PENDING: { label: 'Pending Review', style: 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-800' },
-  REJECTED: { label: 'Action Required', style: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 border-red-300 dark:border-red-800' },
-  MISSING: { label: 'Not Uploaded', style: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-700' },
-  NOT_GENERATED: { label: 'Not Generated', style: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-700' },
-  GENERATING: { label: 'Generating AI Draft...', style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-800' },
-  FAILED: { label: 'Generation Failed', style: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 border-red-300 dark:border-red-800' },
-};
-
-const APP_STATUS_STYLES: Record<string, { label: string; style: string }> = {
-  NOT_STARTED: { label: 'Not Started', style: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700' },
-  IN_PROGRESS: { label: 'In Progress', style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-800' },
-  SUBMITTED: { label: 'Submitted', style: 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-800' },
-  ACCEPTED: { label: 'Offer Received', style: 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800' },
-  REJECTED: { label: 'Unsuccessful', style: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 border-red-300 dark:border-red-800' },
-  WAITLISTED: { label: 'Waitlisted', style: 'bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 border-purple-300 dark:border-purple-800' },
-};
+import {
+  DocumentItem,
+  ProgrammeSopItem,
+  ApplicationItem,
+} from './components/types';
+import { StudentAdmissionDocumentsTab } from './components/StudentAdmissionDocumentsTab';
+import { StudentAdmissionApplicationsTab } from './components/StudentAdmissionApplicationsTab';
 
 export default function StudentAdmissionPage({ defaultTab }: { defaultTab?: 'documents' | 'applications' } = {}) {
   const searchParams = useSearchParams();
@@ -465,398 +407,41 @@ export default function StudentAdmissionPage({ defaultTab }: { defaultTab?: 'doc
           TAB 1: DOCUMENT HUB
       ────────────────────────────────────────────────────────────────────────── */}
       {activeTab === 'documents' && (
-        <div className="space-y-6">
-          {/* Synchronized Notice Banner */}
-          <div className="p-4 bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/60 rounded-2xl flex items-start gap-3.5 text-xs text-blue-900 dark:text-blue-300">
-            <Info className="w-4 h-4 shrink-0 text-blue-600 mt-0.5" />
-            <div>
-              <span className="font-extrabold">Unified Central Storage: </span>
-              All documents uploaded here are automatically synced across your EuroBridge account. If you already uploaded your passport or transcripts in the APS Checklist, they appear here without needing a second upload.
-            </div>
-          </div>
-
-          {/* Category Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                  selectedCategory === cat
-                    ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900 shadow-sm'
-                    : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#1A2234] border border-gray-200 dark:border-gray-800'
-                }`}
-              >
-                {cat === 'ALL' ? 'All Documents' : cat}
-              </button>
-            ))}
-          </div>
-
-          {/* Documents Grid / List */}
-          {docLoading ? (
-            <div className="p-12 text-center bg-white dark:bg-[#151B27] rounded-3xl border border-gray-200 dark:border-gray-800">
-              <Loader2 className="w-8 h-8 animate-spin text-germany-red mx-auto mb-3" />
-              <p className="text-xs font-bold text-gray-500">Loading admission checklist &amp; dossier records...</p>
-            </div>
-          ) : docError ? (
-            <div className="p-8 text-center bg-white dark:bg-[#151B27] rounded-3xl border border-red-200 dark:border-red-900/40">
-              <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-              <p className="text-xs font-bold text-red-600">{docError}</p>
-              <button
-                onClick={loadDocuments}
-                className="mt-4 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-xs font-bold rounded-xl hover:bg-gray-200"
-              >
-                Try Again
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf,.png,.jpg,.jpeg,.webp"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              {filteredDocuments.map((doc) => (
-                <StudentDocumentItemRow
-                  key={doc.type}
-                  item={doc}
-                  onUpload={openFileDialog}
-                  onDelete={handleDelete}
-                  isUploading={uploadingType === doc.type}
-                  isDeleting={deletingType === doc.type}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Programme-Specific SOPs Section */}
-          <div className="bg-white dark:bg-[#151B27] rounded-3xl p-6 border border-gray-200/80 dark:border-gray-800 shadow-sm space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-800 pb-4">
-              <div>
-                <h3 className="text-base font-black text-gray-900 dark:text-white flex items-center gap-2">
-                  <FileCheck className="w-4 h-4 text-germany-gold" />
-                  <span>Statements of Purpose (SOP) by Programme</span>
-                </h3>
-                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">
-                  Individual SOPs tailored to each shortlisted university and programme. Each document undergoes dedicated counsellor review.
-                </p>
-              </div>
-              <Link
-                href="/dashboard/student/documents"
-                className="text-xs font-extrabold text-germany-red hover:underline flex items-center gap-1"
-              >
-                <span>Open SOP Studio</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-
-            {sopRecords.length === 0 ? (
-              <div className="p-8 text-center bg-gray-50 dark:bg-[#111622] rounded-2xl border border-dashed border-gray-200 dark:border-gray-800 text-xs font-medium text-gray-500">
-                No shortlisted programmes found. Once your counsellor shortlists programmes, individual SOP records will appear here.
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {sopRecords.map((sop) => {
-                  const badge = STATUS_BADGES[sop.status] || STATUS_BADGES.NOT_GENERATED;
-                  return (
-                    <div
-                      key={sop.recommendationId}
-                      className="p-4 bg-gray-50 dark:bg-[#1A2234] rounded-2xl border border-gray-200/60 dark:border-gray-800 space-y-2.5"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-wider">
-                          {sop.degree || 'Master of Science'}
-                        </span>
-                        <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${badge.style}`}>
-                          {badge.label}
-                        </span>
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-black text-gray-900 dark:text-white leading-tight">
-                          {sop.programName}
-                        </h4>
-                        <div className="text-[11px] font-bold text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-1">
-                          <Building2 className="w-3 h-3 text-gray-400" />
-                          <span>{sop.universityName}</span>
-                        </div>
-                      </div>
-
-                      {sop.originalFilename && (
-                        <div className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 truncate">
-                          {sop.originalFilename}
-                        </div>
-                      )}
-
-                      <div className="pt-2 flex items-center justify-between border-t border-gray-200/60 dark:border-gray-800">
-                        <div className="text-[10px] text-gray-400">
-                          {sop.deadline ? `Deadline: ${sop.deadline}` : 'Intake: Winter Semester'}
-                        </div>
-                        {sop.url ? (
-                          <a
-                            href={sop.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-3 py-1.5 bg-white dark:bg-[#151B27] border border-gray-200 dark:border-gray-700 text-xs font-extrabold rounded-lg hover:bg-gray-100 flex items-center gap-1"
-                          >
-                            <Eye className="w-3 h-3" />
-                            <span>Preview</span>
-                          </a>
-                        ) : (
-                          <Link
-                            href="/dashboard/student/documents"
-                            className="px-3 py-1.5 bg-germany-red text-white text-xs font-extrabold rounded-lg hover:bg-germany-red/90 flex items-center gap-1"
-                          >
-                            <FileCheck className="w-3 h-3" />
-                            <span>Generate</span>
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
+        <StudentAdmissionDocumentsTab
+          categories={categories}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          docLoading={docLoading}
+          docError={docError}
+          loadDocuments={loadDocuments}
+          filteredDocuments={filteredDocuments}
+          fileInputRef={fileInputRef}
+          handleFileChange={handleFileChange}
+          openFileDialog={openFileDialog}
+          handleDelete={handleDelete}
+          uploadingType={uploadingType}
+          deletingType={deletingType}
+          sopRecords={sopRecords}
+        />
       )}
 
       {/* ──────────────────────────────────────────────────────────────────────────
           TAB 2: MY APPLICATIONS (BASED ON LOCKED SHORTLIST)
       ────────────────────────────────────────────────────────────────────────── */}
       {activeTab === 'applications' && (
-        <div className="space-y-6">
-          {/* Status Alert if Shortlist is not locked */}
-          {!isLocked && (
-            <div className="p-5 bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 rounded-3xl flex items-start gap-3.5 text-xs text-amber-900 dark:text-amber-300">
-              <Clock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-              <div>
-                <h4 className="font-black text-sm text-amber-900 dark:text-amber-200">
-                  Shortlist Finalization in Progress
-                </h4>
-                <p className="mt-1 font-medium leading-relaxed">
-                  Your university shortlist is currently being reviewed by your assigned Germany education counsellor. Once your counsellor finalizes and locks the shortlist, official application tracking and university portal credentials will be actively updated here.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Applications Cards Grid */}
-          {appsLoading ? (
-            <div className="p-12 text-center bg-white dark:bg-[#151B27] rounded-3xl border border-gray-200 dark:border-gray-800">
-              <Loader2 className="w-8 h-8 animate-spin text-germany-red mx-auto mb-3" />
-              <p className="text-xs font-bold text-gray-500">Loading university application portals...</p>
-            </div>
-          ) : appsError ? (
-            <div className="p-8 text-center bg-white dark:bg-[#151B27] rounded-3xl border border-red-200 dark:border-red-900/40">
-              <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-              <p className="text-xs font-bold text-red-600">{appsError}</p>
-            </div>
-          ) : applications.length === 0 ? (
-            <div className="p-12 text-center bg-white dark:bg-[#151B27] rounded-3xl border border-dashed border-gray-200 dark:border-gray-800 space-y-3">
-              <Building2 className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto" />
-              <h3 className="text-sm font-black text-gray-900 dark:text-white">
-                No Locked Applications Yet
-              </h3>
-              <p className="text-xs font-medium text-gray-500 max-w-sm mx-auto">
-                Applications are populated directly from your locked university shortlist. Visit the shortlist page to review your recommendations with your counsellor.
-              </p>
-              <Link
-                href="/dashboard/student/shortlist"
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-germany-red text-white text-xs font-extrabold rounded-xl hover:bg-germany-red/90 shadow-sm"
-              >
-                <span>View Shortlist</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {applications.map((app) => {
-                const statusInfo = APP_STATUS_STYLES[app.applicationStatus] || APP_STATUS_STYLES.NOT_STARTED;
-                const isRevealing = revealingId === app.id;
-                const creds = revealedCreds[app.id];
-                const isPasswordShown = Boolean(showPassword[app.id]);
-
-                return (
-                  <div
-                    key={app.id}
-                    className="bg-white dark:bg-[#151B27] rounded-3xl p-6 border border-gray-200/80 dark:border-gray-800 shadow-sm hover:border-gray-300 dark:hover:border-gray-700 transition-all flex flex-col justify-between space-y-5"
-                  >
-                    {/* Header */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-[10px] font-black uppercase text-gray-500 tracking-wider">
-                          {app.degree || 'Master of Science'} · {app.location || 'Germany'}
-                        </span>
-                        <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${statusInfo.style}`}>
-                          {statusInfo.label}
-                        </span>
-                      </div>
-
-                      <div>
-                        <h3 className="text-base font-black text-gray-900 dark:text-white leading-tight">
-                          {app.programmeName}
-                        </h3>
-                        <div className="text-xs font-bold text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1.5">
-                          <Building2 className="w-3.5 h-3.5 text-gray-400" />
-                          <span>{app.universityName}</span>
-                        </div>
-                      </div>
-
-                      {/* Application Metadata Badges */}
-                      <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
-                        <div className="p-2.5 bg-gray-50 dark:bg-[#1A2234] rounded-xl border border-gray-100 dark:border-gray-800">
-                          <div className="text-gray-400 text-[10px] font-bold">Application ID / Ref</div>
-                          <div className="font-extrabold text-gray-800 dark:text-gray-200 truncate">
-                            {app.applicationId || 'Not assigned yet'}
-                          </div>
-                        </div>
-
-                        <div className="p-2.5 bg-gray-50 dark:bg-[#1A2234] rounded-xl border border-gray-100 dark:border-gray-800">
-                          <div className="text-gray-400 text-[10px] font-bold">Deadline</div>
-                          <div className="font-extrabold text-gray-800 dark:text-gray-200">
-                            {app.deadline || 'July 15, 2026'}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Portal Link */}
-                      {app.portalUrl && (
-                        <div className="flex items-center justify-between p-2.5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/40 rounded-xl text-xs font-bold text-blue-700 dark:text-blue-300">
-                          <span className="truncate pr-2">{app.portalUrl}</span>
-                          <a
-                            href={app.portalUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-1 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-md shrink-0 cursor-pointer"
-                          >
-                            <ExternalLink className="w-4 h-4 text-blue-600" />
-                          </a>
-                        </div>
-                      )}
-
-                      {/* Counsellor Notes */}
-                      {app.counsellorNotes && (
-                        <div className="p-3 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/70 dark:border-amber-900/50 rounded-xl text-xs text-amber-900 dark:text-amber-300">
-                          <div className="font-extrabold flex items-center gap-1.5 text-[11px] text-amber-800 dark:text-amber-400 mb-1">
-                            <Info className="w-3.5 h-3.5" />
-                            <span>Counsellor Instructions</span>
-                          </div>
-                          <p className="font-medium whitespace-pre-wrap">{app.counsellorNotes}</p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Portal Credentials Section (Encrypted at Rest with AES-256-GCM) */}
-                    <div className="pt-4 border-t border-gray-100 dark:border-gray-800 space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-black uppercase text-gray-400 flex items-center gap-1.5">
-                          <KeyRound className="w-3.5 h-3.5 text-germany-gold" />
-                          <span>Portal Credentials</span>
-                        </span>
-                        {app.hasCredentials ? (
-                          <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                            <ShieldCheck className="w-3 h-3" /> Encrypted Vault
-                          </span>
-                        ) : (
-                          <span className="text-[10px] font-bold text-gray-400">
-                            Awaiting counsellor setup
-                          </span>
-                        )}
-                      </div>
-
-                      {app.hasCredentials ? (
-                        <div className="space-y-2">
-                          {creds ? (
-                            <div className="p-3.5 bg-gray-50 dark:bg-[#1A2234] rounded-2xl border border-gray-200/70 dark:border-gray-800 space-y-2.5">
-                              {/* Username */}
-                              <div className="flex items-center justify-between text-xs">
-                                <div>
-                                  <div className="text-[10px] font-bold text-gray-400">Portal Username / Email</div>
-                                  <div className="font-extrabold text-gray-900 dark:text-white select-all">
-                                    {creds.username}
-                                  </div>
-                                </div>
-                                <button
-                                  onClick={() => copyToClipboard(creds.username, `user-${app.id}`)}
-                                  className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-gray-500 cursor-pointer"
-                                  title="Copy username"
-                                >
-                                  {copiedField === `user-${app.id}` ? (
-                                    <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                  ) : (
-                                    <Copy className="w-3.5 h-3.5" />
-                                  )}
-                                </button>
-                              </div>
-
-                              {/* Password */}
-                              <div className="flex items-center justify-between text-xs pt-1 border-t border-gray-200/50 dark:border-gray-800">
-                                <div>
-                                  <div className="text-[10px] font-bold text-gray-400">Portal Password</div>
-                                  <div className="font-extrabold text-gray-900 dark:text-white font-mono select-all">
-                                    {isPasswordShown ? creds.password : '••••••••••••'}
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <button
-                                    onClick={() => setShowPassword((prev) => ({ ...prev, [app.id]: !prev[app.id] }))}
-                                    className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-gray-500 cursor-pointer"
-                                    title={isPasswordShown ? 'Hide Password' : 'Show Password'}
-                                  >
-                                    {isPasswordShown ? (
-                                      <EyeOff className="w-3.5 h-3.5" />
-                                    ) : (
-                                      <Eye className="w-3.5 h-3.5" />
-                                    )}
-                                  </button>
-                                  <button
-                                    onClick={() => copyToClipboard(creds.password, `pass-${app.id}`)}
-                                    className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-gray-500 cursor-pointer"
-                                    title="Copy password"
-                                  >
-                                    {copiedField === `pass-${app.id}` ? (
-                                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                    ) : (
-                                      <Copy className="w-3.5 h-3.5" />
-                                    )}
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => handleRevealCredentials(app.id)}
-                              disabled={isRevealing}
-                              className="w-full py-2.5 px-4 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
-                            >
-                              {isRevealing ? (
-                                <>
-                                  <Loader2 className="w-3.5 h-3.5 animate-spin text-germany-red" />
-                                  <span>Authorizing &amp; Decrypting...</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Eye className="w-3.5 h-3.5 text-gray-500" />
-                                  <span>Reveal Credentials</span>
-                                </>
-                              )}
-                            </button>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="p-3 bg-gray-50 dark:bg-[#1A2234] rounded-xl text-center text-xs text-gray-400 font-medium">
-                          Portal credentials have not been configured by your counsellor yet.
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        <StudentAdmissionApplicationsTab
+          isLocked={isLocked}
+          appsLoading={appsLoading}
+          appsError={appsError}
+          applications={applications}
+          revealingId={revealingId}
+          revealedCreds={revealedCreds}
+          showPassword={showPassword}
+          setShowPassword={setShowPassword}
+          copiedField={copiedField}
+          copyToClipboard={copyToClipboard}
+          handleRevealCredentials={handleRevealCredentials}
+        />
       )}
     </div>
   );

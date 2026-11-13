@@ -48,6 +48,7 @@ export function ClaySelect<T = any>({
 }: ClaySelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
+  const [maxMenuHeight, setMaxMenuHeight] = useState<number>(300);
   const [searchQuery, setSearchQuery] = useState('');
   const [asyncOptions, setAsyncOptions] = useState<ClaySelectOption<T>[]>([]);
   const [isAsyncLoading, setIsAsyncLoading] = useState(false);
@@ -57,28 +58,53 @@ export function ClaySelect<T = any>({
   const effectiveSearchable = isSearchable !== undefined ? isSearchable : searchable;
   const effectiveMultiple = isMulti !== undefined ? isMulti : multiple;
 
-  // Detect whether to open downward or upward based on viewport space
-  useEffect(() => {
-    if (isOpen && containerRef.current) {
+  // Adaptively detect viewport space and calculate optimal dropdown height and direction
+  const updateMenuPosition = useCallback(() => {
+    if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
       const spaceBelow = window.innerHeight - rect.bottom;
       const spaceAbove = rect.top;
-      if (spaceBelow < 280 && spaceAbove > spaceBelow) {
-        setOpenUpward(true);
-      } else {
-        setOpenUpward(false);
+
+      // If space below is limited (< 280px) and there's more space above, open upward
+      const shouldOpenUp = spaceBelow < 280 && spaceAbove > spaceBelow;
+      setOpenUpward(shouldOpenUp);
+
+      const availableSpace = shouldOpenUp ? spaceAbove - 24 : spaceBelow - 24;
+      // Clamp between min 180px and max 340px
+      const calculatedMax = Math.max(180, Math.min(340, Math.floor(availableSpace)));
+      setMaxMenuHeight(calculatedMax);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      updateMenuPosition();
+      window.addEventListener('resize', updateMenuPosition);
+      window.addEventListener('scroll', updateMenuPosition, true);
+      return () => {
+        window.removeEventListener('resize', updateMenuPosition);
+        window.removeEventListener('scroll', updateMenuPosition, true);
+      };
+    }
+  }, [isOpen, updateMenuPosition]);
+
+  // Normalize and deduplicate static options to ClaySelectOption objects
+  const normalizeOptions = useCallback((raw: (ClaySelectOption<T> | T)[]): ClaySelectOption<T>[] => {
+    const seen = new Set<string>();
+    const list: ClaySelectOption<T>[] = [];
+    for (const opt of raw || []) {
+      const normalized: ClaySelectOption<T> =
+        opt && typeof opt === 'object' && 'value' in (opt as any) && 'label' in (opt as any)
+          ? (opt as ClaySelectOption<T>)
+          : { value: opt as T, label: String(opt) };
+
+      const key = `${String(normalized.value).trim().toLowerCase()}__${String(normalized.label).trim().toLowerCase()}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        list.push(normalized);
       }
     }
-  }, [isOpen]);
-
-  // Normalize static options to ClaySelectOption objects
-  const normalizeOptions = useCallback((raw: (ClaySelectOption<T> | T)[]): ClaySelectOption<T>[] => {
-    return (raw || []).map((opt) => {
-      if (opt && typeof opt === 'object' && 'value' in (opt as any) && 'label' in (opt as any)) {
-        return opt as ClaySelectOption<T>;
-      }
-      return { value: opt as T, label: String(opt) };
-    });
+    return list;
   }, []);
 
   const baseOptions = loadOptions ? asyncOptions : normalizeOptions(options);
@@ -263,9 +289,10 @@ export function ClaySelect<T = any>({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: openUpward ? 6 : -6, scale: 0.98 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
+            style={{ maxHeight: `${maxMenuHeight}px` }}
             className={`absolute left-0 right-0 ${
               openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
-            } p-1.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800 rounded-xl shadow-lg dark:shadow-2xl z-50 max-h-72 flex flex-col overflow-hidden min-w-full ${dropdownClassName}`}
+            } p-1.5 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800 rounded-xl shadow-lg dark:shadow-2xl z-50 flex flex-col overflow-hidden min-w-full ${dropdownClassName}`}
           >
             {/* Optional Search Bar */}
             {shouldShowSearch && (
@@ -283,12 +310,12 @@ export function ClaySelect<T = any>({
             )}
 
             {/* Options List */}
-            <div className="overflow-y-auto space-y-1 custom-scrollbar max-h-60 pr-0.5">
+            <div className="overflow-y-auto flex-1 min-h-0 space-y-1 dropdown-scrollbar pr-1 pb-1.5">
               {!effectiveMultiple && placeholder && !shouldShowSearch && !hasEmptyOption && (
                 <button
                   type="button"
                   onClick={() => handleSelectSingle('' as any)}
-                  className="w-full text-left px-3 py-2 text-xs font-medium text-gray-400 dark:text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1E2638] transition-colors whitespace-normal break-words leading-snug cursor-pointer"
+                  className="w-full text-left px-3 py-2 text-xs font-medium text-gray-400 dark:text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1E2638] transition-colors whitespace-normal break-words leading-snug cursor-pointer shrink-0"
                 >
                   {placeholder}
                 </button>
@@ -314,7 +341,7 @@ export function ClaySelect<T = any>({
                       key={`${String(opt.value)}-${idx}`}
                       type="button"
                       onClick={() => effectiveMultiple ? handleToggleMultiple(opt.value) : handleSelectSingle(opt.value)}
-                      className={`w-full text-left px-3 py-2.5 text-xs font-bold rounded-lg flex items-start justify-between gap-2 transition-colors cursor-pointer ${
+                      className={`w-full text-left px-3 py-2.5 text-xs font-bold rounded-lg flex items-start justify-between gap-2 transition-colors cursor-pointer shrink-0 ${
                         isSelected
                           ? 'bg-germany-red text-white'
                           : 'text-germany-black dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#1E2638]'

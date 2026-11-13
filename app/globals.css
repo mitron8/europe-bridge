@@ -806,5 +806,44 @@ aside nav::-webkit-scrollbar,
   background: transparent !important;
 }
 
+/* Sleek modern scrollbar for dropdown menus and selectors */
+.dropdown-scrollbar {
+  -ms-overflow-style: auto !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(156, 163, 175, 0.4) transparent !important;
+}
+
+.dropdown-scrollbar::-webkit-scrollbar {
+  display: block !important;
+  width: 5px !important;
+  height: 5px !important;
+  background: transparent !important;
+}
+
+.dropdown-scrollbar::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.dropdown-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.4) !important;
+  border-radius: 9999px !important;
+}
+
+.dropdown-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.7) !important;
+}
+
+.dark .dropdown-scrollbar {
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent !important;
+}
+
+.dark .dropdown-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.22) !important;
+}
+
+.dark .dropdown-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.45) !important;
+}
+
 
 

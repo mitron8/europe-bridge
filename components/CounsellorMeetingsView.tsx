@@ -24,6 +24,14 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { MeetingBookingModal } from './MeetingBookingModal';
+import {
+  CounsellorCancelModal,
+  CounsellorDeclineRescheduleModal,
+  CounsellorBlockSlotModal,
+} from './meetings/CounsellorMeetingModals';
+import { CounsellorMeetingsAvailabilityTab } from './meetings/CounsellorMeetingsAvailabilityTab';
+import { CounsellorMeetingsHistoryTab } from './meetings/CounsellorMeetingsHistoryTab';
+import { CounsellorMeetingsStats } from './meetings/CounsellorMeetingsStats';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
 
@@ -318,35 +326,7 @@ export function CounsellorMeetingsView() {
       )}
 
       {/* Quick Stats Metric Pills */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-4 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-xs space-y-1">
-          <span className="text-[10px] font-black uppercase text-gray-400">Scheduled Today</span>
-          <div className="text-xl font-display font-extrabold text-germany-black dark:text-white">
-            {meetingsData?.summary?.todayCount || 0} Sessions
-          </div>
-        </div>
-
-        <div className="p-4 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-xs space-y-1">
-          <span className="text-[10px] font-black uppercase text-gray-400">Upcoming Confirmed</span>
-          <div className="text-xl font-display font-extrabold text-emerald-600 dark:text-emerald-400">
-            {meetingsData?.summary?.upcomingCount || 0} Meetings
-          </div>
-        </div>
-
-        <div className="p-4 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-xs space-y-1">
-          <span className="text-[10px] font-black uppercase text-gray-400">Pending Actions</span>
-          <div className="text-xl font-display font-extrabold text-amber-600 dark:text-amber-400">
-            {meetingsData?.summary?.pendingActionsCount || 0} Actionable
-          </div>
-        </div>
-
-        <div className="p-4 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-xs space-y-1">
-          <span className="text-[10px] font-black uppercase text-gray-400">Standard Working Hours</span>
-          <div className="text-xs font-extrabold text-germany-black dark:text-white mt-1">
-            9 AM–12 PM & 2 PM–5 PM
-          </div>
-        </div>
-      </div>
+      <CounsellorMeetingsStats meetingsData={meetingsData} />
 
       {/* Navigation Tabs */}
       <div className="flex items-center gap-1.5 p-1.5 bg-gray-100 dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800 w-fit flex-wrap">
@@ -689,379 +669,50 @@ export function CounsellorMeetingsView() {
           </div>
         </div>
       ) : activeTab === 'availability' ? (
-        /* Calendar & Availability Blocking Tab */
-        <div className="space-y-6">
-          <div className="p-5 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-display font-extrabold text-base text-germany-black dark:text-white">
-                  Rolling 3-Day Window Slots (Live Preview)
-                </h3>
-                <p className="text-xs text-gray-500">
-                  <strong className="text-emerald-600">Green = Confirmed</strong> • <strong className="text-amber-600">Yellow = Pending Acceptance</strong> • White = Available.
-                </p>
-              </div>
-              <button
-                onClick={() => setIsBlockOpen(true)}
-                className="neu-btn-primary px-3.5 py-2 text-xs font-black inline-flex items-center gap-1.5"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Availability Block</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {availability?.days?.map((day: any) => (
-                <div
-                  key={day.dateString}
-                  className="p-4 rounded-2xl border border-gray-200/80 dark:border-gray-800 bg-gray-50/50 dark:bg-[#0E121A] space-y-3"
-                >
-                  <div className="flex items-center justify-between border-b border-gray-200/80 dark:border-gray-800 pb-2">
-                    <span className="font-display font-extrabold text-xs text-germany-black dark:text-white">
-                      {day.displayLabel}
-                    </span>
-                    {day.isSunday ? (
-                      <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">
-                        Sunday Closed
-                      </span>
-                    ) : (
-                      <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                        Bookable
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="space-y-1.5">
-                    {day.allSlots?.map((slot: any) => {
-                      const isConfirmed = slot.meetingStatus === 'CONFIRMED';
-                      const isPending = slot.meetingStatus === 'PENDING';
-
-                      return (
-                        <div
-                          key={slot.slotId}
-                          className={`p-2.5 rounded-xl border text-xs flex items-center justify-between transition-all ${
-                            isConfirmed
-                              ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-400 dark:border-emerald-600 text-emerald-950 dark:text-emerald-200 shadow-xs'
-                              : isPending
-                              ? 'bg-amber-50 dark:bg-amber-950/60 border-amber-400 dark:border-amber-600 text-amber-950 dark:text-amber-200 shadow-xs'
-                              : slot.isAvailable
-                              ? 'bg-white dark:bg-[#111622] border-emerald-300 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-400'
-                              : 'bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/5 text-gray-400'
-                          }`}
-                        >
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-extrabold text-[11px]">{slot.label.split('–')[0]}</span>
-                            {(isConfirmed || isPending) && slot.studentName && (
-                              <span className="text-[10px] font-bold opacity-90 truncate max-w-[120px]">
-                                • {slot.studentName}
-                              </span>
-                            )}
-                          </div>
-                          <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${
-                            isConfirmed
-                              ? 'bg-emerald-200 text-emerald-900 border-emerald-400 dark:bg-emerald-900/80 dark:text-emerald-100'
-                              : isPending
-                              ? 'bg-amber-200 text-amber-900 border-amber-400 dark:bg-amber-900/80 dark:text-amber-100'
-                              : slot.isAvailable
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300'
-                              : 'bg-gray-200 dark:bg-gray-800 text-gray-500 border-transparent'
-                          }`}>
-                            {isConfirmed
-                              ? 'Confirmed'
-                              : isPending
-                              ? 'Pending Acceptance'
-                              : slot.isAvailable
-                              ? 'Available'
-                              : slot.unavailableReason || 'Unavailable'}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <CounsellorMeetingsAvailabilityTab
+          availability={availability}
+          onOpenBlockModal={() => setIsBlockOpen(true)}
+        />
       ) : (
-        /* History & Meeting Event Logs Tab */
-        <div className="space-y-4">
-          <div className="p-4 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 flex items-center justify-between">
-            <div>
-              <h4 className="font-display font-extrabold text-sm text-germany-black dark:text-white">
-                Counselling Activity Logs & Historical Audit
-              </h4>
-              <p className="text-xs text-gray-500">
-                Chronological record of bookings, reschedule proposals, acceptances, and deletions for your consultations.
-              </p>
-            </div>
-            <span className="text-xs font-black text-gray-400 uppercase">
-              {meetingsData?.logs?.length || 0} Events Logged
-            </span>
-          </div>
-
-          {(!meetingsData?.logs || meetingsData.logs.length === 0) ? (
-            <div className="p-12 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 text-center space-y-2">
-              <CheckCircle2 className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto" />
-              <h4 className="font-display font-extrabold text-sm text-germany-black dark:text-white">
-                No Activity Logs Yet
-              </h4>
-              <p className="text-xs text-gray-500">Meeting actions, rescheduling events, and cancellations will appear here.</p>
-            </div>
-          ) : (
-            <div className="space-y-2.5">
-              {meetingsData.logs.map((log: any) => {
-                const isDeclineOrDelete = log.event_type.includes('DECLINED') || log.event_type.includes('DELETED') || log.event_type === 'CANCELLED';
-                const isReschedule = log.event_type.includes('RESCHEDULE');
-                const isAccepted = log.event_type.includes('ACCEPTED') || log.event_type === 'BOOKED';
-
-                return (
-                  <div
-                    key={log.id}
-                    className="p-4 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${
-                          isDeclineOrDelete
-                            ? 'bg-red-100 text-red-800 border-red-300 dark:bg-red-950/60 dark:text-red-300'
-                            : isAccepted
-                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300'
-                            : isReschedule
-                            ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300'
-                            : 'bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-300'
-                        }`}>
-                          {log.event_type.replace(/_/g, ' ')}
-                        </span>
-                        <span className="font-extrabold text-germany-black dark:text-white">
-                          Student: {log.studentName}
-                        </span>
-                        {log.studentEmail && (
-                          <span className="text-[11px] text-gray-400">({log.studentEmail})</span>
-                        )}
-                      </div>
-
-                      <div className="text-[11px] text-gray-600 dark:text-gray-300">
-                        {log.details?.reason && (
-                          <span className="italic font-medium">Reason: "{log.details.reason}" • </span>
-                        )}
-                        {log.details?.message && (
-                          <span className="font-medium">{log.details.message} • </span>
-                        )}
-                        <span className="text-gray-400">
-                          Triggered by: <strong>{log.actorName}</strong> ({log.actor_role})
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="text-[11px] font-bold text-gray-400 shrink-0">
-                      {log.humanCreatedAt}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        <CounsellorMeetingsHistoryTab
+          meetingsData={meetingsData}
+        />
       )}
 
 
       {/* Cancellation Modal */}
-      {isCancelOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-[#111622] rounded-3xl border border-gray-200/80 dark:border-gray-800 shadow-2xl w-full max-w-md p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-display font-extrabold text-base text-germany-black dark:text-white text-germany-red">
-                Cancel Meeting
-              </h3>
-              <button onClick={() => setIsCancelOpen(false)} className="text-gray-400 hover:text-gray-600">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <p className="text-xs text-gray-500">
-              Cancelling will release the slot and notify the student. Please provide a clear cancellation reason.
-            </p>
-
-            <textarea
-              value={cancelReason}
-              onChange={(e) => setCancelReason(e.target.value)}
-              placeholder="e.g. Unforeseen academic committee commitment, please rebook via the dashboard..."
-              rows={3}
-              className="w-full text-xs p-3 rounded-xl bg-gray-50 dark:bg-[#0E121A] border border-gray-200/80 dark:border-gray-800 focus:ring-2 focus:ring-germany-red text-germany-black dark:text-white"
-            />
-
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button
-                onClick={() => setIsCancelOpen(false)}
-                className="neu-btn-secondary px-4 py-2 text-xs font-black"
-              >
-                Close
-              </button>
-              <button
-                onClick={handleSubmitCancel}
-                disabled={isSubmittingCancel || !cancelReason.trim()}
-                className="neu-btn-primary bg-germany-red px-5 py-2 text-xs font-black flex items-center gap-1.5"
-              >
-                {isSubmittingCancel && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                <span>Confirm Cancellation</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CounsellorCancelModal
+        isOpen={isCancelOpen}
+        onClose={() => setIsCancelOpen(false)}
+        cancelReason={cancelReason}
+        setCancelReason={setCancelReason}
+        isSubmittingCancel={isSubmittingCancel}
+        onSubmit={handleSubmitCancel}
+      />
 
       {/* Delete / Decline Reschedule Modal */}
-      {confirmDeleteModal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#111622] rounded-3xl border border-gray-200/80 dark:border-gray-800 shadow-2xl w-full max-w-md p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
-                <AlertCircle className="w-5 h-5 text-amber-500" />
-                <h3 className="font-display font-extrabold text-base text-germany-black dark:text-white">
-                  {confirmDeleteModal.title || 'Delete Meeting Schedule?'}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setConfirmDeleteModal((prev) => ({ ...prev, isOpen: false }))}
-                className="text-gray-400 hover:text-gray-600 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-              {confirmDeleteModal.message}
-            </p>
-
-            <div>
-              <label className="text-[11px] font-black uppercase text-gray-500 tracking-wider">
-                Reason (Optional)
-              </label>
-              <input
-                type="text"
-                value={confirmDeleteModal.reason}
-                onChange={(e) => setConfirmDeleteModal((prev) => ({ ...prev, reason: e.target.value }))}
-                placeholder="e.g. Reschedule proposal declined, will offer other slots..."
-                className="w-full text-xs p-2.5 rounded-xl bg-gray-50 dark:bg-[#0E121A] border border-gray-200/80 dark:border-gray-800 mt-1 focus:ring-2 focus:ring-germany-red text-germany-black dark:text-white"
-              />
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setConfirmDeleteModal((prev) => ({ ...prev, isOpen: false }))}
-                className="neu-btn-secondary px-4 py-2 text-xs font-black cursor-pointer"
-                disabled={confirmDeleteModal.isSubmitting}
-              >
-                Keep Proposal
-              </button>
-              <button
-                type="button"
-                onClick={executeDeclineReschedule}
-                disabled={confirmDeleteModal.isSubmitting}
-                className="neu-btn-primary bg-germany-red hover:bg-[#D62839] text-white px-5 py-2 text-xs font-black flex items-center gap-1.5 cursor-pointer"
-              >
-                {confirmDeleteModal.isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                <span>Delete Schedule</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CounsellorDeclineRescheduleModal
+        modalState={confirmDeleteModal}
+        setModalState={setConfirmDeleteModal}
+        onConfirm={executeDeclineReschedule}
+      />
 
       {/* Block Availability Modal */}
-      {isBlockOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-[#111622] rounded-3xl border border-gray-200/80 dark:border-gray-800 shadow-2xl w-full max-w-md p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-display font-extrabold text-base text-germany-black dark:text-white">
-                Block Counsellor Availability
-              </h3>
-              <button onClick={() => setIsBlockOpen(false)} className="text-gray-400 hover:text-gray-600">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="font-black uppercase text-gray-500">Date (Rolling 3 Days)</label>
-                <select
-                  value={blockDate}
-                  onChange={(e) => setBlockDate(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200/80 dark:border-gray-800 bg-gray-50 dark:bg-[#0E121A] mt-1 text-germany-black dark:text-white whitespace-normal break-words cursor-pointer"
-                >
-                  {availability?.days?.filter((d: any) => !d.isSunday).map((d: any) => (
-                    <option key={d.dateString} value={d.dateString}>
-                      {d.displayLabel}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="allDayCheck"
-                  checked={isAllDay}
-                  onChange={(e) => setIsAllDay(e.target.checked)}
-                  className="rounded text-germany-red focus:ring-germany-red"
-                />
-                <label htmlFor="allDayCheck" className="font-bold text-gray-700 dark:text-gray-300">
-                  Block entire day (All morning & afternoon slots)
-                </label>
-              </div>
-
-              {!isAllDay && (
-                <div>
-                  <label className="font-black uppercase text-gray-500">Select 1-Hour Slot</label>
-                  <select
-                    value={blockStartHour}
-                    onChange={(e) => setBlockStartHour(parseInt(e.target.value, 10))}
-                    className="w-full p-2.5 rounded-xl border border-gray-200/80 dark:border-gray-800 bg-gray-50 dark:bg-[#0E121A] mt-1 text-germany-black dark:text-white whitespace-normal break-words cursor-pointer"
-                  >
-                    <option value={9}>9:00 AM – 10:00 AM</option>
-                    <option value={10}>10:00 AM – 11:00 AM</option>
-                    <option value={11}>11:00 AM – 12:00 PM</option>
-                    <option value={14}>2:00 PM – 3:00 PM</option>
-                    <option value={15}>3:00 PM – 4:00 PM</option>
-                    <option value={16}>4:00 PM – 5:00 PM</option>
-                  </select>
-                </div>
-              )}
-
-              <div>
-                <label className="font-black uppercase text-gray-500">Reason (Optional)</label>
-                <input
-                  type="text"
-                  value={blockReason}
-                  onChange={(e) => setBlockReason(e.target.value)}
-                  placeholder="e.g. Internal Training, Personal Break, Leave"
-                  className="w-full p-2.5 rounded-xl border border-gray-200/80 dark:border-gray-800 bg-gray-50 dark:bg-[#0E121A] mt-1 text-germany-black dark:text-white"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button
-                onClick={() => setIsBlockOpen(false)}
-                className="neu-btn-secondary px-4 py-2 text-xs font-black"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSubmitBlock}
-                disabled={isSubmittingBlock}
-                className="neu-btn-primary px-5 py-2 text-xs font-black flex items-center gap-1.5"
-              >
-                {isSubmittingBlock && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                <span>Confirm Block</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CounsellorBlockSlotModal
+        isOpen={isBlockOpen}
+        onClose={() => setIsBlockOpen(false)}
+        availability={availability}
+        blockDate={blockDate}
+        setBlockDate={setBlockDate}
+        isAllDay={isAllDay}
+        setIsAllDay={setIsAllDay}
+        blockStartHour={blockStartHour}
+        setBlockStartHour={setBlockStartHour}
+        blockReason={blockReason}
+        setBlockReason={setBlockReason}
+        isSubmittingBlock={isSubmittingBlock}
+        onSubmit={handleSubmitBlock}
+      />
 
       {/* Reschedule Modal */}
       {isRescheduleOpen && selectedMeeting && (
