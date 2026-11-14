@@ -60,6 +60,7 @@ import {
 import { AssignedStudent } from './CounsellorStudents';
 import { StudentFullProfileView } from './StudentFullProfileView';
 import { ProgrammeCard } from './cards/ProgrammeCard';
+import { MeetingBookingModal } from './MeetingBookingModal';
 
 export interface StudentDocument {
   id: string;
@@ -2701,6 +2702,21 @@ export function StudentDetailModal({
           </div>
         )}
       </AnimatePresence>
+
+      {/* Counsellor Schedule / Invite Meeting Modal */}
+      {isScheduleModalOpen && Boolean(effectiveStudentId) && (
+        <MeetingBookingModal
+          isOpen={isScheduleModalOpen}
+          onClose={() => setIsScheduleModalOpen(false)}
+          onSuccess={() => {
+            setIsScheduleModalOpen(false);
+          }}
+          mode="counsellor_invite"
+          userRole="counsellor"
+          studentUserId={effectiveStudentId}
+          studentName={`${student?.firstName || ''} ${student?.lastName || ''}`.trim() || 'Student'}
+        />
+      )}
     </>
   );
 }

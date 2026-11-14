@@ -22,6 +22,7 @@ import {
   MessageSquare,
   HelpCircle,
   ExternalLink,
+  Search,
 } from 'lucide-react';
 import { MeetingBookingModal } from './MeetingBookingModal';
 import {
@@ -77,6 +78,33 @@ export function CounsellorMeetingsView() {
   const [isAllDay, setIsAllDay] = useState<boolean>(false);
   const [blockReason, setBlockReason] = useState<string>('');
   const [isSubmittingBlock, setIsSubmittingBlock] = useState<boolean>(false);
+
+  // Student Picker / Direct Invite state
+  const [isStudentPickerOpen, setIsStudentPickerOpen] = useState<boolean>(false);
+  const [studentsList, setStudentsList] = useState<any[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState<boolean>(false);
+  const [studentSearch, setStudentSearch] = useState<string>('');
+  const [selectedStudentForInvite, setSelectedStudentForInvite] = useState<any | null>(null);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState<boolean>(false);
+
+  const fetchStudents = async () => {
+    setLoadingStudents(true);
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/counsellor/students?limit=100`, {
+        credentials: 'include',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setStudentsList(Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch assigned students', err);
+    } finally {
+      setLoadingStudents(false);
+    }
+  };
 
   const fetchMeetingsAndAvailability = async () => {
     setLoading(true);
@@ -284,6 +312,17 @@ export function CounsellorMeetingsView() {
         </div>
 
         <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+          <button
+            onClick={() => {
+              setIsStudentPickerOpen(true);
+              fetchStudents();
+            }}
+            className="neu-btn-primary px-4 py-2 text-xs font-black inline-flex items-center gap-1.5 shadow-xs"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Schedule / Invite Student</span>
+          </button>
+
           <button
             onClick={() => setIsBlockOpen(true)}
             className="neu-btn-secondary px-4 py-2 text-xs font-black inline-flex items-center gap-1.5"
@@ -734,6 +773,117 @@ export function CounsellorMeetingsView() {
           counsellorId={selectedMeeting.counsellor_user_id}
           studentUserId={selectedMeeting.student_user_id}
           studentName={selectedMeeting.studentName}
+        />
+      )}
+
+      {/* Student Picker Modal for Scheduling */}
+      {isStudentPickerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#111622] rounded-3xl border border-gray-200/80 dark:border-gray-800 shadow-2xl w-full max-w-lg p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-germany-red" />
+                <h3 className="font-display font-extrabold text-base text-gray-900 dark:text-white">
+                  Schedule Session with Student
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsStudentPickerOpen(false)}
+                className="text-gray-400 hover:text-gray-600 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-500">
+              Select one of your assigned students to open your booking calendar and send them a meeting invitation.
+            </p>
+
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search assigned student by name or email..."
+                value={studentSearch}
+                onChange={(e) => setStudentSearch(e.target.value)}
+                className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl bg-gray-50 dark:bg-[#0E121A] border border-gray-200/80 dark:border-gray-800 focus:outline-none focus:border-germany-red text-gray-900 dark:text-white"
+              />
+            </div>
+
+            <div className="max-h-64 overflow-y-auto space-y-1 divide-y divide-gray-100 dark:divide-gray-800">
+              {loadingStudents ? (
+                <div className="py-8 text-center text-xs text-gray-400 flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-germany-red" />
+                  <span>Loading assigned students...</span>
+                </div>
+              ) : studentsList.length === 0 ? (
+                <div className="py-8 text-center text-xs text-gray-400">
+                  No assigned students found.
+                </div>
+              ) : (
+                studentsList
+                  .filter((st: any) => {
+                    const q = studentSearch.toLowerCase().trim();
+                    if (!q) return true;
+                    const fullName = `${st.firstName || ''} ${st.lastName || ''}`.toLowerCase();
+                    const email = (st.email || '').toLowerCase();
+                    return fullName.includes(q) || email.includes(q);
+                  })
+                  .map((st: any) => {
+                    const fullName = `${st.firstName || ''} ${st.lastName || ''}`.trim() || 'Student';
+                    const stId = st.userId || st.id;
+                    return (
+                      <div
+                        key={stId}
+                        onClick={() => {
+                          setSelectedStudentForInvite(st);
+                          setIsStudentPickerOpen(false);
+                          setIsInviteModalOpen(true);
+                        }}
+                        className="p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-[#1A2130] transition-colors flex items-center justify-between cursor-pointer group"
+                      >
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="text-xs font-bold text-gray-900 dark:text-white group-hover:text-germany-red transition-colors truncate">
+                            {fullName}
+                          </div>
+                          <div className="text-[11px] text-gray-500 truncate">
+                            {st.email || 'No email'} {st.planName ? `• ${st.planName}` : ''}
+                          </div>
+                        </div>
+                        <span className="text-[11px] font-extrabold text-germany-red group-hover:underline shrink-0">
+                          Select →
+                        </span>
+                      </div>
+                    );
+                  })
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Direct Counsellor Student Invite Modal */}
+      {isInviteModalOpen && selectedStudentForInvite && (
+        <MeetingBookingModal
+          isOpen={isInviteModalOpen}
+          onClose={() => {
+            setIsInviteModalOpen(false);
+            setSelectedStudentForInvite(null);
+          }}
+          onSuccess={() => {
+            setIsInviteModalOpen(false);
+            setSelectedStudentForInvite(null);
+            setActionFeedback({
+              type: 'success',
+              message: `Meeting invitation sent to ${selectedStudentForInvite.firstName || 'student'}!`,
+            });
+            fetchMeetingsAndAvailability();
+          }}
+          mode="counsellor_invite"
+          userRole="counsellor"
+          studentUserId={selectedStudentForInvite.userId || selectedStudentForInvite.id}
+          studentName={`${selectedStudentForInvite.firstName || ''} ${selectedStudentForInvite.lastName || ''}`.trim() || 'Student'}
         />
       )}
     </div>

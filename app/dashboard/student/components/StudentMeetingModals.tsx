@@ -11,6 +11,7 @@ export interface ConfirmDeleteModalState {
   message?: string;
   reason?: string;
   isSubmitting?: boolean;
+  type?: 'reschedule' | 'invitation';
 }
 
 export interface CancelMeetingModalState {
@@ -88,7 +89,7 @@ export function ConfirmDeleteScheduleModal({
             className="bg-[#E63946] hover:bg-[#D62839] text-white px-5 py-2 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
           >
             {modalState.isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-            <span>Delete Schedule</span>
+            <span>{modalState.type === 'invitation' ? 'Decline Invitation' : 'Delete Schedule'}</span>
           </button>
         </div>
       </div>

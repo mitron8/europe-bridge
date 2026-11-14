@@ -399,6 +399,7 @@ export default function StudentDashboard() {
     message: string;
     reason: string;
     isSubmitting: boolean;
+    type?: 'reschedule' | 'invitation';
   }>({
     isOpen: false,
     meetingId: null,
@@ -406,6 +407,7 @@ export default function StudentDashboard() {
     message: '',
     reason: '',
     isSubmitting: false,
+    type: 'reschedule',
   });
 
   const [cancelMeetingModal, setCancelMeetingModal] = useState<{
@@ -426,6 +428,13 @@ export default function StudentDashboard() {
     type: 'success' | 'error';
     message: string;
   } | null>(null);
+
+  useEffect(() => {
+    if (meetingFeedback) {
+      const timer = setTimeout(() => setMeetingFeedback(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [meetingFeedback]);
 
   const handleAcceptInvitation = async (meetingId: string) => {
     try {
@@ -455,6 +464,7 @@ export default function StudentDashboard() {
       message: 'Declining will release this time slot. You can book a fresh strategy session anytime later.',
       reason: '',
       isSubmitting: false,
+      type: 'invitation',
     });
   };
 
@@ -486,6 +496,7 @@ export default function StudentDashboard() {
       message: 'Declining or withdrawing this reschedule request will delete this schedule. You will be able to book a fresh meeting slot anytime later.',
       reason: '',
       isSubmitting: false,
+      type: 'reschedule',
     });
   };
 
@@ -495,7 +506,11 @@ export default function StudentDashboard() {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const res = await fetch(`${API_URL}/meetings/${confirmDeleteModal.meetingId}/student/decline-reschedule`, {
+      const actionEndpoint = confirmDeleteModal.type === 'invitation'
+        ? `${API_URL}/meetings/${confirmDeleteModal.meetingId}/student/decline-invitation`
+        : `${API_URL}/meetings/${confirmDeleteModal.meetingId}/student/decline-reschedule`;
+
+      const res = await fetch(actionEndpoint, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -506,11 +521,13 @@ export default function StudentDashboard() {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || 'Failed to decline reschedule');
+        throw new Error(err.message || 'Failed to process request');
       }
       setMeetingFeedback({
         type: 'success',
-        message: 'Meeting schedule has been deleted. You can re-book a fresh meeting slot anytime.',
+        message: confirmDeleteModal.type === 'invitation'
+          ? 'Meeting invitation declined.'
+          : 'Meeting schedule has been deleted. You can re-book a fresh meeting slot anytime.',
       });
       setConfirmDeleteModal((prev) => ({ ...prev, isOpen: false }));
       fetchStudentMeetings();
@@ -660,9 +677,28 @@ export default function StudentDashboard() {
           <CounsellorExpertCard
             assignedCounsellor={assignedCounsellor}
             upcomingMeeting={meetingsData?.upcoming?.[0]}
+            pendingReschedule={meetingsData?.pendingReschedules?.[0]}
+            pendingInvitation={meetingsData?.pendingInvitations?.[0]}
+            meetingFeedback={meetingFeedback}
+            onDismissFeedback={() => setMeetingFeedback(null)}
             onBookMeeting={() => {
               setBookingMode('student_book');
               setSelectedMeetingForReschedule(null);
+              setIsBookingModalOpen(true);
+            }}
+            onAcceptReschedule={(id) => handleAcceptReschedule(id)}
+            onDeclineReschedule={(id, isProposalByCounsellor) => handleOpenDeclineRescheduleModal(id, isProposalByCounsellor)}
+            onCounterReschedule={(m) => {
+              setSelectedMeetingForReschedule(m);
+              setBookingMode('counterproposal');
+              setIsBookingModalOpen(true);
+            }}
+            onAcceptInvitation={(id) => handleAcceptInvitation(id)}
+            onDeclineInvitation={(id) => handleDeclineInvitation(id)}
+            onCancelMeeting={(id) => handleOpenCancelMeetingModal(id)}
+            onRescheduleMeeting={(m) => {
+              setSelectedMeetingForReschedule(m);
+              setBookingMode('reschedule');
               setIsBookingModalOpen(true);
             }}
           />
