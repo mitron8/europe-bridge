@@ -106,6 +106,19 @@ export function CounsellorSidebar({ isOpen = false, onClose }: CounsellorSidebar
       border-r border-[#6B1523]/70 dark:border-[#380912] shadow-xl lg:shadow-none relative
     `}
     >
+      {/* Background Forest Silhouette Illustration spanning the bottom area */}
+      <div className="absolute bottom-0 left-0 right-0 h-80 pointer-events-none select-none overflow-hidden z-0">
+        <Image
+          src="/images/counsellor/sidebar-forest-bg.png"
+          alt=""
+          fill
+          priority
+          className="object-cover object-bottom opacity-85"
+        />
+        {/* Soft top gradient to blend seamlessly into #4A0C16 */}
+        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-[#4A0C16] dark:to-[#1A0408]" />
+      </div>
+
       {/* Brand Header */}
       <div
         className={`p-4 pb-3.5 border-b border-white/10 flex items-center relative z-20 ${
@@ -118,14 +131,14 @@ export function CounsellorSidebar({ isOpen = false, onClose }: CounsellorSidebar
               <Image
                 src="/logo-white.png"
                 alt="EuropeBridge"
-                width={150}
-                height={28}
+                width={155}
+                height={30}
                 priority
                 className="h-6 w-auto object-contain"
               />
-              <div className="flex items-center gap-1.5 mt-1 text-[10px] font-bold uppercase tracking-wider text-rose-200/80">
-                <span>• Counsellor Hub</span>
-              </div>
+              <span className="text-[9px] font-black uppercase tracking-wider text-rose-200/80 mt-1 pl-0.5">
+                • Counsellor Hub
+              </span>
             </div>
           ) : (
             <div className="w-9 h-9 rounded-xl bg-white/10 text-white flex items-center justify-center font-extrabold text-xs tracking-wider">
@@ -217,83 +230,69 @@ export function CounsellorSidebar({ isOpen = false, onClose }: CounsellorSidebar
         })}
       </nav>
 
-      {/* Bottom Area with Misty Forest Silhouette & User Profile */}
-      <div className="relative mt-auto shrink-0 z-20">
-        {/* Pine Forest Silhouette Illustration sitting behind/above the profile area */}
-        <div className="w-full h-28 relative overflow-hidden pointer-events-none select-none opacity-85">
-          <Image
-            src="/images/counsellor/sidebar-forest-clean.png"
-            alt=""
-            width={240}
-            height={140}
-            className="w-full h-full object-cover object-bottom"
-          />
-        </div>
-
-        {/* Profile Card & Bottom Toggles */}
-        <div className="p-3 pt-1 bg-[#4A0C16] dark:bg-[#1A0408]">
-          {!isCollapsed ? (
-            <div className="flex items-center justify-between gap-2.5 p-2 rounded-2xl bg-[#3B0710]/80 dark:bg-black/40 border border-white/10 backdrop-blur-xs mb-2 shadow-2xs">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-[#8C3A42] border border-white/20 flex items-center justify-center text-white font-extrabold text-xs shrink-0 shadow-2xs">
-                  {initials}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-xs text-white truncate">{fullName}</p>
-                  <p className="text-[10px] font-medium text-rose-200/70 truncate">{displayRole}</p>
-                </div>
-              </div>
-              <Link
-                href="/dashboard/counsellor/account"
-                className="p-1.5 rounded-xl text-rose-200/70 hover:text-white hover:bg-white/10 transition-colors shrink-0"
-                title="Account Settings"
-              >
-                <Settings className="w-4 h-4" />
-              </Link>
-            </div>
-          ) : (
-            <div className="flex justify-center mb-2" title={`${fullName} (${displayRole})`}>
-              <div className="w-8 h-8 rounded-full bg-[#8C3A42] border border-white/20 flex items-center justify-center text-white font-extrabold text-xs shrink-0">
+      {/* Bottom Area: User Profile Card & Controls */}
+      <div className="p-3.5 pt-2 relative z-20 mt-auto">
+        {!isCollapsed ? (
+          <div className="flex items-center justify-between gap-2.5 p-2.5 rounded-2xl bg-[#360810]/75 dark:bg-black/50 border border-white/10 backdrop-blur-xs mb-2.5 shadow-2xs">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-[#8C3A42] border border-white/20 flex items-center justify-center text-white font-extrabold text-xs shrink-0 shadow-2xs">
                 {initials}
               </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-xs text-white truncate">{fullName}</p>
+                <p className="text-[10px] font-medium text-rose-200/70 truncate">{displayRole}</p>
+              </div>
+            </div>
+            <Link
+              href="/dashboard/counsellor/account"
+              className="p-1.5 rounded-xl text-rose-200/80 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+              title="Account Settings"
+            >
+              <Settings className="w-4 h-4" />
+            </Link>
+          </div>
+        ) : (
+          <div className="flex justify-center mb-2" title={`${fullName} (${displayRole})`}>
+            <div className="w-8 h-8 rounded-full bg-[#8C3A42] border border-white/20 flex items-center justify-center text-white font-extrabold text-xs shrink-0">
+              {initials}
+            </div>
+          </div>
+        )}
+
+        {/* Light Mode Switch */}
+        <button
+          onClick={toggleDarkMode}
+          title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          className="w-full mb-1.5 py-1.5 px-3 text-xs font-bold text-rose-100 hover:text-white hover:bg-white/10 rounded-xl flex items-center justify-between cursor-pointer transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Sun className="w-3.5 h-3.5 text-rose-200" />
+            {!isCollapsed && <span>{isDarkMode ? 'Dark Mode' : 'Light Mode'}</span>}
+          </div>
+          {!isCollapsed && (
+            <div
+              className={`w-8 h-4 rounded-full p-0.5 transition-colors ${
+                !isDarkMode ? 'bg-white/90' : 'bg-black/40 border border-white/20'
+              }`}
+            >
+              <div
+                className={`w-3 h-3 rounded-full transition-transform ${
+                  !isDarkMode ? 'translate-x-4 bg-[#5A0F1B]' : 'translate-x-0 bg-white'
+                }`}
+              />
             </div>
           )}
+        </button>
 
-          {/* Light Mode Switch */}
-          <button
-            onClick={toggleDarkMode}
-            title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            className="w-full mb-1.5 py-1.5 px-3 text-xs font-bold text-rose-100 hover:text-white hover:bg-white/10 rounded-xl flex items-center justify-between cursor-pointer transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              <Sun className="w-3.5 h-3.5 text-rose-200" />
-              {!isCollapsed && <span>{isDarkMode ? 'Dark Mode' : 'Light Mode'}</span>}
-            </div>
-            {!isCollapsed && (
-              <div
-                className={`w-8 h-4 rounded-full p-0.5 transition-colors ${
-                  !isDarkMode ? 'bg-white/90' : 'bg-black/40 border border-white/20'
-                }`}
-              >
-                <div
-                  className={`w-3 h-3 rounded-full transition-transform ${
-                    !isDarkMode ? 'translate-x-4 bg-[#5A0F1B]' : 'translate-x-0 bg-white'
-                  }`}
-                />
-              </div>
-            )}
-          </button>
-
-          {/* Sign Out Button */}
-          <button
-            onClick={() => logout()}
-            title="Sign Out"
-            className="w-full py-1.5 px-3 text-xs font-bold text-rose-200 hover:text-white hover:bg-white/10 border border-white/10 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-colors"
-          >
-            <LogOut className="w-3.5 h-3.5 shrink-0" />
-            {!isCollapsed && <span>Sign Out</span>}
-          </button>
-        </div>
+        {/* Sign Out Button */}
+        <button
+          onClick={() => logout()}
+          title="Sign Out"
+          className="w-full py-1.5 px-3 text-xs font-bold text-rose-200 hover:text-white hover:bg-white/10 border border-white/10 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-colors"
+        >
+          <LogOut className="w-3.5 h-3.5 shrink-0" />
+          {!isCollapsed && <span>Sign Out</span>}
+        </button>
       </div>
     </aside>
   );

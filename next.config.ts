@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const backendUrl = process.env.API_URL || "http://localhost:3001";
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   experimental: {
     agentUpgrade: "security",
   },

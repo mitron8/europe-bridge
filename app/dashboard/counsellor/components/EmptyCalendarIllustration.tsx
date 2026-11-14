@@ -78,3 +78,4 @@ export function EmptyCalendarIllustration({ className = "w-28 h-28" }: { classNa
     </svg>
   );
 }
+

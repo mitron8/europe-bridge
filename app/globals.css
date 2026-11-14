@@ -845,5 +845,12 @@ aside nav::-webkit-scrollbar,
   background-color: rgba(255, 255, 255, 0.45) !important;
 }
 
+/* Prevent dev indicators or portals from obstructing sidebar controls */
+nextjs-portal,
+[data-nextjs-toast],
+div[data-nextjs-dialog-overlay] {
+  pointer-events: none !important;
+}
+
 
 

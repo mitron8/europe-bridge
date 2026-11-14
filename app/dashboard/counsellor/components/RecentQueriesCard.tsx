@@ -124,3 +124,4 @@ export function RecentQueriesCard({ tickets = [], isLoading = false }: RecentQue
     </div>
   );
 }
+

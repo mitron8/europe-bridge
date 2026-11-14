@@ -121,3 +121,4 @@ export function TodaySessionsCard({ meetings = [] }: TodaySessionsCardProps) {
     </div>
   );
 }
+
