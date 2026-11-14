@@ -234,14 +234,24 @@ export function CounsellorExpertCard({
               )}
             </div>
           ) : (
-            <div className="pt-1">
+            <div className="flex items-center gap-1.5 pt-1">
+              {onCounterReschedule && (
+                <button
+                  type="button"
+                  onClick={() => onCounterReschedule(pendingReschedule)}
+                  className="flex-1 py-1.5 px-2 text-[11px] font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-[#151B27] border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer text-center"
+                >
+                  <span>Change Slot</span>
+                </button>
+              )}
               {onDeclineReschedule && (
                 <button
                   type="button"
                   onClick={() => onDeclineReschedule(pendingReschedule.id, false)}
-                  className="w-full py-1.5 px-2.5 text-[11px] font-bold text-gray-600 dark:text-gray-300 hover:text-[#E63946] border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                  className="py-1.5 px-2.5 text-[11px] font-bold text-gray-600 dark:text-gray-300 hover:text-[#E63946] border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                  title="Withdraw request and delete schedule"
                 >
-                  <span>Withdraw Request & Delete Schedule</span>
+                  <span>Withdraw Request</span>
                 </button>
               )}
             </div>
