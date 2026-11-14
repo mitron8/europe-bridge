@@ -186,12 +186,12 @@ export default function CounsellorDashboard() {
         <div className="p-4 sm:p-5 rounded-2xl bg-red-50/70 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 relative overflow-hidden shadow-2xs">
           <div className="absolute top-0 left-0 w-1.5 h-full bg-[#B91C1C]" />
 
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pl-1">
-            <div className="flex items-start gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pl-1">
+            <div className="flex items-start gap-3 min-w-0">
               <div className="w-8 h-8 rounded-xl bg-red-100 dark:bg-red-900/50 text-[#B91C1C] flex items-center justify-center shrink-0 border border-red-200 dark:border-red-800 shadow-2xs mt-0.5">
                 <AlertTriangle className="w-4 h-4" />
               </div>
-              <div className="space-y-0.5">
+              <div className="space-y-0.5 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="text-sm font-extrabold text-[#2A080F] dark:text-white">
                     Time-Sensitive Orders Awaiting Attention
@@ -213,7 +213,7 @@ export default function CounsellorDashboard() {
 
             <Link
               href="/dashboard/counsellor/services"
-              className="px-4 py-2 rounded-xl text-xs font-bold bg-[#B91C1C] hover:bg-[#991B1B] text-white transition-all flex items-center justify-center gap-2 shadow-2xs shrink-0 cursor-pointer"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold bg-[#B91C1C] hover:bg-[#991B1B] text-white transition-all flex items-center justify-center gap-2 shadow-2xs shrink-0 cursor-pointer"
             >
               <span>Serve Oldest First</span>
               <ArrowRight className="w-4 h-4" />

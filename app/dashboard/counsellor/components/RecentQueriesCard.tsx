@@ -40,7 +40,7 @@ export function RecentQueriesCard({ tickets = [], isLoading = false }: RecentQue
   const activeCount = tickets.length;
 
   return (
-    <div className="bg-white dark:bg-[#111622] rounded-3xl border border-gray-200/90 dark:border-gray-800 p-6 shadow-2xs flex flex-col justify-between min-h-[340px]">
+    <div className="bg-white dark:bg-[#111622] rounded-2xl sm:rounded-3xl border border-gray-200/90 dark:border-gray-800 p-4 sm:p-6 shadow-2xs flex flex-col justify-between min-h-[320px] sm:min-h-[340px]">
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800">
         <div className="flex items-center gap-2">
@@ -79,16 +79,16 @@ export function RecentQueriesCard({ tickets = [], isLoading = false }: RecentQue
               <Link
                 key={q.id}
                 href="/dashboard/counsellor/help"
-                className="block p-3.5 rounded-2xl bg-[#FFFBF8] dark:bg-[#151B27]/60 border border-gray-150 dark:border-gray-800 hover:border-rose-300 dark:hover:border-rose-900 transition-all group"
+                className="block p-3 sm:p-3.5 rounded-2xl bg-[#FFFBF8] dark:bg-[#151B27]/60 border border-gray-150 dark:border-gray-800 hover:border-rose-300 dark:hover:border-rose-900 transition-all group"
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-2.5 sm:gap-3">
                   <div className="w-8 h-8 rounded-xl bg-white dark:bg-black/30 text-[#8C2434] dark:text-rose-300 flex items-center justify-center shrink-0 border border-rose-100 dark:border-rose-950 shadow-2xs mt-0.5">
                     <MessageSquare className="w-4 h-4" />
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 mb-0.5">
-                      <span className="font-mono text-[10px] font-bold text-gray-500 dark:text-gray-400 tracking-wider">
+                    <div className="flex items-center justify-between gap-1.5 sm:gap-2 mb-0.5">
+                      <span className="font-mono text-[10px] font-bold text-gray-500 dark:text-gray-400 tracking-wider truncate">
                         {q.ticketNumber}
                       </span>
                       <div className="flex items-center gap-1.5 shrink-0">
@@ -101,7 +101,7 @@ export function RecentQueriesCard({ tickets = [], isLoading = false }: RecentQue
                         >
                           {q.priority || 'NORMAL'}
                         </span>
-                        <span className="text-[10px] text-gray-400 font-medium">
+                        <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">
                           {getRelativeTime(q.createdAt)}
                         </span>
                       </div>

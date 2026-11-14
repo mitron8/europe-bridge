@@ -24,7 +24,7 @@ export function TodaySessionsCard({ meetings = [] }: TodaySessionsCardProps) {
   const sessionCount = meetings.length;
 
   return (
-    <div className="bg-white dark:bg-[#111622] rounded-3xl border border-gray-200/90 dark:border-gray-800 p-6 shadow-2xs flex flex-col justify-between min-h-[340px]">
+    <div className="bg-white dark:bg-[#111622] rounded-2xl sm:rounded-3xl border border-gray-200/90 dark:border-gray-800 p-4 sm:p-6 shadow-2xs flex flex-col justify-between min-h-[320px] sm:min-h-[340px]">
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800">
         <div className="flex items-center gap-2">
@@ -53,17 +53,17 @@ export function TodaySessionsCard({ meetings = [] }: TodaySessionsCardProps) {
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 sm:gap-2.5 pt-2 w-full max-w-xs sm:max-w-none">
               <Link
                 href="/dashboard/counsellor/deadlines"
-                className="bg-[#5A0F1B] hover:bg-[#480C15] text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                className="w-full sm:w-auto text-center justify-center bg-[#5A0F1B] hover:bg-[#480C15] text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Schedule a Session</span>
               </Link>
               <Link
                 href="/dashboard/counsellor/deadlines"
-                className="bg-white dark:bg-[#111622] border border-[#5A0F1B]/40 hover:border-[#5A0F1B] text-[#5A0F1B] dark:text-rose-300 px-4 py-2.5 rounded-xl font-bold text-xs shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                className="w-full sm:w-auto text-center justify-center bg-white dark:bg-[#111622] border border-[#5A0F1B]/40 hover:border-[#5A0F1B] text-[#5A0F1B] dark:text-rose-300 px-4 py-2.5 rounded-xl font-bold text-xs shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
               >
                 <Calendar className="w-3.5 h-3.5" />
                 <span>View Calendar</span>

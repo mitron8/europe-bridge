@@ -100,7 +100,7 @@ export function CounsellorSidebar({ isOpen = false, onClose }: CounsellorSidebar
     <aside
       className={`
       fixed inset-y-0 left-0 z-50 lg:static lg:z-20
-      ${isCollapsed ? 'w-[72px]' : 'w-64'} h-screen flex flex-col bg-[#4A0C16] dark:bg-[#1A0408] text-white shrink-0 overflow-hidden
+      ${isCollapsed ? 'w-[72px]' : 'w-64'} h-screen h-[100dvh] flex flex-col bg-[#4A0C16] dark:bg-[#1A0408] text-white shrink-0 overflow-hidden
       transition-all duration-300 ease-in-out
       ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       border-r border-[#6B1523]/70 dark:border-[#380912] shadow-xl lg:shadow-none relative
@@ -125,7 +125,12 @@ export function CounsellorSidebar({ isOpen = false, onClose }: CounsellorSidebar
           isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'
         }`}
       >
-        <Link href="/" className="inline-flex items-center group py-1" title="EuropeBridge Counsellor Hub">
+        <Link
+          href="/"
+          onClick={() => onClose?.()}
+          className="inline-flex items-center group py-1"
+          title="EuropeBridge Counsellor Hub"
+        >
           {!isCollapsed ? (
             <div className="flex flex-col">
               <Image
@@ -192,6 +197,7 @@ export function CounsellorSidebar({ isOpen = false, onClose }: CounsellorSidebar
             <Link
               key={item.path}
               href={item.path}
+              onClick={() => onClose?.()}
               title={isCollapsed ? item.name : undefined}
               className={`flex items-center ${
                 isCollapsed ? 'justify-center px-2 py-2.5' : 'justify-between px-3.5 py-2.5'
@@ -231,7 +237,7 @@ export function CounsellorSidebar({ isOpen = false, onClose }: CounsellorSidebar
       </nav>
 
       {/* Bottom Area: User Profile Card & Controls */}
-      <div className="p-3.5 pt-2 relative z-20 mt-auto">
+      <div className="p-3.5 pb-5 lg:pb-3.5 pt-2 relative z-20 mt-auto">
         {!isCollapsed ? (
           <div className="flex items-center justify-between gap-2.5 p-2.5 rounded-2xl bg-[#360810]/75 dark:bg-black/50 border border-white/10 backdrop-blur-xs mb-2.5 shadow-2xs">
             <div className="flex items-center gap-2.5 min-w-0">
@@ -245,6 +251,7 @@ export function CounsellorSidebar({ isOpen = false, onClose }: CounsellorSidebar
             </div>
             <Link
               href="/dashboard/counsellor/account"
+              onClick={() => onClose?.()}
               className="p-1.5 rounded-xl text-rose-200/80 hover:text-white hover:bg-white/10 transition-colors shrink-0"
               title="Account Settings"
             >
