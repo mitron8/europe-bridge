@@ -17,6 +17,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Sun,
+  Moon,
   Layers,
   Settings,
 } from 'lucide-react';
@@ -98,12 +99,13 @@ export function CounsellorSidebar({ isOpen = false, onClose }: CounsellorSidebar
 
   return (
     <aside
+      data-sidebar="counsellor"
       className={`
       fixed inset-y-0 left-0 z-50 lg:static lg:z-20
-      ${isCollapsed ? 'w-[72px]' : 'w-64'} h-screen h-[100dvh] flex flex-col bg-[#4A0C16] dark:bg-[#1A0408] text-white shrink-0 overflow-hidden
+      ${isCollapsed ? 'w-[72px]' : 'w-64'} h-screen h-[100dvh] flex flex-col bg-[#4A0C16] text-white shrink-0 overflow-hidden
       transition-all duration-300 ease-in-out
       ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      border-r border-[#6B1523]/70 dark:border-[#380912] shadow-xl lg:shadow-none
+      border-r border-[#6B1523]/70 shadow-xl lg:shadow-none
     `}
     >
       {/* Background Forest Silhouette Illustration spanning the bottom area */}
@@ -116,7 +118,7 @@ export function CounsellorSidebar({ isOpen = false, onClose }: CounsellorSidebar
           className="object-cover object-bottom opacity-85"
         />
         {/* Soft top gradient to blend seamlessly into #4A0C16 */}
-        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-[#4A0C16] dark:to-[#1A0408]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-[#4A0C16]" />
       </div>
 
       {/* Brand Header */}
@@ -234,7 +236,7 @@ export function CounsellorSidebar({ isOpen = false, onClose }: CounsellorSidebar
       {/* Bottom Area: User Profile Card & Controls */}
       <div className="p-3.5 pb-5 lg:pb-3.5 pt-2 relative z-20 mt-auto">
         {!isCollapsed ? (
-          <div className="flex items-center justify-between gap-2.5 p-2.5 rounded-2xl bg-[#360810]/75 dark:bg-black/50 border border-white/10 backdrop-blur-xs mb-2.5 shadow-2xs">
+          <div className="flex items-center justify-between gap-2.5 p-2.5 rounded-2xl bg-[#360810]/75 border border-white/10 backdrop-blur-xs mb-2.5 shadow-2xs">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-8 h-8 rounded-full bg-[#8C3A42] border border-white/20 flex items-center justify-center text-white font-extrabold text-xs shrink-0 shadow-2xs">
                 {initials}
@@ -261,25 +263,29 @@ export function CounsellorSidebar({ isOpen = false, onClose }: CounsellorSidebar
           </div>
         )}
 
-        {/* Light Mode Switch */}
+        {/* Theme Mode Switch */}
         <button
           onClick={toggleDarkMode}
           title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           className="w-full mb-1.5 py-1.5 px-3 text-xs font-bold text-rose-100 hover:text-white hover:bg-white/10 rounded-xl flex items-center justify-between cursor-pointer transition-colors"
         >
           <div className="flex items-center gap-2">
-            <Sun className="w-3.5 h-3.5 text-rose-200" />
+            {isDarkMode ? (
+              <Moon className="w-3.5 h-3.5 text-rose-200" />
+            ) : (
+              <Sun className="w-3.5 h-3.5 text-rose-200" />
+            )}
             {!isCollapsed && <span>{isDarkMode ? 'Dark Mode' : 'Light Mode'}</span>}
           </div>
           {!isCollapsed && (
             <div
               className={`w-8 h-4 rounded-full p-0.5 transition-colors ${
-                !isDarkMode ? 'bg-white/90' : 'bg-black/40 border border-white/20'
+                isDarkMode ? 'bg-[#B91C1C]' : 'bg-white/90'
               }`}
             >
               <div
                 className={`w-3 h-3 rounded-full transition-transform ${
-                  !isDarkMode ? 'translate-x-4 bg-[#5A0F1B]' : 'translate-x-0 bg-white'
+                  isDarkMode ? 'translate-x-4 bg-white' : 'translate-x-0 bg-[#5A0F1B]'
                 }`}
               />
             </div>
