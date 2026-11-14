@@ -103,7 +103,7 @@ export function CounsellorSidebar({ isOpen = false, onClose }: CounsellorSidebar
       ${isCollapsed ? 'w-[72px]' : 'w-64'} h-screen h-[100dvh] flex flex-col bg-[#4A0C16] dark:bg-[#1A0408] text-white shrink-0 overflow-hidden
       transition-all duration-300 ease-in-out
       ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      border-r border-[#6B1523]/70 dark:border-[#380912] shadow-xl lg:shadow-none relative
+      border-r border-[#6B1523]/70 dark:border-[#380912] shadow-xl lg:shadow-none
     `}
     >
       {/* Background Forest Silhouette Illustration spanning the bottom area */}
@@ -129,22 +129,17 @@ export function CounsellorSidebar({ isOpen = false, onClose }: CounsellorSidebar
           href="/"
           onClick={() => onClose?.()}
           className="inline-flex items-center group py-1"
-          title="EuropeBridge Counsellor Hub"
+          title="EuropeBridge"
         >
           {!isCollapsed ? (
-            <div className="flex flex-col">
-              <Image
-                src="/logo-white.png"
-                alt="EuropeBridge"
-                width={155}
-                height={30}
-                priority
-                className="h-6 w-auto object-contain"
-              />
-              <span className="text-[9px] font-black uppercase tracking-wider text-rose-200/80 mt-1 pl-0.5">
-                • Counsellor Hub
-              </span>
-            </div>
+            <Image
+              src="/logo-white.png"
+              alt="EuropeBridge"
+              width={155}
+              height={30}
+              priority
+              className="h-6 w-auto object-contain"
+            />
           ) : (
             <div className="w-9 h-9 rounded-xl bg-white/10 text-white flex items-center justify-center font-extrabold text-xs tracking-wider">
               EB
