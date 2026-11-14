@@ -1,7 +1,8 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { logout } from '@/lib/auth';
 import {
@@ -11,17 +12,14 @@ import {
   Calendar,
   Bell,
   LogOut,
-  ChevronRight,
-  Headphones,
   HelpCircle,
   X,
   ChevronsLeft,
   ChevronsRight,
   Sun,
-  Moon,
-  Layers
+  Layers,
+  Settings,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { useChatNotificationStore } from '@/store/useChatNotificationStore';
 
@@ -43,6 +41,8 @@ interface CounsellorSidebarProps {
 export function CounsellorSidebar({ isOpen = false, onClose }: CounsellorSidebarProps) {
   const pathname = usePathname();
   const [user, setUser] = useState<{ firstName?: string; lastName?: string; role?: string } | null>(null);
+  const [servicesCount, setServicesCount] = useState<number>(0);
+  const [inquiriesCount, setInquiriesCount] = useState<number>(3);
   const isCollapsed = useAppStore((state) => state.isSidebarCollapsed);
   const toggleCollapse = useAppStore((state) => state.toggleSidebarCollapsed);
   const isDarkMode = useAppStore((state) => state.isDarkMode);
@@ -50,63 +50,86 @@ export function CounsellorSidebar({ isOpen = false, onClose }: CounsellorSidebar
   const unreadCount = useChatNotificationStore((state) => state.unreadCount);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchSidebarData = async () => {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/backend';
-        const res = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
-        if (res.ok) {
-          const data = await res.json();
+        const [userRes, servicesRes, helpRes] = await Promise.all([
+          fetch(`${API_URL}/auth/me`, { credentials: 'include' }).catch(() => null),
+          fetch(`${API_URL}/service-orders/counsellor/assigned`, { credentials: 'include' }).catch(() => null),
+          fetch(`${API_URL}/help/counsellor/queries`, { credentials: 'include' }).catch(() => null),
+        ]);
+
+        if (userRes && userRes.ok) {
+          const data = await userRes.json();
           setUser(data.user);
         }
+
+        if (servicesRes && servicesRes.ok) {
+          const sData = await servicesRes.json();
+          const unattended = (sData || []).filter((o: any) =>
+            ['BOOKED', 'ASSIGNED', 'REVISION_REQUESTED'].includes(o.status)
+          );
+          setServicesCount(unattended.length);
+        }
+
+        if (helpRes && helpRes.ok) {
+          const hData = await helpRes.json();
+          const pending = (hData || []).filter((q: any) => q.status !== 'resolved' && q.status !== 'closed');
+          setInquiriesCount(pending.length);
+        }
       } catch (err) {
-        console.error('Failed to load user', err);
+        console.error('Failed to load counsellor sidebar metrics', err);
       }
     };
-    fetchUser();
+    fetchSidebarData();
   }, []);
 
-  const initials = user 
-    ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() 
-    : '';
-    
-  const fullName = user 
-    ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Counsellor'
-    : 'Loading...';
+  const initials = user
+    ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() || 'CU'
+    : 'CU';
 
-  const displayRole = user?.role === 'superadmin' 
-    ? 'Super Admin' 
-    : (user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Loading...');
+  const fullName = user
+    ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Counsellor User'
+    : 'Counsellor User';
+
+  const displayRole = user?.role === 'superadmin'
+    ? 'Super Admin'
+    : (user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Counsellor');
 
   return (
-    <aside className={`
+    <aside
+      className={`
       fixed inset-y-0 left-0 z-50 lg:static lg:z-20
-      ${isCollapsed ? 'w-[72px]' : 'w-64'} h-screen flex flex-col bg-white dark:bg-[#111622] shrink-0 overflow-hidden
+      ${isCollapsed ? 'w-[72px]' : 'w-64'} h-screen flex flex-col bg-[#4A0C16] dark:bg-[#1A0408] text-white shrink-0 overflow-hidden
       transition-all duration-300 ease-in-out
       ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      border-r border-gray-200/80 dark:border-gray-800/80 shadow-sm lg:shadow-none
-    `}>
-      {/* German Flag Tricolor Header Accent */}
-      <div className="w-full h-[3px] flex shrink-0">
-        <div className="flex-1 bg-germany-black"></div>
-        <div className="flex-1 bg-germany-red"></div>
-        <div className="flex-1 bg-germany-gold"></div>
-      </div>
-
+      border-r border-[#6B1523]/70 dark:border-[#380912] shadow-xl lg:shadow-none relative
+    `}
+    >
       {/* Brand Header */}
-      <div className={`p-4 pb-3 border-b border-gray-200/80 dark:border-gray-800/80 flex items-center ${isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'}`}>
-        <Link href="/" className="flex items-center gap-3 group" title="EuropeBridge Counsellor">
-          <div className="w-9 h-9 rounded-xl bg-germany-red text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-all shrink-0 font-extrabold text-xs tracking-wider">
-            EB
-          </div>
-          {!isCollapsed && (
-            <div className="flex flex-col min-w-0">
-              <div className="font-display text-lg leading-none text-germany-black dark:text-white tracking-tight">
-                Europe<span className="text-germany-red">Bridge</span>
+      <div
+        className={`p-4 pb-3.5 border-b border-white/10 flex items-center relative z-20 ${
+          isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'
+        }`}
+      >
+        <Link href="/" className="inline-flex items-center group py-1" title="EuropeBridge Counsellor Hub">
+          {!isCollapsed ? (
+            <div className="flex flex-col">
+              <Image
+                src="/logo-white.png"
+                alt="EuropeBridge"
+                width={150}
+                height={28}
+                priority
+                className="h-6 w-auto object-contain"
+              />
+              <div className="flex items-center gap-1.5 mt-1 text-[10px] font-bold uppercase tracking-wider text-rose-200/80">
+                <span>• Counsellor Hub</span>
               </div>
-              <div className="flex items-center gap-1.5 mt-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-germany-gold"></span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Counsellor Hub</span>
-              </div>
+            </div>
+          ) : (
+            <div className="w-9 h-9 rounded-xl bg-white/10 text-white flex items-center justify-center font-extrabold text-xs tracking-wider">
+              EB
             </div>
           )}
         </Link>
@@ -114,8 +137,8 @@ export function CounsellorSidebar({ isOpen = false, onClose }: CounsellorSidebar
         {/* Desktop Collapse / Expand Button */}
         <button
           onClick={toggleCollapse}
-          className="hidden lg:flex p-1.5 rounded-lg text-gray-400 hover:text-germany-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors cursor-pointer shrink-0"
-          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="hidden lg:flex p-1.5 rounded-lg text-rose-200/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isCollapsed ? <ChevronsRight className="w-4 h-4" /> : <ChevronsLeft className="w-4 h-4" />}
         </button>
@@ -124,7 +147,7 @@ export function CounsellorSidebar({ isOpen = false, onClose }: CounsellorSidebar
         {onClose && (
           <button
             onClick={onClose}
-            className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/60 text-gray-400 hover:text-germany-black dark:hover:text-white transition-colors"
+            className="lg:hidden p-1.5 rounded-lg hover:bg-white/10 text-rose-200/70 hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -132,100 +155,146 @@ export function CounsellorSidebar({ isOpen = false, onClose }: CounsellorSidebar
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 overflow-y-auto p-3 space-y-1 no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <nav className="flex-1 overflow-y-auto p-3 space-y-1 relative z-20 no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {!isCollapsed && (
-          <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1.5">
+          <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-rose-200/60 mb-2">
             Student Counselling
           </div>
         )}
         {navItems.map((item) => {
           const isActive = pathname === item.path;
           const Icon = item.icon;
+
+          // Badges matching Image 2
+          const badgeCount =
+            item.path === '/dashboard/counsellor/services'
+              ? servicesCount
+              : item.path === '/dashboard/counsellor/help'
+              ? unreadCount > 0 ? unreadCount : inquiriesCount
+              : null;
+
+          const isRedBadge = item.path === '/dashboard/counsellor/help';
+
           return (
             <Link
               key={item.path}
               href={item.path}
               title={isCollapsed ? item.name : undefined}
-              className={`flex items-center ${isCollapsed ? 'justify-center px-2 py-2.5' : 'justify-between px-3 py-2'} rounded-xl text-xs font-bold transition-colors group ${
+              className={`flex items-center ${
+                isCollapsed ? 'justify-center px-2 py-2.5' : 'justify-between px-3.5 py-2.5'
+              } rounded-2xl text-xs font-bold transition-all group ${
                 isActive
-                  ? 'bg-germany-red text-white shadow-xs'
-                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/60 hover:text-germany-black dark:hover:text-white'
+                  ? 'bg-[#FDE2E4] text-[#5A0F1B] shadow-2xs'
+                  : 'text-rose-100/90 hover:bg-white/10 hover:text-white'
               }`}
             >
-              <div className={`flex items-center ${isCollapsed ? 'justify-center relative' : 'gap-2.5 min-w-0'}`}>
-                <div className={`p-1 rounded-lg transition-colors shrink-0 relative ${
-                  isActive ? 'text-white' : 'text-gray-500 dark:text-gray-400 group-hover:text-germany-red'
-                }`}>
+              <div className={`flex items-center ${isCollapsed ? 'justify-center relative' : 'gap-3 min-w-0'}`}>
+                <div
+                  className={`p-0.5 rounded-lg transition-colors shrink-0 ${
+                    isActive ? 'text-[#5A0F1B]' : 'text-rose-200/80 group-hover:text-white'
+                  }`}
+                >
                   <Icon className="w-4 h-4" />
-                  {isCollapsed && item.path === '/dashboard/counsellor/help' && unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-germany-red border-2 border-white dark:border-[#111622] animate-pulse" />
-                  )}
                 </div>
                 {!isCollapsed && <span className="truncate">{item.name}</span>}
               </div>
-              {!isCollapsed && (
-                item.path === '/dashboard/counsellor/help' && unreadCount > 0 ? (
-                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-germany-red text-white shadow-xs animate-pulse shrink-0">
-                    {unreadCount}
-                  </span>
-                ) : isActive ? (
-                  <ChevronRight className="w-4 h-4 text-white/90 shrink-0" />
-                ) : null
+
+              {!isCollapsed && badgeCount !== null && (
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
+                    isRedBadge
+                      ? 'bg-[#B91C1C] text-white shadow-2xs'
+                      : isActive
+                      ? 'bg-[#5A0F1B]/15 text-[#5A0F1B]'
+                      : 'bg-white/20 text-white'
+                  }`}
+                >
+                  {badgeCount}
+                </span>
               )}
             </Link>
           );
         })}
       </nav>
 
-      {/* User Profile Card & Logout */}
-      <div className="p-3 border-t border-gray-200/80 dark:border-gray-800/80 bg-white dark:bg-[#111622]">
-        {!isCollapsed ? (
-          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50 dark:bg-[#0E121A] border border-gray-200/80 dark:border-gray-800/80 mb-2">
-            <div className="w-8 h-8 rounded-full bg-germany-gold/20 border border-germany-gold/40 flex items-center justify-center text-germany-black dark:text-amber-300 font-extrabold text-xs shrink-0">
-              {initials ? <span>{initials}</span> : <Headphones className="w-4 h-4 text-germany-black dark:text-amber-300" />}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-xs text-germany-black dark:text-white truncate">{fullName}</p>
-              <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 truncate">{displayRole}</p>
-              <Link href="/dashboard/counsellor/account" className="text-[10px] font-bold text-germany-red hover:underline block truncate mt-0.5">
-                Account Settings →
+      {/* Bottom Area with Misty Forest Silhouette & User Profile */}
+      <div className="relative mt-auto shrink-0 z-20">
+        {/* Pine Forest Silhouette Illustration sitting behind/above the profile area */}
+        <div className="w-full h-28 relative overflow-hidden pointer-events-none select-none opacity-85">
+          <Image
+            src="/images/counsellor/sidebar-forest-clean.png"
+            alt=""
+            width={240}
+            height={140}
+            className="w-full h-full object-cover object-bottom"
+          />
+        </div>
+
+        {/* Profile Card & Bottom Toggles */}
+        <div className="p-3 pt-1 bg-[#4A0C16] dark:bg-[#1A0408]">
+          {!isCollapsed ? (
+            <div className="flex items-center justify-between gap-2.5 p-2 rounded-2xl bg-[#3B0710]/80 dark:bg-black/40 border border-white/10 backdrop-blur-xs mb-2 shadow-2xs">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-full bg-[#8C3A42] border border-white/20 flex items-center justify-center text-white font-extrabold text-xs shrink-0 shadow-2xs">
+                  {initials}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-xs text-white truncate">{fullName}</p>
+                  <p className="text-[10px] font-medium text-rose-200/70 truncate">{displayRole}</p>
+                </div>
+              </div>
+              <Link
+                href="/dashboard/counsellor/account"
+                className="p-1.5 rounded-xl text-rose-200/70 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+                title="Account Settings"
+              >
+                <Settings className="w-4 h-4" />
               </Link>
             </div>
-          </div>
-        ) : (
-          <div className="flex justify-center mb-2" title={`${fullName} (${displayRole})`}>
-            <div className="w-8 h-8 rounded-full bg-germany-gold/20 border border-germany-gold/40 flex items-center justify-center text-germany-black dark:text-amber-300 font-extrabold text-xs shrink-0">
-              {initials ? <span>{initials}</span> : <Headphones className="w-4 h-4 text-amber-800 dark:text-amber-300" />}
-            </div>
-          </div>
-        )}
-
-        <button
-          onClick={toggleDarkMode}
-          title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          className="w-full mb-2 py-1.5 px-3 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-germany-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl flex items-center justify-between cursor-pointer transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            {isDarkMode ? <Sun className="w-3.5 h-3.5 text-germany-gold" /> : <Moon className="w-3.5 h-3.5 text-gray-500" />}
-            {!isCollapsed && <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>}
-          </div>
-          {!isCollapsed && (
-            <div className={`w-7 h-4 rounded-full p-0.5 transition-colors ${isDarkMode ? 'bg-germany-gold' : 'bg-gray-200 dark:bg-gray-700'}`}>
-              <div className={`w-3 h-3 rounded-full bg-white transition-transform ${isDarkMode ? 'translate-x-3' : 'translate-x-0'}`} />
+          ) : (
+            <div className="flex justify-center mb-2" title={`${fullName} (${displayRole})`}>
+              <div className="w-8 h-8 rounded-full bg-[#8C3A42] border border-white/20 flex items-center justify-center text-white font-extrabold text-xs shrink-0">
+                {initials}
+              </div>
             </div>
           )}
-        </button>
 
-        <button
-          onClick={() => logout()}
-          title="Sign Out"
-          className="w-full py-2 px-3 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-germany-red dark:hover:text-[#FF6B7A] hover:bg-red-50 dark:hover:bg-red-500/15 border border-gray-200/80 dark:border-gray-700/70 dark:hover:border-red-500/40 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-xs"
-        >
-          <LogOut className="w-3.5 h-3.5 shrink-0" />
-          {!isCollapsed && <span>Sign Out</span>}
-        </button>
+          {/* Light Mode Switch */}
+          <button
+            onClick={toggleDarkMode}
+            title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            className="w-full mb-1.5 py-1.5 px-3 text-xs font-bold text-rose-100 hover:text-white hover:bg-white/10 rounded-xl flex items-center justify-between cursor-pointer transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <Sun className="w-3.5 h-3.5 text-rose-200" />
+              {!isCollapsed && <span>{isDarkMode ? 'Dark Mode' : 'Light Mode'}</span>}
+            </div>
+            {!isCollapsed && (
+              <div
+                className={`w-8 h-4 rounded-full p-0.5 transition-colors ${
+                  !isDarkMode ? 'bg-white/90' : 'bg-black/40 border border-white/20'
+                }`}
+              >
+                <div
+                  className={`w-3 h-3 rounded-full transition-transform ${
+                    !isDarkMode ? 'translate-x-4 bg-[#5A0F1B]' : 'translate-x-0 bg-white'
+                  }`}
+                />
+              </div>
+            )}
+          </button>
+
+          {/* Sign Out Button */}
+          <button
+            onClick={() => logout()}
+            title="Sign Out"
+            className="w-full py-1.5 px-3 text-xs font-bold text-rose-200 hover:text-white hover:bg-white/10 border border-white/10 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-colors"
+          >
+            <LogOut className="w-3.5 h-3.5 shrink-0" />
+            {!isCollapsed && <span>Sign Out</span>}
+          </button>
+        </div>
       </div>
     </aside>
   );
 }
-
