@@ -100,13 +100,14 @@ export function ShortlistCurationPanel({
           </div>
         ) : (
           curatedProgrammeIds.map((progId, idx) => {
+            const progIdStr = String(progId);
             const matchItem = matchingResults.find(
-              (r) => String(r.programmeId || r.id) === String(progId)
+              (r) => String(r.programmeId || (r as any).programmeid || r.id) === progIdStr
             );
             const curatedItem = curatedProgrammes.find(
-              (cp) => String(cp.programmeId) === String(progId)
+              (cp) => String(cp.programmeId || (cp as any).programmeid) === progIdStr
             );
-            const isShortlisted = shortlistedProgIds.has(String(progId));
+            const isShortlisted = shortlistedProgIds.has(progIdStr);
             const uniName = matchItem?.universityName || curatedItem?.universityName || 'University';
             const progName = matchItem?.programName || curatedItem?.programName || `Programme ID: ${progId}`;
             const maxShortlist = studentSubscription?.maxShortlistCount || 3;

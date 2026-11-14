@@ -892,6 +892,28 @@ export function StudentDetailModal({
 
     if (curatedProgrammeIds.includes(idStr)) {
       nextIds = curatedProgrammeIds.filter((id) => id !== idStr);
+      // When removing a programme from student curation, also unshortlist it immediately
+      if (shortlistedProgIds.has(idStr)) {
+        setUniversities((prev) =>
+          prev
+            .map((u) => {
+              const uId = String(u.programmeId || (u as any).programmeid || (u as any).programme_id || u.id);
+              if (uId === idStr) {
+                return { ...u, status: 'recommended' as const };
+              }
+              return u;
+            })
+            .filter((u) => {
+              const uId = String(u.programmeId || (u as any).programmeid || (u as any).programme_id || u.id);
+              const isTarget = uId === idStr;
+              if (isTarget && !u.notes) {
+                return false;
+              }
+              return true;
+            })
+        );
+        setStudentShortlistCount((prev) => Math.max(0, prev - 1));
+      }
     } else {
       if (curatedProgrammeIds.length >= maxDisplay) {
         alert(`Display curation limit reached (${curatedProgrammeIds.length}/${maxDisplay}). Please remove an existing programme from the Student Display Curation panel on the right (or click "On Student Display" on any card) to make space.`);
@@ -920,6 +942,26 @@ export function StudentDetailModal({
       return;
     }
 
+    const nextIdSet = new Set(topEligible);
+    // Unshortlist any currently shortlisted items dropped by auto-fill
+    setUniversities((prev) =>
+      prev
+        .map((u) => {
+          const id = String(u.programmeId || (u as any).programmeid || (u as any).programme_id || u.id);
+          if (u.status === 'shortlisted' && !nextIdSet.has(id)) {
+            return { ...u, status: 'recommended' as const };
+          }
+          return u;
+        })
+        .filter((u) => {
+          const id = String(u.programmeId || (u as any).programmeid || (u as any).programme_id || u.id);
+          if (u.status === 'shortlisted' && !nextIdSet.has(id) && !u.notes) {
+            return false;
+          }
+          return true;
+        })
+    );
+
     setCuratedProgrammeIds(topEligible);
     await saveCuratedProgrammes(topEligible);
   };
@@ -942,11 +984,17 @@ export function StudentDetailModal({
         setCuratedProgrammes(data.curatedProgrammes);
         setCuratedProgrammeIds(data.curatedProgrammes.map((c: any) => String(c.programmeId)));
       }
+      if (data.recommendations) {
+        setUniversities(data.recommendations);
+      }
+      if (typeof data.shortlistCount === 'number') {
+        setStudentShortlistCount(data.shortlistCount);
+      }
       const idSet = new Set(programmeIds.map(String));
       setMatchingResults((prev: any[]) =>
         prev.map((r) => ({
           ...r,
-          isDisplayed: idSet.has(String(r.programmeId || r.id)),
+          isDisplayed: idSet.has(String(r.programmeId || (r as any).programmeid || r.id)),
         }))
       );
     } catch (err: any) {
@@ -961,13 +1009,13 @@ export function StudentDetailModal({
       alert('Shortlist and curation are locked for this student. Unlock first before modifying the shortlist.');
       return;
     }
-    const progIdStr = String(r.programmeId || r.id);
+    const progIdStr = String(r.programmeId || (r as any).programmeid || r.id);
     const effectiveId = propStudent?.userId || studentId;
     if (!effectiveId) return;
 
     const existing = universities.find(
       (u) =>
-        String(u.programmeId) === progIdStr ||
+        String(u.programmeId || (u as any).programmeid) === progIdStr ||
         String(u.id) === progIdStr ||
         (u.name === r.universityName && u.program === r.programName)
     );
@@ -1050,7 +1098,8 @@ export function StudentDetailModal({
     const set = new Set<string>();
     universities.forEach((u: any) => {
       if (u.status === 'shortlisted' || (u.status && u.status !== 'recommended')) {
-        if (u.programmeId) set.add(String(u.programmeId));
+        const pid = u.programmeId ?? (u as any).programmeid ?? (u as any).programme_id;
+        if (pid) set.add(String(pid));
         if (u.id) set.add(String(u.id));
       }
     });
@@ -1059,7 +1108,7 @@ export function StudentDetailModal({
 
   const notepadProgrammes = useMemo(() => {
     const matchedProgIds = new Set(
-      matchingResults.map((m: any) => String(m.programmeId || m.id))
+      matchingResults.map((m: any) => String(m.programmeId || (m as any).programmeid || m.id))
     );
     return universities.filter((u: any) => {
       const uProgId = String(u.programmeId || u.id);

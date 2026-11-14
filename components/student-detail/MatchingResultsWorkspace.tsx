@@ -206,7 +206,7 @@ export function MatchingResultsWorkspace({
               {/* Paginated Grid */}
               <div className={`grid grid-cols-1 ${showCurationPanel ? 'md:grid-cols-1 xl:grid-cols-2' : 'md:grid-cols-2'} gap-4`}>
                 {paginatedMatchingResults.map((r: any) => {
-                  const progIdStr = String(r.programmeId || r.id);
+                  const progIdStr = String(r.programmeId || r.programmeid || r.id);
                   const isCurated = curatedProgrammeIds.includes(progIdStr);
                   const isShortlisted = shortlistedProgIds.has(progIdStr);
                   const maxDisplay = studentSubscription?.maxDisplayCount || 5;
