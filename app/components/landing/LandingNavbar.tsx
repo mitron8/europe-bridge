@@ -341,13 +341,13 @@ export default function LandingNavbar() {
                 Log in
               </Link>
             )}
-            <Link
-              href="/#cta"
+            <button
+              type="button"
               onClick={() => window.dispatchEvent(new CustomEvent("open-offer-modal"))}
-              className={`lp-btn lp-btn--sm ${light ? "lp-btn--light" : "lp-btn--dark"}`}
+              className={`lp-btn lp-btn--sm cursor-pointer ${light ? "lp-btn--light" : "lp-btn--dark"}`}
             >
               Book a consultation
-            </Link>
+            </button>
           </div>
 
           <button
@@ -557,16 +557,16 @@ export default function LandingNavbar() {
                     Log in
                   </Link>
                 )}
-                <Link
-                  href="/#cta"
+                <button
+                  type="button"
                   onClick={() => {
                     setMobileOpen(false);
                     window.dispatchEvent(new CustomEvent("open-offer-modal"));
                   }}
-                  className="lp-btn lp-btn--light w-full"
+                  className="lp-btn lp-btn--light w-full cursor-pointer flex items-center justify-center gap-2"
                 >
                   Book a consultation <ArrowRight className="h-4 w-4" />
-                </Link>
+                </button>
               </div>
             </div>
           </motion.div>

@@ -110,15 +110,15 @@ export default function Hero() {
               <Link href="/tools/admission-chance" className="lp-btn lp-btn--dark">
                 Check admission chances <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link
-                href="/#cta"
+              <button
+                type="button"
                 onClick={() => {
                   window.dispatchEvent(new CustomEvent("open-offer-modal"));
                 }}
-                className="lp-btn lp-btn--ghost"
+                className="lp-btn lp-btn--ghost cursor-pointer"
               >
                 Book a consultation
-              </Link>
+              </button>
             </div>
             <div className="hero-fade mt-8 flex items-center gap-4 [@media(max-height:700px)]:hidden">
               <div className="flex -space-x-2.5">

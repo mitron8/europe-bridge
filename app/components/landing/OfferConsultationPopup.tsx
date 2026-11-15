@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   User,
   Phone,
+  MessageSquare,
 } from "lucide-react";
 
 export default function OfferConsultationPopup() {
@@ -27,10 +28,15 @@ export default function OfferConsultationPopup() {
   });
 
   useEffect(() => {
-    // Check if dismissed previously in this session
-    const isDismissed = sessionStorage.getItem("eb_offer_popup_dismissed");
-    if (isDismissed) return;
+    // ALWAYS listen to explicit button clicks from hero, navbar, or CTA
+    const handleCustomOpen = () => {
+      setSubmitted(false);
+      setIsOpen(true);
+    };
+    window.addEventListener("open-offer-modal", handleCustomOpen);
 
+    // Auto-trigger on scroll ONLY if not dismissed in this session
+    const isDismissed = sessionStorage.getItem("eb_offer_popup_dismissed");
     let triggered = false;
 
     const triggerPopup = () => {
@@ -48,16 +54,10 @@ export default function OfferConsultationPopup() {
       }
     };
 
-    // Also allow opening via custom window event from any CTA button
-    const handleCustomOpen = () => {
-      setIsOpen(true);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("open-offer-modal", handleCustomOpen);
-
-    // Initial check in case user is already scrolled
-    handleScroll();
+    if (!isDismissed) {
+      window.addEventListener("scroll", handleScroll, { passive: true });
+      handleScroll();
+    }
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
@@ -271,6 +271,26 @@ export default function OfferConsultationPopup() {
                 </button>
               </form>
 
+              {/* Direct WhatsApp Option */}
+              <div className="relative my-3 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-[#dbd5c9]" />
+                </div>
+                <div className="relative bg-[#faf8f4] px-2.5 text-[10.5px] font-semibold text-[#807a70] uppercase tracking-wider">
+                  or chat directly
+                </div>
+              </div>
+
+              <a
+                href="https://api.whatsapp.com/send?text=Hi%20EuropeBridge%2C%20I%20would%20like%20to%20book%20a%20free%201-on-1%20consultation%20for%20studying%20in%20Germany."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 rounded-full border border-[#25D366]/40 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] h-[44px] px-5 text-[13px] font-bold transition-colors cursor-pointer"
+              >
+                <MessageSquare className="h-4 w-4 text-[#25D366]" />
+                <span>Chat with Advisor on WhatsApp</span>
+              </a>
+
               {/* Bottom Reassurance & Dismiss */}
               <div className="mt-3.5 flex items-center justify-between text-[11.5px] text-[#787267]">
                 <span className="flex items-center gap-1.5">
@@ -302,13 +322,17 @@ export default function OfferConsultationPopup() {
               </p>
 
               <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-2.5">
-                <Link
-                  href="/tools/admission-chance"
-                  onClick={handleDismiss}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-[var(--lp-red)] hover:bg-[#d42d3a] px-6 py-2.5 text-[13.5px] font-semibold text-white shadow-sm transition"
+                <a
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                    `Hi EuropeBridge, I just requested a consultation for ${formData.name} (${formData.degree}).`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] hover:bg-[#20ba59] px-6 py-2.5 text-[13.5px] font-bold text-white shadow-sm transition"
                 >
-                  Check Admission Chances <ArrowRight className="h-4 w-4" />
-                </Link>
+                  <MessageSquare className="h-4 w-4" />
+                  <span>Message on WhatsApp</span>
+                </a>
                 <button
                   type="button"
                   onClick={handleDismiss}
