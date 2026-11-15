@@ -328,7 +328,6 @@ export function CounsellorServicesQueue() {
           credentials: 'include',
           body: JSON.stringify({
             status: selectedStatus,
-            paymentStatus: selectedPaymentStatus,
             notes: statusUpdateNotes.trim() || undefined,
           }),
         },

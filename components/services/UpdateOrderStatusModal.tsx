@@ -76,18 +76,22 @@ export function UpdateOrderStatusModal({
             <label className="text-xs font-bold text-[#16161a] dark:text-white block mb-1">
               Payment Status
             </label>
-            <select
-              value={selectedPaymentStatus}
-              onChange={(e) => setSelectedPaymentStatus(e.target.value)}
-              className="w-full p-3 rounded-xl border border-[#dcd7cb] dark:border-gray-700 bg-white dark:bg-[#0A0D14] text-xs font-bold text-[#16161a] dark:text-white focus:outline-hidden focus:ring-1 focus:ring-germany-red cursor-pointer whitespace-normal break-words"
-            >
-              <option value="UNPAID">UNPAID (Payment Pending / Milestone)</option>
-              <option value="PAYMENT_PENDING">PAYMENT_PENDING (Invoice Sent to Student)</option>
-              <option value="PAID">PAID (Payment Cleared & Verified)</option>
-              <option value="WAIVED">WAIVED (Free / Package Included)</option>
-            </select>
+            <div className="flex items-center gap-2 p-3 rounded-xl border border-[#dcd7cb] dark:border-gray-700 bg-gray-50/80 dark:bg-[#0A0D14]">
+              <span className={`px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider ${
+                (order.payment_status || 'UNPAID') === 'PAID'
+                  ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                  : (order.payment_status || 'UNPAID') === 'WAIVED'
+                  ? 'bg-blue-100 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-800'
+                  : 'bg-amber-100 dark:bg-amber-950/50 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
+              }`}>
+                {order.payment_status || 'UNPAID'}
+              </span>
+              <span className="text-[11px] text-[#5e5b54] dark:text-gray-400 font-medium">
+                • Verified by Finance &amp; Admin
+              </span>
+            </div>
             <p className="text-[11px] text-[#5e5b54] dark:text-gray-400 mt-1">
-              EuropeBridge does not charge students upfront at form submission. You can update payment status here once verified.
+              Only platform administrators can modify payment verification records.
             </p>
           </div>
 

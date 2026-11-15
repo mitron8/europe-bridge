@@ -71,41 +71,69 @@ export function CounsellorLeads() {
     <div className="overflow-x-auto">
       <table className="w-full text-left border-collapse">
         <thead>
-          <tr className="border-b-2 border-[#EBE7E0]">
-            <th className="px-4 py-3 text-xs font-extrabold text-gray-500 uppercase tracking-wider">Student Name</th>
-            <th className="px-4 py-3 text-xs font-extrabold text-gray-500 uppercase tracking-wider">Email</th>
-            <th className="px-4 py-3 text-xs font-extrabold text-gray-500 uppercase tracking-wider">Phone</th>
-            <th className="px-4 py-3 text-xs font-extrabold text-gray-500 uppercase tracking-wider">WhatsApp</th>
-            <th className="px-4 py-3 text-xs font-extrabold text-gray-500 uppercase tracking-wider">Status</th>
+          <tr className="border-b-2 border-[#EBE7E0] dark:border-gray-800">
+            <th className="px-4 py-3 text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Student Name</th>
+            <th className="px-4 py-3 text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</th>
+            <th className="px-4 py-3 text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Phone</th>
+            <th className="px-4 py-3 text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">WhatsApp</th>
+            <th className="px-4 py-3 text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
           </tr>
         </thead>
         <tbody>
           {leads.map((lead) => (
             <tr key={lead.userId} className="border-b border-[#EBE7E0] dark:border-gray-800/80 hover:bg-[#FDFBF7] dark:hover:bg-[#151B27]/60 transition-colors">
-              <td className="px-4 py-3 text-sm font-bold text-germany-black">
+              <td className="px-4 py-3 text-sm font-bold text-germany-black dark:text-white">
                 {lead.firstName} {lead.lastName}
               </td>
-              <td className="px-4 py-3 text-sm text-gray-600">
-                {lead.email}
+              <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                <a
+                  href={`mailto:${lead.email}`}
+                  className="hover:text-germany-red dark:hover:text-germany-red transition-colors"
+                  title="Send email"
+                >
+                  {lead.email}
+                </a>
               </td>
-              <td className="px-4 py-3 text-sm text-gray-600">
-                {lead.phone || 'NA'}
+              <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                {lead.phone ? (
+                  <a
+                    href={`tel:${lead.phone}`}
+                    className="hover:text-germany-red dark:hover:text-germany-red font-mono text-xs transition-colors"
+                    title="Call student"
+                  >
+                    {lead.phone}
+                  </a>
+                ) : (
+                  <span className="text-gray-400">NA</span>
+                )}
               </td>
-              <td className="px-4 py-3 text-sm text-gray-600">
-                {lead.whatsapp || 'NA'}
+              <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                {lead.whatsapp ? (
+                  <a
+                    href={`https://wa.me/${lead.whatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello ${lead.firstName}, I am your German Education Advisor from EuropeBridge.`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-700 dark:text-emerald-400 hover:underline font-mono text-xs font-bold transition-colors"
+                    title="Chat on WhatsApp"
+                  >
+                    {lead.whatsapp}
+                  </a>
+                ) : (
+                  <span className="text-gray-400">NA</span>
+                )}
               </td>
-              <td className="px-4 py-3 text-sm font-bold text-germany-black">
+              <td className="px-4 py-3 text-sm font-bold text-germany-black dark:text-white">
                 <div className="flex flex-col gap-1 items-start">
                   <span className={`px-2 py-0.5 rounded-full text-xs font-extrabold ${
                     lead.status === 'shortlist_locked'
-                      ? 'bg-purple-100 text-purple-800 border border-purple-300'
+                      ? 'bg-purple-100 dark:bg-purple-950/50 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-800'
                       : lead.status === 'plan_purchased'
-                      ? 'bg-emerald-100 text-emerald-800'
+                      ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300'
                       : lead.status === 'matching_completed'
-                      ? 'bg-indigo-100 text-indigo-800'
+                      ? 'bg-indigo-100 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-300'
                       : lead.status === 'profile_completed'
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-germany-gold/15 text-germany-black'
+                      ? 'bg-blue-100 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300'
+                      : 'bg-germany-gold/15 text-germany-black dark:text-white'
                   }`}>
                     {formatStatus(lead.status)}
                   </span>
@@ -114,7 +142,7 @@ export function CounsellorLeads() {
                       {lead.planName}
                     </span>
                   ) : (
-                    <span className="text-[10px] font-bold text-gray-500 bg-gray-100 border border-gray-200 px-1.5 py-0.5 rounded-md">
+                    <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-1.5 py-0.5 rounded-md">
                       No Plan
                     </span>
                   )}

@@ -86,13 +86,41 @@ export function CounsellorStudents() {
                 {student.firstName} {student.lastName}
               </td>
               <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
-                {student.email}
+                <a
+                  href={`mailto:${student.email}`}
+                  className="hover:text-germany-red dark:hover:text-germany-red transition-colors"
+                  title="Send email"
+                >
+                  {student.email}
+                </a>
               </td>
               <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
-                {student.phone || 'NA'}
+                {student.phone ? (
+                  <a
+                    href={`tel:${student.phone}`}
+                    className="hover:text-germany-red dark:hover:text-germany-red font-mono text-xs transition-colors"
+                    title="Call student"
+                  >
+                    {student.phone}
+                  </a>
+                ) : (
+                  <span className="text-gray-400">NA</span>
+                )}
               </td>
               <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
-                {student.whatsapp || 'NA'}
+                {student.whatsapp ? (
+                  <a
+                    href={`https://wa.me/${student.whatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello ${student.firstName}, I am your German Education Advisor from EuropeBridge.`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-700 dark:text-emerald-400 hover:underline font-mono text-xs font-bold transition-colors"
+                    title="Chat on WhatsApp"
+                  >
+                    {student.whatsapp}
+                  </a>
+                ) : (
+                  <span className="text-gray-400">NA</span>
+                )}
               </td>
               <td className="px-4 py-3 text-sm font-bold text-germany-black dark:text-white">
                 <div className="flex flex-col gap-1 items-start">

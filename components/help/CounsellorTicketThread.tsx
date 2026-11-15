@@ -197,7 +197,16 @@ export function CounsellorTicketThread({
                       • {formatChatTimestamp(m.createdAt)}
                     </span>
                   </div>
-                  <p className="whitespace-pre-line font-medium">{m.content}</p>
+                  <p className="whitespace-pre-line font-medium">
+                    {m.content?.startsWith('[Encrypted message') ? (
+                      <span className="italic opacity-80 text-xs flex items-center gap-1.5 py-0.5">
+                        <Lock className="w-3.5 h-3.5 inline shrink-0" />
+                        Encrypted legacy note
+                      </span>
+                    ) : (
+                      m.content
+                    )}
+                  </p>
                 </div>
               ) : (
                 <div
@@ -225,7 +234,14 @@ export function CounsellorTicketThread({
                         : 'bg-white border border-gray-200 text-gray-900 font-medium rounded-tl-xs'
                     }`}
                   >
-                    {m.content}
+                    {m.content?.startsWith('[Encrypted message') ? (
+                      <span className="italic opacity-80 text-xs flex items-center gap-1.5 py-0.5">
+                        <Lock className="w-3.5 h-3.5 inline shrink-0" />
+                        Encrypted legacy message
+                      </span>
+                    ) : (
+                      m.content
+                    )}
                   </div>
                 </div>
               )}
