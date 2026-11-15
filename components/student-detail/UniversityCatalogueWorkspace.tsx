@@ -416,7 +416,7 @@ export function UniversityCatalogueWorkspace({
                                     ) : p.isRelevant ? (
                                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
                                         <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
-                                        <span>Relevant to {uniMeta?.studentField || 'Field'}</span>
+                                        <span>Relevant to {p.matchedField || uniMeta?.studentField || 'Field'}</span>
                                       </span>
                                     ) : (
                                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/40">
