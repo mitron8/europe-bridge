@@ -153,8 +153,7 @@ export default function OfferConsultationPopup() {
             <>
               {/* Top row: Eyebrow + Close Button */}
               <div className="flex items-center justify-between">
-                <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#807a70]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--lp-red)]" />
+                <div className="inline-flex items-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#807a70]">
                   Free 1-on-1 Consultation
                 </div>
 

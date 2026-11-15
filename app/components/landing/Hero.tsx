@@ -83,8 +83,7 @@ export default function Hero() {
         <div className="lp-container relative z-10 grid min-h-0 flex-1 items-center gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
           {/* copy */}
           <div className="relative z-10 max-w-[600px]">
-            <div className="hero-fade mb-7 inline-flex items-center gap-2.5 text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--lp-muted)]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[var(--lp-red)]" />
+            <div className="hero-fade mb-7 inline-flex items-center text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--lp-muted)]">
               Germany admissions consultancy
             </div>
             <h1
