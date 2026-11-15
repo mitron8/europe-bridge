@@ -14,9 +14,11 @@ import {
   MessageSquare, 
   User,
   RotateCw,
-  ShieldAlert
+  ShieldAlert,
+  Loader2
 } from 'lucide-react';
 import { ClaySelect } from '@/components/ClaySelect';
+import { useLazySlice } from '@/hooks/useLazySlice';
 import { getChatSocket } from '@/lib/socket';
 import { formatChatTimestamp, formatFullTimestamp, formatDateDivider, isDifferentDay } from '@/lib/chatUtils';
 
@@ -477,6 +479,13 @@ export default function CounsellorHelpPage() {
     return matchesTab && matchesSearch && matchesPriority && matchesStudent;
   });
 
+  const { visibleItems: visibleTickets, hasMore: hasMoreTickets, bottomSentinelRef: ticketSentinelRef } = useLazySlice(
+    filteredTickets,
+    25,
+    15,
+    [activeTab, search, priorityFilter, studentFilter],
+  );
+
   return (
     <div className="space-y-6">
       {/* Top Banner */}
@@ -577,35 +586,42 @@ export default function CounsellorHelpPage() {
                 No tickets matching this filter.
               </div>
             ) : (
-              filteredTickets.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => setSelectedTicketId(t.id)}
-                  className={`w-full p-4 rounded-2xl border text-left transition-all cursor-pointer ${
-                    selectedTicketId === t.id
-                      ? 'bg-white border-germany-red shadow-xs ring-1 ring-germany-red/30'
-                      : 'bg-white border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="font-mono text-xs font-bold text-gray-600 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
-                      {t.ticketNumber}
-                    </span>
-                    {getStatusBadge(t.status)}
-                  </div>
+              <>
+                {visibleTickets.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setSelectedTicketId(t.id)}
+                    className={`w-full p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                      selectedTicketId === t.id
+                        ? 'bg-white border-germany-red shadow-xs ring-1 ring-germany-red/30'
+                        : 'bg-white border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="font-mono text-xs font-bold text-gray-600 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
+                        {t.ticketNumber}
+                      </span>
+                      {getStatusBadge(t.status)}
+                    </div>
 
-                  <h3 className="text-sm font-bold text-germany-black truncate mb-1">
-                    {t.title}
-                  </h3>
+                    <h3 className="text-sm font-bold text-germany-black truncate mb-1">
+                      {t.title}
+                    </h3>
 
-                  <div className="flex items-center justify-between text-xs text-gray-500 font-medium">
-                    <span className="text-germany-black font-bold truncate">
-                      {t.student.name}
-                    </span>
-                    <span>{formatChatTimestamp(t.updatedAt)}</span>
+                    <div className="flex items-center justify-between text-xs text-gray-500 font-medium">
+                      <span className="text-germany-black font-bold truncate">
+                        {t.student.name}
+                      </span>
+                      <span>{formatChatTimestamp(t.updatedAt)}</span>
+                    </div>
+                  </button>
+                ))}
+                {hasMoreTickets && (
+                  <div ref={ticketSentinelRef} className="py-4 flex justify-center items-center">
+                    <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
                   </div>
-                </button>
-              ))
+                )}
+              </>
             )}
           </div>
         </div>

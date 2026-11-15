@@ -12,7 +12,11 @@ interface PaginationResult<T> {
   };
 }
 
-export function usePaginatedList<T>(endpoint: string, limit: number = 25) {
+export function usePaginatedList<T>(
+  endpoint: string,
+  initialLimit: number = 25,
+  nextLimit: number = 15
+) {
   const [data, setData] = useState<T[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDeferredValue(searchQuery);
@@ -39,10 +43,14 @@ export function usePaginatedList<T>(endpoint: string, limit: number = 25) {
       }
       abortControllerRef.current = new AbortController();
 
+      const currentLimit = targetPage === 1 ? initialLimit : nextLimit;
+      const currentOffset = targetPage === 1 ? 0 : initialLimit + (targetPage - 2) * nextLimit;
+
       const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://europebridge.onrender.com';
       const url = new URL(`${NEXT_PUBLIC_API_URL}${endpoint}`, baseUrl);
       url.searchParams.append('page', targetPage.toString());
-      url.searchParams.append('limit', limit.toString());
+      url.searchParams.append('limit', currentLimit.toString());
+      url.searchParams.append('offset', currentOffset.toString());
       if (searchArg) {
         url.searchParams.append('search', searchArg);
       }
@@ -56,20 +64,29 @@ export function usePaginatedList<T>(endpoint: string, limit: number = 25) {
         throw new Error('Failed to load data.');
       }
 
-      const result: PaginationResult<T> = await response.json();
+      const rawResult = await response.json();
+      const isRawArray = Array.isArray(rawResult);
+      const newItems: T[] = isRawArray ? rawResult : (rawResult.data || []);
+      const total = isRawArray ? newItems.length : (rawResult.pagination?.total ?? (targetPage * currentLimit));
       
       if (append) {
         setData(prev => {
           // simple deduplication by checking IDs to prevent dupes in strict mode or rapid firing
           const existingIds = new Set(prev.map((item: any) => item.id || item.userId));
-          const newItems = result.data.filter((item: any) => !existingIds.has(item.id || item.userId));
-          return [...prev, ...newItems];
+          const filtered = newItems.filter((item: any) => !existingIds.has(item.id || item.userId));
+          return [...prev, ...filtered];
         });
       } else {
-        setData(result.data);
+        setData(newItems);
       }
 
-      setHasMore(targetPage < result.pagination.totalPages);
+      if (isRawArray) {
+        setHasMore(false);
+      } else if (rawResult.pagination?.total !== undefined) {
+        setHasMore(currentOffset + newItems.length < total);
+      } else {
+        setHasMore(newItems.length === currentLimit);
+      }
       setPage(targetPage);
 
     } catch (err: any) {
@@ -81,7 +98,7 @@ export function usePaginatedList<T>(endpoint: string, limit: number = 25) {
       if (targetPage === 1) setIsLoading(false);
       else setIsFetchingNextPage(false);
     }
-  }, [endpoint, limit]);
+  }, [endpoint, initialLimit, nextLimit]);
 
   useEffect(() => {
     fetchPage(1, debouncedSearch, false);

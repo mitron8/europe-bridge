@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Building2,
   X,
@@ -15,6 +15,7 @@ import {
   Plus
 } from 'lucide-react';
 import { ProgrammeCard } from '../cards/ProgrammeCard';
+import { useLazySlice } from '@/hooks/useLazySlice';
 
 export interface UniversityCatalogueWorkspaceProps {
   isManualUniEntry: boolean;
@@ -111,6 +112,32 @@ export function UniversityCatalogueWorkspace({
   setRecommendNote,
   onSaveRecommendation,
 }: UniversityCatalogueWorkspaceProps) {
+  const filteredCatalogProgrammes = useMemo(() => {
+    return uniProgrammes.filter((p) => {
+      if (progFilterOnlyRelevant && !p.isRelevant) return false;
+      if (progFilterText) {
+        const q = progFilterText.toLowerCase();
+        return (
+          p.programName?.toLowerCase().includes(q) ||
+          (p.subject && p.subject.toLowerCase().includes(q))
+        );
+      }
+      return true;
+    });
+  }, [uniProgrammes, progFilterOnlyRelevant, progFilterText]);
+
+  const {
+    visibleItems: visibleCatalogProgrammes,
+    hasMore: hasMoreCatalog,
+    bottomSentinelRef: catalogSentinelRef,
+    visibleCount: visibleCatalogCount,
+  } = useLazySlice(
+    filteredCatalogProgrammes,
+    25,
+    15,
+    [selectedUniversity?.name, progFilterOnlyRelevant, progFilterText],
+  );
+
   return (
     <div className="space-y-6">
       {/* Catalogue Explorer Box */}
@@ -317,24 +344,15 @@ export function UniversityCatalogueWorkspace({
                         >
                           Relevant Only ({uniProgrammes.filter((p) => p.isRelevant).length})
                         </button>
+                        <span className="text-[10px] font-bold text-gray-400 self-center hidden sm:inline">
+                          Showing {visibleCatalogCount} of {filteredCatalogProgrammes.length}
+                        </span>
                       </div>
                     </div>
 
-                    {/* Scrollable list of programmes */}
+                    {/* Scrollable list of programmes with 25 + 15 lazy scroll */}
                     <div className="max-h-[500px] overflow-y-auto space-y-2.5 pr-1">
-                      {uniProgrammes
-                        .filter((p) => {
-                          if (progFilterOnlyRelevant && !p.isRelevant) return false;
-                          if (progFilterText) {
-                            const q = progFilterText.toLowerCase();
-                            return (
-                              p.programName?.toLowerCase().includes(q) ||
-                              (p.subject && p.subject.toLowerCase().includes(q))
-                            );
-                          }
-                          return true;
-                        })
-                        .map((p) => {
+                      {visibleCatalogProgrammes.map((p) => {
                           const progIdStr = String(p.id);
                           const isCurated = curatedProgrammeIds.includes(progIdStr);
                           const maxDisplay = studentSubscription?.maxDisplayCount || 5;
@@ -398,7 +416,7 @@ export function UniversityCatalogueWorkspace({
                                     ) : p.isRelevant ? (
                                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
                                         <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
-                                        <span>Relevant to {uniMeta?.studentField || 'Field'}</span>
+                                        <span>Relevant to {p.matchedField || uniMeta?.studentField || 'Field'}</span>
                                       </span>
                                     ) : (
                                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/40">
@@ -476,6 +494,11 @@ export function UniversityCatalogueWorkspace({
                             </div>
                           );
                         })}
+                      {hasMoreCatalog && (
+                        <div ref={catalogSentinelRef} className="py-4 flex justify-center items-center">
+                          <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
