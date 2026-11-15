@@ -233,7 +233,37 @@ export function StudentDetailModal({
   readOnly = false,
 }: StudentDetailModalProps) {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'universities' | 'notes' | 'admission'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'universities' | 'notes' | 'admission'>(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search).get('tab');
+      if (p && ['overview', 'documents', 'universities', 'notes', 'admission'].includes(p)) {
+        return p as any;
+      }
+    }
+    return 'overview';
+  });
+
+  const handleTabChange = useCallback((newTab: 'overview' | 'documents' | 'universities' | 'notes' | 'admission') => {
+    setActiveTab(newTab);
+    if (typeof window !== 'undefined') {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', newTab);
+        window.history.replaceState(null, '', url.toString());
+      } catch {
+        // Safe fallback
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search).get('tab');
+      if (p && ['overview', 'documents', 'universities', 'notes', 'admission'].includes(p) && p !== activeTab) {
+        setActiveTab(p as any);
+      }
+    }
+  }, []);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
   const [note, setNote] = useState('');
@@ -889,9 +919,10 @@ export function StudentDetailModal({
     const idStr = String(programmeId);
     let nextIds: string[];
     const maxDisplay = studentSubscription?.maxDisplayCount || 10;
+    const currentNormalized = curatedProgrammeIds.map(String);
 
-    if (curatedProgrammeIds.includes(idStr)) {
-      nextIds = curatedProgrammeIds.filter((id) => id !== idStr);
+    if (currentNormalized.includes(idStr)) {
+      nextIds = currentNormalized.filter((id) => id !== idStr);
       // When removing a programme from student curation, also unshortlist it immediately
       if (shortlistedProgIds.has(idStr)) {
         setUniversities((prev) =>
@@ -915,11 +946,11 @@ export function StudentDetailModal({
         setStudentShortlistCount((prev) => Math.max(0, prev - 1));
       }
     } else {
-      if (curatedProgrammeIds.length >= maxDisplay) {
-        alert(`Display curation limit reached (${curatedProgrammeIds.length}/${maxDisplay}). Please remove an existing programme from the Student Display Curation panel on the right (or click "On Student Display" on any card) to make space.`);
+      if (currentNormalized.length >= maxDisplay) {
+        alert(`Display curation limit reached (${currentNormalized.length}/${maxDisplay}). Please remove an existing programme from the Student Display Curation panel on the right (or click "On Student Display" on any card) to make space.`);
         return;
       }
-      nextIds = [...curatedProgrammeIds, idStr];
+      nextIds = [...currentNormalized, idStr];
     }
 
     setCuratedProgrammeIds(nextIds);
@@ -982,7 +1013,7 @@ export function StudentDetailModal({
       if (!res.ok) throw new Error(data.message || 'Failed to save curated programmes');
       if (data.curatedProgrammes) {
         setCuratedProgrammes(data.curatedProgrammes);
-        setCuratedProgrammeIds(data.curatedProgrammes.map((c: any) => String(c.programmeId)));
+        setCuratedProgrammeIds(data.curatedProgrammes.map((c: any) => String(c.programmeId || (c as any).programme_id || (c as any).programmeid)));
       }
       if (data.recommendations) {
         setUniversities(data.recommendations);
@@ -1159,11 +1190,20 @@ export function StudentDetailModal({
         credentials: 'include',
       });
       setMatchingResults((prev) => prev.filter((r) => String(r.programmeId || r.id) !== idStr));
-      if (curatedProgrammeIds.includes(idStr)) {
-        const nextIds = curatedProgrammeIds.filter((id) => id !== idStr);
+      const currentNormalized = curatedProgrammeIds.map(String);
+      if (currentNormalized.includes(idStr)) {
+        const nextIds = currentNormalized.filter((id) => id !== idStr);
         setCuratedProgrammeIds(nextIds);
-        setCuratedProgrammes((prev) => prev.filter((c) => String(c.programmeId) !== idStr));
+        setCuratedProgrammes((prev) => prev.filter((c) => String(c.programmeId || (c as any).programme_id) !== idStr));
       }
+      setUniversities((prev) =>
+        prev.filter((u) => {
+          const uId = String(u.programmeId || (u as any).programmeid || (u as any).programme_id || u.id);
+          return uId !== idStr;
+        })
+      );
+      // Re-fetch matching results silently so server counts, shortlist, and locks are fully in sync
+      fetchMatchingResults();
     } catch (err: any) {
       alert(err.message || 'Failed to remove matched programme');
     }
@@ -2283,16 +2323,11 @@ export function StudentDetailModal({
       {/* Student Profile Header */}
       <div className="pt-2 pb-4 border-b border-[#EBE7E0] shrink-0">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-germany-red via-germany-gold to-amber-500 text-white font-display text-lg font-black flex items-center justify-center shadow-md shrink-0">
-              {initials}
-            </div>
-
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-xl sm:text-2xl font-display text-germany-black dark:text-white leading-tight">
-                  {student.firstName} {student.lastName}
-                </h2>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-xl sm:text-2xl font-display text-germany-black dark:text-white leading-tight">
+                {student.firstName} {student.lastName}
+              </h2>
                 <span className={`px-2.5 py-0.5 font-extrabold rounded-full text-[11px] border ${(isMatchingLocked || student?.status === 'shortlist_locked' || summaryData?.status === 'shortlist_locked')
                   ? 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-950/50 dark:text-purple-300 dark:border-purple-800'
                   : (student?.status === 'plan_purchased' || summaryData?.status === 'plan_purchased')
@@ -2327,7 +2362,6 @@ export function StudentDetailModal({
                 </span>
               </div>
             </div>
-          </div>
 
           {/* Quick Contact Bar */}
           <div className="flex items-center gap-2 shrink-0">
@@ -2362,7 +2396,7 @@ export function StudentDetailModal({
         {/* Navigation Tabs Bar */}
         <div className="flex items-center gap-2 overflow-x-auto pt-4 mt-2 -mb-2 scrollbar-none">
           <button
-            onClick={() => setActiveTab('overview')}
+            onClick={() => handleTabChange('overview')}
             className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${activeTab === 'overview'
               ? 'bg-germany-red text-white shadow-md'
               : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
@@ -2373,7 +2407,7 @@ export function StudentDetailModal({
           </button>
 
           <button
-            onClick={() => setActiveTab('documents')}
+            onClick={() => handleTabChange('documents')}
             className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${activeTab === 'documents'
               ? 'bg-germany-red text-white shadow-md'
               : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
@@ -2390,7 +2424,7 @@ export function StudentDetailModal({
 
 
           <button
-            onClick={() => setActiveTab('universities')}
+            onClick={() => handleTabChange('universities')}
             className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${activeTab === 'universities'
               ? 'bg-germany-red text-white shadow-md'
               : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
@@ -2407,7 +2441,7 @@ export function StudentDetailModal({
 
           {!readOnly && (
             <button
-              onClick={() => setActiveTab('notes')}
+              onClick={() => handleTabChange('notes')}
               className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${activeTab === 'notes'
                 ? 'bg-germany-red text-white shadow-md'
                 : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
@@ -2419,7 +2453,7 @@ export function StudentDetailModal({
           )}
 
           <button
-            onClick={() => setActiveTab('admission')}
+            onClick={() => handleTabChange('admission')}
             className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${activeTab === 'admission'
               ? 'bg-germany-red text-white shadow-md'
               : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 hover:bg-[#EBE7E0] dark:hover:bg-[#1A2130] hover:text-germany-black dark:hover:text-white border border-gray-200/60 dark:border-gray-800/80'
@@ -2456,7 +2490,7 @@ export function StudentDetailModal({
             distinctUploadedDocs={distinctUploadedDocs}
             onOpenFullProfile={() => setShowFullProfile(true)}
             onNavigateTab={(tab, cat) => {
-              setActiveTab(tab);
+              handleTabChange(tab);
               if (cat) setDocCategory(cat as any);
             }}
           />
@@ -2685,72 +2719,6 @@ export function StudentDetailModal({
         onClose={() => setRejectingDoc(null)}
         onConfirmReject={handleConfirmRejectDoc}
       />
-
-      {/* ========================================================
-          SUB-MODAL: DOCUMENT REJECTION REASON MODAL
-      ======================================================== */}
-      <AnimatePresence>
-        {rejectingDoc && (
-          <div key="reject-doc-wrapper" className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-            <motion.div
-              key="reject-doc-content"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-[#111622] rounded-2xl max-w-md w-full p-6 space-y-4 relative border border-gray-200/80 dark:border-gray-800/80 shadow-2xl"
-            >
-              <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-display text-base">
-                <AlertTriangle className="w-5 h-5" />
-                <h3>
-                  {rejectingDoc.status === 'rejected'
-                    ? 'Update Feedback & Request Re-upload'
-                    : 'Request Document Revision & Re-upload'}
-                </h3>
-              </div>
-
-              <p className="text-xs font-bold text-gray-500 dark:text-gray-400">
-                {rejectingDoc.status === 'rejected'
-                  ? 'Update revision instructions for '
-                  : 'Provide specific feedback for '}
-                <span className="text-germany-black dark:text-white font-extrabold">{rejectingDoc.name}</span>{' '}
-                so the student knows what to correct and re-upload.
-              </p>
-
-              <textarea
-                value={rejectionReasonInput}
-                onChange={(e) => setRejectionReasonInput(e.target.value)}
-                placeholder="e.g. Official semester marksheet lacks college registrar stamp. Please re-scan in high resolution (300 DPI)."
-                rows={3}
-                className="w-full p-3 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-900 dark:text-white resize-none focus:outline-none focus:border-red-500 shadow-xs"
-                autoFocus
-              />
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setRejectingDoc(null)}
-                  className="py-1.5 px-3 text-xs font-extrabold text-gray-600 dark:text-gray-300 bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl hover:bg-gray-100 dark:hover:bg-[#1A2130] shadow-xs cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  disabled={docActionLoading === rejectingDoc.id}
-                  onClick={handleConfirmRejectDoc}
-                  className="py-1.5 px-4 text-xs font-extrabold bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-xl shadow-xs transition-colors cursor-pointer inline-flex items-center gap-1.5"
-                >
-                  {docActionLoading === rejectingDoc.id && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  <span>
-                    {rejectingDoc.status === 'rejected'
-                      ? 'Update & Request Re-upload'
-                      : 'Confirm Rejection & Notify Student'}
-                  </span>
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* Counsellor Schedule / Invite Meeting Modal */}
       {isScheduleModalOpen && Boolean(effectiveStudentId) && (

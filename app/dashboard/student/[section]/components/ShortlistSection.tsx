@@ -24,9 +24,10 @@ export function ShortlistSection() {
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const fetchShortlist = async () => {
-    setLoading(true);
-    setError(null);
+  const fetchShortlist = async (silent: boolean | any = false) => {
+    const isSilent = silent === true;
+    if (!isSilent) setLoading(true);
+    if (!isSilent) setError(null);
     try {
       const [recRes, matchRes] = await Promise.all([
         fetch(`${API_URL}/student/recommendations`, { credentials: 'include' }),
@@ -42,9 +43,9 @@ export function ShortlistSection() {
         setIsLocked(Boolean(matchData.isLocked));
       }
     } catch (err: any) {
-      setError(err.message ?? 'Failed to load shortlist');
+      if (!isSilent) setError(err.message ?? 'Failed to load shortlist');
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   };
 
@@ -64,7 +65,7 @@ export function ShortlistSection() {
         throw new Error(data.message ?? 'Failed to remove from shortlist');
       }
 
-      await fetchShortlist();
+      await fetchShortlist(true);
     } catch (err: any) {
       alert(err.message ?? 'Could not remove from shortlist');
     } finally {
@@ -74,6 +75,22 @@ export function ShortlistSection() {
 
   useEffect(() => {
     fetchShortlist();
+
+    const handleFocus = () => {
+      fetchShortlist(true);
+    };
+    window.addEventListener('focus', handleFocus);
+
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        fetchShortlist(true);
+      }
+    }, 8000);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(interval);
+    };
   }, []);
 
   const shortlistedItems = items.filter((i) => i.status !== 'recommended');

@@ -32,7 +32,9 @@ export default function CounsellorStudentDetailPage({
       </div>
 
       {/* Main Student Detail View (Rendered directly as a Page) */}
-      <StudentDetailView studentId={studentId} isPage={true} />
+      <React.Suspense fallback={<div className="p-8 text-center text-xs font-bold text-gray-400">Loading student details...</div>}>
+        <StudentDetailView studentId={studentId} isPage={true} />
+      </React.Suspense>
     </div>
   );
 }

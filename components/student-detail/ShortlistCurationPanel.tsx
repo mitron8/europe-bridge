@@ -105,7 +105,7 @@ export function ShortlistCurationPanel({
               (r) => String(r.programmeId || (r as any).programmeid || r.id) === progIdStr
             );
             const curatedItem = curatedProgrammes.find(
-              (cp) => String(cp.programmeId || (cp as any).programmeid) === progIdStr
+              (cp) => String(cp.programmeId || (cp as any).programmeid || (cp as any).programme_id) === progIdStr
             );
             const isShortlisted = shortlistedProgIds.has(progIdStr);
             const uniName = matchItem?.universityName || curatedItem?.universityName || 'University';
@@ -116,47 +116,32 @@ export function ShortlistCurationPanel({
             return (
               <div
                 key={progId}
-                className="p-2.5 bg-gray-50 dark:bg-[#151B27] rounded-xl border border-gray-200/60 dark:border-gray-800/60 flex items-start justify-between gap-2 text-xs"
+                className="p-2.5 bg-gray-50/80 dark:bg-[#151B27] rounded-xl border border-gray-200/60 dark:border-gray-800/60 flex items-start justify-between gap-2 text-xs"
               >
                 <div className="min-w-0 space-y-0.5 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-black text-germany-red shrink-0">
+                  <div className="flex items-start gap-1.5">
+                    <span className="text-[11px] font-black text-germany-red shrink-0 pt-0.5">
                       #{idx + 1}
                     </span>
-                    <span className="font-extrabold text-germany-black dark:text-white whitespace-normal break-words leading-tight block">
-                      {uniName}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-gray-600 dark:text-gray-300 whitespace-normal break-words leading-snug">
-                    {progName}
-                  </p>
-                  <div className="flex items-center gap-1.5 pt-0.5">
-                    {isShortlisted && (
-                      <span className="text-[9px] font-extrabold px-1.5 py-0.2 bg-blue-100 text-blue-800 rounded">
-                        ★ Shortlisted
+                    <div className="min-w-0">
+                      <span className="font-bold text-germany-black dark:text-white whitespace-normal break-words leading-tight block text-xs">
+                        {uniName}
                       </span>
-                    )}
-                    {matchItem?.relevanceScore && (
-                      <span className="text-[9px] font-bold text-gray-400">
-                        Score: {matchItem.relevanceScore}
-                      </span>
-                    )}
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400 whitespace-normal break-words leading-snug">
+                        {progName}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
-                  {/* Shortlist Toggle Button on the Student Display Curation card */}
+                  {/* Shortlist status badge or action */}
                   {readOnly ? (
                     isShortlisted ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-extrabold py-1 px-2 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-800">
-                        <Bookmark className="w-2.5 h-2.5 fill-current text-blue-600" />
-                        <span>Shortlisted</span>
+                      <span className="inline-flex items-center text-[10px] font-bold py-0.5 px-2 rounded-full bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                        Shortlisted
                       </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold py-1 px-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700">
-                        <span>Not Shortlisted</span>
-                      </span>
-                    )
+                    ) : null
                   ) : (
                     <button
                       type="button"
@@ -175,54 +160,49 @@ export function ShortlistCurationPanel({
                         })
                       }
                       disabled={togglingShortlist === String(progId) || isMatchingLocked || (!isShortlisted && isShortlistFull)}
-                      className={`inline-flex items-center gap-1 text-[10px] font-extrabold py-1 px-2 rounded-lg transition-colors border ${isMatchingLocked
-                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
+                      className={`inline-flex items-center text-[10px] font-bold py-0.5 px-2 rounded-full transition-colors border ${isMatchingLocked
+                        ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-300 border-blue-200 dark:border-blue-800 cursor-not-allowed opacity-90'
                         : isShortlisted
-                          ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
+                          ? 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer'
                           : isShortlistFull
                             ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-50'
-                            : 'bg-white dark:bg-[#151B27] text-gray-700 dark:text-gray-300 border-gray-200/80 dark:border-gray-800 hover:border-blue-400 hover:text-blue-600 cursor-pointer'
+                            : 'bg-white dark:bg-[#151B27] text-gray-600 dark:text-gray-300 border-gray-200/80 dark:border-gray-800 hover:border-blue-400 hover:text-blue-600 cursor-pointer'
                         }`}
                       title={
                         isMatchingLocked
-                          ? 'Shortlist is locked. Unlock to modify.'
+                          ? 'Shortlist is locked.'
                           : isShortlisted
                             ? 'Click to remove from student shortlist'
                             : isShortlistFull
-                              ? `Student shortlist limit reached (${studentShortlistCount}/${maxShortlist} max for ${studentSubscription?.planId || 'Plan'}). Remove an existing shortlisted programme first.`
+                              ? `Student shortlist limit reached (${studentShortlistCount}/${maxShortlist} max).`
                               : 'Add to student shortlist'
                       }
                     >
                       {togglingShortlist === String(progId) ? (
                         <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                      ) : isMatchingLocked ? (
-                        <Lock className="w-2.5 h-2.5 text-gray-400" />
+                      ) : isShortlisted ? (
+                        'Shortlisted'
                       ) : (
-                        <Bookmark className={`w-2.5 h-2.5 ${isShortlisted ? 'fill-current text-blue-600' : ''}`} />
+                        '+ Shortlist'
                       )}
-                      <span>
-                        {isMatchingLocked && isShortlisted
-                          ? 'Shortlisted (Locked)'
-                          : isMatchingLocked
-                            ? 'Locked'
-                            : isShortlisted
-                              ? 'Shortlisted'
-                              : isShortlistFull
-                                ? 'Limit Reached'
-                                : 'Shortlist'}
-                      </span>
                     </button>
+                  )}
+
+                  {matchItem?.relevanceScore && (
+                    <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500">
+                      {matchItem.relevanceScore}
+                    </span>
                   )}
 
                   {/* Remove from Curation / Display Button */}
                   {!readOnly && (
                     <button
                       type="button"
-                      onClick={() => onToggleCuratedProgramme(progId)}
+                      onClick={() => onToggleCuratedProgramme(progIdStr)}
                       disabled={isMatchingLocked}
-                      title={isMatchingLocked ? 'Shortlist and curation are locked. Unlock to modify.' : 'Remove from student display (frees up a display slot)'}
+                      title={isMatchingLocked ? 'Shortlist and curation are locked.' : 'Remove from student display'}
                       className={`p-1 rounded-lg transition-colors shrink-0 ${isMatchingLocked
-                        ? 'text-gray-300 dark:text-gray-700 cursor-not-allowed opacity-40'
+                        ? 'text-gray-300 dark:text-gray-700 cursor-not-allowed opacity-30'
                         : 'text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer'
                         }`}
                     >

@@ -1,6 +1,7 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import type { StudentDocument } from '../StudentDetailModal';
@@ -22,10 +23,17 @@ export function DocumentRejectionModal({
   onClose,
   onConfirmReject,
 }: DocumentRejectionModalProps) {
-  return (
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {rejectingDoc && (
-        <div key="reject-doc-wrapper" className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div key="reject-doc-wrapper" className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <motion.div
             key="reject-doc-content"
             initial={{ opacity: 0, scale: 0.95 }}
@@ -84,6 +92,7 @@ export function DocumentRejectionModal({
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

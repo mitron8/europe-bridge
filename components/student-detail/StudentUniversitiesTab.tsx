@@ -9,6 +9,8 @@ import {
   Loader2,
   AlertCircle,
   Building2,
+  Laptop,
+  Star,
 } from 'lucide-react';
 import { MatchingResultsWorkspace } from './MatchingResultsWorkspace';
 import { UniversityCatalogueWorkspace } from './UniversityCatalogueWorkspace';
@@ -148,7 +150,26 @@ export function StudentUniversitiesTab({
   uniMeta,
   onSelectUniversity,
 }: StudentUniversitiesTabProps) {
-  const [matchingSubTab, setMatchingSubTab] = useState<'matches' | 'catalogue'>('matches');
+  const [matchingSubTab, setMatchingSubTab] = useState<'matches' | 'catalogue'>(() => {
+    if (typeof window !== 'undefined') {
+      const sub = new URLSearchParams(window.location.search).get('subtab');
+      if (sub === 'matches' || sub === 'catalogue') return sub;
+    }
+    return 'matches';
+  });
+
+  const handleSubTabChange = (tab: 'matches' | 'catalogue') => {
+    setMatchingSubTab(tab);
+    if (typeof window !== 'undefined') {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('subtab', tab);
+        window.history.replaceState(null, '', url.toString());
+      } catch {
+        // Safe fallback
+      }
+    }
+  };
   const [matchSearchQuery, setMatchSearchQuery] = useState('');
   const [matchUniFilter, setMatchUniFilter] = useState('ALL');
   const [matchPage, setMatchPage] = useState(1);
@@ -238,8 +259,8 @@ export function StudentUniversitiesTab({
               onClick={onRunMatching}
               disabled={runningMatching || isMatchingLocked}
               title={isMatchingLocked ? 'Shortlist and matching are locked. Unlock before re-running matching.' : undefined}
-              className={`flex items-center gap-1.5 py-2 px-3.5 text-xs font-extrabold rounded-xl shadow-xs transition-colors ${isMatchingLocked
-                ? 'bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800 cursor-not-allowed opacity-75'
+              className={`flex items-center gap-1.5 py-1.5 px-3 text-xs font-extrabold rounded-xl shadow-xs transition-colors ${isMatchingLocked
+                ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 cursor-not-allowed opacity-90'
                 : 'bg-germany-red hover:bg-[#D62839] disabled:opacity-60 text-white cursor-pointer'
                 }`}
             >
@@ -259,40 +280,23 @@ export function StudentUniversitiesTab({
         </div>
       </div>
 
-      {/* Lock Status Alert Banner */}
-      {isMatchingLocked && (
-        <div className="p-3.5 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/60 rounded-2xl flex items-center justify-between gap-3 text-purple-900 dark:text-purple-200">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-purple-200 dark:bg-purple-900/60 flex items-center justify-center shrink-0">
-              <Lock className="w-4 h-4 text-purple-800 dark:text-purple-200" />
-            </div>
-            <div>
-              <p className="text-xs font-black uppercase tracking-wider text-purple-800 dark:text-purple-300">
-                Shortlist &amp; Display Curation Locked
-              </p>
-              <p className="text-[11px] text-purple-700 dark:text-purple-400 font-medium">
-                Programmes are finalized for university application submission. Re-running matching, curation modifications, and shortlist changes are locked. Click &quot;Shortlist Locked&quot; to unlock.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Subscription & Shortlist Lock Control Bar */}
-      <div className="p-4 bg-gradient-to-r from-amber-500/10 via-transparent to-red-500/10 dark:from-amber-500/5 dark:to-red-500/5 rounded-2xl border border-amber-500/20 dark:border-amber-500/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="p-3.5 bg-white dark:bg-[#0E121A] rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="flex items-center gap-3 flex-wrap">
           {studentSubscription ? (
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-germany-gold/20 text-germany-black dark:text-germany-gold border border-germany-gold/40">
-                {studentSubscription.planName || studentSubscription.planId}
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="text-xs font-black uppercase px-3 py-1 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800/60">
+                {studentSubscription.planName || studentSubscription.planId || 'PLAN_3'}
               </span>
-              <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                Display: <strong className="text-germany-red">{curatedProgrammeIds.length}</strong> / {studentSubscription.maxDisplayCount} max
-              </span>
-              <span className="text-xs text-gray-400">•</span>
-              <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                Shortlist: <strong className="text-blue-600">{studentShortlistCount}</strong> / {studentSubscription.maxShortlistCount} max
-              </span>
+              <span className="h-4 w-px bg-gray-200 dark:bg-gray-700 hidden sm:inline-block" />
+              <div className="flex items-center gap-1.5 text-xs font-bold text-gray-700 dark:text-gray-300">
+                <Laptop className="w-3.5 h-3.5 text-gray-400" />
+                <span>Display: <strong className="text-germany-red">{curatedProgrammeIds.length}</strong> / {studentSubscription.maxDisplayCount || 10}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs font-bold text-gray-700 dark:text-gray-300">
+                <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                <span>Shortlist: <strong className="text-germany-red">{studentShortlistCount}</strong> / {studentSubscription.maxShortlistCount || 7}</span>
+              </div>
             </div>
           ) : (
             <div className="flex items-center gap-2">
@@ -306,11 +310,11 @@ export function StudentUniversitiesTab({
           )}
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0">
           {readOnly ? (
             <div
               id="counsellor-toggle-lock-status"
-              className={`flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-extrabold border ${isMatchingLocked
+              className={`flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-extrabold border ${isMatchingLocked
                 ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800'
                 : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
                 }`}
@@ -327,7 +331,7 @@ export function StudentUniversitiesTab({
               id="counsellor-toggle-lock-btn"
               onClick={onToggleLock}
               disabled={togglingLock}
-              className={`flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-extrabold transition-colors cursor-pointer border ${isMatchingLocked
+              className={`flex items-center gap-1.5 py-1.5 px-3.5 rounded-full text-xs font-extrabold transition-colors cursor-pointer border ${isMatchingLocked
                 ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-100'
                 : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100'
                 }`}
@@ -346,7 +350,7 @@ export function StudentUniversitiesTab({
 
           <button
             onClick={() => setShowCurationPanel(!showCurationPanel)}
-            className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-bold bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1C2436] transition-colors cursor-pointer shadow-xs"
+            className="flex items-center gap-1.5 py-1.5 px-3.5 rounded-xl text-xs font-bold bg-white dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1C2436] transition-colors cursor-pointer shadow-xs"
           >
             <span>{showCurationPanel ? 'Hide Curation Panel' : 'Show Curation Panel'}</span>
             <span className="text-[10px] font-black px-1.5 py-0.2 bg-germany-red text-white rounded-full">
@@ -374,7 +378,7 @@ export function StudentUniversitiesTab({
         <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
-            onClick={() => setMatchingSubTab('matches')}
+            onClick={() => handleSubTabChange('matches')}
             className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${matchingSubTab === 'matches'
               ? 'bg-germany-red text-white shadow-xs'
               : 'bg-gray-100 dark:bg-[#151B27] text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
@@ -395,7 +399,7 @@ export function StudentUniversitiesTab({
           {!readOnly && (
             <button
               type="button"
-              onClick={() => setMatchingSubTab('catalogue')}
+              onClick={() => handleSubTabChange('catalogue')}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${matchingSubTab === 'catalogue'
                 ? 'bg-germany-red text-white shadow-xs'
                 : 'bg-gray-100 dark:bg-[#151B27] text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'

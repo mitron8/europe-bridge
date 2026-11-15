@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Download, Loader2, AlertCircle } from 'lucide-react';
 
 interface StudentFullProfileViewProps {
@@ -33,6 +34,29 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Prevent background scrolling while modal is open
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, []);
+
+  // Close on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   useEffect(() => {
     let isMounted = true;
@@ -59,20 +83,23 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
     return () => { isMounted = false; };
   }, [studentId]);
 
+  if (!mounted) return null;
+
   if (loading) {
-    return (
-      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-white dark:bg-[#0B0E14]">
-        <div className="flex flex-col items-center justify-center space-y-4">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-800 dark:text-gray-200" />
-          <p className="text-sm font-bold text-gray-600 dark:text-gray-400">Loading student profile document...</p>
+    const loadingNode = (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800/80 rounded-2xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center justify-center space-y-4">
+          <Loader2 className="w-8 h-8 animate-spin text-germany-red" />
+          <p className="text-sm font-bold text-gray-700 dark:text-gray-300">Loading student profile record...</p>
         </div>
       </div>
     );
+    return createPortal(loadingNode, document.body);
   }
 
   if (error) {
-    return (
-      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    const errorNode = (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
         <div className="bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800/80 rounded-2xl p-8 max-w-md w-full relative shadow-2xl">
           <button onClick={onClose} className="absolute top-4 right-4 p-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer">
             <X className="w-5 h-5" />
@@ -85,6 +112,7 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
         </div>
       </div>
     );
+    return createPortal(errorNode, document.body);
   }
 
   if (!profile) return null;
@@ -97,9 +125,17 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
     ? `${profile.intakeSeason || ''} ${profile.intakeYear || ''}`.trim()
     : 'NA';
 
-  return (
-    <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm overflow-y-auto p-4 sm:p-10 print:bg-white print:p-0 print:block">
-      <div className="relative mx-auto w-full max-w-5xl bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800/80 rounded-xl sm:rounded-2xl p-6 sm:p-12 shadow-2xl print:shadow-none print:border-none print:m-0 print:p-0 print:rounded-none">
+  const modalNode = (
+    <div
+      className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm overflow-y-auto flex items-start justify-center p-3 sm:p-6 lg:p-10 print:bg-white print:p-0 print:block"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        className="relative w-full max-w-4xl lg:max-w-5xl bg-white dark:bg-[#111622] border border-gray-200/80 dark:border-gray-800/80 rounded-2xl p-6 sm:p-10 shadow-2xl my-6 sm:my-10 print:shadow-none print:border-none print:m-0 print:p-0 print:rounded-none"
+        onClick={(e) => e.stopPropagation()}
+      >
         
         {/* Actions Bar - Hidden on Print */}
         <div className="flex justify-end gap-4 mb-10 print:hidden border-b border-gray-200 dark:border-gray-800/80 pb-4">
@@ -375,6 +411,8 @@ export function StudentFullProfileView({ studentId, onClose }: StudentFullProfil
       </div>
     </div>
   );
+
+  return createPortal(modalNode, document.body);
 }
 
 function Section({ title, children }: { title: string, children: React.ReactNode }) {

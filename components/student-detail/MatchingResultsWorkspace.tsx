@@ -203,11 +203,11 @@ export function MatchingResultsWorkspace({
             </div>
           ) : (
             <>
-              {/* Paginated Grid */}
-              <div className={`grid grid-cols-1 ${showCurationPanel ? 'md:grid-cols-1 xl:grid-cols-2' : 'md:grid-cols-2'} gap-4`}>
+              {/* Paginated Cards Stack */}
+              <div className="space-y-3">
                 {paginatedMatchingResults.map((r: any) => {
                   const progIdStr = String(r.programmeId || r.programmeid || r.id);
-                  const isCurated = curatedProgrammeIds.includes(progIdStr);
+                  const isCurated = curatedProgrammeIds.map(String).includes(progIdStr);
                   const isShortlisted = shortlistedProgIds.has(progIdStr);
                   const maxDisplay = studentSubscription?.maxDisplayCount || 5;
                   const isDisplayFull = curatedProgrammeIds.length >= maxDisplay;

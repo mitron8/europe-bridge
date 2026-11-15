@@ -47,9 +47,10 @@ export function MatchingSection() {
     });
   };
 
-  const fetchResults = async () => {
-    setLoadingResults(true);
-    setError(null);
+  const fetchResults = async (silent: boolean | any = false) => {
+    const isSilent = silent === true;
+    if (!isSilent) setLoadingResults(true);
+    if (!isSilent) setError(null);
     try {
       const res = await fetch(`${API_URL}/matching/results`, { credentials: 'include' });
       if (!res.ok) {
@@ -66,14 +67,30 @@ export function MatchingSection() {
       setIsLocked(Boolean(data.isLocked));
       setTotalMatchedCount(data.totalMatchedCount ?? 0);
     } catch (err: any) {
-      setError(err.message ?? 'Failed to load results');
+      if (!isSilent) setError(err.message ?? 'Failed to load results');
     } finally {
-      setLoadingResults(false);
+      if (!isSilent) setLoadingResults(false);
     }
   };
 
   useEffect(() => {
     fetchResults();
+
+    const handleFocus = () => {
+      fetchResults(true);
+    };
+    window.addEventListener('focus', handleFocus);
+
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        fetchResults(true);
+      }
+    }, 8000);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(interval);
+    };
   }, []);
 
   // Poll while a run is in progress

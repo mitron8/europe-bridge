@@ -48,6 +48,19 @@ export default function StudentAdmissionPage({ defaultTab }: { defaultTab?: 'doc
   const initialTab = defaultTab || (searchParams.get('tab') === 'applications' ? 'applications' : 'documents');
   const [activeTab, setActiveTab] = useState<'documents' | 'applications'>(initialTab);
 
+  const handleTabChange = (tab: 'documents' | 'applications') => {
+    setActiveTab(tab);
+    if (typeof window !== 'undefined') {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', tab);
+        window.history.replaceState(null, '', url.toString());
+      } catch {
+        // Safe fallback
+      }
+    }
+  };
+
   // Document Hub State
   const [docLoading, setDocLoading] = useState(true);
   const [docError, setDocError] = useState('');
@@ -358,7 +371,7 @@ export default function StudentAdmissionPage({ defaultTab }: { defaultTab?: 'doc
         {/* Navigation Tabs Bar */}
         <div className="flex items-center gap-2 mt-8 pt-4 border-t border-gray-100 dark:border-gray-800/80">
           <button
-            onClick={() => setActiveTab('documents')}
+            onClick={() => handleTabChange('documents')}
             className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'documents'
                 ? 'bg-germany-red text-white shadow-md shadow-germany-red/20'
@@ -373,7 +386,7 @@ export default function StudentAdmissionPage({ defaultTab }: { defaultTab?: 'doc
           </button>
 
           <button
-            onClick={() => setActiveTab('applications')}
+            onClick={() => handleTabChange('applications')}
             className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'applications'
                 ? 'bg-germany-red text-white shadow-md shadow-germany-red/20'

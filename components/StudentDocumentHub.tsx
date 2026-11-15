@@ -98,16 +98,17 @@ export function StudentDocumentHub() {
     updatedAt?: string;
   } | null>(null);
 
-  const loadDocuments = useCallback(async () => {
+  const loadDocuments = useCallback(async (silent: boolean | any = false) => {
+    const isSilent = silent === true;
     try {
-      setIsLoading(true);
-      setError('');
+      if (!isSilent) setIsLoading(true);
+      if (!isSilent) setError('');
       const data = await apiFetch<ChecklistResponse>('/student/documents');
       setChecklist(data);
     } catch (e: any) {
-      setError(e.message || 'Failed to load documents');
+      if (!isSilent) setError(e.message || 'Failed to load documents');
     } finally {
-      setIsLoading(false);
+      if (!isSilent) setIsLoading(false);
     }
   }, []);
 
@@ -153,6 +154,23 @@ export function StudentDocumentHub() {
     loadDocuments();
     loadNotifications();
     loadCvStatus();
+
+    const handleFocus = () => {
+      loadDocuments(true);
+      loadNotifications();
+    };
+    window.addEventListener('focus', handleFocus);
+
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        loadDocuments(true);
+      }
+    }, 10000);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(interval);
+    };
   }, [loadDocuments, loadNotifications, loadCvStatus]);
 
   const markNotificationDone = async (id: string) => {
