@@ -1,9 +1,10 @@
 "use client";
 
 import React from 'react';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, Loader2 } from 'lucide-react';
 import { ClaySelect } from '@/components/ClaySelect';
 import { AdminTicketSummary } from './types';
+import { useLazySlice } from '@/hooks/useLazySlice';
 
 interface AdminTicketListProps {
   search: string;
@@ -44,6 +45,13 @@ export function AdminTicketList({
   getPriorityBadge,
   getStatusBadge,
 }: AdminTicketListProps) {
+  const { visibleItems, hasMore, bottomSentinelRef } = useLazySlice(
+    filteredList,
+    25,
+    15,
+    [activeTab, search, counsellorFilter, studentFilter, priorityFilter],
+  );
+
   return (
     <div className="lg:col-span-5 bg-white rounded-2xl border border-gray-200/80 shadow-xs flex flex-col h-[760px] overflow-hidden">
       {/* Search, Counsellor, Student & Priority Controls */}
@@ -118,48 +126,55 @@ export function AdminTicketList({
             </p>
           </div>
         ) : (
-          filteredList.map((ticket) => {
-            const isSelected = ticket.id === selectedTicketId;
-            return (
-              <div
-                key={ticket.id}
-                onClick={() => onSelectTicket(ticket.id)}
-                className={`p-4 transition-all cursor-pointer relative ${
-                  isSelected
-                    ? 'bg-[#FDFBF7] border-l-4 border-l-germany-red'
-                    : 'hover:bg-gray-50/80'
-                }`}
-              >
-                <div className="flex items-center justify-between text-[11px] mb-1">
-                  <span className="font-mono font-bold text-gray-800 bg-white px-2 py-0.5 rounded border border-gray-200 shadow-2xs">
-                    {ticket.ticketNumber}
-                  </span>
-                  {getPriorityBadge(ticket.priority)}
-                </div>
-
-                <div className="font-bold text-xs text-germany-black line-clamp-1 mb-1">
-                  {ticket.title}
-                </div>
-
-                <div className="flex items-center justify-between text-[11px] text-gray-500 font-medium">
-                  <span>Student: <strong className="text-gray-700">{ticket.student.name}</strong></span>
-                  {getStatusBadge(ticket.status)}
-                </div>
-
-                {ticket.counsellor && (
-                  <div className="text-[10px] text-gray-400 mt-1">
-                    Counsellor: <span className="font-bold text-gray-600">{ticket.counsellor.name}</span>
+          <>
+            {visibleItems.map((ticket) => {
+              const isSelected = ticket.id === selectedTicketId;
+              return (
+                <div
+                  key={ticket.id}
+                  onClick={() => onSelectTicket(ticket.id)}
+                  className={`p-4 transition-all cursor-pointer relative ${
+                    isSelected
+                      ? 'bg-[#FDFBF7] border-l-4 border-l-germany-red'
+                      : 'hover:bg-gray-50/80'
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-[11px] mb-1">
+                    <span className="font-mono font-bold text-gray-800 bg-white px-2 py-0.5 rounded border border-gray-200 shadow-2xs">
+                      {ticket.ticketNumber}
+                    </span>
+                    {getPriorityBadge(ticket.priority)}
                   </div>
-                )}
 
-                {ticket.escalationReason && ticket.status === 'escalated' && (
-                  <div className="mt-2 p-1.5 bg-red-50/80 border border-red-200/80 rounded-lg text-[10px] text-germany-red font-medium line-clamp-1">
-                    ⚡ {ticket.escalationReason}
+                  <div className="font-bold text-xs text-germany-black line-clamp-1 mb-1">
+                    {ticket.title}
                   </div>
-                )}
+
+                  <div className="flex items-center justify-between text-[11px] text-gray-500 font-medium">
+                    <span>Student: <strong className="text-gray-700">{ticket.student.name}</strong></span>
+                    {getStatusBadge(ticket.status)}
+                  </div>
+
+                  {ticket.counsellor && (
+                    <div className="text-[10px] text-gray-400 mt-1">
+                      Counsellor: <span className="font-bold text-gray-600">{ticket.counsellor.name}</span>
+                    </div>
+                  )}
+
+                  {ticket.escalationReason && ticket.status === 'escalated' && (
+                    <div className="mt-2 p-1.5 bg-red-50/80 border border-red-200/80 rounded-lg text-[10px] text-germany-red font-medium line-clamp-1">
+                      ⚡ {ticket.escalationReason}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {hasMore && (
+              <div ref={bottomSentinelRef} className="py-4 flex justify-center items-center">
+                <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
               </div>
-            );
-          })
+            )}
+          </>
         )}
       </div>
     </div>

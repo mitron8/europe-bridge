@@ -1,7 +1,8 @@
 "use client";
 
 import React from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Loader2 } from 'lucide-react';
+import { useLazySlice } from '@/hooks/useLazySlice';
 
 interface CounsellorMeetingsHistoryTabProps {
   meetingsData: any;
@@ -10,6 +11,11 @@ interface CounsellorMeetingsHistoryTabProps {
 export function CounsellorMeetingsHistoryTab({
   meetingsData,
 }: CounsellorMeetingsHistoryTabProps) {
+  const { visibleItems: visibleLogs, hasMore, bottomSentinelRef } = useLazySlice(
+    meetingsData?.logs || [],
+    25,
+    15,
+  );
   return (
     <div className="space-y-4">
       <div className="p-4 bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/80 dark:border-gray-800 flex items-center justify-between">
@@ -36,7 +42,7 @@ export function CounsellorMeetingsHistoryTab({
         </div>
       ) : (
         <div className="space-y-2.5">
-          {meetingsData.logs.map((log: any) => {
+          {visibleLogs.map((log: any) => {
             const isDeclineOrDelete = log.event_type.includes('DECLINED') || log.event_type.includes('DELETED') || log.event_type === 'CANCELLED';
             const isReschedule = log.event_type.includes('RESCHEDULE');
             const isAccepted = log.event_type.includes('ACCEPTED') || log.event_type === 'BOOKED';
@@ -86,6 +92,11 @@ export function CounsellorMeetingsHistoryTab({
               </div>
             );
           })}
+          {hasMore && (
+            <div ref={bottomSentinelRef} className="py-4 flex justify-center items-center">
+              <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+            </div>
+          )}
         </div>
       )}
     </div>

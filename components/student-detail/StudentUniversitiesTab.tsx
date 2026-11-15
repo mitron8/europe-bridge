@@ -423,7 +423,7 @@ export function StudentUniversitiesTab({
 
         <p className="text-[11px] font-bold text-gray-400">
           {matchingSubTab === 'matches'
-            ? `${filteredMatchingResults.length} matches • Page ${matchPage} of ${totalMatchPages}`
+            ? `${filteredMatchingResults.length} matches • 25+15 smooth scroll`
             : `Search German universities above • ${notepadProgrammes.length} saved in notepad below`}
         </p>
       </div>

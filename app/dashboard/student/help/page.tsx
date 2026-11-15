@@ -12,8 +12,10 @@ import {
   RotateCw,
   User,
   ShieldAlert,
-  Lock
+  Lock,
+  Loader2
 } from 'lucide-react';
+import { useLazySlice } from '@/hooks/useLazySlice';
 import { MeetingBookingModal } from '@/components/MeetingBookingModal';
 import { ClaySelect } from '@/components/ClaySelect';
 import { StudentAskForm } from '@/components/help/StudentAskForm';
@@ -370,6 +372,13 @@ export default function StudentHelpPage() {
     return matchesSearch && matchesCategory;
   });
 
+  const { visibleItems: visibleTickets, hasMore: hasMoreTickets, bottomSentinelRef: ticketSentinelRef } = useLazySlice(
+    filteredTickets,
+    25,
+    15,
+    [search, filterCategory],
+  );
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
       {/* Header */}
@@ -651,7 +660,7 @@ export default function StudentHelpPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {filteredTickets.map((t) => (
+                  {visibleTickets.map((t) => (
                     <button
                       key={t.id}
                       onClick={() => setSelectedTicketId(t.id)}
@@ -693,6 +702,11 @@ export default function StudentHelpPage() {
                       </div>
                     </button>
                   ))}
+                  {hasMoreTickets && (
+                    <div ref={ticketSentinelRef} className="py-4 flex justify-center items-center">
+                      <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                    </div>
+                  )}
                 </div>
               )}
             </>

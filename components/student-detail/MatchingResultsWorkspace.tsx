@@ -15,6 +15,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { ProgrammeCard } from '../cards/ProgrammeCard';
+import { useLazySlice } from '@/hooks/useLazySlice';
 
 export interface MatchingResultsWorkspaceProps {
   loadingMatching: boolean;
@@ -25,11 +26,11 @@ export interface MatchingResultsWorkspaceProps {
   setMatchSearchQuery: (val: string) => void;
   matchUniFilter: string;
   setMatchUniFilter: (val: string) => void;
-  matchPage: number;
-  setMatchPage: React.Dispatch<React.SetStateAction<number>>;
-  totalMatchPages: number;
+  matchPage?: number;
+  setMatchPage?: React.Dispatch<React.SetStateAction<number>>;
+  totalMatchPages?: number;
   filteredMatchingResults: any[];
-  paginatedMatchingResults: any[];
+  paginatedMatchingResults?: any[];
   matchedUniversities: Array<{ name: string; count: number }>;
   curatedProgrammeIds: string[];
   shortlistedProgIds: Set<string>;
@@ -69,6 +70,18 @@ export function MatchingResultsWorkspace({
   onToggleCuratedProgramme,
   onSwitchToCatalogue,
 }: MatchingResultsWorkspaceProps) {
+  const {
+    visibleItems: lazyMatchingResults,
+    hasMore,
+    bottomSentinelRef,
+    visibleCount,
+  } = useLazySlice(
+    filteredMatchingResults,
+    25,
+    15,
+    [matchUniFilter, matchSearchQuery],
+  );
+
   return (
     <div className="space-y-4">
       {/* Loading State */}
@@ -125,7 +138,7 @@ export function MatchingResultsWorkspace({
                 value={matchSearchQuery}
                 onChange={(e) => {
                   setMatchSearchQuery(e.target.value);
-                  setMatchPage(1);
+                  setMatchPage?.(1);
                 }}
                 placeholder="Search by programme, university, city, language..."
                 className="w-full pl-8 pr-8 py-2 bg-[#F8F9FA] dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-xs font-bold text-gray-800 dark:text-gray-200 placeholder:text-gray-400 focus:outline-none focus:border-germany-red"
@@ -136,7 +149,7 @@ export function MatchingResultsWorkspace({
                   type="button"
                   onClick={() => {
                     setMatchSearchQuery('');
-                    setMatchPage(1);
+                    setMatchPage?.(1);
                   }}
                   className="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600"
                 >
@@ -151,7 +164,7 @@ export function MatchingResultsWorkspace({
                 value={matchUniFilter}
                 onChange={(e) => {
                   setMatchUniFilter(e.target.value);
-                  setMatchPage(1);
+                  setMatchPage?.(1);
                 }}
                 className="text-xs font-extrabold bg-[#F8F9FA] dark:bg-[#151B27] border border-gray-200/80 dark:border-gray-800/80 rounded-xl px-3 py-2 text-gray-700 dark:text-gray-300 focus:outline-none focus:border-germany-red max-w-[340px] sm:max-w-md cursor-pointer whitespace-normal break-words leading-snug"
               >
@@ -171,7 +184,7 @@ export function MatchingResultsWorkspace({
                   onClick={() => {
                     setMatchSearchQuery('');
                     setMatchUniFilter('ALL');
-                    setMatchPage(1);
+                    setMatchPage?.(1);
                   }}
                   className="text-xs font-bold text-germany-red hover:underline whitespace-nowrap cursor-pointer px-1"
                 >
@@ -194,7 +207,7 @@ export function MatchingResultsWorkspace({
                 onClick={() => {
                   setMatchSearchQuery('');
                   setMatchUniFilter('ALL');
-                  setMatchPage(1);
+                  setMatchPage?.(1);
                 }}
                 className="inline-flex items-center gap-1 text-xs font-extrabold text-germany-red hover:underline pt-2 cursor-pointer"
               >
@@ -203,9 +216,9 @@ export function MatchingResultsWorkspace({
             </div>
           ) : (
             <>
-              {/* Paginated Cards Stack */}
+              {/* Lazy-Loaded Cards Stack (25 + 15 on scroll) */}
               <div className="space-y-3">
-                {paginatedMatchingResults.map((r: any) => {
+                {lazyMatchingResults.map((r: any) => {
                   const progIdStr = String(r.programmeId || r.programmeid || r.id);
                   const isCurated = curatedProgrammeIds.map(String).includes(progIdStr);
                   const isShortlisted = shortlistedProgIds.has(progIdStr);
@@ -291,37 +304,10 @@ export function MatchingResultsWorkspace({
                 })}
               </div>
 
-              {/* Pagination Controls */}
-              {totalMatchPages > 1 && (
-                <div className="flex items-center justify-between pt-3 border-t border-gray-200/80 dark:border-gray-800/80">
-                  <button
-                    type="button"
-                    onClick={() => setMatchPage((p) => Math.max(1, p - 1))}
-                    disabled={matchPage <= 1}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-gray-200/80 dark:border-gray-800/80 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#151B27] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                  >
-                    <ChevronLeft className="w-3.5 h-3.5" />
-                    <span>Previous</span>
-                  </button>
-
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500">
-                    <span>
-                      Page <strong className="text-germany-black dark:text-white">{matchPage}</strong> of{' '}
-                      <strong className="text-germany-black dark:text-white">{totalMatchPages}</strong>
-                    </span>
-                    <span className="text-gray-300 dark:text-gray-700">•</span>
-                    <span>({filteredMatchingResults.length} total)</span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setMatchPage((p) => Math.min(totalMatchPages, p + 1))}
-                    disabled={matchPage >= totalMatchPages}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-gray-200/80 dark:border-gray-800/80 text-xs font-extrabold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#151B27] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                  >
-                    <span>Next</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
+              {/* Bottom Sentinel for 25 + 15 Smooth Lazy Loading on Scroll */}
+              {hasMore && (
+                <div ref={bottomSentinelRef} className="py-6 flex justify-center items-center">
+                  <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
                 </div>
               )}
             </>
