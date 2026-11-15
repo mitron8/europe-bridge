@@ -94,7 +94,7 @@ export function TodaySessionsCard({ meetings = [] }: TodaySessionsCardProps) {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  {s.meeting_link && (
+                  {s.meeting_link ? (
                     <a
                       href={s.meeting_link}
                       target="_blank"
@@ -104,6 +104,14 @@ export function TodaySessionsCard({ meetings = [] }: TodaySessionsCardProps) {
                       <Video className="w-3.5 h-3.5" />
                       <span>Launch Meet</span>
                     </a>
+                  ) : (
+                    <Link
+                      href="/dashboard/counsellor/deadlines"
+                      className="bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800 py-1.5 px-2.5 text-[11px] font-bold rounded-xl transition-colors cursor-pointer inline-flex items-center gap-1"
+                    >
+                      <Video className="w-3 h-3 text-amber-600" />
+                      <span>+ Meet Link</span>
+                    </Link>
                   )}
                   <Link
                     href="/dashboard/counsellor/deadlines"

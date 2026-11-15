@@ -1,7 +1,7 @@
 "use client";
 
-import React from 'react';
-import { X, AlertCircle, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, AlertCircle, Loader2, Video, ExternalLink } from 'lucide-react';
 
 interface CounsellorCancelModalProps {
   isOpen: boolean;
@@ -274,6 +274,138 @@ export function CounsellorBlockSlotModal({
             <span>Confirm Block</span>
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+interface CounsellorMeetingLinkModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  meeting: any;
+  onSubmit: (meetingId: string, meetingLink: string, saveAsDefault: boolean) => Promise<void>;
+  isSubmitting: boolean;
+}
+
+export function CounsellorMeetingLinkModal({
+  isOpen,
+  onClose,
+  meeting,
+  onSubmit,
+  isSubmitting,
+}: CounsellorMeetingLinkModalProps) {
+  const [meetingLink, setMeetingLink] = useState<string>('');
+  const [saveAsDefault, setSaveAsDefault] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (isOpen && meeting) {
+      const defaultSaved = typeof window !== 'undefined' ? localStorage.getItem('eb_counsellor_default_meet_link') || '' : '';
+      setMeetingLink(meeting.meeting_link || meeting.meetingLink || defaultSaved);
+      setSaveAsDefault(false);
+    }
+  }, [isOpen, meeting]);
+
+  if (!isOpen || !meeting) return null;
+
+  const handleLaunchGoogleMeetNew = () => {
+    window.open('https://meet.google.com/new', '_blank', 'noopener,noreferrer');
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(meeting.id, meetingLink.trim(), saveAsDefault);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+      <div className="bg-white dark:bg-[#111622] rounded-3xl border border-gray-200/80 dark:border-gray-800 shadow-2xl w-full max-w-lg p-6 space-y-4">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2.5 bg-red-50 dark:bg-red-950/40 rounded-xl text-germany-red shrink-0">
+              <Video className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-display font-extrabold text-base text-germany-black dark:text-white">
+                Video Consultation Link
+              </h3>
+              <p className="text-[11px] text-gray-500">
+                {meeting.studentName} • {meeting.humanTime || meeting.displayTime}
+              </p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Quick Launch Google Meet Helper */}
+        <div className="p-3.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="space-y-0.5">
+            <div className="font-extrabold text-blue-900 dark:text-blue-200">
+              Host Directly on Google Meet
+            </div>
+            <p className="text-[11px] text-blue-700 dark:text-blue-300">
+              Click to launch an instant room, then copy and paste the meet URL below.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleLaunchGoogleMeetNew}
+            className="neu-btn-primary bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 text-xs font-bold shrink-0 inline-flex items-center gap-1.5 rounded-xl shadow-xs cursor-pointer"
+          >
+            <span>Host on Meet</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
+          <div>
+            <label className="font-black uppercase text-gray-600 dark:text-gray-300 block mb-1">
+              Meeting URL (Google Meet, Zoom, MS Teams, etc.)
+            </label>
+            <input
+              type="text"
+              value={meetingLink}
+              onChange={(e) => setMeetingLink(e.target.value)}
+              placeholder="https://meet.google.com/abc-defg-hij"
+              className="w-full p-3 rounded-xl border border-gray-200/80 dark:border-gray-800 bg-gray-50 dark:bg-[#0E121A] text-germany-black dark:text-white focus:ring-2 focus:ring-germany-red font-mono text-xs"
+              autoFocus
+            />
+            <p className="text-[10px] text-gray-400 mt-1">
+              Students will see this link on their dashboard and can join directly with 1 click. Leave empty to remove link.
+            </p>
+          </div>
+
+          <label className="flex items-center gap-2 cursor-pointer text-[11px] text-gray-600 dark:text-gray-300">
+            <input
+              type="checkbox"
+              checked={saveAsDefault}
+              onChange={(e) => setSaveAsDefault(e.target.checked)}
+              className="rounded text-germany-red focus:ring-germany-red"
+            />
+            <span>Remember as my default meeting link for future student bookings</span>
+          </label>
+
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+            <button
+              type="button"
+              onClick={onClose}
+              className="neu-btn-secondary px-4 py-2 text-xs font-black"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="neu-btn-primary px-5 py-2 text-xs font-black flex items-center gap-1.5"
+            >
+              {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              <span>Save & Share with Student</span>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

@@ -319,7 +319,7 @@ export function CounsellorExpertCard({
           <p className="font-semibold text-gray-800 dark:text-gray-200 text-xs">
             {upcomingMeeting.humanTime || upcomingMeeting.displayTime}
           </p>
-          {upcomingMeeting.meeting_link && (
+          {upcomingMeeting.meeting_link ? (
             <a
               href={upcomingMeeting.meeting_link}
               target="_blank"
@@ -329,6 +329,11 @@ export function CounsellorExpertCard({
               <Video className="w-3.5 h-3.5" />
               <span>Join Video Meeting</span>
             </a>
+          ) : (
+            <div className="text-[11px] text-gray-500 dark:text-gray-400 italic flex items-center gap-1 pt-0.5">
+              <Video className="w-3 h-3 text-gray-400 shrink-0" />
+              <span>Video link will be provided by advisor</span>
+            </div>
           )}
           <div className="flex items-center gap-2 pt-1 border-t border-emerald-200/60 dark:border-emerald-800/40">
             {onRescheduleMeeting && (

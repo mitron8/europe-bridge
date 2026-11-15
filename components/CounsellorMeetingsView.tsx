@@ -29,6 +29,7 @@ import {
   CounsellorCancelModal,
   CounsellorDeclineRescheduleModal,
   CounsellorBlockSlotModal,
+  CounsellorMeetingLinkModal,
 } from './meetings/CounsellorMeetingModals';
 import { CounsellorMeetingsAvailabilityTab } from './meetings/CounsellorMeetingsAvailabilityTab';
 import { CounsellorMeetingsHistoryTab } from './meetings/CounsellorMeetingsHistoryTab';
@@ -78,6 +79,61 @@ export function CounsellorMeetingsView() {
   const [isAllDay, setIsAllDay] = useState<boolean>(false);
   const [blockReason, setBlockReason] = useState<string>('');
   const [isSubmittingBlock, setIsSubmittingBlock] = useState<boolean>(false);
+
+  // Meeting Link state
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState<boolean>(false);
+  const [selectedMeetingForLink, setSelectedMeetingForLink] = useState<any | null>(null);
+  const [isSubmittingLink, setIsSubmittingLink] = useState<boolean>(false);
+
+  const handleSaveMeetingLink = async (meetingId: string, link: string, saveAsDefault: boolean) => {
+    setIsSubmittingLink(true);
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/meetings/${meetingId}/counsellor/meeting-link`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ meetingLink: link }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'Failed to update meeting link');
+
+      if (saveAsDefault && link) {
+        localStorage.setItem('eb_counsellor_default_meet_link', link);
+      }
+
+      setMeetingsData((prev: any) => {
+        if (!prev) return prev;
+        const updateList = (list: any[]) =>
+          (list || []).map((m: any) =>
+            m.id === meetingId
+              ? { ...m, meeting_link: data.meetingLink, meetingLink: data.meetingLink }
+              : m
+          );
+        return {
+          ...prev,
+          upcoming: updateList(prev.upcoming),
+          all: updateList(prev.all),
+        };
+      });
+
+      setActionFeedback({
+        type: 'success',
+        message: link ? 'Meeting link saved! Student can now join directly from their dashboard.' : 'Meeting link removed.',
+      });
+      setIsLinkModalOpen(false);
+    } catch (err: any) {
+      setActionFeedback({
+        type: 'error',
+        message: err.message || 'Failed to save meeting link',
+      });
+    } finally {
+      setIsSubmittingLink(false);
+    }
+  };
 
   // Student Picker / Direct Invite state
   const [isStudentPickerOpen, setIsStudentPickerOpen] = useState<boolean>(false);
@@ -483,16 +539,42 @@ export function CounsellorMeetingsView() {
                   </div>
 
                   <div className="flex items-center gap-2 flex-wrap shrink-0">
-                    {m.meeting_link && (
-                      <a
-                        href={m.meeting_link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="neu-btn-primary py-2 px-3.5 text-xs font-black inline-flex items-center gap-1.5 shadow-xs"
+                    {m.meeting_link ? (
+                      <div className="flex items-center gap-1.5">
+                        <a
+                          href={m.meeting_link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="neu-btn-primary py-2 px-3.5 text-xs font-black inline-flex items-center gap-1.5 shadow-xs"
+                        >
+                          <Video className="w-3.5 h-3.5" />
+                          <span>Launch Meet</span>
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedMeetingForLink(m);
+                            setIsLinkModalOpen(true);
+                          }}
+                          className="p-2 text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors cursor-pointer"
+                          title="Edit Meeting Link"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedMeetingForLink(m);
+                          setIsLinkModalOpen(true);
+                        }}
+                        className="py-2 px-3 text-xs font-black inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800 transition-colors cursor-pointer shadow-xs"
+                        title="Add Google Meet or Video Link"
                       >
-                        <Video className="w-3.5 h-3.5" />
-                        <span>Launch Meet</span>
-                      </a>
+                        <Video className="w-3.5 h-3.5 text-amber-600" />
+                        <span>+ Add Meet Link</span>
+                      </button>
                     )}
 
                     <button
@@ -884,6 +966,19 @@ export function CounsellorMeetingsView() {
           userRole="counsellor"
           studentUserId={selectedStudentForInvite.userId || selectedStudentForInvite.id}
           studentName={`${selectedStudentForInvite.firstName || ''} ${selectedStudentForInvite.lastName || ''}`.trim() || 'Student'}
+        />
+      )}
+      {/* Video Consultation Link Modal */}
+      {isLinkModalOpen && selectedMeetingForLink && (
+        <CounsellorMeetingLinkModal
+          isOpen={isLinkModalOpen}
+          onClose={() => {
+            setIsLinkModalOpen(false);
+            setSelectedMeetingForLink(null);
+          }}
+          meeting={selectedMeetingForLink}
+          onSubmit={handleSaveMeetingLink}
+          isSubmitting={isSubmittingLink}
         />
       )}
     </div>

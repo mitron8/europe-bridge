@@ -58,6 +58,7 @@ export function MeetingBookingModal({
     'University Shortlisting & Profile Review',
   ]);
   const [notes, setNotes] = useState<string>('');
+  const [meetingLink, setMeetingLink] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successData, setSuccessData] = useState<any | null>(null);
 
@@ -100,10 +101,16 @@ export function MeetingBookingModal({
       setErrorMessage(null);
       setSelectedSlot(null);
       setNotes('');
+      if (mode === 'counsellor_invite') {
+        const defaultSaved = typeof window !== 'undefined' ? localStorage.getItem('eb_counsellor_default_meet_link') || '' : '';
+        setMeetingLink(defaultSaved);
+      } else {
+        setMeetingLink('');
+      }
       setSelectedAgendas(['University Shortlisting & Profile Review']);
       fetchAvailability();
     }
-  }, [isOpen, counsellorId]);
+  }, [isOpen, counsellorId, mode]);
 
   if (!isOpen) return null;
 
@@ -163,6 +170,7 @@ export function MeetingBookingModal({
           startHour: selectedSlot.startHour,
           agenda: agendaString,
           notes: notes.trim() || undefined,
+          meetingLink: meetingLink.trim() || undefined,
         };
       } else if (mode === 'reschedule') {
         if (!existingMeetingId) {
@@ -653,6 +661,32 @@ export function MeetingBookingModal({
                     {notes.length} / 500
                   </div>
                 </div>
+
+                {/* Counsellor Invite: Video Meeting Link */}
+                {mode === 'counsellor_invite' && (
+                  <div className="space-y-1 pt-1">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                        <Video className="w-3.5 h-3.5 text-[#E63946]" />
+                        <span>Meeting Video Link (Optional)</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => window.open('https://meet.google.com/new', '_blank', 'noopener,noreferrer')}
+                        className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 cursor-pointer"
+                      >
+                        <span>Host on Meet ↗</span>
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={meetingLink}
+                      onChange={(e) => setMeetingLink(e.target.value)}
+                      placeholder="https://meet.google.com/abc-defg-hij (or add later)"
+                      className="w-full text-xs p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#141B2D] text-gray-800 dark:text-white font-mono placeholder:font-sans focus:outline-none focus:ring-2 focus:ring-[#E63946]/20"
+                    />
+                  </div>
+                )}
               </div>
             </>
           )}
