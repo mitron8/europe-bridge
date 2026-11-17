@@ -79,7 +79,7 @@ export function CounsellorExpertCard({
       {assignedCounsellor ? (
         <>
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-full bg-red-100 text-[#E63946] dark:bg-red-950/50 dark:text-red-400 font-bold text-sm flex items-center justify-center shrink-0">
+            <div className="w-11 h-11 rounded-full bg-red-100 text-[#EF2D48] dark:bg-red-950/50 dark:text-red-400 font-bold text-sm flex items-center justify-center shrink-0">
               {assignedCounsellor.name
                 ? assignedCounsellor.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
                 : 'NA'}
@@ -147,7 +147,7 @@ export function CounsellorExpertCard({
             {meetingFeedback.type === 'success' ? (
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
             ) : (
-              <AlertCircle className="w-3.5 h-3.5 text-[#E63946] shrink-0" />
+              <AlertCircle className="w-3.5 h-3.5 text-[#EF2D48] shrink-0" />
             )}
             <span>{meetingFeedback.message}</span>
           </div>
@@ -186,7 +186,7 @@ export function CounsellorExpertCard({
 
           <div className="space-y-1">
             <div className="text-xs font-bold text-gray-900 dark:text-white">
-              Proposed Slot: <span className="text-[#E63946]">{pendingReschedule.humanTime || pendingReschedule.displayTime}</span>
+              Proposed Slot: <span className="text-[#EF2D48]">{pendingReschedule.humanTime || pendingReschedule.displayTime}</span>
             </div>
             {pendingReschedule.originalTime && (
               <div className="text-[11px] text-gray-500">
@@ -226,7 +226,7 @@ export function CounsellorExpertCard({
                 <button
                   type="button"
                   onClick={() => onDeclineReschedule(pendingReschedule.id, true)}
-                  className="py-1.5 px-2 text-[11px] font-bold text-gray-600 dark:text-gray-300 hover:text-[#E63946] border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                  className="py-1.5 px-2 text-[11px] font-bold text-gray-600 dark:text-gray-300 hover:text-[#EF2D48] border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
                   title="Decline and delete schedule"
                 >
                   <span>Decline & Delete</span>
@@ -248,7 +248,7 @@ export function CounsellorExpertCard({
                 <button
                   type="button"
                   onClick={() => onDeclineReschedule(pendingReschedule.id, false)}
-                  className="py-1.5 px-2.5 text-[11px] font-bold text-gray-600 dark:text-gray-300 hover:text-[#E63946] border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                  className="py-1.5 px-2.5 text-[11px] font-bold text-gray-600 dark:text-gray-300 hover:text-[#EF2D48] border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
                   title="Withdraw request and delete schedule"
                 >
                   <span>Withdraw Request</span>
@@ -298,7 +298,7 @@ export function CounsellorExpertCard({
               <button
                 type="button"
                 onClick={() => onDeclineInvitation(pendingInvitation.id)}
-                className="py-1.5 px-2.5 text-[11px] font-bold text-gray-600 dark:text-gray-300 hover:text-[#E63946] border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                className="py-1.5 px-2.5 text-[11px] font-bold text-gray-600 dark:text-gray-300 hover:text-[#EF2D48] border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
               >
                 <span>Decline</span>
               </button>
@@ -324,7 +324,7 @@ export function CounsellorExpertCard({
               href={upcomingMeeting.meeting_link}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-[#E63946] font-bold text-xs hover:underline pt-0.5 block"
+              className="inline-flex items-center gap-1.5 text-[#EF2D48] font-bold text-xs hover:underline pt-0.5 block"
             >
               <Video className="w-3.5 h-3.5" />
               <span>Join Video Meeting</span>
@@ -349,7 +349,7 @@ export function CounsellorExpertCard({
               <button
                 type="button"
                 onClick={() => onCancelMeeting(String(upcomingMeeting.id))}
-                className="py-1 px-2 text-[11px] font-bold text-gray-500 hover:text-[#E63946] dark:text-gray-400 dark:hover:text-red-400 transition-colors cursor-pointer"
+                className="py-1 px-2 text-[11px] font-bold text-gray-500 hover:text-[#EF2D48] dark:text-gray-400 dark:hover:text-red-400 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -363,7 +363,7 @@ export function CounsellorExpertCard({
         <button
           type="button"
           onClick={onBookMeeting}
-          className="w-full bg-[#E63946] hover:bg-[#D62839] text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer text-xs"
+          className="w-full bg-[#EF2D48] hover:bg-[#DC2626] text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer text-xs"
         >
           <Calendar className="w-4 h-4" />
           <span>Book Strategy Meeting</span>
@@ -387,7 +387,7 @@ export function QuickActionsCard() {
           className="p-3 rounded-xl border border-gray-200/80 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors flex items-center justify-between group cursor-pointer"
         >
           <div className="flex items-center gap-2.5">
-            <User className="w-4 h-4 text-gray-500 group-hover:text-[#E63946] transition-colors" />
+            <User className="w-4 h-4 text-gray-500 group-hover:text-[#EF2D48] transition-colors" />
             <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">Update My Profile</span>
           </div>
           <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200 transition-colors" />
@@ -398,7 +398,7 @@ export function QuickActionsCard() {
           className="p-3 rounded-xl border border-gray-200/80 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors flex items-center justify-between group cursor-pointer"
         >
           <div className="flex items-center gap-2.5">
-            <UploadCloud className="w-4 h-4 text-gray-500 group-hover:text-[#E63946] transition-colors" />
+            <UploadCloud className="w-4 h-4 text-gray-500 group-hover:text-[#EF2D48] transition-colors" />
             <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">Upload Documents</span>
           </div>
           <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200 transition-colors" />
@@ -409,7 +409,7 @@ export function QuickActionsCard() {
           className="p-3 rounded-xl border border-gray-200/80 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors flex items-center justify-between group cursor-pointer"
         >
           <div className="flex items-center gap-2.5">
-            <CheckSquare className="w-4 h-4 text-gray-500 group-hover:text-[#E63946] transition-colors" />
+            <CheckSquare className="w-4 h-4 text-gray-500 group-hover:text-[#EF2D48] transition-colors" />
             <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">Check APS Checklist</span>
           </div>
           <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200 transition-colors" />
@@ -420,7 +420,7 @@ export function QuickActionsCard() {
           className="p-3 rounded-xl border border-gray-200/80 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors flex items-center justify-between group cursor-pointer"
         >
           <div className="flex items-center gap-2.5">
-            <LayoutGrid className="w-4 h-4 text-gray-500 group-hover:text-[#E63946] transition-colors" />
+            <LayoutGrid className="w-4 h-4 text-gray-500 group-hover:text-[#EF2D48] transition-colors" />
             <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">Explore Services</span>
           </div>
           <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200 transition-colors" />
@@ -433,7 +433,7 @@ export function QuickActionsCard() {
 export function TipForYouCard() {
   return (
     <div className="bg-[#FFF5F5] dark:bg-red-950/20 border border-red-100 dark:border-red-900/40 rounded-2xl p-5 space-y-2">
-      <div className="flex items-center gap-2 text-[#E63946]">
+      <div className="flex items-center gap-2 text-[#EF2D48]">
         <Lightbulb className="w-4 h-4" />
         <h4 className="text-xs font-bold uppercase tracking-wider">Tip for You</h4>
       </div>

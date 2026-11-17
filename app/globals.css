@@ -847,9 +847,20 @@ aside nav::-webkit-scrollbar,
 
 /* Prevent dev indicators or portals from obstructing sidebar controls */
 nextjs-portal,
-[data-nextjs-toast],
-div[data-nextjs-dialog-overlay] {
+[data-nextjs-dev-indicator],
+#nextjs-dev-tools,
+div[data-nextjs-dialog-overlay],
+div[data-nextjs-toast-wrapper] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
   pointer-events: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
 }
 
 

@@ -47,22 +47,22 @@ interface StudentWelcomeBannerProps {
 
 export function StudentWelcomeBanner({ studentFirstName }: StudentWelcomeBannerProps) {
   return (
-    <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/90 dark:border-gray-800 p-6 shadow-xs relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between min-h-[140px] gap-4">
+    <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/90 dark:border-gray-800 p-5 sm:p-6 shadow-xs relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between min-h-[130px] sm:min-h-[140px] gap-4">
       <div className="space-y-1.5 z-10 max-w-sm">
-        <h1 className="text-xl sm:text-2xl font-bold font-display text-gray-900 dark:text-white tracking-tight">
+        <h1 className="text-lg sm:text-2xl font-bold font-display text-gray-900 dark:text-white tracking-tight">
           Welcome back{studentFirstName ? `, ${studentFirstName}` : ''}
         </h1>
         <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
           Continue your Germany journey. You're making great progress!
         </p>
       </div>
-      <div className="shrink-0 h-32 sm:h-36 w-full sm:w-72 relative -mr-6 -my-6 sm:my-0 sm:mr-0">
+      <div className="shrink-0 h-28 sm:h-36 w-full sm:w-72 relative rounded-xl sm:rounded-none sm:rounded-r-2xl overflow-hidden sm:overflow-visible sm:-mr-6 sm:-my-6">
         <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-white dark:from-[#111622] to-transparent z-10 hidden sm:block pointer-events-none" />
         <Image
           src="/images/germany-header.jpg"
           alt="Germany Reichstag"
           fill
-          className="object-cover object-right rounded-r-2xl"
+          className="object-cover object-center sm:object-right rounded-xl sm:rounded-r-2xl"
           priority
         />
       </div>
@@ -80,63 +80,65 @@ export function StudentJourneyRoadmapCard({
   journeySteps,
 }: StudentJourneyRoadmapCardProps) {
   return (
-    <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/90 dark:border-gray-800 p-6 shadow-xs">
-      <div className="flex items-center justify-between mb-8 flex-wrap gap-2">
+    <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/90 dark:border-gray-800 p-5 sm:p-6 shadow-xs">
+      <div className="flex items-center justify-between mb-6 sm:mb-8 flex-wrap gap-2">
         <div>
-          <h2 className="text-base font-bold text-gray-900 dark:text-white">Your Germany Journey Roadmap</h2>
+          <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">Your Germany Journey Roadmap</h2>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Track and complete each step to reach your study goal.</p>
         </div>
-        <span className="text-xs font-bold text-[#E63946] bg-red-50 dark:bg-red-950/40 border border-red-200/60 dark:border-red-900/60 px-3 py-1 rounded-full">
+        <span className="text-xs font-bold text-[#EF2D48] bg-[#FDE2E4] dark:bg-[#34161E] border border-[#F9C9CE] dark:border-[#4A1D26] px-3 py-1 rounded-full">
           {completionPercentage}% Completed
         </span>
       </div>
 
-      {/* Stepper horizontal track */}
-      <div className="relative pb-2">
-        {/* Connecting line */}
-        <div className="absolute top-4 left-8 right-8 h-0.5 bg-gray-200 dark:bg-gray-800 z-0">
-          <div
-            className="h-full bg-emerald-500 transition-all duration-500"
-            style={{ width: `${Math.min(100, Math.max(10, completionPercentage))}%` }}
-          />
-        </div>
+      {/* Stepper horizontal track: swipeable on mobile */}
+      <div className="relative pb-2 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div className="min-w-[340px] sm:min-w-0 relative">
+          {/* Connecting line */}
+          <div className="absolute top-4 left-6 right-6 h-0.5 bg-gray-200 dark:bg-gray-800 z-0">
+            <div
+              className="h-full bg-emerald-500 transition-all duration-500"
+              style={{ width: `${Math.min(100, Math.max(10, completionPercentage))}%` }}
+            />
+          </div>
 
-        <div className="grid grid-cols-5 relative z-10">
-          {journeySteps.map((step) => {
-            const Icon = step.icon;
-            const isCompleted = step.status === 'completed';
-            const isPurple = step.isPurple;
-            const isReview = step.isReview;
+          <div className="grid grid-cols-5 relative z-10 gap-1">
+            {journeySteps.map((step) => {
+              const Icon = step.icon;
+              const isCompleted = step.status === 'completed';
+              const isPurple = step.isPurple;
+              const isReview = step.isReview;
 
-            return (
-              <Link
-                key={step.label}
-                href={step.href}
-                className="flex flex-col items-center text-center group cursor-pointer"
-              >
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                    isCompleted
-                      ? 'bg-emerald-500 text-white shadow-xs'
-                      : isPurple
-                      ? 'bg-purple-600 text-white shadow-xs'
-                      : isReview
-                      ? 'bg-white dark:bg-[#111622] border-2 border-[#E63946] text-[#E63946]'
-                      : 'bg-white dark:bg-[#111622] border-2 border-gray-300 dark:border-gray-700 text-gray-400'
-                  }`}
+              return (
+                <Link
+                  key={step.label}
+                  href={step.href}
+                  className="flex flex-col items-center text-center group cursor-pointer"
                 >
-                  <Icon className="w-4 h-4 stroke-[2.5]" />
-                </div>
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                      isCompleted
+                        ? 'bg-emerald-500 text-white shadow-xs'
+                        : isPurple
+                        ? 'bg-purple-600 text-white shadow-xs'
+                        : isReview
+                        ? 'bg-white dark:bg-[#111622] border-2 border-[#EF2D48] text-[#EF2D48]'
+                        : 'bg-white dark:bg-[#111622] border-2 border-gray-300 dark:border-gray-700 text-gray-400'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 stroke-[2.5]" />
+                  </div>
 
-                <span className="text-xs font-bold text-gray-900 dark:text-white mt-2 group-hover:text-[#E63946] transition-colors">
-                  {step.label}
-                </span>
-                <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-0.5 truncate max-w-[90px]">
-                  {step.desc}
-                </span>
-              </Link>
-            );
-          })}
+                  <span className="text-xs font-bold text-gray-900 dark:text-white mt-2 group-hover:text-[#EF2D48] transition-colors">
+                    {step.label}
+                  </span>
+                  <span className="text-[10px] sm:text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-0.5 truncate max-w-[70px] sm:max-w-[90px]">
+                    {step.desc}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
@@ -167,21 +169,21 @@ export function StudentStatMetricsGrid({
   targetDegreeCourseDisplay,
 }: StudentStatMetricsGridProps) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
       {/* German GPA */}
-      <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/90 dark:border-gray-800 p-4 shadow-xs flex flex-col justify-between">
+      <div className="bg-white dark:bg-[#111622] rounded-xl sm:rounded-2xl border border-gray-200/90 dark:border-gray-800 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between">
         <div>
-          <div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-2">
-            <GraduationCap className="w-4 h-4" />
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-2">
+            <GraduationCap className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
-          <div className="text-xs font-medium text-gray-500 dark:text-gray-400">German GPA</div>
-          <div className="text-2xl font-bold font-display text-gray-900 dark:text-white mt-1">
+          <div className="text-[11px] sm:text-xs font-medium text-gray-500 dark:text-gray-400">German GPA</div>
+          <div className="text-xl sm:text-2xl font-bold font-display text-gray-900 dark:text-white mt-1">
             {gpaNum !== null ? gpaNum.toFixed(2) : 'NA'}
           </div>
         </div>
         <div className="mt-2.5">
           <span
-            className={`inline-block px-2 py-0.5 rounded text-[11px] font-semibold ${
+            className={`inline-block px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-semibold ${
               gpaNum !== null
                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
                 : 'bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
@@ -193,49 +195,49 @@ export function StudentStatMetricsGrid({
       </div>
 
       {/* Matched Programs */}
-      <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/90 dark:border-gray-800 p-4 shadow-xs flex flex-col justify-between">
+      <div className="bg-white dark:bg-[#111622] rounded-xl sm:rounded-2xl border border-gray-200/90 dark:border-gray-800 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between">
         <div>
-          <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-2">
-            <Layers className="w-4 h-4" />
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-blue-100 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-2">
+            <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
-          <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Matched Programs</div>
-          <div className="text-2xl font-bold font-display text-gray-900 dark:text-white mt-1">
+          <div className="text-[11px] sm:text-xs font-medium text-gray-500 dark:text-gray-400">Matched Programs</div>
+          <div className="text-xl sm:text-2xl font-bold font-display text-gray-900 dark:text-white mt-1">
             {hasNotRun ? 'NA' : matchedUnisCount}
           </div>
         </div>
-        <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-2.5">
-          {hasNotRun ? 'Matching engine yet to be run' : 'Across Public Universities'}
+        <p className="text-[10px] sm:text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-2.5 truncate">
+          {hasNotRun ? 'Algorithm not yet run' : 'Public Universities'}
         </p>
       </div>
 
       {/* Approved Documents */}
-      <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/90 dark:border-gray-800 p-4 shadow-xs flex flex-col justify-between">
+      <div className="bg-white dark:bg-[#111622] rounded-xl sm:rounded-2xl border border-gray-200/90 dark:border-gray-800 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between">
         <div>
-          <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-2">
-            <FileText className="w-4 h-4" />
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-2">
+            <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
-          <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Approved Documents</div>
-          <div className="text-2xl font-bold font-display text-gray-900 dark:text-white mt-1">
+          <div className="text-[11px] sm:text-xs font-medium text-gray-500 dark:text-gray-400">Approved Documents</div>
+          <div className="text-xl sm:text-2xl font-bold font-display text-gray-900 dark:text-white mt-1">
             {hasDocumentSummary ? `${approvedCount} / ${totalChecklistCount}` : 'NA'}
           </div>
         </div>
-        <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-2.5">
-          Unique APS, Degree & Visa
+        <p className="text-[10px] sm:text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-2.5 truncate">
+          Unique APS & Degree
         </p>
       </div>
 
       {/* Target Intake */}
-      <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/90 dark:border-gray-800 p-4 shadow-xs flex flex-col justify-between">
+      <div className="bg-white dark:bg-[#111622] rounded-xl sm:rounded-2xl border border-gray-200/90 dark:border-gray-800 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between">
         <div>
-          <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-2">
-            <Calendar className="w-4 h-4" />
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-2">
+            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
-          <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Target Intake</div>
-          <div className="text-xl font-bold font-display text-gray-900 dark:text-white mt-1 truncate">
+          <div className="text-[11px] sm:text-xs font-medium text-gray-500 dark:text-gray-400">Target Intake</div>
+          <div className="text-lg sm:text-xl font-bold font-display text-gray-900 dark:text-white mt-1 truncate">
             {targetIntakeDisplay}
           </div>
         </div>
-        <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-2.5 truncate" title={targetDegreeCourseDisplay}>
+        <p className="text-[10px] sm:text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-2.5 truncate" title={targetDegreeCourseDisplay}>
           {targetDegreeCourseDisplay}
         </p>
       </div>
@@ -267,15 +269,15 @@ export function StudentMatchedUniversitiesCard({
   onToggleShortlist,
 }: StudentMatchedUniversitiesCardProps) {
   return (
-    <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/90 dark:border-gray-800 p-6 shadow-xs space-y-4">
+    <div className="bg-white dark:bg-[#111622] rounded-2xl border border-gray-200/90 dark:border-gray-800 p-4 sm:p-6 shadow-xs space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h3 className="text-base font-bold text-gray-900 dark:text-white">AI-Matched Universities</h3>
+          <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">AI-Matched Universities</h3>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Universities tailored to your profile and language proficiency.</p>
         </div>
         <Link
           href="/dashboard/student/matching"
-          className="text-xs font-bold text-[#E63946] hover:text-[#D62839] flex items-center gap-1 transition-colors"
+          className="text-xs font-bold text-[#EF2D48] hover:text-[#DC2626] flex items-center gap-1 transition-colors"
         >
           <span>{hasNotRun ? 'Go to Matching Engine' : `View All (${matchedUnisCount})`}</span>
           <ChevronRight className="w-3.5 h-3.5" />
