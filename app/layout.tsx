@@ -106,8 +106,84 @@ const ibmPlexSans = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "EuropeBridge - Germany Admissions & Visa",
-  description: "Built by alumni from top German universities. Admissions, APS, and visa support.",
+  metadataBase: new URL("https://europebridge.in"),
+  title: {
+    default: "EuropeBridge | Study in Germany Consultants, Admissions & Visa",
+    template: "%s | EuropeBridge",
+  },
+  description:
+    "EuropeBridge is a premier German university admission and visa consultancy built by alumni from top German universities (TU9). End-to-end guidance for 0€ tuition public universities, APS verification, SOP/LOR drafting, and German student visa.",
+  keywords: [
+    "Study in Germany consultants",
+    "Germany education consultants",
+    "MS in Germany",
+    "Masters in Germany 2026",
+    "German public university admissions",
+    "TU9 universities Germany",
+    "APS Certificate Germany",
+    "German student visa consultants",
+    "SOP writing for Germany",
+    "German grade calculator",
+    "Blocked account Germany",
+    "0 tuition fees Germany",
+    "EuropeBridge",
+  ],
+  authors: [{ name: "EuropeBridge Admissions Team", url: "https://europebridge.in" }],
+  creator: "EuropeBridge",
+  publisher: "EuropeBridge",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  alternates: {
+    canonical: "https://europebridge.in",
+  },
+  openGraph: {
+    title: "EuropeBridge | Study in Germany Consultants, Admissions & Visa",
+    description:
+      "Premier German university admission and visa consultancy built by top German university alumni. End-to-end guidance for 0€ tuition public universities, APS fast-track, and visas.",
+    url: "https://europebridge.in",
+    siteName: "EuropeBridge",
+    locale: "en_IN",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "EuropeBridge - Study in Germany Consultants & Visa Support",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "EuropeBridge | Study in Germany Consultants, Admissions & Visa",
+    description:
+      "Premier German university admission and visa consultancy built by top German university alumni. 0€ tuition public universities, APS, and visa support.",
+    images: ["/og-image.png"],
+    creator: "@europebridge",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/logo.png", type: "image/png" },
+    ],
+    apple: [
+      { url: "/Europe Bridge Phoenix Emblem.png" },
+    ],
+  },
 };
 
 export default function RootLayout({
