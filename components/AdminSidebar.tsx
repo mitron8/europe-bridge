@@ -1,36 +1,34 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { logout } from '@/lib/auth';
 import {
   LayoutDashboard,
   Users,
-  UserCheck,
   GraduationCap,
-  BarChart3,
-  Bell,
+  Calendar,
+  Headset,
+  Settings,
   LogOut,
-  ChevronRight,
-  ShieldAlert,
-  HelpCircle,
+  Moon,
+  Sun,
   X,
   ChevronsLeft,
   ChevronsRight,
-  Sun,
-  Moon,
   AlertTriangle,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { useChatNotificationStore } from '@/store/useChatNotificationStore';
 
 const navItems = [
   { name: 'Dashboard', path: '/dashboard/admin', icon: LayoutDashboard },
   { name: 'Students', path: '/dashboard/admin/students', icon: Users },
-  { name: 'Counsellors', path: '/dashboard/admin/counsellors', icon: UserCheck },
-  { name: 'Help & Escalations', path: '/dashboard/admin/help', icon: HelpCircle },
+  { name: 'Counsellors', path: '/dashboard/admin/counsellors', icon: GraduationCap },
+  { name: 'Consultations', path: '/dashboard/admin#consultations', icon: Calendar },
+  { name: 'Help & Escalations', path: '/dashboard/admin/help', icon: Headset },
 ];
 
 interface AdminSidebarProps {
@@ -58,54 +56,72 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
           setUser(data.user);
         }
       } catch (err) {
-        console.error('Failed to load user', err);
+        console.error('Failed to load admin user profile', err);
       }
     };
     fetchUser();
   }, []);
 
-  const initials = user 
-    ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() 
-    : '';
-    
-  const fullName = user 
-    ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Admin'
-    : 'Loading...';
+  const initials = user
+    ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() || 'AU'
+    : 'AU';
 
-  const displayRole = user?.role === 'superadmin' 
-    ? 'Super Admin' 
-    : (user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Loading...');
+  const fullName = user
+    ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Admin User'
+    : 'Admin User';
+
+  const displayRole = user?.role === 'superadmin'
+    ? 'Super Admin'
+    : (user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Admin');
 
   return (
-    <aside className={`
+    <aside
+      data-sidebar="admin"
+      className={`
       fixed inset-y-0 left-0 z-50 lg:static lg:z-20
-      ${isCollapsed ? 'w-[72px]' : 'w-64'} h-screen flex flex-col bg-white dark:bg-[#111622] shrink-0 overflow-hidden
+      ${isCollapsed ? 'w-[72px]' : 'w-64'} h-screen h-[100dvh] flex flex-col bg-[#0B1020] text-white shrink-0 overflow-hidden
       transition-all duration-300 ease-in-out
       ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      border-r border-gray-200/80 dark:border-gray-800/80 shadow-sm lg:shadow-none
-    `}>
-      {/* German Flag Tricolor Header Accent */}
-      <div className="w-full h-[3px] flex shrink-0">
-        <div className="flex-1 bg-germany-black"></div>
-        <div className="flex-1 bg-germany-red"></div>
-        <div className="flex-1 bg-germany-gold"></div>
+      border-r border-[#1E293B]/70 shadow-xl lg:shadow-none
+    `}
+    >
+      {/* Background Forest Silhouette Illustration spanning the bottom area */}
+      <div className="absolute bottom-0 left-0 right-0 h-80 pointer-events-none select-none overflow-hidden z-0">
+        <Image
+          src="/images/counsellor/sidebar-forest-bg.png"
+          alt=""
+          fill
+          priority
+          className="object-cover object-bottom opacity-80"
+        />
+        {/* Soft top gradient to blend seamlessly into #0B1020 */}
+        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-[#0B1020]" />
       </div>
 
       {/* Brand Header */}
-      <div className={`p-4 pb-3 border-b border-gray-200/80 dark:border-gray-800/80 flex items-center ${isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'}`}>
-        <Link href="/" className="flex items-center gap-3 group" title="EuropeBridge Admin">
-          <div className="w-9 h-9 rounded-xl bg-germany-red text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-all shrink-0 font-extrabold text-xs tracking-wider">
-            EB
-          </div>
-          {!isCollapsed && (
-            <div className="flex flex-col min-w-0">
-              <div className="font-display text-lg leading-none text-germany-black dark:text-white tracking-tight">
-                Europe<span className="text-germany-red">Bridge</span>
-              </div>
-              <div className="flex items-center gap-1.5 mt-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-germany-red"></span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Admin Portal</span>
-              </div>
+      <div
+        className={`p-4 pb-3.5 border-b border-white/10 flex items-center relative z-20 ${
+          isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'
+        }`}
+      >
+        <Link
+          href="/"
+          onClick={() => onClose?.()}
+          className="inline-flex items-center group py-1"
+          title="EuropeBridge"
+        >
+          {!isCollapsed ? (
+            <Image
+              src="/logo-white.png"
+              alt="EuropeBridge"
+              width={160}
+              height={32}
+              priority
+              className="h-6 w-auto object-contain"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-xl bg-white/10 text-white flex items-center justify-center font-extrabold text-xs tracking-wider">
+              EB
             </div>
           )}
         </Link>
@@ -113,8 +129,8 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
         {/* Desktop Collapse / Expand Button */}
         <button
           onClick={toggleCollapse}
-          className="hidden lg:flex p-1.5 rounded-lg text-gray-400 hover:text-germany-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors cursor-pointer shrink-0"
-          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="hidden lg:flex p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isCollapsed ? <ChevronsRight className="w-4 h-4" /> : <ChevronsLeft className="w-4 h-4" />}
         </button>
@@ -123,7 +139,7 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
         {onClose && (
           <button
             onClick={onClose}
-            className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/60 text-gray-400 hover:text-germany-black dark:hover:text-white transition-colors"
+            className="lg:hidden p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -131,114 +147,118 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 overflow-y-auto p-3 space-y-1 no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <nav className="flex-1 overflow-y-auto p-3 space-y-1.5 relative z-20 no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {!isCollapsed && (
-          <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1.5">
-            Management Controls
+          <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-gray-400/80 mb-2 mt-1">
+            MANAGEMENT
           </div>
         )}
+
         {navItems.map((item) => {
-          const isActive = pathname === item.path;
+          const isActive = pathname === item.path || (item.path.includes('#') && pathname === '/dashboard/admin');
           const Icon = item.icon;
           return (
             <Link
-              key={item.path}
+              key={item.name}
               href={item.path}
+              onClick={() => onClose?.()}
               title={isCollapsed ? item.name : undefined}
-              className={`flex items-center ${isCollapsed ? 'justify-center px-2 py-2.5' : 'justify-between px-3 py-2'} rounded-xl text-xs font-bold transition-colors group ${
+              className={`flex items-center ${
+                isCollapsed ? 'justify-center px-2 py-2.5' : 'justify-between px-3.5 py-2.5'
+              } rounded-xl text-xs font-bold transition-all group ${
                 isActive
-                  ? 'bg-germany-red text-white shadow-xs'
-                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/60 hover:text-germany-black dark:hover:text-white'
+                  ? 'bg-[#EF2D48] text-white shadow-xs'
+                  : 'text-gray-300 hover:text-white hover:bg-white/10'
               }`}
             >
-              <div className={`flex items-center ${isCollapsed ? 'justify-center relative' : 'gap-2.5 min-w-0'}`}>
-                <div className={`p-1 rounded-lg transition-colors shrink-0 relative ${
-                  isActive ? 'text-white' : 'text-gray-500 dark:text-gray-400 group-hover:text-germany-red'
-                }`}>
-                  <Icon className="w-4 h-4" />
-                  {isCollapsed && item.path === '/dashboard/admin/help' && (escalatedCount > 0 || unreadCount > 0) && (
-                    <span className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-[#111622] animate-pulse ${
-                      escalatedCount > 0 ? 'bg-germany-red' : 'bg-germany-gold'
-                    }`} />
-                  )}
-                </div>
+              <div className={`flex items-center ${isCollapsed ? 'justify-center relative' : 'gap-3 min-w-0'}`}>
+                <Icon className={`w-4 h-4 shrink-0 transition-transform ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white group-hover:scale-105'}`} />
                 {!isCollapsed && <span className="truncate">{item.name}</span>}
               </div>
-              {!isCollapsed && (
-                item.path === '/dashboard/admin/help' ? (
-                  escalatedCount > 0 ? (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-germany-red text-white shadow-xs animate-pulse shrink-0 flex items-center gap-1 border border-red-400/40" title="Escalated Queries Awaiting Admin">
-                      <AlertTriangle className="w-3 h-3 text-germany-gold shrink-0" />
-                      <span>{escalatedCount}</span>
-                    </span>
-                  ) : unreadCount > 0 ? (
-                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-germany-red text-white shadow-xs animate-pulse shrink-0">
-                      {unreadCount}
-                    </span>
-                  ) : isActive ? (
-                    <ChevronRight className="w-4 h-4 text-white/90 shrink-0" />
-                  ) : null
-                ) : isActive ? (
-                  <ChevronRight className="w-4 h-4 text-white/90 shrink-0" />
-                ) : null
+
+              {!isCollapsed && item.name === 'Help & Escalations' && (
+                escalatedCount > 0 ? (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-white text-[#EF2D48] shadow-xs shrink-0 flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3 text-[#EF2D48] shrink-0" />
+                    <span>{escalatedCount}</span>
+                  </span>
+                ) : (
+                  <span className="w-5 h-5 rounded-full bg-[#EF2D48] text-white text-[10px] font-extrabold flex items-center justify-center shrink-0">
+                    {unreadCount > 0 ? unreadCount : 1}
+                  </span>
+                )
               )}
             </Link>
           );
         })}
       </nav>
 
-      {/* User Profile Card & Logout */}
-      <div className="p-3 border-t border-gray-200/80 dark:border-gray-800/80 bg-white dark:bg-[#111622]">
+      {/* User Profile, Settings, Dark Mode & Logout */}
+      <div className="p-3 border-t border-white/10 relative z-20 space-y-2.5">
+        {/* User Card */}
         {!isCollapsed ? (
-          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50 dark:bg-[#0E121A] border border-gray-200/80 dark:border-gray-800/80 mb-2">
-            <div className="w-8 h-8 rounded-full bg-germany-red/10 border border-germany-red/30 flex items-center justify-center text-germany-red font-extrabold text-xs shrink-0">
-              {initials ? <span>{initials}</span> : <ShieldAlert className="w-4 h-4" />}
+          <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/10">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-[#FDE2E4] text-[#8C2434] font-extrabold text-xs flex items-center justify-center shrink-0 shadow-xs">
+                {initials}
+              </div>
+              <div className="min-w-0">
+                <p className="font-bold text-xs text-white truncate">{fullName}</p>
+                <p className="text-[10px] font-medium text-gray-400 truncate">{displayRole}</p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-xs text-germany-black dark:text-white truncate">{fullName}</p>
-              <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 truncate">{displayRole}</p>
-              <Link
-                href="/dashboard/admin/account"
-                className="text-[10px] font-bold text-germany-red hover:underline block truncate mt-0.5"
-              >
-                Account Settings
-              </Link>
-            </div>
+
+            <Link
+              href="/dashboard/admin/account"
+              className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+              title="Account Settings"
+            >
+              <Settings className="w-4 h-4" />
+            </Link>
           </div>
         ) : (
-          <div className="flex justify-center mb-2" title={`${fullName} (${displayRole})`}>
-            <div className="w-8 h-8 rounded-full bg-germany-red/10 border border-germany-red/30 flex items-center justify-center text-germany-red font-extrabold text-xs shrink-0">
-              {initials ? <span>{initials}</span> : <ShieldAlert className="w-4 h-4" />}
+          <div className="flex justify-center" title={`${fullName} (${displayRole})`}>
+            <div className="w-8 h-8 rounded-full bg-[#FDE2E4] text-[#8C2434] font-extrabold text-xs flex items-center justify-center shrink-0 shadow-xs">
+              {initials}
             </div>
           </div>
         )}
 
+        {/* Dark Mode Toggle */}
         <button
           onClick={toggleDarkMode}
-          title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          className="w-full mb-2 py-1.5 px-3 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-germany-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl flex items-center justify-between cursor-pointer transition-colors"
+          title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          className="w-full py-1.5 px-3 text-xs font-bold text-gray-300 hover:text-white hover:bg-white/10 rounded-xl flex items-center justify-between cursor-pointer transition-colors"
         >
           <div className="flex items-center gap-2">
-            {isDarkMode ? <Sun className="w-3.5 h-3.5 text-germany-gold" /> : <Moon className="w-3.5 h-3.5 text-gray-500" />}
-            {!isCollapsed && <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>}
+            {isDarkMode ? <Moon className="w-4 h-4 text-rose-300" /> : <Sun className="w-4 h-4 text-amber-400" />}
+            {!isCollapsed && <span>{isDarkMode ? 'Dark Mode' : 'Light Mode'}</span>}
           </div>
           {!isCollapsed && (
-            <div className={`w-7 h-4 rounded-full p-0.5 transition-colors ${isDarkMode ? 'bg-germany-gold' : 'bg-gray-200 dark:bg-gray-700'}`}>
-              <div className={`w-3 h-3 rounded-full bg-white transition-transform ${isDarkMode ? 'translate-x-3' : 'translate-x-0'}`} />
+            <div
+              className={`w-8 h-4 rounded-full p-0.5 transition-colors ${
+                isDarkMode ? 'bg-[#EF2D48]' : 'bg-gray-600'
+              }`}
+            >
+              <div
+                className={`w-3 h-3 rounded-full bg-white transition-transform ${
+                  isDarkMode ? 'translate-x-4' : 'translate-x-0'
+                }`}
+              />
             </div>
           )}
         </button>
 
+        {/* Sign Out Button */}
         <button
           onClick={() => logout()}
           title="Sign Out"
-          className="w-full py-2 px-3 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-germany-red dark:hover:text-[#FF6B7A] hover:bg-red-50 dark:hover:bg-red-500/15 border border-gray-200/80 dark:border-gray-700/70 dark:hover:border-red-500/40 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-xs"
+          className="w-full py-2 px-3 text-xs font-bold text-[#EF2D48] hover:bg-[#EF2D48]/10 border border-[#EF2D48]/50 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-colors"
         >
-          <LogOut className="w-3.5 h-3.5 shrink-0" />
+          <LogOut className="w-4 h-4 shrink-0" />
           {!isCollapsed && <span>Sign Out</span>}
         </button>
       </div>
     </aside>
   );
 }
-
