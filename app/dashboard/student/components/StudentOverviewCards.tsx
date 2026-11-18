@@ -86,7 +86,11 @@ export function StudentJourneyRoadmapCard({
           <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">Your Germany Journey Roadmap</h2>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Track and complete each step to reach your study goal.</p>
         </div>
-        <span className="text-xs font-bold text-[#EF2D48] bg-[#FDE2E4] dark:bg-[#34161E] border border-[#F9C9CE] dark:border-[#4A1D26] px-3 py-1 rounded-full">
+        <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
+          completionPercentage === 100
+            ? 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-400'
+            : 'text-[#EF2D48] bg-[#FDE2E4] dark:bg-[#34161E] border-[#F9C9CE] dark:border-[#4A1D26]'
+        }`}>
           {completionPercentage}% Completed
         </span>
       </div>
@@ -94,12 +98,26 @@ export function StudentJourneyRoadmapCard({
       {/* Stepper horizontal track: swipeable on mobile */}
       <div className="relative pb-2 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         <div className="min-w-[340px] sm:min-w-0 relative">
-          {/* Connecting line */}
-          <div className="absolute top-4 left-6 right-6 h-0.5 bg-gray-200 dark:bg-gray-800 z-0">
-            <div
-              className="h-full bg-emerald-500 transition-all duration-500"
-              style={{ width: `${Math.min(100, Math.max(10, completionPercentage))}%` }}
-            />
+          {/* Connecting line segments between steps (supports non-linear completion) */}
+          <div className="absolute top-4 left-6 right-6 h-0.5 z-0 flex">
+            {[0, 1, 2, 3].map((idx) => {
+              const current = journeySteps[idx];
+              const next = journeySteps[idx + 1];
+              const isSegmentDone =
+                (current?.status === 'completed' || current?.isPurple) &&
+                (next?.status === 'completed' || next?.isPurple);
+
+              return (
+                <div
+                  key={idx}
+                  className={`flex-1 h-full transition-colors duration-500 ${
+                    isSegmentDone
+                      ? 'bg-emerald-500'
+                      : 'bg-gray-200 dark:bg-gray-800'
+                  }`}
+                />
+              );
+            })}
           </div>
 
           <div className="grid grid-cols-5 relative z-10 gap-1">

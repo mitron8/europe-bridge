@@ -32,6 +32,9 @@ import {
   Search,
   Bell,
   ChevronDown,
+  User,
+  Compass,
+  Clock,
 } from 'lucide-react';
 
 function getUniversityLogo(name?: string): string {
@@ -171,13 +174,14 @@ export default function StudentDashboard() {
 
   // ── Calculated Real States ──────────────────────────────────────────────────
   const leadStatus = profile?.leadStatus || 'signed_up';
-  const isProfileComplete = profile?.completionPercentage === 100;
+  const isProfileComplete = profile?.completionPercentage === 100 || Boolean(profile?.gates?.isProfileComplete);
 
   // Real Matching status
   const isMatchingRun = Boolean(matchingData?.run && matchingData.run.status === 'completed');
   const isMatchingRunning = Boolean(matchingData?.run && (matchingData.run.status === 'running' || matchingData.run.status === 'pending'));
   const hasNotRun = !matchingData || matchingData.status === 'NOT_RUN' || !matchingData.run;
   const matchedUnisCount = hasNotRun ? 0 : (matchingData?.totalMatchedCount ?? matchingData?.results?.length ?? 0);
+  const isMatchingDone = Boolean(isMatchingRun || matchedUnisCount > 0 || profile?.gates?.hasMatchingRun);
 
   // Plan detection (covers profile.subscription, matchingData.subscription, or lead status)
   const subData = profile?.subscription;
@@ -188,7 +192,8 @@ export default function StudentDashboard() {
     matchSub?.status === 'ACTIVE' ||
     matchSub?.planId ||
     profile?.leadStatus === 'plan_purchased' ||
-    profile?.planId
+    profile?.planId ||
+    profile?.gates?.hasActivePlan
   );
 
   const planName =
@@ -198,7 +203,7 @@ export default function StudentDashboard() {
     profile?.planName ||
     (isPlanPurchased ? 'Active Plan' : null);
 
-  const isShortlistLocked = Boolean(profile?.isMatchingLocked || leadStatus === 'shortlist_locked');
+  const isShortlistLocked = Boolean(profile?.isMatchingLocked || profile?.gates?.isShortlistLocked || leadStatus === 'shortlist_locked');
   const shortlistedCount = matchingData?.recommendations?.length || shortlistedIds.size || 0;
 
   // Assigned counsellor (from profile joined with users or null)
@@ -212,6 +217,14 @@ export default function StudentDashboard() {
   const pendingCount = profile?.documentSummary?.pendingUnique !== undefined
     ? profile.documentSummary.pendingUnique
     : (profile?.documentSummary?.pending || 0);
+  const rejectedCount = profile?.documentSummary?.rejectedUnique !== undefined
+    ? profile.documentSummary.rejectedUnique
+    : (profile?.documentSummary?.rejected || 0);
+
+  // Any document record present in DB (verified, pending, or rejected) counts as uploaded
+  const uploadedDocsCount = approvedCount + pendingCount + rejectedCount;
+  const isAllDocsVerified = totalChecklistCount > 0 && approvedCount >= totalChecklistCount;
+  const isAllDocsUploaded = totalChecklistCount > 0 && uploadedDocsCount >= totalChecklistCount;
 
   // Bavarian GPA extraction (Real calculation fallback to NA)
   const bestEdu = profile?.educationRecords?.find((e: any) => e.germanGrade !== null && e.germanGrade !== undefined && !isNaN(Number(e.germanGrade)));
@@ -250,53 +263,59 @@ export default function StudentDashboard() {
   // Overall journey completion points (5 equal stages of 20 points each)
   let progressPoints = 0;
   if (isProfileComplete) progressPoints += 20;
-  if (isMatchingRun || matchedUnisCount > 0) progressPoints += 20;
+  if (isMatchingDone) progressPoints += 20;
   if (isPlanPurchased) progressPoints += 20;
-  if (isShortlistLocked || shortlistedCount > 0) progressPoints += 20;
-  if (totalChecklistCount > 0 && approvedCount > 0) {
-    progressPoints += Math.min(20, Math.round((approvedCount / totalChecklistCount) * 20));
+  if (isShortlistLocked) progressPoints += 20;
+  if (isAllDocsVerified) {
+    progressPoints += 20;
+  } else if (totalChecklistCount > 0 && approvedCount > 0) {
+    progressPoints += Math.min(19, Math.round((approvedCount / totalChecklistCount) * 20));
   }
-  // Baseline progress shown in reference is 60%
-  const completionPercentage = Math.max(60, Math.min(100, progressPoints));
+  const completionPercentage = Math.min(100, Math.max(0, progressPoints));
 
-  // 5 Canonical Journey Steps matching the reference
-  const journeySteps = [
+  // 5 Canonical Journey Steps
+  const journeySteps: JourneyStep[] = [
     {
       label: 'Profile',
-      status: 'completed',
-      desc: isProfileComplete ? 'Completed' : 'Completed',
+      status: isProfileComplete ? 'completed' : 'upcoming',
+      desc: isProfileComplete ? 'Completed' : `${profile?.completionPercentage || 0}% Done`,
       href: '/dashboard/student/complete-profile',
-      icon: Check,
+      icon: isProfileComplete ? Check : User,
     },
     {
       label: 'Matching',
-      status: 'completed',
-      desc: `${matchedUnisCount} Programs`,
+      status: isMatchingDone ? 'completed' : 'upcoming',
+      desc: isMatchingDone ? `${matchedUnisCount} Programs` : 'Not Run',
       href: '/dashboard/student/matching',
-      icon: Check,
+      icon: isMatchingDone ? Check : Compass,
     },
     {
-      label: 'Package',
-      status: isPlanPurchased ? 'completed' : 'purchased',
-      isPurple: true,
-      desc: isPlanPurchased ? 'Purchased' : 'Purchased',
+      label: 'Subscription',
+      status: isPlanPurchased ? 'completed' : 'upcoming',
+      isPurple: isPlanPurchased,
+      desc: isPlanPurchased ? (planName || 'Active') : 'Explore Plans',
       href: '/pricing',
       icon: Package,
     },
     {
       label: 'Shortlist',
-      status: 'review',
-      isReview: true,
-      desc: isShortlistLocked ? 'Finalized' : 'In Review',
+      status: isShortlistLocked ? 'completed' : (shortlistedCount > 0 ? 'review' : 'upcoming'),
+      isReview: !isShortlistLocked && shortlistedCount > 0,
+      desc: isShortlistLocked ? 'Locked' : (shortlistedCount > 0 ? `${shortlistedCount} Selected` : 'In Review'),
       href: '/dashboard/student/shortlist',
-      icon: ListFilter,
+      icon: isShortlistLocked ? Check : ListFilter,
     },
     {
       label: 'Documents',
-      status: approvedCount >= totalChecklistCount ? 'completed' : 'upcoming',
-      desc: `${approvedCount}/${totalChecklistCount} Approved`,
+      status: isAllDocsVerified ? 'completed' : (isAllDocsUploaded ? 'review' : 'upcoming'),
+      isReview: !isAllDocsVerified && isAllDocsUploaded,
+      desc: isAllDocsVerified
+        ? 'Verified'
+        : isAllDocsUploaded
+        ? 'Pending Review'
+        : `${uploadedDocsCount}/${totalChecklistCount} Uploaded`,
       href: '/dashboard/student/documents',
-      icon: FileText,
+      icon: isAllDocsVerified ? Check : (isAllDocsUploaded ? Clock : FileText),
     },
   ];
 
