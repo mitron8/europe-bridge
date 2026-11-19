@@ -18,24 +18,7 @@ export default function CounsellorDashboard() {
   const [serviceOrders, setServiceOrders] = useState<any[]>([]);
   const [isLoadingServices, setIsLoadingServices] = useState(true);
   const [meetingsOverview, setMeetingsOverview] = useState<any>(null);
-  const [user, setUser] = useState<{ firstName?: string; lastName?: string; role?: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Fetch Current Counsellor User
-  useEffect(() => {
-    async function fetchUser() {
-      try {
-        const res = await fetch(`${NEXT_PUBLIC_API_URL}/auth/me`, { credentials: 'include' });
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-        }
-      } catch (err) {
-        console.error('Failed to load user', err);
-      }
-    }
-    fetchUser();
-  }, []);
 
   // Fetch Counsellor Inquiries
   useEffect(() => {
@@ -159,14 +142,6 @@ export default function CounsellorDashboard() {
     };
   }, [serviceOrders]);
 
-  const initials = user
-    ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() || 'CU'
-    : 'CU';
-
-  const fullName = user
-    ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Counsellor User'
-    : 'Counsellor User';
-
   return (
     <div className="space-y-6 pb-6">
       {/* 1. Top Search & Controls Bar */}
@@ -174,8 +149,6 @@ export default function CounsellorDashboard() {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         unreadCount={pendingInquiries.length}
-        initials={initials}
-        fullName={fullName}
       />
 
       {/* 2. Strategy Hub Hero Banner */}

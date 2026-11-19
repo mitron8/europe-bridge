@@ -31,7 +31,6 @@ import {
   Loader2,
   Search,
   Bell,
-  ChevronDown,
   User,
   Compass,
   Clock,
@@ -253,12 +252,8 @@ export default function StudentDashboard() {
     ? `${degree} · ${course}`
     : (degree || course || 'NA');
 
-  // Student name and initials
+  // Student name
   const studentFirstName = profile?.firstName?.trim() || '';
-  const studentLastName = profile?.lastName?.trim() || '';
-  const studentInitials = (studentFirstName || studentLastName)
-    ? `${studentFirstName?.[0] || ''}${studentLastName?.[0] || ''}`.toUpperCase()
-    : (profile?.email ? profile.email.slice(0, 2).toUpperCase() : 'NA');
 
   // Overall journey completion points (5 equal stages of 20 points each)
   let progressPoints = 0;
@@ -616,16 +611,6 @@ export default function StudentDashboard() {
             {notifications.length > 0 && (
               <span className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-2 h-2 rounded-full bg-[#EF2D48] ring-2 ring-white dark:ring-[#111622]" />
             )}
-          </Link>
-          <Link
-            href="/dashboard/student/account"
-            className="flex items-center gap-1 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
-            title="Account Profile"
-          >
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 flex items-center justify-center font-bold text-[11px] sm:text-xs text-gray-700 dark:text-gray-200">
-              {studentInitials}
-            </div>
-            <ChevronDown className="w-3.5 h-3.5 text-gray-400 hidden sm:block" />
           </Link>
         </div>
       </div>
